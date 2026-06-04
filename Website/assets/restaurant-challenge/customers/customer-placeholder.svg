@@ -1,0 +1,20 @@
+<svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Customer placeholder portrait</title>
+  <desc id="desc">A square placeholder portrait for customer cards.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="800" y2="800" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8F1E2"/>
+      <stop offset="1" stop-color="#EEDDBB"/>
+    </linearGradient>
+    <linearGradient id="frame" x1="120" y1="120" x2="680" y2="680" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#C54C38"/>
+      <stop offset="1" stop-color="#1F4E44"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="800" rx="84" fill="url(#bg)"/>
+  <rect x="110" y="110" width="580" height="580" rx="56" fill="url(#frame)" fill-opacity="0.92"/>
+  <circle cx="400" cy="305" r="116" fill="#FFFDF8" fill-opacity="0.95"/>
+  <path d="M275 598C275 500 331 428 400 428C469 428 525 500 525 598" fill="#FFFDF8" fill-opacity="0.95"/>
+  <path d="M289 598C289 524 338 466 400 466C462 466 511 524 511 598" fill="#1F4E44" fill-opacity="0.12"/>
+  <text x="400" y="675" text-anchor="middle" fill="#FFFDF8" font-family="Arial, sans-serif" font-size="26" font-weight="800" letter-spacing="5">CUSTOMER PLACEHOLDER</text>
+</svg>

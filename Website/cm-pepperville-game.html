@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>City Manager: Pepperville | Free Browser City-Building Strategy Game</title>
+    <meta
+      name="description"
+      content="Learn more about City Manager: Pepperville, a free browser city-building strategy game where you shape districts, guide the local economy, and decide how Pepperville grows."
+    />
+    <link rel="canonical" href="https://communityversegames.com/cm-pepperville-game.html" />
+    <meta
+      property="og:title"
+      content="City Manager: Pepperville | Free Browser City-Building Strategy Game"
+    />
+    <meta
+      property="og:description"
+      content="Plan districts, guide the local economy, manage city priorities, and shape the future of Pepperville."
+    />
+    <meta property="og:url" content="https://communityversegames.com/cm-pepperville-game.html" />
+    <meta property="og:type" content="article" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <style>
+      :root {
+        --bg: #f6efdf;
+        --panel: rgba(255, 251, 242, 0.92);
+        --ink: #23362d;
+        --muted: #566d61;
+        --line: rgba(93, 116, 105, 0.18);
+        --green: #2f6f52;
+        --gold: #d48522;
+        --gold-deep: #ba6c1d;
+        --shadow: 0 18px 42px rgba(39, 55, 44, 0.14);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Georgia, "Times New Roman", serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(255, 208, 95, 0.45), transparent 26%),
+          radial-gradient(circle at top right, rgba(80, 143, 114, 0.18), transparent 28%),
+          var(--bg);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .page {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 24px 56px;
+      }
+
+      .topbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+
+      .crumb {
+        font-family: Arial, sans-serif;
+        font-size: 0.88rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--green);
+      }
+
+      .hero-card,
+      .section-card {
+        border-radius: 30px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        box-shadow: var(--shadow);
+      }
+
+      .hero-card {
+        overflow: hidden;
+      }
+
+      .hero-image {
+        display: block;
+        width: 100%;
+        aspect-ratio: 16 / 8;
+        object-fit: cover;
+      }
+
+      .hero-body {
+        padding: 28px;
+      }
+
+      h1,
+      h2 {
+        margin: 0;
+        line-height: 0.95;
+        letter-spacing: -0.04em;
+      }
+
+      h1 {
+        font-size: clamp(2.8rem, 6vw, 4.8rem);
+        margin-top: 8px;
+      }
+
+      h2 {
+        font-size: clamp(1.8rem, 3vw, 2.5rem);
+        margin-bottom: 14px;
+      }
+
+      .subtitle,
+      .copy,
+      li {
+        font-family: Arial, sans-serif;
+        color: var(--muted);
+        line-height: 1.65;
+        font-size: 1rem;
+      }
+
+      .hero-actions,
+      .cta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 22px;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 54px;
+        padding: 0 22px;
+        border-radius: 999px;
+        border: 1px solid rgba(93, 116, 105, 0.18);
+        background: rgba(255, 255, 255, 0.84);
+        box-shadow: 0 10px 24px rgba(39, 55, 44, 0.08);
+        font-family: Arial, sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
+      }
+
+      .button-primary {
+        background: linear-gradient(135deg, var(--gold), var(--gold-deep));
+        border-color: rgba(186, 108, 29, 0.4);
+        color: #fffdf8;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 24px;
+        margin-top: 24px;
+      }
+
+      .section-card {
+        padding: 24px;
+      }
+
+      ul {
+        margin: 0;
+        padding-left: 20px;
+      }
+
+      @media (max-width: 900px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .hero-image {
+          aspect-ratio: 16 / 10;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <div class="topbar">
+        <a class="crumb" href="https://communityversegames.com/">CommunityVerse Games</a>
+        <div class="hero-actions">
+          <a class="button" href="https://communityversegames.com/">Back To Home</a>
+          <a class="button button-primary" href="https://communityversegames.com/cm-pepperville/">Visit Pepperville</a>
+        </div>
+      </div>
+
+      <section class="hero-card">
+        <img
+          class="hero-image"
+          src="https://communityversegames.com/website-assets/city-manager-pepperville-logo.jpg"
+          alt="City Manager Pepperville logo art"
+        />
+        <div class="hero-body">
+          <p class="crumb">Free Browser City-Building Strategy Game</p>
+          <h1>City Manager: Pepperville</h1>
+          <p class="subtitle">
+            Shape districts, guide the local economy, manage city priorities, and decide what kind of future Pepperville will build for itself.
+          </p>
+        </div>
+      </section>
+
+      <section class="grid">
+        <article class="section-card">
+          <h2>What Pepperville Is About</h2>
+          <p class="copy">
+            City Manager: Pepperville brings local politics, small-city planning, and long-range strategy into the CommunityVerse. Instead of running a zoo, a tour, or a campaign, you are running a place. That changes the feel of every decision. Streets, districts, economic priorities, and public momentum all start to matter at once, because the city is not just a backdrop. It is the thing you are shaping turn by turn. The fun comes from watching a fictional community grow into something distinct based on your choices.
+          </p>
+          <p class="copy">
+            The strategy side has a lot of room to become interesting because city-building is always a balancing act. Growth sounds exciting, but growth also creates pressure. If you invest too narrowly, one part of town may thrive while another falls behind. If you spread resources too thinly, the whole city can feel stuck. That is the kind of tension Pepperville can turn into a satisfying game loop. You are not just chasing bigger numbers. You are deciding what kind of city deserves the next round of attention, what the local economy should emphasize, and how to build momentum without losing control of the bigger picture.
+          </p>
+          <p class="copy">
+            Pepperville also fits naturally into the wider CommunityVerse because it opens the door to a more grounded kind of world-building. The same larger setting can now include music venues, campaign personalities, zoo publicity, and the day-to-day choices that shape a town itself. That gives the game extra personality beyond standard city-builders. If you like strategy games where planning, identity, and theme all matter together, Pepperville is a promising new corner of the CommunityVerse to keep exploring as it grows.
+          </p>
+        </article>
+
+        <aside class="section-card">
+          <h2>What To Expect</h2>
+          <ul class="copy">
+            <li>District planning that shapes how Pepperville grows over time</li>
+            <li>Economic decisions that force tradeoffs between ambition and stability</li>
+            <li>City priorities that can shift the personality of the whole town</li>
+            <li>A CommunityVerse setting with room for recurring characters and local flavor</li>
+            <li>A free browser strategy project you can visit as it keeps expanding</li>
+          </ul>
+          <div class="cta-row">
+            <a class="button button-primary" href="https://communityversegames.com/cm-pepperville/">Visit Pepperville</a>
+            <a class="button" href="https://communityversegames.com/">Return To Homepage</a>
+          </div>
+        </aside>
+      </section>
+    </main>
+  </body>
+</html>

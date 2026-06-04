@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CommunityVerse Games | Browser Strategy Games</title>
+    <meta
+      name="description"
+      content="Play free browser strategy games from CommunityVerse Games including The Zoo Game, World Tour, The Empty Suit, and City Manager: Pepperville, then follow upcoming concepts including Time Travel Tours and Tourtown USA."
+    />
+    <link rel="canonical" href="https://communityversegames.com/" />
+    <meta
+      property="og:title"
+      content="CommunityVerse Games | Browser Strategy Games"
+    />
+    <meta
+      property="og:description"
+      content="Play free browser strategy games from CommunityVerse Games including The Zoo Game, World Tour, The Empty Suit, and City Manager: Pepperville."
+    />
+    <meta property="og:url" content="https://communityversegames.com/" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <style>
+      :root {
+        --bg: #f6efdf;
+        --panel: rgba(255, 251, 242, 0.88);
+        --panel-strong: #163f2d;
+        --ink: #23362d;
+        --muted: #566d61;
+        --line: rgba(93, 116, 105, 0.18);
+        --green: #2f6f52;
+        --gold: #d48522;
+        --gold-deep: #ba6c1d;
+        --shadow: 0 18px 42px rgba(39, 55, 44, 0.14);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Georgia, "Times New Roman", serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(255, 208, 95, 0.42), transparent 24%),
+          radial-gradient(circle at top right, rgba(80, 143, 114, 0.16), transparent 24%),
+          radial-gradient(circle at 50% 0%, rgba(255, 244, 214, 0.78), transparent 42%),
+          linear-gradient(180deg, #f8f0dc 0%, #f6efdf 42%, #f3ead6 100%);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .page {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 28px 24px 44px;
+      }
+
+      .eyebrow {
+        margin: 0 0 10px;
+        font-family: Arial, sans-serif;
+        font-size: 0.9rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--green);
+      }
+
+      .hero {
+        margin-bottom: 6px;
+      }
+
+      .hero-panel {
+        position: relative;
+        overflow: hidden;
+        padding: 34px;
+        border-radius: 34px;
+        border: 1px solid rgba(93, 116, 105, 0.16);
+        background:
+          linear-gradient(135deg, rgba(255, 251, 242, 0.95), rgba(247, 238, 218, 0.94));
+        box-shadow: 0 24px 56px rgba(39, 55, 44, 0.1);
+      }
+
+      .hero-panel::before,
+      .hero-panel::after {
+        content: "";
+        position: absolute;
+        border-radius: 999px;
+        pointer-events: none;
+      }
+
+      .hero-panel::before {
+        top: -90px;
+        left: -70px;
+        width: 260px;
+        height: 260px;
+        background: radial-gradient(circle, rgba(212, 133, 34, 0.2), transparent 72%);
+      }
+
+      .hero-panel::after {
+        top: -30px;
+        right: -40px;
+        width: 240px;
+        height: 240px;
+        background: radial-gradient(circle, rgba(47, 111, 82, 0.14), transparent 72%);
+      }
+
+      .hero-grid {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.82fr);
+        gap: 34px;
+        align-items: start;
+      }
+
+      .hero-copy h1 {
+        margin: 0 0 14px;
+        max-width: none;
+        font-size: clamp(2.2rem, 4vw, 3.25rem);
+        line-height: 0.94;
+        letter-spacing: -0.04em;
+      }
+
+      .hero-headline-line {
+        display: block;
+        white-space: nowrap;
+      }
+
+      .hero-copy p {
+        margin: 0 0 12px;
+        max-width: 760px;
+        font-family: Arial, sans-serif;
+        font-size: 1rem;
+        line-height: 1.45;
+        color: var(--muted);
+      }
+
+      .hero-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 22px;
+      }
+
+      .hero-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        font-family: Arial, sans-serif;
+        font-size: 0.88rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        color: var(--green);
+      }
+
+      .hero-chip::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        margin-right: 9px;
+        border-radius: 999px;
+        background: rgba(212, 133, 34, 0.78);
+        box-shadow: 0 0 0 4px rgba(212, 133, 34, 0.12);
+      }
+
+      .hero-side {
+        display: flex;
+      }
+
+      .hero-side-card {
+        width: 100%;
+        padding: 24px;
+        border-radius: 28px;
+        border: 1px solid var(--line);
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(249, 242, 226, 0.88));
+        box-shadow: 0 14px 32px rgba(39, 55, 44, 0.08);
+      }
+
+      .hero-side-kicker {
+        margin: 0 0 8px;
+        font-family: Arial, sans-serif;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--green);
+      }
+
+      .hero-side-card h2 {
+        margin: 0;
+        font-size: clamp(1.5rem, 2.45vw, 2.05rem);
+        line-height: 0.98;
+        letter-spacing: -0.04em;
+      }
+
+      .hero-side-line {
+        display: block;
+      }
+
+      .hero-side-copy,
+      .hero-side-note {
+        margin: 12px 0 0;
+        font-family: Arial, sans-serif;
+        font-size: 0.96rem;
+        line-height: 1.5;
+        color: var(--muted);
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 56px;
+        padding: 0 24px;
+        border-radius: 999px;
+        border: 1px solid rgba(93, 116, 105, 0.18);
+        background: rgba(255, 255, 255, 0.82);
+        box-shadow: 0 10px 24px rgba(39, 55, 44, 0.08);
+        font-family: Arial, sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
+      }
+
+      .button-primary {
+        background: linear-gradient(135deg, var(--gold), var(--gold-deep));
+        border-color: rgba(186, 108, 29, 0.4);
+        color: #fffdf8;
+        box-shadow: 0 16px 34px rgba(212, 133, 34, 0.28);
+      }
+
+      .games-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+        margin-top: 28px;
+      }
+
+      .game-panel {
+        overflow: hidden;
+        border-radius: 28px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+      }
+
+      .game-image {
+        display: block;
+        width: 100%;
+        aspect-ratio: 16 / 11;
+        object-fit: cover;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .game-image-link {
+        display: block;
+      }
+
+      .game-body {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        padding: 18px 20px 22px;
+      }
+
+      .game-status {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--green);
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      .game-panel p {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        font-size: 0.98rem;
+        line-height: 1.55;
+        color: var(--muted);
+      }
+
+      .game-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: auto;
+      }
+
+      .site-footer {
+        margin-top: 26px;
+        text-align: center;
+        font-family: Arial, sans-serif;
+        font-size: 0.78rem;
+        line-height: 1.4;
+        color: var(--muted);
+        opacity: 0.86;
+      }
+
+      @media (max-width: 900px) {
+        .hero-grid,
+        .games-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .hero-panel {
+          padding: 24px 22px;
+        }
+
+        .hero-copy h1 {
+          font-size: clamp(1.85rem, 8.2vw, 2.4rem);
+        }
+
+        .hero-headline-line {
+          white-space: normal;
+        }
+
+        .hero-copy p {
+          max-width: none;
+        }
+
+        .hero-actions .button {
+          width: 100%;
+        }
+      }
+
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <div class="hero-panel">
+          <div class="hero-grid">
+            <div class="hero-copy">
+              <p class="eyebrow">Connected Strategy Games</p>
+              <h1>
+                <span class="hero-headline-line">Build a Zoo.</span>
+                <span class="hero-headline-line">Book a World Tour.</span>
+                <span class="hero-headline-line">Run for President.</span>
+                <span class="hero-headline-line">Build a Quirky City.</span>
+              </h1>
+              <p>
+                CommunityVerse Games is a growing collection of light-hearted strategy games that play like digital board games: easy to start, funny to explore, and full of recurring characters across different worlds.
+              </p>
+              <p>
+                You may run into Buzz Smiley, Romeo Tiramisu, Wicked Jim DeVito, Johnny Pepper, Captain Hernando Zoogle, and other familiar faces in the fictional communities located within Chattawa County: Pepperville, St. Hilton, Noel, and the Wakona Nation reservation.
+              </p>
+              <div class="hero-chips">
+                <span class="hero-chip">Light-hearted strategy</span>
+                <span class="hero-chip">Board-game style play</span>
+                <span class="hero-chip">Recurring characters</span>
+                <span class="hero-chip">Free in your browser</span>
+              </div>
+            </div>
+
+            <aside class="hero-side">
+              <div class="hero-side-card">
+                <p class="hero-side-kicker">Game Portal</p>
+                <h2>
+                  <span class="hero-side-line">Four Games,</span>
+                  <span class="hero-side-line">One Community,</span>
+                  <span class="hero-side-line">Zero Cost.</span>
+                </h2>
+                <div class="hero-actions">
+                  <a class="button button-primary" href="#games">Play Free Games</a>
+                </div>
+                <p class="hero-side-note">
+                  Coming later: Time Travel Tours and Tourtown USA.
+                </p>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section class="games-grid" id="games">
+        <article class="game-panel">
+          <img
+            class="game-image"
+            src="https://communityversegames.com/website-assets/the-zoo-game-splash-screen.jpg"
+            alt="The Zoo Game splash art"
+          />
+          <div class="game-body">
+            <h2 class="sr-only">The Zoo Game</h2>
+            <p>
+              Build themed animal collections, win premium attractions, and use smart publicity to turn your zoo into the city's favorite attraction.
+            </p>
+            <div class="game-links">
+              <a class="button button-primary" href="https://communityversegames.com/zoo/">Play The Zoo Game</a>
+              <a class="button" href="https://communityversegames.com/zoo-game.html">Learn More</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="game-panel">
+          <img
+            class="game-image"
+            src="https://communityversegames.com/website-assets/world-tour-splash-screen.jpg"
+            alt="World Tour splash art"
+          />
+          <div class="game-body">
+            <h2 class="sr-only">World Tour</h2>
+            <p>
+              <strong>The Music Game</strong> lets you manage multiple bands, rent venues, and build bigger crowds from show to show while we continue improving it.
+            </p>
+            <div class="game-links">
+              <a class="button button-primary" href="https://communityversegames.com/world-tour/">Play World Tour</a>
+              <a class="button" href="https://communityversegames.com/world-tour-game.html">Learn More</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="game-panel">
+          <img
+            class="game-image"
+            src="https://communityversegames.com/website-assets/empty-suit-splash-screen.jpg"
+            alt="The Empty Suit splash art"
+          />
+          <div class="game-body">
+            <h2 class="sr-only">The Empty Suit</h2>
+            <p>
+              Fight to win the Democratic or Republican nomination, shape your candidate, debate your rivals, and outmaneuver the rest of the field.
+            </p>
+            <div class="game-links">
+              <a class="button button-primary" href="https://communityversegames.com/empty-suit/">Play The Empty Suit</a>
+              <a class="button" href="https://communityversegames.com/empty-suit-game.html">Learn More</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="game-panel">
+          <img
+            class="game-image"
+            src="https://communityversegames.com/website-assets/city-manager-pepperville-logo.jpg"
+            alt="City Manager Pepperville logo art"
+          />
+          <div class="game-body">
+            <h2 class="sr-only">City Manager: Pepperville</h2>
+            <p>
+              Plan districts, grow the local economy, manage city priorities, and shape the future of Pepperville.
+            </p>
+            <div class="game-links">
+              <a class="button button-primary" href="https://communityversegames.com/cm-pepperville/">Visit Pepperville</a>
+              <a class="button" href="https://communityversegames.com/cm-pepperville-game.html">Learn More</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="game-panel">
+          <img
+            class="game-image"
+            src="assets/restaurant-challenge/restaurants/americana/americana-hero.svg"
+            alt="Americana Diner placeholder art"
+          />
+          <div class="game-body">
+            <h2 class="sr-only">Restaurant Challenge</h2>
+            <p>
+              Build your own fictional restaurant, play quick trivia rounds, win customers, and track your progress across restaurant-branded games.
+            </p>
+            <div class="game-links">
+              <a class="button button-primary" href="restaurant/">Open Restaurant Challenge</a>
+              <a class="button" href="americana/">Play Americana Diner</a>
+            </div>
+          </div>
+        </article>
+      </section>
+      <footer class="site-footer">
+        Copyright - CommunityVerse Games. All rights reserved
+      </footer>
+    </main>
+  </body>
+</html>

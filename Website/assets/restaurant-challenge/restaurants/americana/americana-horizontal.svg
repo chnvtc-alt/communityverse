@@ -1,0 +1,30 @@
+<svg width="1500" height="500" viewBox="0 0 1500 500" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Americana Diner horizontal logo placeholder</title>
+  <desc id="desc">A wide diner logo for headers and hero areas.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1500" y2="500" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1F4E44"/>
+      <stop offset="1" stop-color="#17362F"/>
+    </linearGradient>
+    <linearGradient id="badge" x1="120" y1="80" x2="420" y2="420" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#C54C38"/>
+      <stop offset="1" stop-color="#9F3628"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="460" y1="90" x2="1440" y2="410" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F2C06B"/>
+      <stop offset="1" stop-color="#D58A2B"/>
+    </linearGradient>
+  </defs>
+  <rect width="1500" height="500" rx="54" fill="url(#bg)"/>
+  <circle cx="1330" cy="120" r="120" fill="#F2C06B" fill-opacity="0.12"/>
+  <circle cx="160" cy="400" r="150" fill="#C54C38" fill-opacity="0.12"/>
+  <rect x="70" y="70" width="360" height="360" rx="40" fill="url(#badge)"/>
+  <rect x="100" y="100" width="300" height="300" rx="28" fill="#FFFDF8" fill-opacity="0.08" stroke="#FFFDF8" stroke-opacity="0.4" stroke-width="3"/>
+  <text x="250" y="180" text-anchor="middle" fill="#FFFDF8" font-family="Georgia, serif" font-size="40" font-weight="700" letter-spacing="4">AMERICANA</text>
+  <text x="250" y="235" text-anchor="middle" fill="#F2C06B" font-family="Arial, sans-serif" font-size="22" font-weight="800" letter-spacing="6">DINER</text>
+  <text x="250" y="285" text-anchor="middle" fill="#FFFDF8" font-family="Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="5">PEPPERVILLE</text>
+  <rect x="470" y="110" width="930" height="280" rx="40" fill="url(#accent)" fill-opacity="0.12"/>
+  <text x="935" y="205" text-anchor="middle" fill="#FFFDF8" font-family="Georgia, serif" font-size="72" font-weight="700" letter-spacing="6">AMERICANA DINER</text>
+  <text x="935" y="272" text-anchor="middle" fill="#FFFDF8" font-family="Arial, sans-serif" font-size="26" font-weight="700" letter-spacing="8">CLASSIC COMFORT IN PEPPERVILLE</text>
+  <text x="935" y="325" text-anchor="middle" fill="#FFFDF8" font-family="Arial, sans-serif" font-size="20" font-weight="700" letter-spacing="5">HORIZONTAL LOGO PLACEHOLDER</text>
+</svg>

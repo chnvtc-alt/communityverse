@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>World Tour | Free Browser Music Strategy Game</title>
+    <meta
+      name="description"
+      content="Learn more about World Tour, a free browser music strategy game where you build a roster, book venues, win bands at auction, and grow bigger crowds from city to city."
+    />
+    <link rel="canonical" href="https://communityversegames.com/world-tour-game.html" />
+    <meta
+      property="og:title"
+      content="World Tour | Free Browser Music Strategy Game"
+    />
+    <meta
+      property="og:description"
+      content="Build a roster, win bands at auction, book venues, and turn smart planning into a stronger tour."
+    />
+    <meta property="og:url" content="https://communityversegames.com/world-tour-game.html" />
+    <meta property="og:type" content="article" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <style>
+      :root {
+        --bg: #f6efdf;
+        --panel: rgba(255, 251, 242, 0.92);
+        --ink: #23362d;
+        --muted: #566d61;
+        --line: rgba(93, 116, 105, 0.18);
+        --green: #2f6f52;
+        --gold: #d48522;
+        --gold-deep: #ba6c1d;
+        --shadow: 0 18px 42px rgba(39, 55, 44, 0.14);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Georgia, "Times New Roman", serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(255, 208, 95, 0.45), transparent 26%),
+          radial-gradient(circle at top right, rgba(80, 143, 114, 0.18), transparent 28%),
+          var(--bg);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .page {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 24px 56px;
+      }
+
+      .topbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+
+      .crumb {
+        font-family: Arial, sans-serif;
+        font-size: 0.88rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--green);
+      }
+
+      .hero-card,
+      .section-card {
+        border-radius: 30px;
+        border: 1px solid var(--line);
+        background: rgba(255, 251, 242, 0.92);
+        box-shadow: var(--shadow);
+      }
+
+      .hero-card {
+        overflow: hidden;
+      }
+
+      .hero-image {
+        display: block;
+        width: 100%;
+        aspect-ratio: 16 / 8;
+        object-fit: cover;
+      }
+
+      .hero-body {
+        padding: 28px;
+      }
+
+      h1,
+      h2 {
+        margin: 0;
+        line-height: 0.95;
+        letter-spacing: -0.04em;
+      }
+
+      h1 {
+        font-size: clamp(2.8rem, 6vw, 4.8rem);
+        margin-top: 8px;
+      }
+
+      h2 {
+        font-size: clamp(1.8rem, 3vw, 2.5rem);
+        margin-bottom: 14px;
+      }
+
+      .subtitle,
+      .copy,
+      li {
+        font-family: Arial, sans-serif;
+        color: var(--muted);
+        line-height: 1.65;
+        font-size: 1rem;
+      }
+
+      .hero-actions,
+      .cta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 22px;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 54px;
+        padding: 0 22px;
+        border-radius: 999px;
+        border: 1px solid rgba(93, 116, 105, 0.18);
+        background: rgba(255, 255, 255, 0.84);
+        box-shadow: 0 10px 24px rgba(39, 55, 44, 0.08);
+        font-family: Arial, sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
+      }
+
+      .button-primary {
+        background: linear-gradient(135deg, var(--gold), var(--gold-deep));
+        border-color: rgba(186, 108, 29, 0.4);
+        color: #fffdf8;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 24px;
+        margin-top: 24px;
+      }
+
+      .section-card {
+        padding: 24px;
+      }
+
+      ul {
+        margin: 0;
+        padding-left: 20px;
+      }
+
+      @media (max-width: 900px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .hero-image {
+          aspect-ratio: 16 / 10;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <div class="topbar">
+        <a class="crumb" href="https://communityversegames.com/">CommunityVerse Games</a>
+        <div class="hero-actions">
+          <a class="button" href="https://communityversegames.com/">Back To Home</a>
+          <a class="button button-primary" href="https://communityversegames.com/world-tour/">Play World Tour</a>
+        </div>
+      </div>
+
+      <section class="hero-card">
+        <img
+          class="hero-image"
+          src="https://communityversegames.com/website-assets/world-tour-splash-screen.jpg"
+          alt="World Tour splash art"
+        />
+        <div class="hero-body">
+          <p class="crumb">Free Browser Music Strategy Game</p>
+          <h1>World Tour</h1>
+          <p class="subtitle">
+            Build a roster, win bands at auction, book the right rooms, and turn smart planning into a tour that outgrows the competition.
+          </p>
+        </div>
+      </section>
+
+      <section class="grid">
+        <article class="section-card">
+          <h2>What World Tour Is About</h2>
+          <p class="copy">
+            World Tour turns live music strategy into a game of timing, budgeting, and nerve. You are not just booking a single show. You are building an entire touring operation, one round at a time, trying to create the strongest circuit before the rest of the promoters catch up. Every decision matters because every band, venue, and booking opportunity is connected. A smart early move can set up a profitable streak later, while one reckless overbid can leave you watching a rival take over the most important rooms on the schedule.
+          </p>
+          <p class="copy">
+            One of the most exciting parts of the game is the auction layer. Bands go up for bidding, and you have to decide when to push hard, when to bluff confidence, and when to save cash for the next opportunity. Then the venue layer changes the puzzle again. Some rooms reward the right match between artist and audience, while others favor scale, momentum, or a carefully timed headliner-opener combination. Because the first rounds of the tour are visible, the game encourages planning ahead instead of simply reacting in the moment.
+          </p>
+          <p class="copy">
+            That mix of short-term booking choices and longer-term tour strategy is what gives World Tour its identity. You can chase prestige, stack up Victory Points, aim for reliable mid-tier efficiency, or bet on a few explosive nights that reshape the whole race. If you like games where positioning matters just as much as raw power, World Tour has a lot of room for clever play, and it is already playable now while the experience keeps getting better.
+          </p>
+        </article>
+
+        <aside class="section-card">
+          <h2>Why Players May Love It</h2>
+          <ul class="copy">
+            <li>Band auctions that reward timing, nerve, and long-range planning</li>
+            <li>Venue choices that make every show feel strategically different</li>
+            <li>A tour structure that lets you plan ahead instead of playing blind</li>
+            <li>A music-industry theme full of personality and momentum</li>
+            <li>A free browser game you can start playing right away</li>
+          </ul>
+          <div class="cta-row">
+            <a class="button button-primary" href="https://communityversegames.com/world-tour/">Play World Tour</a>
+            <a class="button" href="https://communityversegames.com/">Return To Homepage</a>
+          </div>
+        </aside>
+      </section>
+    </main>
+  </body>
+</html>

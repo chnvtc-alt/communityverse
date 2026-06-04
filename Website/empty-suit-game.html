@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Empty Suit | Free Browser Election Strategy Game</title>
+    <meta
+      name="description"
+      content="Learn more about The Empty Suit, a free browser election strategy game where you build a candidate, survive regional rounds, and race to 270 electoral votes."
+    />
+    <link rel="canonical" href="https://communityversegames.com/empty-suit-game.html" />
+    <meta
+      property="og:title"
+      content="The Empty Suit | Free Browser Election Strategy Game"
+    />
+    <meta
+      property="og:description"
+      content="Build your candidate, manage a campaign day, survive the regional race, and piece together 270 electoral votes before your rivals do."
+    />
+    <meta property="og:url" content="https://communityversegames.com/empty-suit-game.html" />
+    <meta property="og:type" content="article" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <style>
+      :root {
+        --bg: #f6efdf;
+        --panel: rgba(255, 251, 242, 0.92);
+        --ink: #23362d;
+        --muted: #566d61;
+        --line: rgba(93, 116, 105, 0.18);
+        --green: #2f6f52;
+        --gold: #d48522;
+        --gold-deep: #ba6c1d;
+        --shadow: 0 18px 42px rgba(39, 55, 44, 0.14);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Georgia, "Times New Roman", serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(255, 208, 95, 0.45), transparent 26%),
+          radial-gradient(circle at top right, rgba(80, 143, 114, 0.18), transparent 28%),
+          var(--bg);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .page {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 24px 56px;
+      }
+
+      .topbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+
+      .crumb {
+        font-family: Arial, sans-serif;
+        font-size: 0.88rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--green);
+      }
+
+      .hero-card,
+      .section-card {
+        border-radius: 30px;
+        border: 1px solid var(--line);
+        background: rgba(255, 251, 242, 0.92);
+        box-shadow: var(--shadow);
+      }
+
+      .hero-card {
+        overflow: hidden;
+      }
+
+      .hero-image {
+        display: block;
+        width: 100%;
+        aspect-ratio: 16 / 8;
+        object-fit: cover;
+      }
+
+      .hero-body {
+        padding: 28px;
+      }
+
+      h1,
+      h2 {
+        margin: 0;
+        line-height: 0.95;
+        letter-spacing: -0.04em;
+      }
+
+      h1 {
+        font-size: clamp(2.8rem, 6vw, 4.8rem);
+        margin-top: 8px;
+      }
+
+      h2 {
+        font-size: clamp(1.8rem, 3vw, 2.5rem);
+        margin-bottom: 14px;
+      }
+
+      .subtitle,
+      .copy,
+      li {
+        font-family: Arial, sans-serif;
+        color: var(--muted);
+        line-height: 1.65;
+        font-size: 1rem;
+      }
+
+      .hero-actions,
+      .cta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 22px;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 54px;
+        padding: 0 22px;
+        border-radius: 999px;
+        border: 1px solid rgba(93, 116, 105, 0.18);
+        background: rgba(255, 255, 255, 0.84);
+        box-shadow: 0 10px 24px rgba(39, 55, 44, 0.08);
+        font-family: Arial, sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
+      }
+
+      .button-primary {
+        background: linear-gradient(135deg, var(--gold), var(--gold-deep));
+        border-color: rgba(186, 108, 29, 0.4);
+        color: #fffdf8;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 24px;
+        margin-top: 24px;
+      }
+
+      .section-card {
+        padding: 24px;
+      }
+
+      ul {
+        margin: 0;
+        padding-left: 20px;
+      }
+
+      @media (max-width: 900px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .hero-image {
+          aspect-ratio: 16 / 10;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <div class="topbar">
+        <a class="crumb" href="https://communityversegames.com/">CommunityVerse Games</a>
+        <div class="hero-actions">
+          <a class="button" href="https://communityversegames.com/">Back To Home</a>
+          <a class="button button-primary" href="https://communityversegames.com/empty-suit/">Play The Empty Suit</a>
+        </div>
+      </div>
+
+      <section class="hero-card">
+        <img
+          class="hero-image"
+          src="https://communityversegames.com/website-assets/empty-suit-splash-screen.jpg"
+          alt="The Empty Suit splash art"
+        />
+        <div class="hero-body">
+          <p class="crumb">Free Browser Election Strategy Game</p>
+          <h1>The Empty Suit</h1>
+          <p class="subtitle">
+            Build a candidate, run a national campaign, and survive a brutal race to 270 electoral votes before three rivals beat you there.
+          </p>
+        </div>
+      </section>
+
+      <section class="grid">
+        <article class="section-card">
+          <h2>What Makes The Empty Suit Different</h2>
+          <p class="copy">
+            The Empty Suit takes the pressure and spectacle of a modern campaign and turns it into a strategy game built around momentum, identity, and national map control. You are not handed a finished political machine. You start by shaping your candidate, deciding what kind of campaign persona you want to project, and choosing how that personality should compete against the rest of the field. From there, the game pushes you through regional rounds before opening into a final national sprint where the race can still swing dramatically.
+          </p>
+          <p class="copy">
+            What makes the game exciting is how many layers of campaigning feed into the same goal. You are choosing issue mixes, setting priorities, planning routes, deciding how much effort to put into rallies, balancing fundraising and endorsements, and thinking about where every point of campaign energy will matter most. That creates a satisfying rhythm where each day feels like a real strategic puzzle. You are not just reacting to polls. You are trying to shape them before the next round closes and the map shifts again.
+          </p>
+          <p class="copy">
+            The tone also helps it stand out. The Empty Suit is playful, sharp, and theatrical, but the strategy underneath still feels serious. Rivals have their own personalities, the map race can tighten quickly, and nobody begins with the outcome guaranteed. If you like games about positioning, persuasion, and high-pressure decision making, this one has a strong identity. It is already playable now, and the premise gives it room to become even richer as the campaign world keeps growing.
+          </p>
+        </article>
+
+        <aside class="section-card">
+          <h2>What To Expect</h2>
+          <ul class="copy">
+            <li>Candidate-building choices that shape your campaign identity</li>
+            <li>Regional rounds followed by a high-stakes national push</li>
+            <li>Daily planning around message mix, effort, rallies, and endorsements</li>
+            <li>An electoral-vote race where every state can matter</li>
+            <li>A free browser strategy game you can jump into now</li>
+          </ul>
+          <div class="cta-row">
+            <a class="button button-primary" href="https://communityversegames.com/empty-suit/">Play The Empty Suit</a>
+            <a class="button" href="https://communityversegames.com/">Return To Homepage</a>
+          </div>
+        </aside>
+      </section>
+    </main>
+  </body>
+</html>
