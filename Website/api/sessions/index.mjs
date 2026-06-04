@@ -43,9 +43,16 @@ export async function GET(request) {
     return jsonResponse({ ok: false, error: "Supabase environment variables are not configured." }, 500);
   }
 
-  const url = new URL(request.url);
-  const profileId = String(url.searchParams.get("profileId") || "").trim();
-  return jsonResponse(await fetchSessions(profileId));
+  try {
+    const url = new URL(request.url);
+    const profileId = String(url.searchParams.get("profileId") || "").trim();
+    return jsonResponse(await fetchSessions(profileId));
+  } catch (error) {
+    return jsonResponse(
+      { ok: false, error: error instanceof Error ? error.message : String(error) },
+      500
+    );
+  }
 }
 
 export async function POST(request) {
@@ -62,5 +69,12 @@ export async function POST(request) {
     return jsonResponse({ ok: false, error: "Session id is required." }, 400);
   }
 
-  return jsonResponse(await upsertSession(body), 201);
+  try {
+    return jsonResponse(await upsertSession(body), 201);
+  } catch (error) {
+    return jsonResponse(
+      { ok: false, error: error instanceof Error ? error.message : String(error) },
+      500
+    );
+  }
 }

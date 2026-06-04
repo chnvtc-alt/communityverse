@@ -46,17 +46,24 @@ export async function GET(request) {
     return jsonResponse({ ok: false, error: "Supabase environment variables are not configured." }, 500);
   }
 
-  const id = getProfileIdFromRequest(request);
-  if (!id) {
-    return jsonResponse({ ok: false, error: "Profile id is required." }, 400);
-  }
+  try {
+    const id = getProfileIdFromRequest(request);
+    if (!id) {
+      return jsonResponse({ ok: false, error: "Profile id is required." }, 400);
+    }
 
-  const profile = await fetchProfile(id);
-  if (!profile) {
-    return jsonResponse({ ok: false, error: "Profile not found." }, 404);
-  }
+    const profile = await fetchProfile(id);
+    if (!profile) {
+      return jsonResponse({ ok: false, error: "Profile not found." }, 404);
+    }
 
-  return jsonResponse(profile);
+    return jsonResponse(profile);
+  } catch (error) {
+    return jsonResponse(
+      { ok: false, error: error instanceof Error ? error.message : String(error) },
+      500
+    );
+  }
 }
 
 export async function PUT(request) {
@@ -74,5 +81,12 @@ export async function PUT(request) {
     return jsonResponse({ ok: false, error: "Expected a JSON profile object." }, 400);
   }
 
-  return jsonResponse(await upsertProfile(id, body));
+  try {
+    return jsonResponse(await upsertProfile(id, body));
+  } catch (error) {
+    return jsonResponse(
+      { ok: false, error: error instanceof Error ? error.message : String(error) },
+      500
+    );
+  }
 }

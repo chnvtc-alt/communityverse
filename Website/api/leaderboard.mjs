@@ -11,9 +11,16 @@ export async function GET(request) {
     return jsonResponse({ ok: false, error: "Supabase environment variables are not configured." }, 500);
   }
 
-  const url = new URL(request.url);
-  const metric = String(url.searchParams.get("metric") || "estimatedSales");
-  const restaurantSlug = String(url.searchParams.get("restaurantSlug") || "");
-  const profiles = await fetchProfiles();
-  return jsonResponse(buildLeaderboard(profiles, metric, restaurantSlug));
+  try {
+    const url = new URL(request.url);
+    const metric = String(url.searchParams.get("metric") || "estimatedSales");
+    const restaurantSlug = String(url.searchParams.get("restaurantSlug") || "");
+    const profiles = await fetchProfiles();
+    return jsonResponse(buildLeaderboard(profiles, metric, restaurantSlug));
+  } catch (error) {
+    return jsonResponse(
+      { ok: false, error: error instanceof Error ? error.message : String(error) },
+      500
+    );
+  }
 }

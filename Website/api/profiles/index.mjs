@@ -38,7 +38,14 @@ export async function GET() {
     return jsonResponse({ ok: false, error: "Supabase environment variables are not configured." }, 500);
   }
 
-  return jsonResponse(await fetchProfiles());
+  try {
+    return jsonResponse(await fetchProfiles());
+  } catch (error) {
+    return jsonResponse(
+      { ok: false, error: error instanceof Error ? error.message : String(error) },
+      500
+    );
+  }
 }
 
 export async function POST(request) {
@@ -55,5 +62,12 @@ export async function POST(request) {
     return jsonResponse({ ok: false, error: "Profile id is required." }, 400);
   }
 
-  return jsonResponse(await upsertProfile(body), 201);
+  try {
+    return jsonResponse(await upsertProfile(body), 201);
+  } catch (error) {
+    return jsonResponse(
+      { ok: false, error: error instanceof Error ? error.message : String(error) },
+      500
+    );
+  }
 }
