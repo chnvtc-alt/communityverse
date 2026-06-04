@@ -7,9 +7,14 @@ function getRequiredEnv(name) {
   return value;
 }
 
+function normalizeSupabaseUrl(value) {
+  const trimmed = String(value || "").trim().replace(/\/+$/, "");
+  return trimmed.replace(/\/rest\/v1$/, "");
+}
+
 export function getSupabaseConfig() {
   return {
-    url: getRequiredEnv("SUPABASE_URL").replace(/\/+$/, ""),
+    url: normalizeSupabaseUrl(getRequiredEnv("SUPABASE_URL")),
     serviceRoleKey: getRequiredEnv("SUPABASE_SERVICE_ROLE_KEY"),
   };
 }

@@ -44,3 +44,5 @@ When you are ready to publish the game:
 4. Deploy the site.
 
 The browser game will keep calling `/api/...`, and those routes will use Supabase instead of the SQLite file on your computer.
+
+If you copy the Supabase API URL from the Data API screen, that also works now because the server will normalize it back to the base project URL automatically.
