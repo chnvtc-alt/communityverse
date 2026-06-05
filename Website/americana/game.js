@@ -108,6 +108,7 @@
     const profile = getProfile();
     const session = getSession();
     const openingCustomers = getDisplayedOpeningCustomers();
+    const safeOpeningCustomers = Array.isArray(openingCustomers) ? openingCustomers : [];
     const introCopy = replayCustomer
       ? `This is an invite-back visit for ${replayCustomer.name}. If you do better, they move up. If you do worse, the newer result replaces the old one.`
       : "Create your restaurant name, answer fast trivia rounds, win your first customer, and keep building from there.";
@@ -139,7 +140,8 @@
           <div class="opening-start-side opening-start-side-wide">
             <div class="opening-guest-stack">
               <div class="opening-guest-grid">
-                ${openingCustomers
+                ${safeOpeningCustomers.length
+                  ? safeOpeningCustomers
                   .map(
                     (customer) => `
                       <article class="opening-guest-card">
@@ -150,7 +152,14 @@
                       </article>
                     `
                   )
-                  .join("")}
+                  .join("")
+                  : `
+                    <article class="opening-guest-card">
+                      <div class="opening-guest-copy" style="grid-column: 1 / -1; min-height: 152px;">
+                        <p class="opening-guest-name" style="max-width: 12ch;">Your first customer is waiting.</p>
+                      </div>
+                    </article>
+                  `}
               </div>
             </div>
           </div>
@@ -197,6 +206,59 @@
         renderAll();
       });
     }
+  }
+
+  function renderSetupFallback() {
+    elements.start.innerHTML = `
+      <div class="opening-start-shell">
+        <div class="opening-start-heading">
+          <h2 class="opening-title">The Americana Diner Game</h2>
+          <p class="copy opening-title-copy">
+            Create your restaurant name, answer fast trivia rounds, win your first customer, and keep building from there.
+          </p>
+        </div>
+
+        <div class="opening-start-grid">
+          <div class="opening-start-hero">
+            <img
+              class="hero-banner-image hero-banner-image-start"
+              src="${restaurant.heroImage}"
+              alt="Americana Diner hero artwork"
+            />
+          </div>
+
+          <div class="opening-start-side opening-start-side-wide">
+            <div class="opening-guest-stack">
+              <div class="opening-guest-grid">
+                <article class="opening-guest-card">
+                  <div class="opening-guest-copy" style="grid-column: 1 / -1; min-height: 152px;">
+                    <p class="opening-guest-name" style="max-width: 12ch;">Your first customer is waiting.</p>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="opening-title-small opening-title-small-bottom">Can You Earn A New Regular Customer?</p>
+
+        <div class="button-row opening-start-actions opening-start-actions-bottom">
+          <button class="button button-hot" id="start-game-button" type="button">START THE GAME</button>
+          <a class="button button-muted" href="../restaurant/?hub=1">Back to Hub</a>
+        </div>
+      </div>`;
+
+    const startButton = document.getElementById("start-game-button");
+    if (startButton) {
+      startButton.addEventListener("click", () => {
+        if (!getProfile()) {
+          core.createGuestProfile();
+        }
+
+        startGame();
+      });
+    }
+
   }
 
   function renderStartPanel() {
@@ -608,9 +670,18 @@
   }
 
   function renderAll() {
-    renderHero(false);
-    renderSetup();
-    renderStartPanel();
+    try {
+      renderHero(false);
+      renderSetup();
+      renderStartPanel();
+    } catch (error) {
+      console.error("Americana render failed, falling back to a simplified start screen.", error);
+      renderHero(false);
+      renderSetupFallback();
+      elements.game.classList.add("hidden");
+      elements.result.classList.add("hidden");
+      elements.start.classList.remove("hidden");
+    }
   }
 
   if (demoMode) {
