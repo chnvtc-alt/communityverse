@@ -20,6 +20,7 @@
     answerTimer: null,
     showProfileForm: false,
     resultBioExpanded: false,
+    showGame: false,
   };
 
   const openingGuestCount = 4;
@@ -105,10 +106,11 @@
 
   function renderSetup() {
     const profile = getProfile();
+    const session = getSession();
     const openingCustomers = getDisplayedOpeningCustomers();
     const introCopy = replayCustomer
       ? `This is an invite-back visit for ${replayCustomer.name}. If you do better, they move up. If you do worse, the newer result replaces the old one.`
-      : "Answer 10 random trivia questions and win one of these guests as a customer for your restaurant. Each game takes less than 5 minutes.";
+      : "Create your restaurant name, answer fast trivia rounds, win your first customer, and keep building from there.";
     elements.start.innerHTML = `
       <div class="opening-start-shell">
         <div class="opening-start-heading">
@@ -170,6 +172,13 @@
                 `
               : ""
           }
+          ${
+            session && !session.completed && !state.showGame
+              ? `
+                <button class="button button-muted" id="resume-game-button" type="button">Continue Current Game</button>
+              `
+              : ""
+          }
         </div>
       </div>`;
 
@@ -180,19 +189,20 @@
 
       startGame();
     });
+
+    const resumeButton = document.getElementById("resume-game-button");
+    if (resumeButton) {
+      resumeButton.addEventListener("click", () => {
+        state.showGame = true;
+        renderAll();
+      });
+    }
   }
 
   function renderStartPanel() {
     const session = getSession();
-    if (session && !session.completed) {
-      elements.start.classList.add("hidden");
-      elements.game.classList.remove("hidden");
-      elements.result.classList.add("hidden");
-      renderGamePanel();
-      return;
-    }
-
     if (session && session.completed) {
+      state.showGame = false;
       elements.start.classList.add("hidden");
       elements.game.classList.add("hidden");
       elements.result.classList.remove("hidden");
@@ -200,9 +210,18 @@
       return;
     }
 
+    if (session && !session.completed && state.showGame) {
+      elements.start.classList.add("hidden");
+      elements.game.classList.remove("hidden");
+      elements.result.classList.add("hidden");
+      renderGamePanel();
+      return;
+    }
+
     elements.start.classList.remove("hidden");
     elements.game.classList.add("hidden");
     elements.result.classList.add("hidden");
+    state.showGame = false;
   }
 
   function startGame() {
@@ -217,6 +236,7 @@
     state.feedback = null;
     state.isLocked = false;
     state.resultBioExpanded = false;
+    state.showGame = true;
     renderAll();
     renderGamePanel();
   }
