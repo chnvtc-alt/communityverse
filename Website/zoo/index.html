@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Zoo Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;700&family=Manrope:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css?v=20260416a" />
+  </head>
+  <body>
+    <div class="shell">
+      <section class="screen screen-active" id="splash-screen">
+        <div class="hero-card">
+          <p class="eyebrow">Community Verse Games</p>
+          <h1>The Zoo Game</h1>
+          <p class="hero-copy">
+            Build the most exciting zoo in the city by bidding on animals,
+            exhibits, and attractions while competing against rival AI owners.
+          </p>
+          <div class="hero-guide">
+            <div class="hero-guide-block">
+              <h3>How To Play</h3>
+              <p>
+                Each round reveals cards one by one. Some are zoo cards that
+                can be won in auctions, and some are publicity cards that send
+                visitors to the zoo matching their preferences best.
+              </p>
+              <p>
+                Your zoo grows through animals, themed attractions, and
+                publicity. At the end of each round, you gain natural visitors,
+                earn money, pay upkeep, and prepare for the next reveal. The
+                zoo with the most animals gains 25 extra visitors, and second
+                place gains 10.
+              </p>
+            </div>
+            <div class="hero-guide-block">
+              <h3>Basic Strategy</h3>
+              <p>
+                Exhibits, staff, and infrastructure can be worth very different
+                amounts to different zoos depending on visitor gain, upkeep,
+                how many categories they add for publicity, and how quickly
+                they pay for themselves.
+              </p>
+              <p>
+                Do you know when to stop bidding? If you spend too much now,
+                you may run low on cash just before a blockbuster exhibit
+                appears. Building the right themes while protecting your cash
+                flow is a big part of the strategy.
+              </p>
+            </div>
+          </div>
+          <div class="hero-form">
+            <label for="player-zoo-name">Name Your Zoo</label>
+            <input id="player-zoo-name" class="hero-input" type="text" maxlength="40" placeholder="Your Zoo Name" value="Your Zoo" />
+          </div>
+          <div class="hero-actions">
+            <button id="start-game-button" class="primary-button">
+              Enter Office
+            </button>
+            <button id="show-tutorial-button" class="secondary-button">
+              How To Play
+            </button>
+            <a href="./character-roster.html" class="secondary-button">
+              Character Roster
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="draft-screen">
+        <section class="panel standings-panel draft-standings-panel">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Standings</p>
+              <h3>Zoo Scores</h3>
+            </div>
+          </div>
+          <div id="draft-standings" class="rival-list standings-list"></div>
+        </section>
+
+        <div class="draft-layout draft-layout-wide">
+          <section class="panel draft-panel">
+            <p class="eyebrow">Founding Collection</p>
+            <h2>Choose Starter Animal Packages</h2>
+            <p>
+              Choose starter animal packages to populate your zoo before the first auction. Each package brings a different set of animals but the same starting visitor value, so the choice is about theme and synergy rather than raw strength.
+            </p>
+            <div class="draft-summary">
+              <div class="chip">Packages Left <strong id="draft-picks-left">2</strong></div>
+              <div class="chip">Starting Cash <strong id="draft-cash-preview">$100,000</strong></div>
+              <div class="chip">Current Turn <strong id="draft-turn-label">You</strong></div>
+            </div>
+            <div id="draft-pool" class="draft-pool"></div>
+            <div class="hero-actions">
+              <button id="finish-draft-button" class="primary-button">
+                Finish Founding Packages
+              </button>
+            </div>
+          </section>
+
+          <aside class="panel draft-side-panel draft-side-panel-wide">
+            <div>
+              <p class="eyebrow">Your Picks</p>
+              <div id="draft-player-picks" class="collection-list"></div>
+            </div>
+            <div class="draft-rivals">
+              <p class="eyebrow">Rival Starters</p>
+              <div id="draft-ai-picks" class="collection-list"></div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="screen" id="office-screen">
+        <div class="office-layout office-layout-simple">
+          <div class="office-panel">
+            <p class="eyebrow">Office</p>
+            <h2>Zoo Director Desk</h2>
+            <p id="office-goal-copy">
+              Review your zoo status, then open the zoo console to run the next round. The first zoo to 15,000 visitors wins.
+            </p>
+            <div class="office-actions">
+              <button id="open-console-button" class="primary-button">
+                Open Zoo Console
+              </button>
+              <button id="open-tutorial-button" class="secondary-button">
+                View Tutorial Notes
+              </button>
+            </div>
+          </div>
+
+          <aside class="office-side-panel office-owners-panel">
+            <h3>Zoo Owners</h3>
+            <div id="office-ai-summary" class="ai-summary-list"></div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="screen" id="game-screen">
+        <header class="top-bar">
+          <div>
+            <p class="eyebrow">Live Auction</p>
+            <h2>The Zoo Game</h2>
+          </div>
+          <div class="top-stats">
+            <div class="chip">
+              Round <strong id="round-display">1</strong>
+            </div>
+            <div class="chip">Cash <strong id="player-money">$18</strong></div>
+            <div class="chip">
+              Visitors <strong id="player-crowd">0</strong>/15,000
+            </div>
+          </div>
+        </header>
+
+        <section class="panel standings-panel">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Standings</p>
+              <h3>Zoo Scores</h3>
+            </div>
+          </div>
+          <div id="ai-list" class="rival-list standings-list"></div>
+        </section>
+
+        <main class="game-layout">
+          <section class="panel auction-panel">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">Round Reveal</p>
+                <h3 id="auction-title">Round 1</h3>
+              </div>
+              <div class="auction-badge" id="auction-type-badge">Animal</div>
+            </div>
+
+
+            <article class="auction-card" id="auction-card"></article>
+
+            <div id="preference-battle" class="panel preference-battle hidden"></div>
+
+            <div id="bid-panel" class="bid-panel">
+              <div class="bid-stat">
+                Highest Bid
+                <strong id="highest-bid">$0</strong>
+              </div>
+              <div class="bid-stat">
+                Highest Bidder
+                <strong id="highest-bidder">None</strong>
+              </div>
+              <div class="bid-stat">
+                Minimum Next Bid
+                <strong id="minimum-bid">$1,000</strong>
+              </div>
+            </div>
+
+            <div id="auction-actions" class="action-row">
+              <button id="start-auction-button" class="primary-button">
+                Reveal Next Card
+              </button>
+            </div>
+
+            <div id="fixed-theme-panel" class="theme-choice-panel hidden">
+              <p class="eyebrow">Choose A Theme</p>
+              <div id="fixed-theme-options" class="theme-choice-list"></div>
+            </div>
+
+            <div id="fixed-price-actions" class="action-row hidden">
+              <button id="buy-fixed-button" class="primary-button">
+                Buy
+              </button>
+              <button id="pass-fixed-button" class="secondary-button">
+                Pass Offer
+              </button>
+            </div>
+
+            <div id="auction-only-actions" class="action-row">
+              <button id="bid-one-button" class="secondary-button">
+                Bid +$1,000
+              </button>
+              <button id="bid-three-button" class="secondary-button">
+                Bid +$3,000
+              </button>
+              <button id="pass-button" class="primary-button danger-button">
+                Pass Auction
+              </button>
+            </div>
+
+            <div class="log-panel">
+              <p class="eyebrow">Auction Feed</p>
+              <ul id="auction-log"></ul>
+            </div>
+          </section>
+
+          <section class="panel zoo-panel">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">Your Zoo</p>
+                <h3>Collection</h3>
+              </div>
+              <button id="return-office-button" class="ghost-button">
+                Return To Office
+              </button>
+            </div>
+
+            <div class="zoo-score-card">
+              <div>
+                <span class="stat-label">Estimated Round Revenue</span>
+                <strong id="player-crowd-value">$0</strong>
+              </div>
+              <div>
+                <span class="stat-label">Expected profit</span>
+                <strong id="player-income-value">$0</strong>
+              </div>
+            </div>
+<div class="map-launch-card">
+  <div>
+    <h4>Zoo Map</h4>
+    <p id="player-map-summary" class="map-summary"></p>
+    <p class="map-help">Plan your zoo on a full board with named districts, path connections, and dedicated build spots. Place cards where they fit best to earn modest layout bonuses.</p>
+  </div>
+  <button id="open-map-button" class="secondary-button">
+    Open Full Map
+  </button>
+</div>
+
+<div class="inventory-panel">
+
+              <h4>Animal Inventory</h4>
+              <div id="player-inventory" class="inventory-list"></div>
+            </div>
+
+            <div class="collection-columns">
+              <div>
+                <h4>Exhibits & Infrastructure</h4>
+                <div id="player-assets" class="collection-list"></div>
+              </div>
+              <div>
+                <h4>Staff</h4>
+                <div id="player-staff" class="collection-list"></div>
+              </div>
+              <div>
+                <h4>Publicity</h4>
+                <div id="player-people" class="collection-list"></div>
+              </div>
+            </div>
+
+            <div class="preference-panel">
+              <h4>Waiting People Cards</h4>
+              <div id="people-market" class="collection-list"></div>
+            </div>
+          </section>
+
+<div id="zoo-map-overlay" class="map-overlay hidden">
+  <div class="map-overlay-panel panel">
+    <div class="section-header map-overlay-header">
+      <div>
+        <p class="eyebrow">Zoo Planning</p>
+        <h3>Full Zoo Map</h3>
+        <p id="player-map-summary-full" class="map-summary"></p>
+        <p class="map-help">Each spot belongs to one main district, and connector spots can also borrow a smaller bonus from a neighboring district. This first map version is meant to shape identity and efficiency, not flood the zoo with free points.</p>
+      </div>
+      <button id="close-map-button" class="ghost-button">
+        Back To Collection
+      </button>
+    </div>
+    <div class="full-map-layout">
+      <div id="player-map-board" class="map-board"></div>
+      <aside class="map-sidebar panel">
+        <h4>Place Your Exhibits</h4>
+        <p class="map-sidebar-copy">Assign each exhibit or infrastructure card to a named build spot. Main district matches matter most, and connector spots can also pick up a smaller bonus from the neighboring district.</p>
+        <div id="player-map-assignments" class="map-assignment-list"></div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+</main>
+      </section>
+    </div>
+
+    <dialog id="tutorial-dialog">
+      <div class="dialog-body">
+        <p class="eyebrow">Tutorial</p>
+        <h3>How To Play</h3>
+        <ol>
+          <li>Start from the office screen, then open the zoo console.</li>
+          <li>
+            Each round reveals 8 random cards one by one, with a changing mix
+            of exhibit cards, infrastructure, staff, and publicity cards.
+          </li>
+          <li>
+            Exhibit cards and infrastructure are auctioned as they appear. Bid against two AI rivals
+            or pass when the price gets too high.
+          </li>
+          <li>
+            Each zoo gains natural visitors every round, and won cards add one-time visitor growth.
+          </li>
+          <li>
+            Revenue is based on a crowd-sensitive rating system, then upkeep is subtracted.
+          </li>
+          <li>
+            The first zoo to reach 15,000 total visitors wins the game.
+          </li>
+        </ol>
+        <button id="close-tutorial-button" class="primary-button">
+          Close
+        </button>
+      </div>
+    </dialog>
+
+    <dialog id="round-summary-dialog">
+      <div class="dialog-body">
+        <p class="eyebrow">Round Summary</p>
+        <h3 id="summary-title">Round Complete</h3>
+        <div id="summary-content" class="summary-content"></div>
+        <div class="hero-actions">
+          <button id="take-loan-button" class="secondary-button hidden">
+            Take City Loan
+          </button>
+          <button id="repay-loan-button" class="secondary-button hidden">
+            Repay City Loan
+          </button>
+          <button id="next-round-button" class="primary-button">
+            Continue
+          </button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="game-over-dialog">
+      <div class="dialog-body">
+        <p class="eyebrow">Final Results</p>
+        <h3 id="game-over-title">The crowds have spoken</h3>
+        <div id="game-over-content" class="summary-content"></div>
+        <button id="restart-game-button" class="primary-button">
+          Start New Game
+        </button>
+      </div>
+    </dialog>
+
+    <script src="./script.js?v=20260503a"></script>
+  </body>
+</html>

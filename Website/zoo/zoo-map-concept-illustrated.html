@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zoo Map Concept Illustrated</title>
+  <style>
+    :root {
+      --paper: #efe3c3;
+      --panel: rgba(252, 246, 232, 0.95);
+      --ink: #2d2a22;
+      --muted: #655f53;
+      --line: rgba(76, 66, 50, 0.18);
+      --forest: #7d9467;
+      --forest-deep: #5f7550;
+      --grass: #b8b07a;
+      --safari: #c8b07a;
+      --water: #7fb6c2;
+      --water-deep: #4b8497;
+      --marsh: #8d9470;
+      --plaza: #d6c39a;
+      --intl: #d5c48d;
+      --kids: #ceb77b;
+      --wildcard: #b8ad95;
+      --path: #d9c29a;
+      --path-edge: #a68858;
+      --spot: #f8f1dc;
+      --spot-edge: rgba(88, 74, 48, 0.32);
+      --accent: #28573f;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 28px;
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        radial-gradient(circle at top left, rgba(232, 201, 121, 0.32), transparent 22%),
+        radial-gradient(circle at bottom right, rgba(108, 140, 88, 0.24), transparent 28%),
+        linear-gradient(180deg, #f8f1de 0%, var(--paper) 100%);
+    }
+
+    .shell {
+      max-width: 1640px;
+      margin: 0 auto;
+      display: grid;
+      gap: 18px;
+    }
+
+    .header,
+    .map-shell,
+    .notes {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: 0 22px 56px rgba(45, 40, 26, 0.12);
+    }
+
+    .header {
+      padding: 24px 28px;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 0.82rem;
+      font-family: system-ui, sans-serif;
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 3.9rem);
+      line-height: 0.95;
+    }
+
+    .header p {
+      margin: 14px 0 0;
+      max-width: 86ch;
+      color: var(--muted);
+      line-height: 1.65;
+      font-family: system-ui, sans-serif;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(350px, 0.75fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .map-shell {
+      padding: 18px;
+    }
+
+    .map-frame {
+      position: relative;
+      min-height: 1120px;
+      border-radius: 30px;
+      overflow: hidden;
+      border: 1px solid rgba(76, 66, 50, 0.14);
+      background:
+        radial-gradient(circle at 20% 16%, rgba(255, 249, 230, 0.65), transparent 18%),
+        radial-gradient(circle at 82% 18%, rgba(225, 245, 237, 0.22), transparent 14%),
+        linear-gradient(180deg, #ede0bc 0%, #dccda6 100%);
+    }
+
+    .terrain {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(circle at 18% 24%, rgba(108, 133, 79, 0.18), transparent 10%),
+        radial-gradient(circle at 71% 15%, rgba(126, 157, 111, 0.20), transparent 11%),
+        radial-gradient(circle at 75% 78%, rgba(88, 109, 72, 0.16), transparent 12%),
+        radial-gradient(circle at 21% 78%, rgba(89, 110, 73, 0.16), transparent 12%),
+        radial-gradient(circle at 44% 55%, rgba(240, 229, 195, 0.48), transparent 18%),
+        repeating-radial-gradient(circle at center, rgba(118, 112, 86, 0.025) 0 2px, transparent 2px 10px),
+        repeating-linear-gradient(35deg, rgba(119, 107, 77, 0.03) 0 8px, transparent 8px 18px),
+        linear-gradient(180deg, rgba(255,255,255,0.12), rgba(66,56,38,0.04));
+      filter: saturate(0.95) contrast(1.02);
+    }
+
+    .map-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    .tree-border {
+      position: absolute;
+      inset: 14px;
+      border-radius: 28px;
+      border: 18px solid rgba(88, 110, 67, 0.78);
+      box-shadow: inset 0 0 0 2px rgba(56, 79, 48, 0.24);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .district-label {
+      position: absolute;
+      z-index: 6;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(250, 243, 227, 0.90);
+      border: 1px solid rgba(92, 77, 52, 0.16);
+      box-shadow: 0 10px 22px rgba(39, 35, 25, 0.10);
+      max-width: 220px;
+    }
+
+    .district-label h2 {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    .district-label p {
+      margin: 7px 0 0;
+      font-family: system-ui, sans-serif;
+      font-size: 0.77rem;
+      line-height: 1.35;
+      color: var(--muted);
+    }
+
+    .leader {
+      position: absolute;
+      z-index: 5;
+      border-top: 2px dotted rgba(106, 88, 57, 0.55);
+      transform-origin: left center;
+      opacity: 0.9;
+    }
+
+    .entry-label { left: 60px; top: 92px; }
+    .entry-line { left: 172px; top: 171px; width: 54px; transform: rotate(18deg); }
+
+    .international-label { left: 352px; top: 72px; }
+    .international-line { left: 470px; top: 173px; width: 68px; transform: rotate(18deg); }
+
+    .waterfront-label { right: 114px; top: 72px; }
+    .waterfront-line { right: 238px; top: 180px; width: 72px; transform: rotate(-18deg); }
+
+    .kids-label { left: 72px; top: 462px; }
+    .kids-line { left: 175px; top: 557px; width: 55px; transform: rotate(10deg); }
+
+    .safari-label { left: 350px; top: 430px; }
+    .safari-line { left: 468px; top: 523px; width: 56px; transform: rotate(12deg); }
+
+    .reptile-label { right: 98px; top: 422px; }
+    .reptile-line { right: 240px; top: 526px; width: 66px; transform: rotate(-12deg); }
+
+    .forest-label { left: 122px; bottom: 144px; }
+    .forest-line { left: 226px; bottom: 230px; width: 66px; transform: rotate(-18deg); }
+
+    .wildcard-label { right: 138px; bottom: 146px; }
+    .wildcard-line { right: 240px; bottom: 232px; width: 76px; transform: rotate(18deg); }
+
+    .lake-label {
+      left: 520px;
+      top: 644px;
+      transform: translateX(-50%);
+      font-family: system-ui, sans-serif;
+      font-size: 0.82rem;
+      color: #2d5966;
+      background: rgba(229, 244, 248, 0.90);
+      text-align: center;
+      max-width: 220px;
+    }
+
+    .spot {
+      position: absolute;
+      z-index: 7;
+      width: 31px;
+      height: 31px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: var(--spot);
+      border: 2px solid var(--spot-edge);
+      color: #273325;
+      font: 800 0.86rem/1 system-ui, sans-serif;
+      box-shadow: 0 8px 18px rgba(37, 35, 25, 0.16);
+    }
+
+    .spot::after {
+      content: attr(data-short);
+      position: absolute;
+      top: 35px;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      font: 700 0.67rem/1.1 system-ui, sans-serif;
+      color: #3d4a3d;
+      background: rgba(250, 243, 228, 0.88);
+      border: 1px solid rgba(89, 76, 53, 0.10);
+      border-radius: 10px;
+      padding: 3px 6px;
+      box-shadow: 0 4px 12px rgba(38, 35, 27, 0.06);
+    }
+
+    .spot.entry { background: #f2e6c9; }
+    .spot.international { background: #f3e7c5; }
+    .spot.waterfront { background: #e8f5f7; }
+    .spot.kids { background: #f8e8c0; }
+    .spot.safari { background: #f2dfb4; }
+    .spot.reptile { background: #e7edd6; }
+    .spot.forest { background: #ebf3e5; }
+    .spot.wildcard { background: #ece4d6; }
+
+    .legend,
+    .notes {
+      padding: 24px;
+    }
+
+    .legend h3,
+    .notes h3 {
+      margin: 0 0 10px;
+      font-size: 1.45rem;
+    }
+
+    .legend p,
+    .notes p,
+    .notes li {
+      margin: 0;
+      color: var(--muted);
+      font-family: system-ui, sans-serif;
+      line-height: 1.6;
+    }
+
+    .legend-intro {
+      margin-bottom: 16px;
+    }
+
+    .legend-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .legend-card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+      background: rgba(255, 250, 240, 0.88);
+    }
+
+    .legend-card h4 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+    }
+
+    .legend-list {
+      display: grid;
+      gap: 6px;
+      font: 600 0.82rem/1.35 system-ui, sans-serif;
+      color: #3a493d;
+    }
+
+    .legend-list span {
+      display: flex;
+      gap: 8px;
+      align-items: baseline;
+    }
+
+    .legend-num {
+      width: 22px;
+      display: inline-block;
+      color: var(--accent);
+      font-weight: 900;
+      flex: 0 0 auto;
+    }
+
+    .notes ul {
+      margin: 12px 0 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .note-callout {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(47, 111, 82, 0.18);
+      background: rgba(228, 243, 232, 0.9);
+      color: #244837;
+      font-family: system-ui, sans-serif;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 1180px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 820px) {
+      body { padding: 16px; }
+      .map-frame { min-height: 1300px; }
+      .legend-grid { grid-template-columns: 1fr; }
+      .spot::after { display: none; }
+      .leader { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="header">
+      <p class="eyebrow">Zoo Map Concept</p>
+      <h1>Illustrated Visitor Map Direction</h1>
+      <p>
+        This version pushes much closer to a true zoo-visitor map. The districts are textured instead of flat, the paths feel more like roads and trails, the lake reads as part of the terrain, and leader lines let the labels sit off to the side so the map can stay readable as more numbered build spots are added.
+      </p>
+    </section>
+
+    <div class="layout">
+      <section class="map-shell">
+        <div class="map-frame">
+          <div class="terrain"></div>
+          <svg class="map-svg" viewBox="0 0 1200 1120" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <filter id="softShadow2" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="rgba(38,35,25,0.12)"/>
+              </filter>
+              <pattern id="forestDots" width="28" height="28" patternUnits="userSpaceOnUse">
+                <circle cx="7" cy="8" r="3.8" fill="rgba(82,106,66,0.28)"/>
+                <circle cx="18" cy="17" r="4.2" fill="rgba(94,118,73,0.24)"/>
+                <circle cx="23" cy="7" r="2.8" fill="rgba(104,128,82,0.18)"/>
+              </pattern>
+              <pattern id="grassTexture" width="36" height="36" patternUnits="userSpaceOnUse">
+                <path d="M4 26 C10 16, 12 12, 14 4" stroke="rgba(113,122,72,0.18)" stroke-width="2" fill="none"/>
+                <path d="M20 30 C24 22, 28 14, 31 6" stroke="rgba(113,122,72,0.14)" stroke-width="2" fill="none"/>
+              </pattern>
+            </defs>
+
+            <path d="M128 150 C155 96, 230 66, 308 70 C367 73, 416 101, 438 152 C467 217, 449 302, 387 342 C326 380, 223 389, 155 342 C93 299, 90 217, 128 150 Z" fill="rgba(214,195,154,0.84)"/>
+            <path d="M380 94 C449 45, 605 35, 733 82 C824 115, 865 182, 854 255 C843 326, 782 374, 694 390 C595 408, 461 394, 390 344 C320 294, 309 145, 380 94 Z" fill="rgba(213,196,141,0.72)"/>
+            <path d="M859 120 C927 92, 1035 104, 1089 167 C1144 231, 1147 335, 1095 413 C1046 486, 962 514, 881 492 C801 470, 760 397, 760 311 C760 220, 791 148, 859 120 Z" fill="rgba(159,208,220,0.74)"/>
+            <path d="M98 487 C136 428, 221 404, 299 422 C359 436, 404 483, 401 553 C398 625, 346 685, 273 704 C196 724, 110 696, 75 640 C44 590, 53 556, 98 487 Z" fill="rgba(206,183,123,0.68)"/>
+            <path d="M410 431 C481 391, 635 390, 731 432 C799 462, 827 516, 814 582 C800 649, 737 700, 654 719 C554 741, 423 724, 370 668 C323 618, 330 476, 410 431 Z" fill="rgba(200,176,122,0.68)"/>
+            <path d="M853 469 C921 433, 1031 440, 1082 487 C1129 530, 1142 618, 1109 691 C1072 770, 987 809, 899 789 C812 769, 756 708, 754 621 C753 552, 784 505, 853 469 Z" fill="rgba(170,178,139,0.74)"/>
+            <path d="M178 731 C249 672, 379 656, 486 692 C570 722, 611 785, 606 858 C600 946, 527 1017, 412 1033 C290 1049, 173 999, 127 924 C88 862, 95 799, 178 731 Z" fill="rgba(125,148,103,0.74)"/>
+            <path d="M721 813 C793 772, 917 768, 1016 801 C1090 826, 1127 874, 1118 934 C1107 1006, 1031 1045, 941 1047 C838 1049, 723 1015, 675 960 C623 899, 647 854, 721 813 Z" fill="rgba(184,173,149,0.78)"/>
+
+            <path d="M124 102 L1019 102 C1076 104, 1123 118, 1145 157 C1161 186, 1161 228, 1146 255 C1111 319, 1015 304, 936 298 C874 293, 825 303, 787 341 C753 375, 741 421, 762 458 C790 509, 864 532, 941 544 C1017 556, 1111 559, 1143 611 C1160 638, 1160 676, 1145 704 C1111 766, 1014 759, 932 767 C858 774, 804 798, 777 843 C754 879, 757 923, 789 956 C835 1002, 910 1007, 975 1011 C1022 1014, 1051 1028, 1050 1052 C1048 1077, 1017 1088, 977 1088 L201 1088 C145 1088, 102 1078, 77 1051 C53 1024, 53 986, 79 955 C129 897, 239 908, 309 872 C347 852, 367 824, 365 790 C363 752, 329 731, 281 724 C208 714, 109 726, 69 683 C47 660, 44 622, 60 591 C97 521, 212 539, 294 521 C356 507, 395 477, 410 440 C423 406, 414 370, 389 344 C334 286, 189 297, 103 279 C53 269, 27 239, 34 202 C43 155, 76 118, 124 102 Z"
+                  fill="none" stroke="var(--path)" stroke-width="42" stroke-linecap="round" stroke-linejoin="round" filter="url(#softShadow2)"/>
+            <path d="M124 102 L1019 102 C1076 104, 1123 118, 1145 157 C1161 186, 1161 228, 1146 255 C1111 319, 1015 304, 936 298 C874 293, 825 303, 787 341 C753 375, 741 421, 762 458 C790 509, 864 532, 941 544 C1017 556, 1111 559, 1143 611 C1160 638, 1160 676, 1145 704 C1111 766, 1014 759, 932 767 C858 774, 804 798, 777 843 C754 879, 757 923, 789 956 C835 1002, 910 1007, 975 1011 C1022 1014, 1051 1028, 1050 1052 C1048 1077, 1017 1088, 977 1088 L201 1088 C145 1088, 102 1078, 77 1051 C53 1024, 53 986, 79 955 C129 897, 239 908, 309 872 C347 852, 367 824, 365 790 C363 752, 329 731, 281 724 C208 714, 109 726, 69 683 C47 660, 44 622, 60 591 C97 521, 212 539, 294 521 C356 507, 395 477, 410 440 C423 406, 414 370, 389 344 C334 286, 189 297, 103 279 C53 269, 27 239, 34 202 C43 155, 76 118, 124 102 Z"
+                  fill="none" stroke="var(--path-edge)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity="0.72"/>
+
+            <path d="M355 276 C429 323, 487 377, 541 446 C584 502, 612 557, 628 621"
+                  fill="none" stroke="var(--path)" stroke-width="24" stroke-linecap="round"/>
+            <path d="M633 197 C603 270, 583 350, 579 442 C575 528, 587 618, 617 719"
+                  fill="none" stroke="var(--path)" stroke-width="22" stroke-linecap="round"/>
+            <path d="M808 312 C737 361, 689 419, 663 480 C641 533, 630 594, 629 660"
+                  fill="none" stroke="var(--path)" stroke-width="22" stroke-linecap="round"/>
+            <path d="M320 696 C390 717, 458 742, 520 788"
+                  fill="none" stroke="var(--path)" stroke-width="22" stroke-linecap="round"/>
+            <path d="M716 781 C783 768, 851 776, 925 820"
+                  fill="none" stroke="var(--path)" stroke-width="22" stroke-linecap="round"/>
+            <path d="M351 817 C418 846, 492 868, 564 866"
+                  fill="none" stroke="var(--path)" stroke-width="18" stroke-linecap="round"/>
+            <path d="M717 930 C784 918, 855 921, 924 953"
+                  fill="none" stroke="var(--path)" stroke-width="18" stroke-linecap="round"/>
+
+            <path d="M504 550 C559 520, 651 521, 700 561 C754 607, 750 699, 684 739 C617 778, 520 781, 459 741 C393 697, 398 606, 504 550 Z" fill="var(--water)" opacity="0.96"/>
+            <path d="M516 578 C556 553, 622 553, 666 585 C710 617, 713 678, 673 714 C631 749, 566 750, 522 721 C478 691, 474 620, 516 578 Z" fill="var(--water-deep)" opacity="0.54"/>
+            <path d="M516 621 C562 606, 628 607, 668 628" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="8" stroke-linecap="round"/>
+            <path d="M465 760 C519 747, 578 748, 629 760" fill="none" stroke="rgba(255,255,255,0.32)" stroke-width="7" stroke-linecap="round"/>
+
+            <path d="M93 144 C174 122, 273 127, 359 170" fill="none" stroke="url(#forestDots)" stroke-width="1" opacity="0"/>
+            <path d="M98 487 C131 454, 170 437, 235 425" fill="none" stroke="url(#grassTexture)" stroke-width="1" opacity="0"/>
+          </svg>
+
+          <div class="tree-border"></div>
+
+          <div class="district-label entry-label"><h2>Entry Plaza</h2><p>Guest services, first impressions, and polished arrival energy.</p></div>
+          <div class="leader entry-line"></div>
+
+          <div class="district-label international-label"><h2>International Promenade</h2><p>Country-tied exhibits, cultural features, and globally themed stops.</p></div>
+          <div class="leader international-line"></div>
+
+          <div class="district-label waterfront-label"><h2>Wild Waterfront</h2><p>Aquariums, penguins, glass-bottom rides, and cold-water stars.</p></div>
+          <div class="leader waterfront-line"></div>
+
+          <div class="district-label kids-label"><h2>Kids Cove</h2><p>Gentle encounters, petting areas, playful performers, and family food.</p></div>
+          <div class="leader kids-line"></div>
+
+          <div class="district-label safari-label"><h2>Safari Plains</h2><p>Ride-through icons, savanna pull, and the major animal crowd-pleasers.</p></div>
+          <div class="leader safari-line"></div>
+
+          <div class="district-label reptile-label"><h2>Reptile Ridge</h2><p>Serpents, swamps, dim habitats, and intense specialist spaces.</p></div>
+          <div class="leader reptile-line"></div>
+
+          <div class="district-label forest-label"><h2>Mystery Forest</h2><p>Primates, woodland trails, cryptids, canines, and story-rich habitats.</p></div>
+          <div class="leader forest-line"></div>
+
+          <div class="district-label wildcard-label"><h2>Expansion Grounds</h2><p>Wildcard build pads for overflow, mixed themes, and future growth.</p></div>
+          <div class="leader wildcard-line"></div>
+
+          <div class="district-label lake-label">Central Lake and Boat Route</div>
+
+          <div class="spot entry" style="left: 118px; top: 228px;" data-short="Gate">1</div>
+          <div class="spot entry" style="left: 176px; top: 192px;" data-short="Tickets">2</div>
+          <div class="spot entry" style="left: 255px; top: 173px;" data-short="Feed">3</div>
+          <div class="spot entry" style="left: 317px; top: 214px;" data-short="Garden">4</div>
+          <div class="spot entry" style="left: 286px; top: 290px;" data-short="Square">5</div>
+
+          <div class="spot international" style="left: 432px; top: 183px;" data-short="China">6</div>
+          <div class="spot international" style="left: 510px; top: 157px;" data-short="India">7</div>
+          <div class="spot international" style="left: 596px; top: 153px;" data-short="Aussie">8</div>
+          <div class="spot international" style="left: 676px; top: 181px;" data-short="Brazil">9</div>
+          <div class="spot international" style="left: 724px; top: 240px;" data-short="Pandas">10</div>
+          <div class="spot international" style="left: 631px; top: 287px;" data-short="Galap">11</div>
+          <div class="spot international" style="left: 540px; top: 300px;" data-short="Arctic">12</div>
+          <div class="spot international" style="left: 442px; top: 262px;" data-short="World">13</div>
+
+          <div class="spot waterfront" style="left: 870px; top: 224px;" data-short="Pier">14</div>
+          <div class="spot waterfront" style="left: 949px; top: 200px;" data-short="Reef">15</div>
+          <div class="spot waterfront" style="left: 1023px; top: 220px;" data-short="Whale">16</div>
+          <div class="spot waterfront" style="left: 1042px; top: 309px;" data-short="Lagoon">17</div>
+          <div class="spot waterfront" style="left: 982px; top: 373px;" data-short="Polar">18</div>
+          <div class="spot waterfront" style="left: 900px; top: 397px;" data-short="Otter">19</div>
+          <div class="spot waterfront" style="left: 832px; top: 348px;" data-short="Boats">20</div>
+
+          <div class="spot kids" style="left: 145px; top: 565px;" data-short="Barn">21</div>
+          <div class="spot kids" style="left: 226px; top: 533px;" data-short="Stage">22</div>
+          <div class="spot kids" style="left: 302px; top: 566px;" data-short="Cove">23</div>
+          <div class="spot kids" style="left: 305px; top: 635px;" data-short="Snacks">24</div>
+          <div class="spot kids" style="left: 228px; top: 661px;" data-short="Petting">25</div>
+          <div class="spot kids" style="left: 140px; top: 631px;" data-short="Tortoise">26</div>
+
+          <div class="spot safari" style="left: 453px; top: 503px;" data-short="Jeep">27</div>
+          <div class="spot safari" style="left: 533px; top: 476px;" data-short="Lions">28</div>
+          <div class="spot safari" style="left: 615px; top: 486px;" data-short="Giraffe">29</div>
+          <div class="spot safari" style="left: 688px; top: 529px;" data-short="Monorail">30</div>
+          <div class="spot safari" style="left: 646px; top: 592px;" data-short="Eleph">31</div>
+          <div class="spot safari" style="left: 548px; top: 594px;" data-short="Savanna">32</div>
+          <div class="spot safari" style="left: 452px; top: 560px;" data-short="Bears">33</div>
+
+          <div class="spot reptile" style="left: 848px; top: 561px;" data-short="House">34</div>
+          <div class="spot reptile" style="left: 924px; top: 535px;" data-short="Swamp">35</div>
+          <div class="spot reptile" style="left: 1000px; top: 570px;" data-short="Grill">36</div>
+          <div class="spot reptile" style="left: 1024px; top: 642px;" data-short="Fang">37</div>
+          <div class="spot reptile" style="left: 961px; top: 696px;" data-short="Shadows">38</div>
+          <div class="spot reptile" style="left: 876px; top: 683px;" data-short="Serpent">39</div>
+
+          <div class="spot forest" style="left: 238px; top: 835px;" data-short="Primates">40</div>
+          <div class="spot forest" style="left: 335px; top: 786px;" data-short="Howl">41</div>
+          <div class="spot forest" style="left: 434px; top: 808px;" data-short="Bears">42</div>
+          <div class="spot forest" style="left: 498px; top: 867px;" data-short="Birds">43</div>
+          <div class="spot forest" style="left: 446px; top: 940px;" data-short="Cryptid">44</div>
+          <div class="spot forest" style="left: 334px; top: 948px;" data-short="Unicorn">45</div>
+          <div class="spot forest" style="left: 242px; top: 896px;" data-short="Baboon">46</div>
+
+          <div class="spot wildcard" style="left: 792px; top: 882px;" data-short="Flex A">47</div>
+          <div class="spot wildcard" style="left: 870px; top: 846px;" data-short="Flex B">48</div>
+          <div class="spot wildcard" style="left: 955px; top: 855px;" data-short="Flex C">49</div>
+          <div class="spot wildcard" style="left: 1033px; top: 902px;" data-short="Flex D">50</div>
+          <div class="spot wildcard" style="left: 991px; top: 964px;" data-short="Flex E">51</div>
+          <div class="spot wildcard" style="left: 895px; top: 972px;" data-short="Flex F">52</div>
+          <div class="spot wildcard" style="left: 799px; top: 940px;" data-short="Flex G">53</div>
+        </div>
+      </section>
+
+      <div style="display:grid; gap:18px;">
+        <aside class="legend">
+          <h3>Named Build Spots</h3>
+          <p class="legend-intro">This concept keeps the numbered placement pads from the organic version, but presents them on a much richer illustrated base so the park feels closer to a real visitor map. The side legend carries the full names while the map stays readable.</p>
+          <div class="legend-grid">
+            <div class="legend-card">
+              <h4>Entry Plaza</h4>
+              <div class="legend-list">
+                <span><span class="legend-num">1</span>Main Gate</span>
+                <span><span class="legend-num">2</span>Ticketing Pavilion</span>
+                <span><span class="legend-num">3</span>Animal Feed Kiosk</span>
+                <span><span class="legend-num">4</span>Visitor Donation Garden</span>
+                <span><span class="legend-num">5</span>Front Square Flex Pad</span>
+              </div>
+            </div>
+            <div class="legend-card">
+              <h4>International Promenade</h4>
+              <div class="legend-list">
+                <span><span class="legend-num">6</span>China Terrace</span>
+                <span><span class="legend-num">7</span>India Walk</span>
+                <span><span class="legend-num">8</span>Australia Court</span>
+                <span><span class="legend-num">9</span>Brazil Basin</span>
+                <span><span class="legend-num">10</span>Panda Court</span>
+                <span><span class="legend-num">11</span>Galapagos Lane</span>
+                <span><span class="legend-num">12</span>Antarctic Point</span>
+                <span><span class="legend-num">13</span>World Market Pad</span>
+              </div>
+            </div>
+            <div class="legend-card">
+              <h4>Wild Waterfront</h4>
+              <div class="legend-list">
+                <span><span class="legend-num">14</span>Aquarium Pier</span>
+                <span><span class="legend-num">15</span>Reef House Quay</span>
+                <span><span class="legend-num">16</span>Whale Point</span>
+                <span><span class="legend-num">17</span>Lost Lagoon Dock</span>
+                <span><span class="legend-num">18</span>Polar Coast Shelf</span>
+                <span><span class="legend-num">19</span>Otter Harbor Bank</span>
+                <span><span class="legend-num">20</span>Boat Route Launch</span>
+              </div>
+            </div>
+            <div class="legend-card">
+              <h4>Kids Cove</h4>
+              <div class="legend-list">
+                <span><span class="legend-num">21</span>Little Paws Barnyard</span>
+                <span><span class="legend-num">22</span>Kids Performance Stage</span>
+                <span><span class="legend-num">23</span>Kids World Core Pad</span>
+                <span><span class="legend-num">24</span>Family Snack Stop</span>
+                <span><span class="legend-num">25</span>Petting Path</span>
+                <span><span class="legend-num">26</span>Tortoise Garden Corner</span>
+              </div>
+            </div>
+            <div class="legend-card">
+              <h4>Safari Plains</h4>
+              <div class="legend-list">
+                <span><span class="legend-num">27</span>Safari Truck Overlook</span>
+                <span><span class="legend-num">28</span>Lion Safari Experience</span>
+                <span><span class="legend-num">29</span>Giraffe Ridge</span>
+                <span><span class="legend-num">30</span>Monorail of Mysteries Station</span>
+                <span><span class="legend-num">31</span>Elephant Plaza</span>
+                <span><span class="legend-num">32</span>Savanna Habitat Pad</span>
+                <span><span class="legend-num">33</span>Great Bear Forest Crossroad</span>
+              </div>
+            </div>
+            <div class="legend-card">
+              <h4>Reptile Ridge</h4>
+              <div class="legend-list">
+                <span><span class="legend-num">34</span>Reptile House Pad</span>
+                <span><span class="legend-num">35</span>Swamp Walk</span>
+                <span><span class="legend-num">36</span>Reptile Ranch Grill</span>
+                <span><span class="legend-num">37</span>Fang Fortress Bluff</span>
+                <span><span class="legend-num">38</span>Scales and Shadows Pavilion</span>
+                <span><span class="legend-num">39</span>Serpent Hollow</span>
+              </div>
+            </div>
+            <div class="legend-card">
+              <h4>Mystery Forest</h4>
+              <div class="legend-list">
+                <span><span class="legend-num">40</span>Primate Grove</span>
+                <span><span class="legend-num">41</span>Howl Zone Canine House</span>
+                <span><span class="legend-num">42</span>Great Bear Forest</span>
+                <span><span class="legend-num">43</span>Skyfeather Boardwalk</span>
+                <span><span class="legend-num">44</span>Sabre Tooth Werepanther Hollow</span>
+                <span><span class="legend-num">45</span>Unicorn Farm Meadow</span>
+                <span><span class="legend-num">46</span>Baboon Bluff</span>
+              </div>
+            </div>
+            <div class="legend-card">
+              <h4>Expansion Grounds</h4>
+              <div class="legend-list">
+                <span><span class="legend-num">47</span>Mixed Theme Pad A</span>
+                <span><span class="legend-num">48</span>Mixed Theme Pad B</span>
+                <span><span class="legend-num">49</span>Mixed Theme Pad C</span>
+                <span><span class="legend-num">50</span>Mixed Theme Pad D</span>
+                <span><span class="legend-num">51</span>Mixed Theme Pad E</span>
+                <span><span class="legend-num">52</span>Mixed Theme Pad F</span>
+                <span><span class="legend-num">53</span>Mixed Theme Pad G</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <section class="notes">
+          <h3>What This Version Adds</h3>
+          <p>This is the same general plan as the organic concept, but with a much more illustrated-map mood. The land looks painted instead of blocked in, and the district edges are defined more by natural terrain, path loops, water, and tree belts instead of flat color shapes.</p>
+          <ul>
+            <li>Districts feel more like lands inside a park and less like dashboard panels.</li>
+            <li>Leader lines keep labels readable without forcing text into the middle of busy areas.</li>
+            <li>The smaller numbered pads still solve the problem of fitting a lot of exhibits onto one shared zoo map.</li>
+            <li>This style would work well with little exhibit icons or silhouettes later, once actual placements start appearing in-game.</li>
+          </ul>
+          <div class="note-callout">
+            If you like this direction, the next real build could use this style as the visual base and keep the numbered placement-pad logic underneath so the map stays playable.
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

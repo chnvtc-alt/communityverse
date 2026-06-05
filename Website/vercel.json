@@ -2,11 +2,11 @@
   "rewrites": [
     {
       "source": "/zoo",
-      "destination": "/zoo-game.html"
+      "destination": "/zoo/index.html"
     },
     {
       "source": "/zoo/",
-      "destination": "/zoo-game.html"
+      "destination": "/zoo/index.html"
     },
     {
       "source": "/world-tour",

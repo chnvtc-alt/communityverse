@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zoo Map Concept</title>
+  <style>
+    :root {
+      --bg: #efe6cf;
+      --panel: rgba(255, 249, 238, 0.92);
+      --ink: #1f2b22;
+      --muted: #57685f;
+      --line: rgba(41, 58, 44, 0.16);
+      --path: #c9b185;
+      --path-edge: #a78e64;
+      --water: #78b6c9;
+      --forest: #7fa26c;
+      --safari: #d9b06d;
+      --kids: #f0cf8e;
+      --reptile: #9ea07a;
+      --international: #e5d0a5;
+      --entry: #ddd0b3;
+      --accent: #a75f17;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(255, 212, 132, 0.5), transparent 22%),
+        radial-gradient(circle at bottom right, rgba(104, 151, 115, 0.28), transparent 24%),
+        linear-gradient(180deg, #f6f1e5 0%, var(--bg) 100%);
+      padding: 28px;
+    }
+
+    .shell {
+      max-width: 1380px;
+      margin: 0 auto;
+      display: grid;
+      gap: 18px;
+    }
+
+    .header {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      padding: 24px 28px;
+      box-shadow: 0 18px 48px rgba(36, 38, 28, 0.12);
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 0.82rem;
+      font-family: system-ui, sans-serif;
+      color: #2f6f52;
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 3.7rem);
+      line-height: 0.95;
+    }
+
+    .header p {
+      margin: 14px 0 0;
+      max-width: 78ch;
+      color: var(--muted);
+      line-height: 1.6;
+      font-family: system-ui, sans-serif;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.55fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .map-wrap,
+    .notes {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: 0 18px 48px rgba(36, 38, 28, 0.12);
+    }
+
+    .map-wrap {
+      padding: 18px;
+    }
+
+    .map-board {
+      position: relative;
+      min-height: 980px;
+      border-radius: 30px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 12% 8%, rgba(255, 244, 212, 0.6), transparent 16%),
+        radial-gradient(circle at 88% 18%, rgba(221, 242, 228, 0.42), transparent 18%),
+        linear-gradient(180deg, #f4efdf 0%, #e7dcc2 100%);
+      border: 1px solid rgba(60, 78, 62, 0.1);
+    }
+
+    .tree-ring {
+      position: absolute;
+      inset: 10px;
+      border-radius: 26px;
+      border: 16px solid rgba(108, 138, 91, 0.78);
+      box-shadow: inset 0 0 0 3px rgba(63, 92, 58, 0.26);
+      pointer-events: none;
+    }
+
+    .path, .road {
+      position: absolute;
+      background: linear-gradient(135deg, var(--path), var(--path-edge));
+      box-shadow: inset 0 0 0 1px rgba(102, 79, 46, 0.12);
+      border-radius: 999px;
+      opacity: 0.94;
+    }
+
+    .road.outer-top {
+      left: 6%;
+      top: 6%;
+      width: 88%;
+      height: 34px;
+    }
+
+    .road.outer-right {
+      right: 6%;
+      top: 6%;
+      width: 36px;
+      height: 88%;
+    }
+
+    .road.outer-bottom {
+      left: 10%;
+      bottom: 6%;
+      width: 80%;
+      height: 34px;
+    }
+
+    .road.outer-left {
+      left: 6%;
+      top: 12%;
+      width: 36px;
+      height: 76%;
+    }
+
+    .path.main-east-west {
+      left: 16%;
+      top: 46%;
+      width: 68%;
+      height: 42px;
+    }
+
+    .path.central-north-south {
+      left: 47%;
+      top: 18%;
+      width: 44px;
+      height: 61%;
+    }
+
+    .path.forest-curve {
+      left: 20%;
+      top: 68%;
+      width: 34%;
+      height: 34px;
+      transform: rotate(12deg);
+    }
+
+    .path.waterfront-curve {
+      left: 62%;
+      top: 22%;
+      width: 22%;
+      height: 30px;
+      transform: rotate(-14deg);
+    }
+
+    .lake {
+      position: absolute;
+      left: 39%;
+      top: 52%;
+      width: 20%;
+      height: 16%;
+      border-radius: 52% 48% 44% 56% / 46% 51% 49% 54%;
+      background:
+        radial-gradient(circle at 35% 30%, rgba(230, 248, 255, 0.7), transparent 24%),
+        linear-gradient(180deg, #9cd1de 0%, var(--water) 55%, #549bb1 100%);
+      border: 6px solid rgba(119, 164, 177, 0.45);
+      box-shadow: inset 0 0 0 1px rgba(42, 84, 102, 0.12);
+    }
+
+    .district {
+      position: absolute;
+      border-radius: 30px;
+      overflow: hidden;
+      border: 1px solid rgba(66, 84, 61, 0.1);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18);
+    }
+
+    .district::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0.96;
+    }
+
+    .district-label {
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      z-index: 1;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: rgba(255, 251, 242, 0.75);
+      backdrop-filter: blur(4px);
+      max-width: calc(100% - 28px);
+    }
+
+    .district-label h2 {
+      margin: 0;
+      font-size: 1.05rem;
+      line-height: 1;
+    }
+
+    .district-label p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-family: system-ui, sans-serif;
+      font-size: 0.82rem;
+      line-height: 1.35;
+    }
+
+    .entry { left: 8%; top: 10%; width: 23%; height: 19%; }
+    .entry::before { background: linear-gradient(180deg, #ede0c6, #d9c6a1); }
+
+    .international { left: 34%; top: 8%; width: 28%; height: 21%; }
+    .international::before { background: linear-gradient(180deg, #eddcbc, var(--international)); }
+
+    .waterfront { left: 66%; top: 10%; width: 24%; height: 27%; }
+    .waterfront::before { background: linear-gradient(180deg, #bfe0ea, #78b6c9); }
+
+    .kids { left: 10%; top: 38%; width: 21%; height: 22%; }
+    .kids::before { background: linear-gradient(180deg, #f7e3bb, var(--kids)); }
+
+    .safari { left: 34%; top: 32%; width: 28%; height: 18%; }
+    .safari::before { background: linear-gradient(180deg, #ebcf9b, var(--safari)); }
+
+    .reptile { left: 66%; top: 40%; width: 22%; height: 22%; }
+    .reptile::before { background: linear-gradient(180deg, #c3c4a6, var(--reptile)); }
+
+    .forest { left: 18%; top: 67%; width: 34%; height: 22%; }
+    .forest::before { background: linear-gradient(180deg, #a8c39d, var(--forest)); }
+
+    .overflow { left: 58%; top: 70%; width: 28%; height: 16%; }
+    .overflow::before { background: linear-gradient(180deg, #d8d2c2, #c7bda5); }
+
+    .marker {
+      position: absolute;
+      z-index: 2;
+      transform: translate(-50%, -50%);
+      min-width: 112px;
+      max-width: 142px;
+      padding: 8px 10px;
+      border-radius: 16px;
+      background: rgba(255, 251, 242, 0.96);
+      border: 2px solid rgba(55, 75, 61, 0.12);
+      box-shadow: 0 14px 24px rgba(49, 50, 40, 0.12);
+    }
+
+    .marker strong {
+      display: block;
+      font-size: 0.84rem;
+      line-height: 1.15;
+    }
+
+    .marker span {
+      display: block;
+      margin-top: 3px;
+      font-size: 0.7rem;
+      color: var(--muted);
+      font-family: system-ui, sans-serif;
+      line-height: 1.2;
+    }
+
+    .marker.good { background: rgba(236, 247, 223, 0.96); border-color: rgba(96, 162, 86, 0.35); }
+    .marker.mix { background: rgba(252, 241, 214, 0.96); border-color: rgba(210, 167, 82, 0.35); }
+    .marker.flex { background: rgba(240, 236, 248, 0.96); border-color: rgba(146, 115, 184, 0.28); }
+
+    .notes {
+      padding: 20px 22px;
+    }
+
+    .notes h2 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    .notes p,
+    .notes li {
+      color: var(--muted);
+      font-family: system-ui, sans-serif;
+      line-height: 1.55;
+    }
+
+    .legend {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .legend-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      font-family: system-ui, sans-serif;
+      color: var(--muted);
+    }
+
+    .swatch {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      border: 2px solid rgba(43, 61, 49, 0.14);
+      flex: 0 0 auto;
+    }
+
+    .swatch.good { background: rgba(236, 247, 223, 0.96); }
+    .swatch.mix { background: rgba(252, 241, 214, 0.96); }
+    .swatch.flex { background: rgba(240, 236, 248, 0.96); }
+
+    ul { margin: 10px 0 0 20px; padding: 0; }
+
+    @media (max-width: 1080px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 760px) {
+      body { padding: 16px; }
+      .map-board { min-height: 1200px; }
+      .district-label p { display: none; }
+      .marker { min-width: 96px; max-width: 112px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="header">
+      <p class="eyebrow">Zoo Map Concept</p>
+      <h1>A real park map instead of a bonus panel</h1>
+      <p>
+        This is a visual direction for the next map system: one connected zoo with named districts, looping paths,
+        a central lake, and actual exhibit spots placed along the roads. The map would start mostly empty and fill in
+        over time as players win cards.
+      </p>
+    </section>
+
+    <section class="layout">
+      <div class="map-wrap">
+        <div class="map-board">
+          <div class="tree-ring"></div>
+
+          <div class="road outer-top"></div>
+          <div class="road outer-right"></div>
+          <div class="road outer-bottom"></div>
+          <div class="road outer-left"></div>
+
+          <div class="path main-east-west"></div>
+          <div class="path central-north-south"></div>
+          <div class="path forest-curve"></div>
+          <div class="path waterfront-curve"></div>
+
+          <div class="lake"></div>
+
+          <section class="district entry">
+            <div class="district-label">
+              <h2>Entry Plaza</h2>
+              <p>Ticketing, guest comforts, lighter food, and easy first impressions.</p>
+            </div>
+          </section>
+
+          <section class="district international">
+            <div class="district-label">
+              <h2>International Promenade</h2>
+              <p>Global exhibits from India, China, Australia, Brazil, and beyond.</p>
+            </div>
+          </section>
+
+          <section class="district waterfront">
+            <div class="district-label">
+              <h2>Waterfront</h2>
+              <p>Aquariums, penguins, marine giants, glass-bottom rides, and cool blue habitats.</p>
+            </div>
+          </section>
+
+          <section class="district kids">
+            <div class="district-label">
+              <h2>Kids Cove</h2>
+              <p>Petting, performers, cute animals, snack stops, and family crowd-pleasers.</p>
+            </div>
+          </section>
+
+          <section class="district safari">
+            <div class="district-label">
+              <h2>Safari</h2>
+              <p>Headline savanna animals, ride-throughs, monorails, and big-draw stars.</p>
+            </div>
+          </section>
+
+          <section class="district reptile">
+            <div class="district-label">
+              <h2>Reptile Ridge</h2>
+              <p>Snake houses, swamp creatures, indoor reptile spaces, and desert corners.</p>
+            </div>
+          </section>
+
+          <section class="district forest">
+            <div class="district-label">
+              <h2>Mystery Forest</h2>
+              <p>Woodland trails for primates, birds, cryptids, canines, and strange discoveries.</p>
+            </div>
+          </section>
+
+          <section class="district overflow">
+            <div class="district-label">
+              <h2>Expansion Grounds</h2>
+              <p>A flexible space for overflow, mixed-use placements, and future growth.</p>
+            </div>
+          </section>
+
+          <div class="marker good" style="left: 18%; top: 22%;">
+            <strong>Ticketing Pavilion</strong>
+            <span>Entry fit</span>
+          </div>
+
+          <div class="marker mix" style="left: 29%; top: 19%;">
+            <strong>Safari Snack Station</strong>
+            <span>Entry / Safari connector</span>
+          </div>
+
+          <div class="marker good" style="left: 48%; top: 21%;">
+            <strong>India Big Cat Trail</strong>
+            <span>International / Safari</span>
+          </div>
+
+          <div class="marker good" style="left: 70%; top: 19%;">
+            <strong>Galapagos Deepwater House</strong>
+            <span>Waterfront / International</span>
+          </div>
+
+          <div class="marker mix" style="left: 83%; top: 31%;">
+            <strong>Polar Postcard Shop</strong>
+            <span>Waterfront themed shop</span>
+          </div>
+
+          <div class="marker good" style="left: 18%; top: 49%;">
+            <strong>Little Paws Barnyard</strong>
+            <span>Kids strong fit</span>
+          </div>
+
+          <div class="marker good" style="left: 48%; top: 42%;">
+            <strong>Lion Safari Experience</strong>
+            <span>Safari headliner</span>
+          </div>
+
+          <div class="marker mix" style="left: 36%; top: 58%;">
+            <strong>Cooking With Karen</strong>
+            <span>Lake path publicity stop</span>
+          </div>
+
+          <div class="marker good" style="left: 74%; top: 50%;">
+            <strong>Serpent Swamp</strong>
+            <span>Reptile strong fit</span>
+          </div>
+
+          <div class="marker good" style="left: 31%; top: 79%;">
+            <strong>Sabre Tooth Werepanther</strong>
+            <span>Forest cryptid draw</span>
+          </div>
+
+          <div class="marker mix" style="left: 47%; top: 84%;">
+            <strong>Skyfeather Keepsake Corner</strong>
+            <span>Forest / International</span>
+          </div>
+
+          <div class="marker flex" style="left: 70%; top: 79%;">
+            <strong>Great Bear Forest</strong>
+            <span>Overflow / Forest edge</span>
+          </div>
+        </div>
+      </div>
+
+      <aside class="notes">
+        <p class="eyebrow">Concept Notes</p>
+        <h2>How this version would work</h2>
+        <p>
+          The player would start with this map mostly blank. As exhibits, restaurants, shops, and infrastructure are won,
+          they get placed into named spots along the roads. Some spots belong strongly to one district, while connector
+          spots sit between two districts and can support more than one theme.
+        </p>
+
+        <div class="legend">
+          <div class="legend-row"><span class="swatch good"></span> Strong thematic fit</div>
+          <div class="legend-row"><span class="swatch mix"></span> Connector or mixed fit</div>
+          <div class="legend-row"><span class="swatch flex"></span> Flexible / overflow placement</div>
+        </div>
+
+        <ul>
+          <li>Restaurants and shops can live inside the themed districts they match, instead of being separated from them.</li>
+          <li>International exhibits can either live in their natural animal district or cluster in International Promenade.</li>
+          <li>Expansion Grounds can catch overflow cards so the zoo never “runs out of room.”</li>
+          <li>This could later grow into a more strategic system with adjacency bonuses and path-side placements.</li>
+        </ul>
+      </aside>
+    </section>
+  </div>
+</body>
+</html>

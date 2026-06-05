@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Community Verse Games Character Roster</title>
+    <style>
+      :root {
+        --bg: #f4efe3;
+        --panel: #fff8ea;
+        --ink: #1e2a22;
+        --muted: #5a6c62;
+        --line: rgba(38, 58, 45, 0.14);
+        --accent: #2f6f52;
+        --shadow: 0 24px 80px rgba(36, 37, 27, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(255, 213, 128, 0.6), transparent 25%),
+          radial-gradient(circle at bottom right, rgba(81, 147, 110, 0.32), transparent 25%),
+          linear-gradient(180deg, #f7f3ea 0%, #efe5cf 100%);
+      }
+
+      .page {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 24px 56px;
+      }
+
+      .site-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 20px;
+        padding: 16px 20px;
+        background: rgba(255, 250, 240, 0.88);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        box-shadow: var(--shadow);
+        font-family: Arial, sans-serif;
+      }
+
+      .site-brand {
+        color: var(--accent);
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-size: 0.84rem;
+      }
+
+      .site-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .site-links a {
+        text-decoration: none;
+        color: var(--ink);
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 10px 14px;
+        font-weight: 700;
+      }
+
+      .hero {
+        background: rgba(255, 250, 240, 0.92);
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        box-shadow: var(--shadow);
+        padding: 28px 32px;
+        margin-bottom: 24px;
+      }
+
+      .eyebrow {
+        margin: 0 0 10px;
+        font-size: 0.82rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--accent);
+        font-weight: 700;
+        font-family: Arial, sans-serif;
+      }
+
+      h1 {
+        margin: 0 0 10px;
+        font-size: clamp(2rem, 4vw, 3.2rem);
+      }
+
+      .intro {
+        margin: 0;
+        color: var(--muted);
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 18px;
+      }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .card-image {
+        aspect-ratio: 4 / 5;
+        background: linear-gradient(180deg, rgba(47, 111, 82, 0.1), rgba(186, 108, 29, 0.1));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .card-image.placeholder {
+        padding: 20px;
+        color: var(--muted);
+        text-align: center;
+        font-family: Arial, sans-serif;
+        font-weight: 700;
+      }
+
+      .card-body {
+        padding: 18px 20px 20px;
+      }
+
+      h2 {
+        margin: 0 0 10px;
+        font-size: 1.55rem;
+      }
+
+      .meta {
+        display: grid;
+        gap: 8px;
+        font-family: Arial, sans-serif;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .meta strong {
+        color: var(--ink);
+      }
+
+      .card-link {
+        display: inline-flex;
+        margin-top: 8px;
+        text-decoration: none;
+        color: var(--accent);
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <nav class="site-nav">
+        <div class="site-brand">Community Verse Games</div>
+        <div class="site-links">
+          <a href="./index.html">Play The Zoo Game</a>
+          <a href="./character-roster.html">Character Roster</a>
+        </div>
+      </nav>
+
+      <section class="hero">
+        <p class="eyebrow">Community Verse Games</p>
+        <h1>Character Roster</h1>
+        <p class="intro">
+          This page stores recurring character references for future use in
+          The Zoo Game and other Community Verse Games projects.
+        </p>
+      </section>
+
+      <section class="grid">
+        <article class="card">
+          <div class="card-image placeholder">No image added yet</div>
+          <div class="card-body">
+            <h2>Johnny Pepper</h2>
+            <div class="meta">
+              <div><strong>Role:</strong> Clown entertainer</div>
+              <div><strong>Game function:</strong> Improves guest experience and raises a little support income through balloon animals</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-image placeholder">No image added yet</div>
+          <div class="card-body">
+            <h2>Jimmy Pepper</h2>
+            <div class="meta">
+              <div><strong>Role:</strong> Kids World director</div>
+              <div><strong>Game function:</strong> Boosts family attendance through clowning, music, and Kids World energy</div>
+              <div><strong>Notes:</strong> Johnny Pepper's brother and Wilfred Pepper's son; a costumed musical clown who runs the zoo's under-12 Kids World area</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-image placeholder">No image added yet</div>
+          <div class="card-body">
+            <h2>Wilfred Pepper</h2>
+            <div class="meta">
+              <div><strong>Role:</strong> Bartending director</div>
+              <div><strong>Game function:</strong> Helps beverage and dining revenue</div>
+              <div><strong>Notes:</strong> Father of Johnny Pepper and Jimmy Pepper</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-image placeholder">No image added yet</div>
+          <div class="card-body">
+            <h2>Smiley Boy</h2>
+            <div class="meta">
+              <div><strong>Role:</strong> Guest performer</div>
+              <div><strong>Game function:</strong> Boosts attendance through entertainment appeal</div>
+              <div><strong>Notes:</strong> Folk-pop / boy-band style performer with strong teen appeal</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-image placeholder">No image added yet</div>
+          <div class="card-body">
+            <h2>Angel Sweet</h2>
+            <div class="meta">
+              <div><strong>Role:</strong> Guest Services Manager</div>
+              <div><strong>Game function:</strong> Improves guest experience and helps the zoo feel more welcoming</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-image placeholder">No image added yet</div>
+          <div class="card-body">
+            <h2>Bambi Reese</h2>
+            <div class="meta">
+              <div><strong>Role:</strong> Woodland animals director</div>
+              <div><strong>Game function:</strong> Blends entertainment, education, and woodland-animal appeal to help attendance</div>
+              <div><strong>Notes:</strong> A confident woodland presenter who mixes humor, storytelling, and music to make animal exhibits memorable for both kids and adults</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-image placeholder">No image added yet</div>
+          <div class="card-body">
+            <h2>DonkeyFoot</h2>
+            <div class="meta">
+              <div><strong>Role:</strong> Rap performer</div>
+              <div><strong>Game function:</strong> Adds excitement and helps drive attendance</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-image placeholder">No image added yet</div>
+          <div class="card-body">
+            <h2>The Cheshire Cat</h2>
+            <div class="meta">
+              <div><strong>Role:</strong> Mystery greeter</div>
+              <div><strong>Game function:</strong> Adds playful guest engagement and a magical-feeling attendance boost</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-image placeholder">No image added yet</div>
+          <div class="card-body">
+            <h2>Renee "Potato Salad" Long</h2>
+            <div class="meta">
+              <div><strong>Role:</strong> Dining director</div>
+              <div><strong>Game function:</strong> Improves dining revenue and food operations</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-image placeholder">No image added yet</div>
+          <div class="card-body">
+            <h2>Easter Bunny Costumed Character</h2>
+            <div class="meta">
+              <div><strong>Role:</strong> Costumed greeter</div>
+              <div><strong>Game function:</strong> Improves guest experience and family-friendly atmosphere</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-image placeholder">No image added yet</div>
+          <div class="card-body">
+            <h2>The Muffin Man</h2>
+            <div class="meta">
+              <div><strong>Role:</strong> Costumed baker</div>
+              <div><strong>Game function:</strong> Adds entertainment appeal while boosting food revenue through his muffin stand</div>
+              <div><strong>Notes:</strong> Nursery-rhyme character with a Drury Lane street sign and a light international feel</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-image placeholder">No image added yet</div>
+          <div class="card-body">
+            <h2>Hot Dog Hannah</h2>
+            <div class="meta">
+              <div><strong>Role:</strong> Costumed hot dog vendor</div>
+              <div><strong>Game function:</strong> Adds entertainment appeal while boosting food revenue through her hot dog stand</div>
+              <div><strong>Notes:</strong> Cute kid in a hot dog costume whose family-friendly charm helps her sell a lot of food</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-image placeholder">No image added yet</div>
+          <div class="card-body">
+            <h2>Officer Eman and Pok</h2>
+            <div class="meta">
+              <div><strong>Role:</strong> Security officer</div>
+              <div><strong>Game function:</strong> Improves guest comfort and attendance by combining visible zoo security with a friendly patrol dog</div>
+              <div><strong>Notes:</strong> A warm security presence whose dog Pok is especially popular with children</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-image placeholder">No image added yet</div>
+          <div class="card-body">
+            <h2>Giuseppe Tiramisu</h2>
+            <div class="meta">
+              <div><strong>Role:</strong> Cryptozoologist</div>
+              <div><strong>Game function:</strong> Educates guests about legendary creatures and helps make cryptid exhibits feel more exciting and believable</div>
+              <div><strong>Notes:</strong> Raised in Valle d'Aosta, he has chased mysterious tracks ever since a strange childhood encounter in the snow beneath Alpine cliffs</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-image placeholder">No image added yet</div>
+          <div class="card-body">
+            <h2>Charles Darwin</h2>
+            <div class="meta">
+              <div><strong>Role:</strong> Naturalist lecturer</div>
+              <div><strong>Game function:</strong> Strengthens educational exhibits and makes Galapagos-style wildlife sections feel smarter and more memorable</div>
+              <div><strong>Notes:</strong> A calm, observant naturalist who helps guests see island wildlife through the lens of adaptation, discovery, and scientific curiosity</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-image placeholder">No image added yet</div>
+          <div class="card-body">
+            <h2>Doctor Dolittle</h2>
+            <div class="meta">
+              <div><strong>Role:</strong> Roaming animal expert</div>
+              <div><strong>Game function:</strong> Improves guest interaction and attendance through animal-focused engagement</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-image placeholder">No image added yet</div>
+          <div class="card-body">
+            <h2>Ichabod Crane</h2>
+            <div class="meta">
+              <div><strong>Role:</strong> Avian education specialist</div>
+              <div><strong>Game function:</strong> Improves bird-exhibit appeal through educational talks, folklore, and interactive lectures</div>
+              <div><strong>Notes:</strong> A lanky, nervous former schoolteacher who fascinates guests with bird lessons and startles whenever wings flap too close</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-image placeholder">No image added yet</div>
+          <div class="card-body">
+            <h2>Noah</h2>
+            <div class="meta">
+              <div><strong>Role:</strong> Animal guide</div>
+              <div><strong>Game function:</strong> Improves broad animal appeal and educational interest across the zoo</div>
+              <div><strong>Notes:</strong> A calm, welcoming wildlife guide whose presence helps the whole zoo feel more purposeful and alive</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-image placeholder">No image added yet</div>
+          <div class="card-body">
+            <h2>Jonah</h2>
+            <div class="meta">
+              <div><strong>Role:</strong> Aquarium whale expert</div>
+              <div><strong>Game function:</strong> Strengthens aquatic education and makes whale-focused exhibits more compelling</div>
+              <div><strong>Notes:</strong> A specialist whose aquarium talks add depth, drama, and learning to the zoo's marine side</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-image placeholder">No image added yet</div>
+          <div class="card-body">
+            <h2>Bumbles the Magician</h2>
+            <div class="meta">
+              <div><strong>Role:</strong> Magician</div>
+              <div><strong>Game function:</strong> Adds entertainment value and can magically transfer a zoo attraction between zoos, with a chance to backfire</div>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+  
+    <script>
+      function slugifyCharacterName(name) {
+        return name
+          .toLowerCase()
+          .replace(/["'`.]/g, "")
+          .replace(/&/g, " and ")
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "")
+          .replace(/-+/g, "-");
+      }
+
+      function attachRosterImages() {
+        const cards = Array.from(document.querySelectorAll('.card'));
+        const grid = document.querySelector('.grid');
+
+        const checks = cards.map((card, index) => new Promise((resolve) => {
+          const nameEl = card.querySelector('h2');
+          const imageWrap = card.querySelector('.card-image');
+          if (!nameEl || !imageWrap) {
+            resolve({ card, index, hasImage: false, name: '' });
+            return;
+          }
+
+          const name = nameEl.textContent.trim();
+          const slug = slugifyCharacterName(name);
+          const jpgPath = `./assets/characters/staff/${slug}.jpg`;
+          const pngPath = `./assets/characters/staff/${slug}.png`;
+          const img = new Image();
+          img.alt = name;
+
+          const finish = (hasImage) => {
+            card.dataset.hasImage = hasImage ? 'true' : 'false';
+            resolve({ card, index, hasImage, name: name.toLowerCase() });
+          };
+
+          img.onload = () => {
+            imageWrap.classList.remove('placeholder');
+            imageWrap.textContent = '';
+            imageWrap.appendChild(img);
+            finish(true);
+          };
+
+          img.onerror = () => {
+            if (img.src.endsWith('.jpg')) {
+              img.src = pngPath;
+            } else {
+              finish(false);
+            }
+          };
+
+          img.src = jpgPath;
+        }));
+
+        Promise.all(checks).then((results) => {
+          results
+            .sort((a, b) => {
+              if (a.hasImage !== b.hasImage) return a.hasImage ? -1 : 1;
+              return a.index - b.index;
+            })
+            .forEach(({ card }) => grid.appendChild(card));
+        });
+      }
+
+      function attachCardLinks() {
+        document.querySelectorAll('.card').forEach((card) => {
+          const nameEl = card.querySelector('h2');
+          const meta = card.querySelector('.meta');
+          if (!nameEl || !meta) return;
+          const slug = slugifyCharacterName(nameEl.textContent.trim());
+          if (meta.querySelector('.card-link')) return;
+          const link = document.createElement('a');
+          link.className = 'card-link';
+          link.href = `./staff-card-preview.html?card=${slug}`;
+          link.textContent = 'View Game Card';
+          meta.appendChild(link);
+        });
+      }
+
+      attachRosterImages();
+      attachCardLinks();
+    </script>
+  </body>
+</html>

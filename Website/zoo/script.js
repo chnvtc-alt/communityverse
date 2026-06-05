@@ -1,0 +1,5834 @@
+const VISITOR_SCALE = 50;
+const MONEY_SCALE = 1000;
+const TARGET_VISITORS = 15000;
+const STARTING_MONEY = 100 * MONEY_SCALE;
+const STARTER_DRAFT_PICKS = 2;
+const LOAN_TRIGGER_CASH = 5 * MONEY_SCALE;
+const LOAN_AMOUNT = 15 * MONEY_SCALE;
+const LOAN_INTEREST = 2 * MONEY_SCALE;
+const LOAN_REPAY_PROMPT_CASH = 15 * MONEY_SCALE;
+const ROUND_CARD_COUNT = 8;
+const DISTRESS_RELIEF_CASH = 5 * MONEY_SCALE;
+const DISTRESS_RELIEF_TRIGGER = 2;
+const MOST_ANIMALS_BONUS = 25;
+const SECOND_MOST_ANIMALS_BONUS = 10;
+const REVENUE_ROLL_FACTORS = {
+  2: 1.0,
+  3: 1.9,
+  4: 2.27,
+  5: 2.57,
+  6: 2.8,
+  7: 2.83,
+  8: 3.03,
+  9: 3.2,
+  10: 3.47,
+  11: 3.6,
+  12: 3.93,
+};
+
+const foundingDeck = [
+  {
+    id: "founding-savanna-transfer",
+    name: "Savanna Animals Package",
+    type: "Founding Pack",
+    crowd: 6,
+    upkeep: 400,
+    costHint: 0,
+    tags: ["Safari", "Zebra", "Giraffe", "Gazelle"],
+    inventory: { Zebra: 3, Giraffe: 2, Gazelle: 3 },
+    source: "Accredited Zoo Exchange Board",
+    description: "A starter savanna package built around striped grazers and tall safari favorites.",
+  },
+  {
+    id: "founding-penguin-rescue",
+    name: "Penguin Coast Package",
+    type: "Founding Pack",
+    crowd: 6,
+    upkeep: 200,
+    costHint: 0,
+    tags: ["Penguin", "Water", "Cute", "Fish"],
+    inventory: { Penguin: 5, Herring: 3, Sardine: 2, Anchovy: 2 },
+    source: "Northern Marine Rescue Alliance",
+    description: "A crowd-pleasing cold-coast package centered on penguins and a smaller named fish population.",
+  },
+  {
+    id: "founding-reptile-program",
+    name: "Reptile House Package",
+    type: "Founding Pack",
+    crowd: 6,
+    upkeep: 200,
+    costHint: 0,
+    tags: ["Reptile", "Snake", "Indoor"],
+    inventory: { Snake: 3, Lizard: 2, Iguana: 1, Turtle: 1 },
+    source: "Heritage Species Breeding Network",
+    description: "A starter reptile package with snakes, lizards, and a few slow-moving crowd favorites.",
+  },
+  {
+    id: "founding-bird-aviary-loan",
+    name: "Tropical Birds Package",
+    type: "Founding Pack",
+    crowd: 6,
+    upkeep: 200,
+    costHint: 0,
+    tags: ["Bird", "Walkthrough", "Parrot", "Macaw"],
+    inventory: { Parrot: 3, Macaw: 2, Flamingo: 2 },
+    source: "World Aviary Partnership",
+    description: "A colorful aviary package full of parrots, macaws, and bright birds that quickly animate the zoo.",
+  },
+  {
+    id: "founding-petting-zoo-gift",
+    name: "Barnyard Animals Package",
+    type: "Founding Pack",
+    crowd: 6,
+    upkeep: 200,
+    costHint: 0,
+    tags: ["Gentle", "Interactive", "Cute"],
+    inventory: { Goat: 2, Sheep: 2, Rabbit: 3, "Guinea Pig": 2 },
+    source: "Friends of the Children's Zoo Fund",
+    description: "A friendly barnyard package with enough smaller animals to make the zoo feel warm and approachable right away.",
+  },
+  {
+    id: "founding-primate-grant",
+    name: "Primate Animals Package",
+    type: "Founding Pack",
+    crowd: 6,
+    upkeep: 300,
+    costHint: 0,
+    tags: ["Monkey", "Primate", "Interactive"],
+    inventory: { Monkey: 4, Chimpanzee: 1, Baboon: 2 },
+    source: "Global Primate Conservation Trust",
+    description: "A lively primate package that gives the zoo movement, energy, and plenty for guests to watch.",
+  },
+  {
+    id: "founding-aquatic-donation",
+    name: "River Animals Package",
+    type: "Founding Pack",
+    crowd: 6,
+    upkeep: 200,
+    costHint: 0,
+    tags: ["Water", "Interactive", "Otter", "Fish"],
+    inventory: { Otter: 3, Trout: 3, Catfish: 2, Bass: 2, Flamingo: 2 },
+    source: "Freshwater Habitat Rescue Council",
+    description: "A river-themed package with playful otters, named freshwater fish, and shoreline life.",
+  },
+  {
+    id: "founding-gentle-giants",
+    name: "Big Safari Animals Package",
+    type: "Founding Pack",
+    crowd: 6,
+    upkeep: 400,
+    costHint: 0,
+    tags: ["Elephant", "Safari", "Big Draw"],
+    inventory: { Elephant: 1, Giraffe: 1, Zebra: 2 },
+    source: "International Wildlife Transfer Program",
+    description: "A prestige starter package featuring a few large safari animals that immediately raise the zoo's profile.",
+  },
+  {
+    id: "founding-woodland-rescue",
+    name: "Woodland Animals Package",
+    type: "Founding Pack",
+    crowd: 6,
+    upkeep: 200,
+    costHint: 0,
+    tags: ["Forest", "Cute", "Interactive"],
+    inventory: { Deer: 3, Fox: 2, Raccoon: 2, Hedgehog: 2 },
+    source: "Regional Wildlife Rescue Alliance",
+    description: "A woodland package with smaller mammals and forest species that make the zoo feel full from the start.",
+  },
+];
+
+const zooDeck = [
+  {
+    id: "howl-zone-canine-house",
+    name: "Howl Zone Canine House",
+    type: "Animal",
+    crowd: 8,
+    upkeep: 6,
+    costHint: 6,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Predator", "Canine", "Big Draw", "Interactive"],
+    inventory: { Wolf: 2, Coyote: 2, Dingo: 2, Fox: 2, Jackal: 2 },
+    description: "A major canine attraction with wolves, coyotes, dingos, foxes, and jackals that gives guests a true howl-worthy stop.",
+  },
+  {
+    id: "lion-safari-experience",
+    name: "Lion Safari Experience",
+    type: "Attraction",
+    crowd: 8,
+    upkeep: 6,
+    costHint: 7,
+    revenueProfile: { low: -1, mid: 1, high: 3 },
+    tags: ["Lion", "Safari", "Ride", "Transportation", "Big Draw", "Interactive"],
+    inventory: { Lion: 4 },
+    description: "A premium ride-through lion attraction where guests cross the habitat in safari vehicles or a slow-moving rail and come face to face with a full pride.",
+  },
+  {
+    id: "lion-dining-hall",
+    name: "Lion Dining Hall",
+    type: "Attraction",
+    crowd: 4,
+    upkeep: 3,
+    costHint: 5,
+    revenueProfile: { low: -1, mid: 2, high: 3 },
+    tags: ["Lion", "Food"],
+    inventory: {},
+    description: "A themed restaurant that shines once the zoo gets busy.",
+  },
+  {
+    id: "giraffe-habitat",
+    name: "Giraffe Habitat",
+    type: "Animal",
+    crowd: 6,
+    upkeep: 5,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 1 },
+    tags: ["Giraffe", "Safari", "Gentle"],
+    inventory: { Giraffe: 4 },
+    description: "A taller, more impressive giraffe herd that gives safari builds stronger family appeal.",
+  },
+  {
+    id: "penguin-cove",
+    name: "Penguin Cove",
+    type: "Animal",
+    crowd: 4,
+    upkeep: 3,
+    costHint: 4,
+    revenueProfile: { low: 0, mid: 1, high: 1 },
+    tags: ["Penguin", "Cute", "Cold"],
+    inventory: { Penguin: 6 },
+    description: "A cheerful exhibit that keeps visitors smiling.",
+  },
+  {
+    id: "parrots-of-the-caribbean",
+    name: "Parrots of the Caribbean",
+    type: "Zoo Section",
+    crowd: 4,
+    upkeep: 3,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Bird", "Walkthrough", "Parrot", "Macaw"],
+    inventory: { Parrot: 3, Macaw: 3 },
+    description: "A colorful pirate-flavored aviary that gives bird fans a memorable stop.",
+  },
+  {
+    id: "aviary-tea-garden",
+    name: "Aviary Tea Garden",
+    type: "Attraction",
+    crowd: 3,
+    upkeep: 2,
+    costHint: 4,
+    revenueProfile: { low: -1, mid: 1, high: 2 },
+    tags: ["Bird", "Food"],
+    inventory: {},
+    description: "A graceful bird-themed cafe that pairs nicely with aviary builds.",
+  },
+  {
+    id: "monorail-of-mysteries",
+    name: "Monorail of Mysteries",
+    type: "Attraction",
+    crowd: 6,
+    upkeep: 4,
+    costHint: 6,
+    revenueProfile: { low: -2, mid: 1, high: 3 },
+    tags: ["Ride", "Transportation", "Interactive", "Big Draw"],
+    inventory: {},
+    description: "A slow-moving monorail that glides guests past the zoo's strangest headline zones, from prehistoric giants to cryptids and unicorns.",
+  },
+  {
+    id: "frosty-penguin-slushee-bar",
+    name: "Frosty Penguin Slushee Bar",
+    type: "Attraction",
+    crowd: 2,
+    upkeep: 2,
+    costHint: 4,
+    revenueProfile: { low: -1, mid: 1, high: 2 },
+    tags: ["Food", "Cute", "Penguin", "Water"],
+    inventory: {},
+    description: "An icy penguin-themed refreshment stop that families love.",
+  },
+  {
+    id: "carnivore-burger-bar",
+    name: "Carnivore Burger Bar",
+    type: "Attraction",
+    crowd: 2,
+    upkeep: 2,
+    costHint: 4,
+    revenueProfile: { low: -1, mid: 1, high: 2 },
+    tags: ["Food", "Lion", "Predator"],
+    inventory: {},
+    description: "A bold predator-themed burger stop that helps big-cat builds.",
+  },
+  {
+    id: "safari-snack-station",
+    name: "Safari Snack Station",
+    type: "Attraction",
+    crowd: 2,
+    upkeep: 2,
+    costHint: 4,
+    revenueProfile: { low: -1, mid: 1, high: 2 },
+    tags: ["Food", "Safari", "Interactive"],
+    inventory: {},
+    description: "A steady safari pit stop that fits neatly into expedition-style zoos.",
+  },
+  {
+    id: "reptile-ranch-grill",
+    name: "Reptile Ranch Grill",
+    type: "Attraction",
+    crowd: 2,
+    upkeep: 2,
+    costHint: 4,
+    revenueProfile: { low: -1, mid: 1, high: 2 },
+    tags: ["Food", "Reptile", "Snake"],
+    inventory: {},
+    description: "A quirky reptile-themed grill that boosts specialist zoo combos.",
+  },
+  {
+    id: "jurassic-subs",
+    name: "Jurassic Subs",
+    type: "Attraction",
+    crowd: 3,
+    upkeep: 2,
+    costHint: 4,
+    revenueProfile: { low: -1, mid: 1, high: 2 },
+    tags: ["Food", "Extinct", "Interactive"],
+    inventory: {},
+    description: "A dinosaur-themed sandwich shop that does its best work next to prehistoric attractions.",
+  },
+  {
+    id: "jungle-trading-post",
+    name: "Jungle Trading Post",
+    type: "Attraction",
+    crowd: 1,
+    upkeep: 1,
+    costHint: 3,
+    revenueProfile: { low: -1, mid: 1, high: 2 },
+    tags: ["Gift Shop", "Safari", "Souvenir"],
+    inventory: {},
+    description: "A themed gift shop that works best in busy family safari parks.",
+  },
+  {
+    id: "polar-postcard-shop",
+    name: "Polar Postcard Shop",
+    type: "Attraction",
+    crowd: 1,
+    upkeep: 1,
+    costHint: 3,
+    revenueProfile: { low: -1, mid: 1, high: 2 },
+    tags: ["Gift Shop", "Water", "Penguin"],
+    inventory: {},
+    description: "A cool-weather souvenir shop that pairs well with penguin exhibits.",
+  },
+  {
+    id: "dino-discovery-store",
+    name: "Dino Discovery Store",
+    type: "Attraction",
+    crowd: 2,
+    upkeep: 2,
+    costHint: 5,
+    revenueProfile: { low: -1, mid: 1, high: 3 },
+    tags: ["Gift Shop", "Extinct", "Souvenir"],
+    inventory: {},
+    description: "A high-interest shop that becomes very strong beside extinct attractions.",
+  },
+  {
+    id: "visitor-donation-garden",
+    name: "Visitor Donation Garden",
+    type: "Attraction",
+    crowd: 0,
+    upkeep: 0,
+    costHint: 2,
+    revenueProfile: { low: 0, mid: 1, high: 1 },
+    tags: ["Donation", "Gentle", "Interactive"],
+    inventory: {},
+    description: "A simple stop where guests chip in to support the zoo's future growth.",
+  },
+  {
+    id: "animal-feed-kiosk",
+    name: "Animal Feed Kiosk",
+    type: "Attraction",
+    crowd: 1,
+    upkeep: 0,
+    costHint: 3,
+    revenueProfile: { low: 0, mid: 1, high: 1 },
+    tags: ["Interactive", "Cute", "Operations"],
+    inventory: {},
+    description: "A cheerful feeding stop where families buy approved feed cups for gentle animal encounters.",
+  },
+  {
+    id: "pressed-penny-mill",
+    name: "Pressed Penny Mill",
+    type: "Attraction",
+    crowd: 0,
+    upkeep: 0,
+    costHint: 2,
+    revenueProfile: { low: 0, mid: 1, high: 1 },
+    tags: ["Souvenir", "Gift Shop"],
+    inventory: {},
+    description: "Cheap to run, easy to place, and surprisingly steady once guests start wandering through.",
+  },
+  {
+    id: "photo-booth-boardwalk",
+    name: "Photo Booth Boardwalk",
+    type: "Attraction",
+    crowd: 1,
+    upkeep: 0,
+    costHint: 3,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Souvenir", "Interactive", "Cute"],
+    inventory: {},
+    description: "Families and friend groups pay a little to leave with a goofy zoo memory.",
+  },
+  {
+    id: "johnny-pepper",
+    name: "Johnny Pepper",
+    type: "Staff",
+    crowd: 3,
+    upkeep: 2,
+    costHint: 4,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Entertainment", "Interactive", "Cute", "Donation", "Costumed"],
+    inventory: {},
+    description:
+      "A clown who entertains guests and raises extra money by making balloon animals around the zoo.",
+  },
+  {
+    id: "jimmy-pepper",
+    name: "Jimmy Pepper",
+    type: "Staff",
+    crowd: 4,
+    upkeep: 2,
+    costHint: 4,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Entertainment", "Music", "Interactive", "Kids World", "Costumed"],
+    inventory: {},
+    description:
+      "A clown and musician who runs the zoo's Kids World area and helps younger guests feel energized, included, and excited to explore.",
+  },
+  {
+    id: "wilfred-pepper",
+    name: "Wilfred Pepper",
+    type: "Staff",
+    crowd: 2,
+    upkeep: 2,
+    costHint: 4,
+    revenueProfile: { low: 0, mid: 2, high: 2 },
+    tags: ["Food", "Operations", "Entertainment"],
+    inventory: {},
+    description:
+      "The father of Johnny and Jimmy Pepper, and the zoo's director of bartending, helping beverage stands and evening service earn more.",
+  },
+  {
+    id: "smiley-boy",
+    name: "Smiley Boy",
+    type: "Staff",
+    crowd: 4,
+    upkeep: 2,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Entertainment", "Cute", "Music"],
+    inventory: {},
+    description:
+      "A folk-pop heartthrob whose performances lift the guest experience and attract a strong teen following.",
+  },
+  {
+    id: "angel-sweet",
+    name: "Angel Sweet",
+    type: "Staff",
+    crowd: 2,
+    upkeep: 2,
+    costHint: 4,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Guest Relations", "Operations", "Gentle", "Interactive"],
+    inventory: {},
+    description:
+      "In charge of customer relations, she smooths out the guest experience and helps visitors leave happier.",
+  },
+  {
+    id: "bambi-reese",
+    name: "Bambi Reese",
+    type: "Staff",
+    crowd: 4,
+    upkeep: 3,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Entertainment", "Music", "Gentle", "Animal Expert", "Forest"],
+    inventory: {},
+    description:
+      "A singer with remarkable leaping ability who also serves as director of woodland animals, blending performance with animal-focused charm.",
+  },
+  {
+    id: "donkeyfoot",
+    name: "DonkeyFoot",
+    type: "Staff",
+    crowd: 4,
+    upkeep: 3,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Entertainment", "Music", "Interactive", "Big Draw"],
+    inventory: {},
+    description:
+      "A rap artist whose performances energize the zoo and turn a normal visit into an event.",
+  },
+  {
+    id: "cheshire-cat",
+    name: "The Cheshire Cat",
+    type: "Staff",
+    crowd: 3,
+    upkeep: 2,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Entertainment", "Cute", "Interactive", "Cryptid"],
+    inventory: {},
+    description:
+      "A mysterious grinning wanderer whose surprising appearances delight guests and make the zoo feel a little magical.",
+  },
+  {
+    id: "renee-potato-salad-long",
+    name: "Renee \"Potato Salad\" Long",
+    type: "Staff",
+    crowd: 1,
+    upkeep: 2,
+    costHint: 4,
+    revenueProfile: { low: 0, mid: 2, high: 3 },
+    tags: ["Food", "Operations"],
+    inventory: {},
+    description:
+      "The head of dining operations. She sharpens the food experience and helps restaurants and snack stands earn more.",
+  },
+  {
+    id: "easter-bunny-costumed-character",
+    name: "Easter Bunny Costumed Character",
+    type: "Staff",
+    crowd: 3,
+    upkeep: 2,
+    costHint: 4,
+    revenueProfile: { low: 0, mid: 1, high: 1 },
+    tags: ["Entertainment", "Cute", "Interactive", "Gentle"],
+    inventory: {},
+    description:
+      "A cheerful costumed character who waves, poses for photos, and makes the zoo feel more festive for families.",
+  },
+  {
+    id: "the-muffin-man",
+    name: "The Muffin Man",
+    type: "Staff",
+    crowd: 3,
+    upkeep: 2,
+    costHint: 4,
+    revenueProfile: { low: 0, mid: 2, high: 2 },
+    tags: ["Entertainment", "Food", "Costumed", "International"],
+    inventory: {},
+    description:
+      "A costumed nursery-rhyme character who works beneath a Drury Lane street sign, entertains guests, and sells muffins from his stand to add a little international charm and food revenue.",
+  },
+  {
+    id: "hot-dog-hannah",
+    name: "Hot Dog Hannah",
+    type: "Staff",
+    crowd: 3,
+    upkeep: 2,
+    costHint: 4,
+    revenueProfile: { low: 0, mid: 2, high: 2 },
+    tags: ["Entertainment", "Food", "Costumed", "Cute"],
+    inventory: {},
+    description:
+      "A cheerful costumed hot dog vendor whose cute style helps her sell a surprising number of hot dogs while adding family-friendly entertainment to the zoo.",
+  },
+  {
+    id: "officer-eman-and-pok",
+    name: "Officer Eman and Pok",
+    type: "Staff",
+    crowd: 3,
+    upkeep: 2,
+    costHint: 4,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Security", "Guest Relations", "Cute", "Interactive"],
+    inventory: {},
+    description:
+      "A friendly zoo security officer who patrols with her dog Pok. Together they make guests feel safe while Pok wins over kids all across the zoo.",
+  },
+  {
+    id: "giuseppe-tiramisu",
+    name: "Giuseppe Tiramisu",
+    type: "Staff",
+    crowd: 4,
+    upkeep: 3,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Educational", "Cryptid", "Interactive", "Big Draw"],
+    inventory: {},
+    description:
+      "A traveling cryptozoologist who educates guests about legendary creatures and gets young visitors excited about the search for animals that may still be hiding just beyond proof.",
+  },
+  {
+    id: "charles-darwin",
+    name: "Charles Darwin",
+    type: "Staff",
+    crowd: 4,
+    upkeep: 3,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Educational", "Galapagos", "Animal Expert", "Bird"],
+    inventory: {},
+    description:
+      "A thoughtful naturalist who turns the zoo's island exhibits into memorable lessons on adaptation, wildlife, and the strange brilliance of the Galapagos.",
+  },
+  {
+    id: "doctor-dolittle",
+    name: "Doctor Dolittle",
+    type: "Staff",
+    crowd: 4,
+    upkeep: 3,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Entertainment", "Gentle", "Interactive", "Animal Expert", "Educational"],
+    inventory: {},
+    description:
+      "A roaming animal expert whose strolls and guest interactions make the whole zoo feel more alive and welcoming.",
+  },
+  {
+    id: "ichabod-crane",
+    name: "Ichabod Crane",
+    type: "Staff",
+    crowd: 4,
+    upkeep: 2,
+    costHint: 4,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Bird", "Educational", "Interactive", "Music"],
+    inventory: {},
+    description:
+      "A lanky avian education specialist who fascinates guests with bird lessons, odd folklore, and nervous comic reactions whenever the wings start flapping too close.",
+  },
+  {
+    id: "noah",
+    name: "Noah",
+    type: "Staff",
+    crowd: 4,
+    upkeep: 3,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Educational", "Animal Expert", "Gentle", "Big Draw"],
+    inventory: {},
+    description:
+      "A calm, animal-loving guide who makes the zoo feel full of purpose and wonder while helping guests connect with wildlife across the whole park.",
+  },
+  {
+    id: "jonah",
+    name: "Jonah",
+    type: "Staff",
+    crowd: 4,
+    upkeep: 3,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Educational", "Aquatic", "Whale", "Animal Expert"],
+    inventory: {},
+    description:
+      "An aquarium specialist and whale expert whose talks give the water exhibits more depth, drama, and educational appeal.",
+  },
+  {
+    id: "bumbles-the-magician",
+    name: "Bumbles the Magician",
+    type: "Staff",
+    crowd: 4,
+    upkeep: 3,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Entertainment", "Interactive", "Magic", "Special"],
+    inventory: {},
+    description:
+      "A lovable but unreliable magician. When hired, Bumbles attempts to make one zoo attraction vanish from the leading rival and reappear in his own zoo. About 25% of the time, the trick backfires and sends one of his own zoo's attractions to the target instead.",
+  },
+  {
+    id: "elephant-plaza",
+    name: "Elephant Plaza",
+    type: "Animal",
+    crowd: 9,
+    upkeep: 7,
+    costHint: 7,
+    revenueProfile: { low: -1, mid: 1, high: 2 },
+    tags: ["Elephant", "Safari", "Big Draw"],
+    inventory: { Elephant: 2 },
+    description: "Huge prestige and huge appetite for budget.",
+  },
+  {
+    id: "fang-fortress",
+    name: "Fang Fortress",
+    type: "Zoo Section",
+    crowd: 3,
+    upkeep: 2,
+    costHint: 4,
+    revenueProfile: { low: 0, mid: 1, high: 1 },
+    tags: ["Reptile", "Snake", "Indoor"],
+    inventory: { Python: 2, Cobra: 1, Boa: 1, Lizard: 2, Iguana: 1 },
+    description: "A dramatic reptile hall that gives specialist zoos a stronger identity.",
+  },
+  {
+    id: "serpent-swamp",
+    name: "Serpent Swamp",
+    type: "Animal",
+    crowd: 4,
+    upkeep: 3,
+    costHint: 4,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Reptile", "Snake"],
+    inventory: { Anaconda: 1, Python: 2, Cobra: 2, Boa: 1 },
+    description: "A focused snake exhibit with a big constrictor centerpiece and a specialist reptile feel.",
+  },
+  {
+    id: "monkey-island",
+    name: "Monkey Island",
+    type: "Animal",
+    crowd: 6,
+    upkeep: 5,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 1 },
+    tags: ["Monkey", "Primate", "Interactive", "Energy"],
+    inventory: { Monkey: 4, Chimpanzee: 1 },
+    description: "Lively and popular, especially with family-focused crowds.",
+  },
+  {
+    id: "penguin-plunge-tunnel",
+    name: "Penguin Plunge Tunnel",
+    type: "Zoo Section",
+    crowd: 8,
+    upkeep: 5,
+    costHint: 6,
+    revenueProfile: { low: -1, mid: 1, high: 3 },
+    tags: ["Water", "Penguin", "Immersive"],
+    inventory: { Penguin: 2, "Antarctic Silverfish": 4, Icefish: 3, Lanternfish: 3 },
+    description: "A glass tunnel beneath icy waters that becomes a star attraction once crowds build.",
+  },
+  {
+    id: "little-paws-barnyard",
+    name: "Little Paws Barnyard",
+    type: "Zoo Section",
+    crowd: 3,
+    upkeep: 0.7777777778,
+    costHint: 3,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Gentle", "Interactive"],
+    inventory: { Goat: 2, Sheep: 2, Rabbit: 3 },
+    description: "A friendly hands-on petting area that gives smaller zoos easy family appeal.",
+  },
+  {
+    id: "skyfeather-boardwalk",
+    name: "Skyfeather Boardwalk",
+    type: "Zoo Section",
+    crowd: 4,
+    upkeep: 3,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Bird", "Walkthrough", "Gentle"],
+    inventory: { Flamingo: 4, Parrot: 2, Peacock: 2 },
+    description: "A breezy birdwalk full of color and motion that helps family-focused zoos.",
+  },
+  {
+    id: "scales-and-shadows-pavilion",
+    name: "Scales and Shadows Pavilion",
+    type: "Zoo Section",
+    crowd: 4,
+    upkeep: 3,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Reptile", "Indoor", "Snake"],
+    inventory: { Viper: 1, Rattlesnake: 1, "Corn Snake": 1, Iguana: 2, Turtle: 2 },
+    description: "A moody indoor reptile space that mixes named snakes with quieter reptile displays for specialist zoo builds.",
+  },
+  {
+    id: "lost-lagoon",
+    name: "Lost Lagoon",
+    type: "Zoo Section",
+    crowd: 7,
+    upkeep: 4,
+    costHint: 6,
+    revenueProfile: { low: -1, mid: 1, high: 3 },
+    tags: ["Water", "Immersive", "Interactive", "Ride"],
+    inventory: { Clownfish: 2, "Blue Tang": 2, Angelfish: 2, Butterflyfish: 2, Pufferfish: 1, Otter: 2, Flamingo: 2 },
+    description: "A premium tropical lagoon where guests board a glass-bottom boat ride and drift above bright fish, playful otters, and hidden shoreline wildlife.",
+  },
+  {
+    id: "prehistoric-peak",
+    name: "Prehistoric Peak",
+    type: "Zoo Section",
+    crowd: 10,
+    upkeep: 5,
+    costHint: 6,
+    revenueProfile: { low: -1, mid: 2, high: 3 },
+    tags: ["Extinct", "Interactive", "Walkthrough"],
+    inventory: { Triceratops: 1, Stegosaurus: 1, Pteranodon: 2 },
+    description: "A dramatic extinct-animal zone that makes the zoo feel like a destination.",
+  },
+  {
+    id: "zebra-plains",
+    name: "Zebra Plains",
+    type: "Animal",
+    crowd: 4,
+    upkeep: 3,
+    costHint: 4,
+    revenueProfile: { low: 0, mid: 1, high: 1 },
+    tags: ["Safari", "Gentle", "Zebra"],
+    inventory: { Zebra: 4 },
+    description: "A dependable safari habitat that helps themed visitor groups.",
+  },
+  {
+    id: "flamingo-lagoon",
+    name: "Flamingo Lagoon",
+    type: "Animal",
+    crowd: 4,
+    upkeep: 3,
+    costHint: 4,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Bird", "Water", "Gentle"],
+    inventory: { "Greater Flamingo": 2, "Chilean Flamingo": 2, "American Flamingo": 2 },
+    description: "A colorful mixed-species flamingo lagoon with bright water appeal and easy family charm.",
+  },
+  {
+    id: "otter-harbor",
+    name: "Otter Harbor",
+    type: "Animal",
+    crowd: 5,
+    upkeep: 3,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Water", "Cute", "Interactive"],
+    inventory: { Otter: 5 },
+    description: "An energetic aquatic stop that keeps guests watching.",
+  },
+  {
+    id: "sabre-tooth-werepanther",
+    name: "Sabre Tooth Werepanther",
+    type: "Animal",
+    crowd: 7,
+    upkeep: 5,
+    costHint: 6,
+    revenueProfile: { low: -1, mid: 1, high: 2 },
+    tags: ["Cryptid", "Predator", "Swamp", "Big Draw"],
+    inventory: { "Sabre Tooth Werepanther": 1 },
+    description: "A legendary swamp-creature exhibit built around a terrifying feline cryptid that guests cannot stop talking about.",
+  },
+  {
+    id: "komodo-kingdom",
+    name: "Komodo Kingdom",
+    type: "Animal",
+    crowd: 5,
+    upkeep: 4,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Reptile", "Predator", "Indoor"],
+    inventory: { "Komodo Dragon": 2, Lizard: 2 },
+    description: "A dangerous reptile exhibit that lifts specialist appeal.",
+  },
+  {
+    id: "tortoise-garden",
+    name: "Tortoise Garden",
+    type: "Animal",
+    crowd: 2,
+    upkeep: 1,
+    costHint: 3,
+    revenueProfile: { low: 0, mid: 1, high: 1 },
+    tags: ["Reptile", "Gentle", "Interactive"],
+    inventory: { Tortoise: 4, Turtle: 2 },
+    description: "Low-maintenance, educational, and great for rounding out exhibits.",
+  },
+  {
+    id: "polar-bear-point",
+    name: "Polar Bear Point",
+    type: "Animal",
+    crowd: 9,
+    upkeep: 6,
+    costHint: 7,
+    revenueProfile: { low: -1, mid: 1, high: 2 },
+    tags: ["Predator", "Water", "Big Draw", "Antarctica"],
+    inventory: { "Polar Bear": 2 },
+    description: "A prestige cold-weather exhibit with strong headline pull.",
+  },
+  {
+    id: "gorilla-forest",
+    name: "Gorilla Forest",
+    type: "Animal",
+    crowd: 7,
+    upkeep: 5,
+    costHint: 6,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Forest", "Interactive", "Primate"],
+    inventory: { Gorilla: 3 },
+    description: "A serious forest primate habitat that adds depth to a top zoo.",
+  },
+  {
+    id: "great-bear-forest",
+    name: "Great Bear Forest",
+    type: "Animal",
+    crowd: 9,
+    upkeep: 6,
+    costHint: 7,
+    revenueProfile: { low: -1, mid: 1, high: 2 },
+    tags: ["Predator", "Forest", "Big Draw", "Water"],
+    inventory: { "Grizzly Bear": 2, "Black Bear": 2, "Brown Bear": 2 },
+    description: "A lush woodland bear habitat where grizzly, black, and brown bears roam among towering trees, rocky outcrops, and flowing streams.",
+  },
+  {
+    id: "mammoth-valley",
+    name: "Mammoth Valley",
+    type: "Extinct",
+    crowd: 13,
+    upkeep: 8,
+    costHint: 8,
+    revenueProfile: { low: -3, mid: 1, high: 2 },
+    tags: ["Extinct", "Big Draw", "Interactive"],
+    inventory: { "Woolly Mammoth": 2 },
+    description: "A blockbuster extinct-animal attraction with heavy carrying costs that usually pays off later, not right away.",
+  },
+  {
+    id: "triceratops-trail",
+    name: "Triceratops Trail",
+    type: "Extinct",
+    crowd: 12,
+    upkeep: 7,
+    costHint: 7,
+    revenueProfile: { low: -1, mid: 2, high: 3 },
+    tags: ["Extinct", "Safari", "Interactive"],
+    inventory: { Triceratops: 3 },
+    description: "A crowd-pleasing dinosaur path that works especially well once the zoo grows.",
+  },
+  {
+    id: "bigfoot-forest",
+    name: "Bigfoot Forest",
+    type: "Cryptid",
+    crowd: 13,
+    upkeep: 5,
+    costHint: 7,
+    revenueProfile: { low: -1, mid: 2, high: 3 },
+    tags: ["Cryptid", "Forest", "Big Draw"],
+    inventory: { Bigfoot: 1 },
+    description:
+      "A secured wilderness habitat with hidden trails, specialist staff, and round-the-clock monitoring for its elusive resident.",
+  },
+  {
+    id: "loch-ness-lagoon",
+    name: "Loch Ness Lagoon",
+    type: "Cryptid",
+    crowd: 12,
+    upkeep: 7,
+    costHint: 8,
+    revenueProfile: { low: -2, mid: 2, high: 3 },
+    tags: ["Cryptid", "Water", "Big Draw"],
+    inventory: { "Loch Ness Monster": 1 },
+    description: "Expensive to support, but a major late-game spectacle if crowds arrive.",
+  },
+  {
+    id: "area-51-alien-exhibit",
+    name: "Area 51 Alien Exhibit",
+    type: "Cryptid",
+    crowd: 12,
+    upkeep: 6,
+    costHint: 7,
+    revenueProfile: { low: -1, mid: 2, high: 3 },
+    tags: ["Cryptid", "Interactive", "Big Draw"],
+    inventory: { Alien: 2 },
+    description: "A secretive alien showcase where mysterious visitors from beyond Earth become one of the zoo's strangest headline attractions.",
+  },
+  {
+    id: "noahs-ark",
+    name: "Noah's Ark",
+    type: "Attraction",
+    crowd: 12,
+    upkeep: 7,
+    costHint: 8,
+    revenueProfile: { low: -1, mid: 2, high: 3 },
+    tags: ["Big Draw", "Walkthrough", "Interactive", "Educational"],
+    inventory: { Elephant: 2, Giraffe: 2, Zebra: 2, Monkey: 2, Bird: 4 },
+    description: "A premium walk-through ark that lets guests step inside and encounter a wide variety of animals under one roof.",
+  },
+  {
+    id: "unicorn-farm",
+    name: "Unicorn Farm",
+    type: "Cryptid",
+    crowd: 11,
+    upkeep: 6,
+    costHint: 7,
+    revenueProfile: { low: -1, mid: 2, high: 3 },
+    tags: ["Cryptid", "Cute", "Interactive", "Gentle", "Big Draw"],
+    inventory: { Unicorn: 4 },
+    description: "A magical farm attraction where guests can wander among unicorns and turn a zoo visit into a full fantasy outing.",
+  },
+  {
+    id: "whale-exhibit",
+    name: "Whale Exhibit",
+    type: "Animal",
+    crowd: 12,
+    upkeep: 7,
+    costHint: 8,
+    revenueProfile: { low: -1, mid: 2, high: 3 },
+    tags: ["Aquatic", "Water", "Big Draw", "Educational"],
+    inventory: { "Humpback Whale": 1, "Beluga Whale": 1, "Orca": 1 },
+    description: "A massive whale hall that pairs naturally with Jonah's expertise and gives guests a true headline ocean experience built around the giants of the sea.",
+  },
+  {
+    id: "small-mammal-house",
+    name: "Small Mammal House",
+    type: "Zoo Section",
+    crowd: 3,
+    upkeep: 1,
+    costHint: 3,
+    revenueProfile: { low: 0, mid: 1, high: 1 },
+    tags: ["Gentle", "Cute", "Indoor", "Interactive"],
+    inventory: { Hedgehog: 2, Ferret: 2, "Guinea Pig": 3, Rabbit: 2 },
+    description: "A compact exhibit that broadens the zoo without breaking the budget.",
+  },
+  {
+    id: "kangaroo-crossing",
+    name: "Kangaroo Crossing",
+    type: "Animal",
+    crowd: 4,
+    upkeep: 2,
+    costHint: 4,
+    revenueProfile: { low: 0, mid: 1, high: 1 },
+    tags: ["Gentle", "Safari", "Interactive"],
+    inventory: { Kangaroo: 4 },
+    description: "A lively mid-tier habitat that helps safari and family builds.",
+  },
+  {
+    id: "desert-dunes-habitat",
+    name: "Desert Dunes Habitat",
+    type: "Zoo Section",
+    crowd: 8,
+    upkeep: 4,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Desert", "Reptile", "Meerkat", "Interactive"],
+    inventory: { Camel: 2, Meerkat: 6, Sidewinder: 3, "Desert Tortoise": 2, Scorpion: 4 },
+    description: "A hot-climate habitat with desert reptiles, quick-footed mammals, and strong regional identity.",
+  },
+  {
+    id: "sidewinder-sands-house",
+    name: "Sidewinder Sands House",
+    type: "Animal",
+    crowd: 6,
+    upkeep: 3,
+    costHint: 4,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Desert", "Snake", "Reptile", "Predator"],
+    inventory: { Sidewinder: 4, "Desert Horned Viper": 2, "Horned Lizard": 2 },
+    description: "A focused desert predator house that rewards zoos leaning into reptiles and danger.",
+  },
+  {
+    id: "weird-insect-world",
+    name: "Weird Insect World",
+    type: "Zoo Section",
+    crowd: 7,
+    upkeep: 3,
+    costHint: 4,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Insects", "Interactive", "Indoor"],
+    inventory: { "Goliath Beetle": 2, "Hercules Beetle": 2, "Hummingbird Moth": 4, "Lantern Fly": 5 },
+    description: "An oddball insect house that turns tiny creatures into a surprisingly strong attraction.",
+  },
+  {
+    id: "assassin-bug-lab",
+    name: "Assassin Bug Lab",
+    type: "Animal",
+    crowd: 5,
+    upkeep: 2,
+    costHint: 3,
+    revenueProfile: { low: 0, mid: 1, high: 1 },
+    tags: ["Insects", "Predator", "Interactive"],
+    inventory: { "Assassin Bug": 6, "Giant Weta": 2, "Dung Beetle": 4 },
+    description: "A creepy-crawly lab full of predatory insects and strange close-up encounters.",
+  },
+  {
+    id: "galapagos-coast-exhibit",
+    name: "Galapagos Coast Exhibit",
+    type: "Zoo Section",
+    crowd: 9,
+    upkeep: 4,
+    costHint: 6,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Galapagos", "Water", "Penguin", "Bird"],
+    inventory: { "Galapagos Penguin": 4, "Galapagos Tortoise": 2, "Marine Iguana": 3, Flamingo: 3 },
+    description: "A famous-islands habitat full of unusual birds, reptiles, and coastal wildlife, with the spirit of Charles Darwin never far from the shoreline.",
+  },
+  {
+    id: "galapagos-deepwater-house",
+    name: "Galapagos Deepwater House",
+    type: "Animal",
+    crowd: 7,
+    upkeep: 4,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Galapagos", "Aquatic", "Fish", "Water"],
+    inventory: { "King Angelfish": 3, "Whitetip Reef Shark": 2, Crab: 4, Dolphin: 1, "Marine Iguana": 2 },
+    description: "A marine-focused Galapagos exhibit that broadens both aquatic and regional appeal.",
+  },
+  {
+    id: "antarctic-ice-shelf",
+    name: "Antarctic Ice Shelf",
+    type: "Zoo Section",
+    crowd: 10,
+    upkeep: 5,
+    costHint: 6,
+    revenueProfile: { low: -1, mid: 1, high: 2 },
+    tags: ["Antarctica", "Penguin", "Water", "Bird"],
+    inventory: { "King Penguin": 4, "Adelie Penguin": 4, Seal: 3 },
+    description: "A major cold-weather zone packed with penguins, icy water, and polar atmosphere.",
+  },
+  {
+    id: "southern-ocean-giants",
+    name: "Southern Ocean Giants",
+    type: "Animal",
+    crowd: 9,
+    upkeep: 5,
+    costHint: 6,
+    revenueProfile: { low: -1, mid: 1, high: 2 },
+    tags: ["Antarctica", "Aquatic", "Water", "Big Draw"],
+    inventory: { "Humpback Whale": 1, Seal: 3, Squid: 6 },
+    description: "A dramatic southern-ocean habitat with giant marine life and serious headline pull.",
+  },
+  {
+    id: "brazil-rainforest-canopy",
+    name: "Brazil Rainforest Canopy",
+    type: "Zoo Section",
+    crowd: 9,
+    upkeep: 4,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Brazil", "Bird", "Macaw", "Interactive"],
+    inventory: { Macaw: 4, Toucan: 3, Sloth: 2, Monkey: 2 },
+    description: "A colorful rainforest walkthrough with macaws, canopy life, and strong regional flavor.",
+  },
+  {
+    id: "jaguar-river-basin",
+    name: "Jaguar River Basin",
+    type: "Animal",
+    crowd: 8,
+    upkeep: 4,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Brazil", "Predator", "Jaguar", "Water"],
+    inventory: { Jaguar: 2, Anaconda: 2, Piranha: 3, Catfish: 2, Arowana: 1, Capybara: 2 },
+    description: "A predator-heavy South American river exhibit that makes Brazil-focused zoos feel complete.",
+  },
+  {
+    id: "australian-outback-crossing",
+    name: "Australian Outback Crossing",
+    type: "Zoo Section",
+    crowd: 9,
+    upkeep: 4,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Australia", "Kangaroo", "Gentle", "Interactive"],
+    inventory: { Kangaroo: 5, Koala: 2, Dingo: 1, Emu: 2 },
+    description: "A broad outback habitat with iconic Australian wildlife and family-friendly appeal.",
+  },
+  {
+    id: "australia-reef-house",
+    name: "Australia Reef House",
+    type: "Zoo Section",
+    crowd: 8,
+    upkeep: 4,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Australia", "Aquatic", "Fish", "Water"],
+    inventory: { Clownfish: 3, Angelfish: 2, Butterflyfish: 2, Pufferfish: 1, Dolphin: 2, Turtle: 2, "Sea Horse": 4 },
+    description: "A bright Australian aquatic house that strengthens fish, water, and regional builds.",
+  },
+  {
+    id: "india-big-cat-trail",
+    name: "India Big Cat Trail",
+    type: "Zoo Section",
+    crowd: 10,
+    upkeep: 5,
+    costHint: 6,
+    revenueProfile: { low: -1, mid: 1, high: 2 },
+    tags: ["India", "Predator", "Tiger", "Interactive"],
+    inventory: { "Bengal Tiger": 2, "Asiatic Lion": 1, "Indian Leopard": 1, "Snow Leopard": 1 },
+    description: "A major India-themed predator trail built around the country's most iconic big cats and dramatic viewing.",
+  },
+  {
+    id: "india-river-wilds",
+    name: "India River Wilds",
+    type: "Zoo Section",
+    crowd: 8,
+    upkeep: 4,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["India", "Water", "Reptile", "Aquatic"],
+    inventory: { Gharial: 2, Mahseer: 3, Catfish: 2, Carp: 2, Turtle: 2, Frog: 4 },
+    description: "A river habitat that makes India builds broader and more dangerous at the same time.",
+  },
+  {
+    id: "china-panda-highlands",
+    name: "China Panda Highlands",
+    type: "Animal",
+    crowd: 10,
+    upkeep: 5,
+    costHint: 6,
+    revenueProfile: { low: -1, mid: 1, high: 2 },
+    tags: ["China", "Panda", "Gentle", "Big Draw"],
+    inventory: { "Giant Panda": 2, "Red Panda": 2 },
+    description: "A star-powered mountain habitat that gives China-themed zoos a huge attendance bump.",
+  },
+  {
+    id: "china-mountain-mysteries",
+    name: "China Mountain Mysteries",
+    type: "Zoo Section",
+    crowd: 8,
+    upkeep: 4,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["China", "Predator", "Bird", "Water"],
+    inventory: { "Golden Pheasant": 3, Leopard: 1, "Chinese Sturgeon": 2, Carp: 2, Salamander: 2 },
+    description: "A mountain-region collection that links Chinese wildlife to both predator and bird appeal.",
+  },
+  {
+    id: "raptor-ridge-arena",
+    name: "Raptor Ridge Arena",
+    type: "Zoo Section",
+    crowd: 9,
+    upkeep: 4,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Birds of Prey", "Bird", "Predator", "Interactive"],
+    inventory: { "Bald Eagle": 2, "Golden Eagle": 2, Owl: 2, Vulture: 2 },
+    description: "A dramatic birds-of-prey arena where hunters of the sky become a major draw.",
+  },
+  {
+    id: "owl-and-eagle-aviary",
+    name: "Owl and Eagle Aviary",
+    type: "Animal",
+    crowd: 7,
+    upkeep: 3,
+    costHint: 4,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Birds of Prey", "Bird", "Predator"],
+    inventory: { "Barn Owl": 1, "Great Horned Owl": 1, "Snowy Owl": 1, "Bald Eagle": 1, "Golden Eagle": 1 },
+    description: "A focused raptor exhibit that helps bird, predator, and regional preference battles.",
+  },
+  {
+    id: "nocturnal-house",
+    name: "Nocturnal House",
+    type: "Zoo Section",
+    crowd: 8,
+    upkeep: 4,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Nocturnal", "Indoor", "Interactive", "Bird"],
+    inventory: { "Fruit Bat": 4, "Barn Owl": 2, "Bush Baby": 2, "Fennec Fox": 2, "Kinkajou": 2 },
+    description: "A dimly lit after-dark house where bats, owls, and other night creatures turn a zoo visit into a mysterious indoor adventure.",
+  },
+  {
+    id: "coral-kingdom",
+    name: "Coral Kingdom",
+    type: "Zoo Section",
+    crowd: 9,
+    upkeep: 4,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Aquatic", "Fish", "Water", "Walkthrough"],
+    inventory: { Clownfish: 3, "Blue Tang": 2, Angelfish: 2, Butterflyfish: 2, Pufferfish: 1, Jellyfish: 3, Starfish: 3 },
+    description: "A bright immersive aquatic zone that gives fish-heavy zoos a stronger identity.",
+  },
+  {
+    id: "octopus-discovery-dome",
+    name: "Octopus Discovery Zone",
+    type: "Animal",
+    crowd: 7,
+    upkeep: 3,
+    costHint: 4,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Aquatic", "Water", "Interactive", "Fish"],
+    inventory: { Octopus: 3, Jellyfish: 4, Starfish: 3, Seahorse: 2, Angelfish: 2, Pufferfish: 1 },
+    description: "A smart, hands-on aquatic house that boosts both fish counts and interactive appeal.",
+  },
+  {
+    id: "grand-entry-plaza",
+    name: "Grand Entry Plaza",
+    type: "Attraction",
+    crowd: 8,
+    upkeep: 4,
+    costHint: 5,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Guest Relations", "Interactive", "Souvenir"],
+    inventory: {},
+    description: "A polished front-gate experience that makes the whole zoo feel bigger and more welcoming.",
+  },
+  {
+    id: "safari-play-zone",
+    name: "Safari Play Zone",
+    type: "Attraction",
+    crowd: 7,
+    upkeep: 3,
+    costHint: 4,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Interactive", "Cute", "Gentle", "Entertainment"],
+    inventory: {},
+    description: "A high-energy play area that gives families another reason to stay longer.",
+  },
+  {
+    id: "parking-plaza",
+    name: "Parking Plaza",
+    type: "Attraction",
+    crowd: 3,
+    upkeep: 1,
+    costHint: 3,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Parking", "Operations", "Guest Relations"],
+    inventory: {},
+    description: "Not glamorous, but a smoother arrival makes the whole zoo easier to visit.",
+  },
+  {
+    id: "ticketing-pavilion",
+    name: "Ticketing Pavilion",
+    type: "Attraction",
+    crowd: 4,
+    upkeep: 2,
+    costHint: 3,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Guest Relations", "Operations", "Interactive"],
+    inventory: {},
+    description: "A modern ticketing hub that helps the zoo handle larger crowds more efficiently.",
+  },
+  {
+    id: "zoo-lodge",
+    name: "Zoo Lodge",
+    type: "Attraction",
+    crowd: 9,
+    upkeep: 5,
+    costHint: 6,
+    revenueProfile: { low: -1, mid: 1, high: 3 },
+    tags: ["Guest Relations", "Big Draw", "Souvenir"],
+    inventory: {},
+    description: "An on-site lodge that turns the zoo into a destination and rewards bigger attendance.",
+  },
+  {
+    id: "first-aid-station",
+    name: "First Aid Station",
+    type: "Attraction",
+    crowd: 2,
+    upkeep: 1,
+    costHint: 2,
+    revenueProfile: { low: 0, mid: 1, high: 1 },
+    tags: ["Guest Relations", "Gentle", "Operations"],
+    inventory: {},
+    description: "A practical service stop that reassures families and improves the guest experience.",
+  },
+  {
+    id: "recycling-and-cleanup-hub",
+    name: "Recycling and Cleanup Hub",
+    type: "Attraction",
+    crowd: 2,
+    upkeep: 1,
+    costHint: 2,
+    revenueProfile: { low: 0, mid: 1, high: 1 },
+    tags: ["Operations", "Interactive", "Gentle"],
+    inventory: {},
+    description: "A behind-the-scenes support hub that keeps the zoo cleaner and easier to manage.",
+  },
+  {
+    id: "family-rest-station",
+    name: "Family Comfort Station",
+    type: "Attraction",
+    crowd: 3,
+    upkeep: 1,
+    costHint: 2,
+    revenueProfile: { low: 0, mid: 1, high: 1 },
+    tags: ["Gentle", "Guest Relations", "Interactive"],
+    inventory: {},
+    description: "A welcome comfort stop that helps families stay longer and enjoy more of the zoo.",
+  },
+  {
+    id: "souvenir-photo-alley",
+    name: "Souvenir Photo Alley",
+    type: "Attraction",
+    crowd: 4,
+    upkeep: 2,
+    costHint: 3,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Souvenir", "Gift Shop", "Interactive", "Entertainment"],
+    inventory: {},
+    description: "A busy photo strip where visitors happily pay for keepsakes and goofy memories.",
+  },
+  {
+    id: "zoo-shuttle-loop",
+    name: "Zoo Shuttle Loop",
+    type: "Attraction",
+    crowd: 6,
+    upkeep: 3,
+    costHint: 4,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Transportation", "Interactive", "Guest Relations", "Operations"],
+    inventory: {},
+    description: "A guest shuttle that makes a growing zoo feel more connected and easier to explore.",
+  },
+  {
+    id: "burger-boardwalk",
+    name: "Burger Boardwalk",
+    type: "Attraction",
+    crowd: 5,
+    upkeep: 3,
+    costHint: 4,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Food", "Interactive", "Guest Relations"],
+    inventory: {},
+    description: "A broader food attraction that feeds crowds efficiently once the zoo gets busy.",
+  },
+  {
+    id: "gift-galleria",
+    name: "Gift Galleria",
+    type: "Attraction",
+    crowd: 5,
+    upkeep: 3,
+    costHint: 4,
+    revenueProfile: { low: 0, mid: 1, high: 2 },
+    tags: ["Gift Shop", "Souvenir", "Guest Relations"],
+    inventory: {},
+    description: "A full-scale shopping stop that becomes more valuable as foot traffic rises.",
+  },
+];
+
+zooDeck.forEach((card) => {
+  if (card.upkeep > 0) {
+    if (card.crowd >= 10) {
+      card.crowd = Math.round(card.crowd * 1.4);
+    } else if (card.crowd >= 7) {
+      card.crowd = Math.round(card.crowd * 1.3);
+    } else if (card.crowd >= 4) {
+      card.crowd = Math.round(card.crowd * 1.18);
+    } else {
+      card.crowd = Math.round(card.crowd * 1.1);
+    }
+  }
+  card.crowd *= VISITOR_SCALE;
+  card.upkeep = Math.round(card.upkeep * MONEY_SCALE * 0.9);
+  card.costHint *= MONEY_SCALE;
+});
+
+const peopleDeck = [
+  {
+    id: "channel-7-morning-zoo-live",
+    name: "Channel 7 Morning Zoo Live",
+    type: "People",
+    visitorBonus: 9,
+    preferences: ["Interactive", "Kids World", "Big Draw"],
+    description: "A live morning broadcast puts a zoo on display with animals up close, kids reacting, and the kind of real energy that makes viewers want tickets immediately.",
+  },
+  {
+    id: "channel-7-troubled-zoo-spotlight",
+    name: "Channel 7 Troubled Zoo Spotlight",
+    type: "People",
+    visitorBonus: 8,
+    donationBonus: 5 * MONEY_SCALE,
+    specialRule: "lowest-visitors",
+    minRound: 4,
+    description: "A local news segment covers a zoo that has struggled to attract visitors, while also highlighting some of its best features. The attention brings in curious new guests and a wave of support donations.",
+  },
+  {
+    id: "viral-cutest-zoo-ever-clip",
+    name: "Viral Cutest Zoo Ever Clip",
+    type: "People",
+    visitorBonus: 7,
+    preferences: ["Cute", "Gentle"],
+    description: "A compilation of adorable animal moments spreads fast, and suddenly families everywhere want to see the sweetest corners of the zoo for themselves.",
+  },
+  {
+    id: "cooking-with-karen-zoo-episode",
+    name: "Cooking With Karen Zoo Episode",
+    type: "People",
+    visitorBonus: 8,
+    preferences: ["Food", "Cute"],
+    lastingTags: ["Food"],
+    description: "Cara tastes her way through the zoo, sampling signature dishes and giving kid-approved, brutally honest reactions that spark curiosity, friendly rivalry, and a flood of shares.",
+  },
+  {
+    id: "top-predator-encounters-feature",
+    name: "Top Predator Encounters Feature",
+    type: "People",
+    visitorBonus: 8,
+    preferences: ["Predator", "Lion", "Tiger"],
+    description: "A travel feature highlights the most intense predator experiences and sends thrill-seeking visitors toward whichever zoo looks fiercest on paper.",
+  },
+  {
+    id: "mesmerizing-aquarium-reel",
+    name: "Mesmerizing Aquarium Reel",
+    type: "People",
+    visitorBonus: 8,
+    preferences: ["Fish", "Aquatic", "Water"],
+    description: "A calming underwater reel catches on everywhere, turning one zoo into the place people suddenly decide they need to visit for a peaceful afternoon.",
+  },
+  {
+    id: "primate-interaction-video",
+    name: "Primate Interaction Video",
+    type: "People",
+    visitorBonus: 8,
+    preferences: ["Primate", "Monkey", "Interactive"],
+    lastingTags: ["Primate"],
+    description: "A primate clip full of curious faces and guest reactions spreads fast and makes one zoo look impossible to skip.",
+  },
+  {
+    id: "tiffany-ringwald-zoo-performance",
+    name: "Tiffany Ringwald Zoo Performance",
+    type: "People",
+    visitorBonus: 8,
+    preferences: ["Music", "Entertainment"],
+    lastingTags: ["Music"],
+    description: "A surprise zoo performance turns into the sort of clip people replay, share, and then decide they should probably experience in person.",
+  },
+  {
+    id: "dj-lite-2-zoo-vibes-post",
+    name: "DJ Lite 2.0 Zoo Vibes Post",
+    type: "People",
+    visitorBonus: 7,
+    preferences: ["Music", "Transportation", "Ride"],
+    lastingTags: ["Music"],
+    description: "A style-heavy post praises the zoos that feel alive with movement, rhythm, and the kind of ride element that makes the whole visit feel cinematic.",
+  },
+  {
+    id: "mullet-man-country-zoo-pick",
+    name: "Mullet Man's Country Zoo Pick",
+    type: "People",
+    visitorBonus: 7,
+    preferences: ["Kids World", "Ride", "Food"],
+    description: '"Got goats, rides, and real food." His picks are not fancy, but when Mullet Man recommends a spot, families show up.',
+  },
+  {
+    id: "skel-o-dude-night-feature",
+    name: "Skel-O-Dude Night Feature",
+    type: "People",
+    visitorBonus: 8,
+    preferences: ["Predator", "Reptile", "Cryptid", "Nocturnal"],
+    lastingTags: ["Nocturnal"],
+    description: "A dark-themed feature celebrates eerie exhibits, shadowy creatures, and the parts of a zoo that feel a little unsettling in the best possible way.",
+  },
+  {
+    id: "captain-zoogle-and-friends-episode",
+    name: "Captain Zoogle & Friends Episode",
+    type: "People",
+    visitorBonus: 8,
+    preferences: ["Parrot", "Interactive", "Kids World"],
+    lastingTags: ["Kids World"],
+    description: "A children’s show episode turns one zoo into the must-visit place for kids who suddenly insist on seeing parrots, meeting characters, and touching everything they are allowed to touch.",
+  },
+  {
+    id: "cierra-st-hilton-luxury-list",
+    name: "Cierra St. Hilton Luxury List",
+    type: "People",
+    visitorBonus: 7,
+    preferences: ["Transportation", "Guest Relations", "Food", "Parking"],
+    description: "A curated list of polished zoo experiences rewards whichever zoo feels easiest to arrive at, navigate, and enjoy in comfort from start to finish.",
+  },
+  {
+    id: "captain-dependable-safety-report",
+    name: "Captain Dependable Safety Report",
+    type: "People",
+    visitorBonus: 7,
+    preferences: ["Operations", "Security", "Parking"],
+    description: "A trusted safety-minded review praises the zoo that feels organized, dependable, and like nobody is ever going to get lost near the flamingos.",
+  },
+  {
+    id: "mad-hatters-curious-zoo",
+    name: "Mad Hatter's Curious Zoo",
+    type: "People",
+    visitorBonus: 8,
+    preferences: ["Themed", "Costumed", "Entertainment", "Interactive"],
+    description: "A whimsical feature celebrates the most imaginative zoo visit, full of costumed charm, playful touches, and attractions that feel a little gloriously odd.",
+  },
+  {
+    id: "panda-portrait-surprise",
+    name: "Panda Portrait Surprise",
+    imageFile: "panda.portrait.surprise",
+    type: "People",
+    visitorBonus: 7,
+    preferences: ["China", "Panda", "Interactive"],
+    lastingTags: ["China", "Interactive"],
+    description: "Live artist Ming Wu transforms guests into playful panda portraits, and the joyful reveal quickly becomes one of the most talked-about moments in the zoo.",
+  },
+  {
+    id: "dylan-collins-trivia-thread",
+    name: "Dylan Collins Trivia Thread",
+    type: "People",
+    visitorBonus: 8,
+    preferences: ["Extinct", "Rare", "Cryptid"],
+    description: "A trivia thread about rare beasts, vanished animals, and suspiciously unconfirmed creatures sparks curiosity and a surprising number of weekend plans.",
+  },
+  {
+    id: "romeo-tiramisu-review",
+    name: "Romeo Tiramisu Review",
+    type: "People",
+    visitorBonus: 6,
+    preferences: ["Guest Relations", "Entertainment"],
+    description: "A poetic review praises the zoo with the most charm, warmth, and atmosphere, and somehow makes a normal day trip sound almost romantic.",
+  },
+  {
+    id: "flick-mulligan-accessibility-feature",
+    name: "Flick Mulligan Accessibility Feature",
+    type: "People",
+    visitorBonus: 7,
+    preferences: ["Accessibility", "Walkthrough", "Operations"],
+    description: "A practical feature highlights the zoo that is easiest to navigate and easiest to enjoy without feeling like guests are training for an expedition.",
+  },
+  {
+    id: "around-the-world-in-one-zoo",
+    name: "Around the World in One Zoo",
+    type: "People",
+    visitorBonus: 9,
+    preferences: ["International"],
+    lastingTags: ["International"],
+    description: "A travel feature celebrates the zoo that feels most global, rewarding the place where visitors can bounce from continent to continent without leaving town.",
+  },
+  {
+    id: "antarctic-family-feature",
+    name: "Antarctic Family Feature",
+    type: "People",
+    visitorBonus: 7,
+    preferences: ["Antarctica", "Penguin", "Cold"],
+    description: "A cold-climate family feature turns one icy exhibit into the zoo trip every parent suddenly hears about at least twice that week.",
+  },
+];
+
+peopleDeck.forEach((card) => {
+  card.visitorBonus *= VISITOR_SCALE;
+});
+
+const PUBLICITY_COPY = {
+  "Channel 7 Morning Zoo Live": {
+    single: (winner) => `Channel 7 put ${winner} on television in the most compelling way, making it look like the livest zoo in town.`,
+    tie: (shareText, count) => `${count === 2 ? "Two zoos" : `${count} zoos`} came off especially well during Channel 7 Morning Zoo Live: ${shareText}.`,
+    none: (name) => `Channel 7 Morning Zoo Live did not find a zoo that felt lively enough to create a real visitor rush yet.`,
+  },
+  "Channel 7 Troubled Zoo Spotlight": {
+    single: (winner) => `Channel 7's troubled-zoo spotlight portrayed ${winner} as a place worth saving and visiting, bringing in both guests and support.`,
+    tie: (shareText, count) => `Channel 7's troubled-zoo spotlight gave ${count === 2 ? "two struggling zoos" : `${count} struggling zoos`} a meaningful boost: ${shareText}.`,
+    none: () => `Channel 7 Troubled Zoo Spotlight did not find a trailing zoo to focus on this round.`,
+  },
+  "Viral Cutest Zoo Ever Clip": {
+    single: (winner) => `The cutest moments in Viral Cutest Zoo Ever Clip came together best at ${winner}, making it the zoo families suddenly wanted to see in person.`,
+    tie: (shareText, count) => `${count === 2 ? "Two zoos" : `${count} zoos`} shared the adorable buzz from Viral Cutest Zoo Ever Clip: ${shareText}.`,
+    none: () => `Viral Cutest Zoo Ever Clip did not find enough sweet, shareable moments to push visitors toward any one zoo yet.`,
+  },
+  "Cooking With Karen Zoo Episode": {
+    single: (winner) => `Cooking With Karen made ${winner} look like the tastiest stop in the zoo world, sending hungry families its way.`,
+    tie: (shareText, count) => `Karen gave ${count === 2 ? "two zoos" : `${count} zoos`} equally tempting food buzz in Cooking With Karen Zoo Episode: ${shareText}.`,
+    none: () => `Cooking With Karen Zoo Episode did not find a food scene worth hyping hard enough to move visitors yet.`,
+  },
+  "Top Predator Encounters Feature": {
+    single: (winner) => `Top Predator Encounters Feature made ${winner} look like the fiercest stop on the list, drawing the strongest thrill-seeking interest.`,
+    tie: (shareText, count) => `${count === 2 ? "Two zoos" : `${count} zoos`} came off equally intense in Top Predator Encounters Feature: ${shareText}.`,
+    none: () => `Top Predator Encounters Feature did not find a predator experience strong enough to create a clear visitor favorite yet.`,
+  },
+  "Mesmerizing Aquarium Reel": {
+    single: (winner) => `Mesmerizing Aquarium Reel showcased ${winner} as the most calming and captivating aquatic visit, drawing the strongest audience interest.`,
+    tie: (shareText, count) => `${count === 2 ? "Two zoos" : `${count} zoos`} shared the underwater buzz from Mesmerizing Aquarium Reel: ${shareText}.`,
+    none: () => `Mesmerizing Aquarium Reel did not find an aquatic experience strong enough to send viewers rushing to one zoo yet.`,
+  },
+  "Primate Interaction Video": {
+    single: (winner) => `Primate Interaction Video made ${winner} look like the place for unforgettable monkey moments and guest reactions.`,
+    tie: (shareText, count) => `${count === 2 ? "Two zoos" : `${count} zoos`} looked equally impossible to skip in Primate Interaction Video: ${shareText}.`,
+    none: () => `Primate Interaction Video did not find enough memorable primate interaction to create a clear visitor bump yet.`,
+  },
+  "Tiffany Ringwald Zoo Performance": {
+    single: (winner) => `Tiffany Ringwald's performance put ${winner} in the brightest spotlight, driving the biggest wave of visitor interest.`,
+    tie: (shareText, count) => `Tiffany Ringwald Zoo Performance spread its spotlight across ${count === 2 ? "two zoos" : `${count} zoos`}: ${shareText}.`,
+    none: () => `Tiffany Ringwald Zoo Performance did not find a zoo atmosphere strong enough to turn the clip into a visitor rush yet.`,
+  },
+  "DJ Lite 2.0 Zoo Vibes Post": {
+    single: (winner) => `DJ Lite 2.0 made ${winner} feel the most alive with motion, sound, and ride energy, pulling in the strongest audience response.`,
+    tie: (shareText, count) => `DJ Lite 2.0 gave ${count === 2 ? "two zoos" : `${count} zoos`} the same stylish visitor boost: ${shareText}.`,
+    none: () => `DJ Lite 2.0 Zoo Vibes Post did not find enough movement, rhythm, or ride appeal to create a clear favorite yet.`,
+  },
+  "Mullet Man's Country Zoo Pick": {
+    single: (winner) => `Mullet Man's recommendation landed best for ${winner}, which looked like the kind of place families would actually pile into the truck for.`,
+    tie: (shareText, count) => `Mullet Man gave ${count === 2 ? "two zoos" : `${count} zoos`} equal country-zoo bragging rights: ${shareText}.`,
+    none: () => `Mullet Man's Country Zoo Pick did not find a zoo with enough goats, rides, and real-food appeal to move the crowd yet.`,
+  },
+  "Skel-O-Dude Night Feature": {
+    single: (winner) => `Skel-O-Dude Night Feature portrayed ${winner} as the eeriest and most unforgettable stop, drawing the strongest dark-side curiosity.`,
+    tie: (shareText, count) => `Skel-O-Dude Night Feature gave ${count === 2 ? "two zoos" : `${count} zoos`} equal eerie attention: ${shareText}.`,
+    none: () => `Skel-O-Dude Night Feature did not find a zoo spooky enough to trigger a meaningful visitor wave yet.`,
+  },
+  "Captain Zoogle & Friends Episode": {
+    single: (winner) => `Captain Zoogle & Friends made ${winner} look like the must-visit zoo for kids, sending the strongest family interest its way.`,
+    tie: (shareText, count) => `Captain Zoogle & Friends gave ${count === 2 ? "two zoos" : `${count} zoos`} equal family-show buzz: ${shareText}.`,
+    none: () => `Captain Zoogle & Friends Episode did not find a zoo playful enough to become the clear kids' favorite yet.`,
+  },
+  "Cierra St. Hilton Luxury List": {
+    single: (winner) => `Cierra St. Hilton's list made ${winner} feel like the most polished and worth-splurging-on zoo experience.`,
+    tie: (shareText, count) => `Cierra St. Hilton Luxury List gave ${count === 2 ? "two zoos" : `${count} zoos`} equal upscale buzz: ${shareText}.`,
+    none: () => `Cierra St. Hilton Luxury List did not find a zoo polished enough to earn a real travel-and-comfort boost yet.`,
+  },
+  "Captain Dependable Safety Report": {
+    single: (winner) => `Captain Dependable's report made ${winner} look like the safest and most confidently run zoo in the group.`,
+    tie: (shareText, count) => `Captain Dependable Safety Report praised ${count === 2 ? "two zoos" : `${count} zoos`} equally for being well run: ${shareText}.`,
+    none: () => `Captain Dependable Safety Report did not find a zoo dependable enough to generate a clear visitor boost yet.`,
+  },
+  "Mad Hatter's Curious Zoo": {
+    single: (winner) => `Mad Hatter's Curious Zoo spotlighted ${winner} as the most imaginative and delightfully odd experience, drawing the strongest audience curiosity.`,
+    tie: (shareText, count) => `Mad Hatter's Curious Zoo spread its whimsical spotlight across ${count === 2 ? "two zoos" : `${count} zoos`}: ${shareText}.`,
+    none: () => `Mad Hatter's Curious Zoo did not find a zoo imaginative enough to turn curiosity into a real visitor bump yet.`,
+  },
+  "Panda Portrait Surprise": {
+    single: (winner) => `Panda Portrait Surprise made ${winner} look like the most joyful and shareable stop in the zoo, driving the strongest audience interest.`,
+    tie: (shareText, count) => `Panda Portrait Surprise gave ${count === 2 ? "two zoos" : `${count} zoos`} equally charming attention: ${shareText}.`,
+    none: () => `Panda Portrait Surprise did not find a zoo interactive enough to turn the reveal into a clear visitor bump yet.`,
+  },
+  "Dylan Collins Trivia Thread": {
+    single: (winner) => `Dylan Collins' trivia thread made ${winner} look like the most curiosity-provoking zoo in the discussion, drawing the strongest interest.`,
+    tie: (shareText, count) => `Dylan Collins Trivia Thread gave ${count === 2 ? "two zoos" : `${count} zoos`} equal curiosity buzz: ${shareText}.`,
+    none: () => `Dylan Collins Trivia Thread did not find a zoo strange or rare enough to spark a clear visitor rush yet.`,
+  },
+  "Romeo Tiramisu Review": {
+    single: (winner) => `Romeo Tiramisu's review made ${winner} feel the most charming and worth experiencing in person.`,
+    tie: (shareText, count) => `Romeo Tiramisu Review spread its romantic praise across ${count === 2 ? "two zoos" : `${count} zoos`}: ${shareText}.`,
+    none: () => `Romeo Tiramisu Review did not find a zoo charming enough to create a meaningful audience swing yet.`,
+  },
+  "Flick Mulligan Accessibility Feature": {
+    single: (winner) => `Flick Mulligan's feature made ${winner} look easiest to navigate and easiest to enjoy, driving the strongest practical interest.`,
+    tie: (shareText, count) => `Flick Mulligan Accessibility Feature highlighted ${count === 2 ? "two zoos" : `${count} zoos`} as equally easy to enjoy: ${shareText}.`,
+    none: () => `Flick Mulligan Accessibility Feature did not find a zoo accessible enough to produce a clear visitor bump yet.`,
+  },
+  "Around the World in One Zoo": {
+    single: (winner) => `Around the World in One Zoo made ${winner} look like the richest global zoo experience, attracting the strongest travel-minded interest.`,
+    tie: (shareText, count) => `Around the World in One Zoo spread its globe-trotting buzz across ${count === 2 ? "two zoos" : `${count} zoos`}: ${shareText}.`,
+    none: () => `Around the World in One Zoo did not find a zoo globally varied enough to create a clear favorite yet.`,
+  },
+  "Antarctic Family Feature": {
+    single: (winner) => `Antarctic Family Feature made ${winner} feel like the cold-weather zoo trip families would talk about all week.`,
+    tie: (shareText, count) => `Antarctic Family Feature gave ${count === 2 ? "two zoos" : `${count} zoos`} equal icy family buzz: ${shareText}.`,
+    none: () => `Antarctic Family Feature did not find a cold-climate zoo experience strong enough to create a clear visitor bump yet.`,
+  },
+};
+
+function publicityCopy(card) {
+  return PUBLICITY_COPY[card.name] || {};
+}
+
+function publicityWinnerLine(card, winnerName) {
+  const custom = publicityCopy(card);
+  return custom.single ? custom.single(winnerName) : `The publicity spotlight landed strongest on ${winnerName}, driving the most visitor interest.`;
+}
+
+function publicityTieLine(card, winners, splitBase, splitRemainder, shareTextOverride = "") {
+  const shareText =
+    shareTextOverride ||
+    winners
+      .map((entry, index) => `${entry.player.name} (${splitBase + (index < splitRemainder ? 1 : 0)})`)
+      .join(", ");
+  const custom = publicityCopy(card);
+  return custom.tie
+    ? custom.tie(shareText, winners.length)
+    : `${winners.length === 2 ? "Two zoos benefit from" : `${winners.length} zoos benefit from`} ${card.name}: ${shareText}.`;
+}
+
+function publicityNoMatchLine(card) {
+  const custom = publicityCopy(card);
+  return custom.none
+    ? custom.none(card.name)
+    : `Publicity from ${card.name} has not found a strong enough match to create a meaningful visitor bump yet.`;
+}
+
+const TAG_IMPACT_PHRASES = {
+  Accessibility: "easy navigation",
+  AnimalExpert: "expert animal guidance",
+  "Animal Expert": "expert animal guidance",
+  Antarctica: "an Antarctic atmosphere",
+  Aquatic: "aquatic exhibits",
+  Australia: "Australian wildlife appeal",
+  BigDraw: "headline attractions",
+  "Big Draw": "headline attractions",
+  Bird: "bird encounters",
+  "Birds of Prey": "birds-of-prey drama",
+  Canine: "canine encounters",
+  China: "Chinese wildlife themes",
+  Cold: "cold-weather appeal",
+  Costumed: "costumed character energy",
+  Cryptid: "cryptid intrigue",
+  Cute: "adorable animal moments",
+  Dining: "food options",
+  Educational: "educational value",
+  Elephant: "elephant encounters",
+  Entertainment: "showmanship and live energy",
+  Extinct: "extinct-animal appeal",
+  Fish: "aquarium displays",
+  Food: "food options",
+  Galapagos: "Galapagos atmosphere",
+  Gentle: "gentle family-friendly encounters",
+  "Guest Relations": "guest-friendly polish",
+  India: "Indian wildlife themes",
+  Interactive: "interactive exhibits",
+  International: "global atmosphere",
+  "Kids World": "kids-focused activities",
+  Lion: "lion encounters",
+  Transportation: "easy movement and arrival",
+  Monkey: "monkey moments",
+  Music: "live music energy",
+  Nocturnal: "after-dark mystery",
+  Operations: "smooth operations",
+  Panda: "panda appeal",
+  Parking: "easy arrivals",
+  Parrot: "parrot encounters",
+  Penguin: "penguin encounters",
+  Predator: "predator exhibits",
+  Primate: "primate encounters",
+  Rare: "rare-animal curiosity",
+  Reptile: "reptile exhibits",
+  Ride: "ride experiences",
+  Security: "a sense of safety",
+  Themed: "themed attractions",
+  Tiger: "tiger encounters",
+  Walkthrough: "walkthrough experiences",
+  Water: "waterfront scenery",
+};
+
+function publicityMediumProfile(cardName) {
+  if (cardName.includes("Episode")) {
+    return { noun: "episode", verb: "highlighted", emphasis: "featured on the show" };
+  }
+  if (cardName.includes("Review")) {
+    return { noun: "review", verb: "praised", emphasis: "highlighted in the review" };
+  }
+  if (cardName.includes("Feature")) {
+    return { noun: "feature", verb: "showcased", emphasis: "featured in the coverage" };
+  }
+  if (cardName.includes("Clip")) {
+    return { noun: "clip", verb: "captured", emphasis: "made memorable in the clip" };
+  }
+  if (cardName.includes("Video")) {
+    return { noun: "video", verb: "showcased", emphasis: "made memorable in the video" };
+  }
+  if (cardName.includes("Reel")) {
+    return { noun: "reel", verb: "showcased", emphasis: "made memorable in the reel" };
+  }
+  if (cardName.includes("Thread")) {
+    return { noun: "thread", verb: "highlighted", emphasis: "stood out in the thread" };
+  }
+  if (cardName.includes("Report")) {
+    return { noun: "report", verb: "praised", emphasis: "featured in the report" };
+  }
+  if (cardName.includes("List")) {
+    return { noun: "list", verb: "ranked", emphasis: "stood out on the list" };
+  }
+  if (cardName.includes("Post")) {
+    return { noun: "post", verb: "highlighted", emphasis: "stood out in the post" };
+  }
+  return { noun: "coverage", verb: "highlighted", emphasis: "stood out in the coverage" };
+}
+
+function normalizeImpactTag(tag) {
+  return tag.replace(/ x\d+$/, "").split(" via ")[0].trim();
+}
+
+function impactPhraseForTag(tag) {
+  const normalized = normalizeImpactTag(tag);
+  return TAG_IMPACT_PHRASES[normalized] || `${normalized.toLowerCase()} appeal`;
+}
+
+function uniqueImpactPhrases(tags) {
+  const seen = new Set();
+  const phrases = [];
+  tags.forEach((tag) => {
+    const phrase = impactPhraseForTag(tag);
+    if (!seen.has(phrase)) {
+      seen.add(phrase);
+      phrases.push(phrase);
+    }
+  });
+  return phrases;
+}
+
+function naturalJoin(items) {
+  if (!items.length) return "";
+  if (items.length === 1) return items[0];
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}`;
+}
+
+function impactStrengthText(entry) {
+  const directPhrases = uniqueImpactPhrases(entry.directTags);
+  const relatedPhrases = uniqueImpactPhrases(entry.relatedTags);
+  if (directPhrases.length >= 2) {
+    return naturalJoin(directPhrases.slice(0, 2));
+  }
+  if (directPhrases.length === 1 && relatedPhrases.length >= 1) {
+    return naturalJoin([directPhrases[0], relatedPhrases[0]]);
+  }
+  if (directPhrases.length === 1) {
+    return directPhrases[0];
+  }
+  if (relatedPhrases.length >= 2) {
+    return naturalJoin(relatedPhrases.slice(0, 2));
+  }
+  if (relatedPhrases.length === 1) {
+    return relatedPhrases[0];
+  }
+  return "the themes featured in this publicity";
+}
+
+function publicityImpactLabel(entry, winners) {
+  const isWinner = winners.some((winnerEntry) => winnerEntry.player.id === entry.player.id);
+  if (isWinner && winners.length === 1) return "Clear Favorite";
+  if (isWinner && winners.length > 1) return "Shared Spotlight";
+  return "Lagging Behind";
+}
+
+function publicityImpactNarrative(card, entry, winners) {
+  const profile = publicityMediumProfile(card.name);
+  const isWinner = winners.some((winnerEntry) => winnerEntry.player.id === entry.player.id);
+  const strengthText = impactStrengthText(entry);
+
+  if (card.specialRule === "lowest-visitors") {
+    if (isWinner && winners.length === 1) {
+      return `${entry.player.name} drew the sympathy spotlight. As the zoo with the fewest visitors, it became the focus of the segment and picked up both attendance and donation support.`;
+    }
+    if (isWinner) {
+      return `${entry.player.name} shared the sympathy spotlight. It was tied for the lowest visitor total, so the segment split its support between the struggling zoos.`;
+    }
+    return `${entry.player.name} was not the focus of this segment. The coverage was aimed at zoos currently drawing fewer visitors.`;
+  }
+
+  if (isWinner && winners.length === 1) {
+    return `${entry.player.name} became the clear favorite. Its strong ${strengthText} matched exactly what viewers loved in the ${profile.noun}, making it the most talked-about destination.`;
+  }
+  if (isWinner) {
+    return `${entry.player.name} shared the spotlight. Its ${strengthText} lined up well enough with what the ${profile.noun} ${profile.verb}, so it split the audience interest with another zoo.`;
+  }
+  if (entry.score > 0) {
+    return `${entry.player.name} was lagging behind. It had some of the right ingredients, but its ${strengthText} did not line up as completely with what the ${profile.noun} emphasized.`;
+  }
+  return `${entry.player.name} was left out of the strongest wave of attention. It currently lacks the kinds of experiences this ${profile.noun} pushed into the spotlight.`;
+}
+
+function publicityImpactDetails(entry, card, winners) {
+  if (card.specialRule === "lowest-visitors") {
+    const isWinner = winners.some((winnerEntry) => winnerEntry.player.id === entry.player.id);
+    return `
+      <div class="impact-detail-line"><strong>Current Visitors:</strong> ${formatVisitors(entry.player.totalCrowd)}</div>
+      <div class="impact-detail-line"><strong>Status:</strong> ${isWinner ? "Qualified for support" : "Not currently lowest"}</div>
+    `;
+  }
+
+  const directText = entry.directTags.length ? entry.directTags.join(", ") : "None";
+  const relatedText = entry.relatedTags.length ? entry.relatedTags.join(", ") : "None";
+  return `
+    <div class="impact-detail-line"><strong>Score:</strong> ${formatPreferenceScore(entry.score)} point${entry.score === 1 ? "" : "s"}</div>
+    <div class="impact-detail-line"><strong>Direct Matches:</strong> ${directText}</div>
+    <div class="impact-detail-line"><strong>Related Matches:</strong> ${relatedText}</div>
+  `;
+}
+
+
+function publicityOutcomeText(card, winners) {
+  if (!winners.length) {
+    return publicityNoMatchLine(card);
+  }
+
+  if (card.specialRule === "lowest-visitors") {
+    const visitorSplitBase = Math.floor(card.visitorBonus / winners.length);
+    const visitorSplitRemainder = card.visitorBonus % winners.length;
+    const donationSplitBase = Math.floor((card.donationBonus ?? 0) / winners.length);
+    const donationSplitRemainder = (card.donationBonus ?? 0) % winners.length;
+
+    if (winners.length === 1) {
+      const winner = winners[0].player.name;
+      const visitorShare = visitorSplitBase + (visitorSplitRemainder > 0 ? 1 : 0);
+      const donationShare = donationSplitBase + (donationSplitRemainder > 0 ? 1 : 0);
+      return `${publicityWinnerLine(card, winner)} ${winner} gains +${formatVisitors(visitorShare)} visitors and ${currency(donationShare)} in donations.`;
+    }
+
+    const shareText = winners
+      .map((entry, index) => {
+        const visitorShare = visitorSplitBase + (index < visitorSplitRemainder ? 1 : 0);
+        const donationShare = donationSplitBase + (index < donationSplitRemainder ? 1 : 0);
+        return `${entry.player.name} (+${formatVisitors(visitorShare)} visitors, ${currency(donationShare)})`;
+      })
+      .join(", ");
+    return publicityTieLine(card, winners, visitorSplitBase, visitorSplitRemainder, shareText);
+  }
+
+  if (winners.length === 1) {
+    return publicityWinnerLine(card, winners[0].player.name);
+  }
+
+  const splitBase = Math.floor(card.visitorBonus / winners.length);
+  const splitRemainder = card.visitorBonus % winners.length;
+  return publicityTieLine(card, winners, splitBase, splitRemainder);
+}
+
+const rivals = [
+  { id: "ai-1", name: "Pepper Zoological Park", style: "family" },
+  { id: "ai-2", name: "Collins Park Zoo", style: "prestige" },
+];
+
+const DEFAULT_PLAYER_ZOO_NAME = "Your Zoo";
+
+const ZOO_LOGOS = {
+  [DEFAULT_PLAYER_ZOO_NAME]: ["./assets/Logos/generic-zoo400x400.jpg", "./assets/logos/generic-zoo400x400.jpg"],
+  "Pepper Zoological Park": ["./assets/Logos/Pepper-Logo400x400.jpg", "./assets/logos/Pepper-Logo400x400.jpg"],
+  "Collins Park Zoo": ["./assets/Logos/Collins-Park-Zoo400x400.jpg", "./assets/logos/Collins-Park-Zoo400x400.jpg"],
+};
+
+const state = {
+  currentScreen: "splash-screen",
+  currentRound: 1,
+  currentReveal: null,
+  revealQueue: [],
+  market: [],
+  pendingPeople: [],
+  auction: null,
+  auctionLog: [],
+  roundStartNotices: [],
+  roundStartPause: false,
+  players: [],
+  winner: null,
+  pendingLoanDecision: false,
+  pendingLoanOffer: false,
+  zooDrawPile: [],
+  peopleDrawPile: [],
+  draftPool: [],
+  draftPicksRemaining: STARTER_DRAFT_PICKS,
+  draftTurnIndex: 0,
+  fixedThemeChoice: null,
+  fixedOfferCounts: {},
+  fixedOfferState: null,
+  specialNotice: null,
+  mapOpen: false,
+};
+
+let autoRevealTimer = null;
+
+const ZOO_MAP_ZONES = [
+  {
+    id: "entry-plaza",
+    name: "Entry Plaza",
+    focusTags: ["Parking", "Guest Relations", "Food", "Shopping", "Operations", "Accessibility"],
+    blurb: "Arrival comforts, polished guest amenities, and the first impression of the zoo.",
+  },
+  {
+    id: "safari-plains",
+    name: "Safari Plains",
+    focusTags: ["Safari", "Lion", "Elephant", "Zebra", "Big Draw", "Ride", "Transportation"],
+    blurb: "Ride-through draws, savanna stars, and the kind of attractions guests plan around.",
+  },
+  {
+    id: "wild-waterfront",
+    name: "Wild Waterfront",
+    focusTags: ["Water", "Aquatic", "Fish", "Penguin", "Otter", "Whale", "Antarctica", "Galapagos"],
+    blurb: "Aquariums, penguins, marine giants, and water-heavy habitats that feel cool and immersive.",
+  },
+  {
+    id: "kids-cove",
+    name: "Kids Cove",
+    focusTags: ["Kids World", "Cute", "Gentle", "Interactive", "Entertainment", "Food"],
+    blurb: "Hands-on family zones, performers, petting spaces, and easy crowd-pleasers.",
+  },
+  {
+    id: "international-promenade",
+    name: "International Promenade",
+    focusTags: ["International", "China", "India", "Australia", "Brazil", "Galapagos", "Antarctica", "Panda"],
+    blurb: "Global headliners arranged like a world tour through the zoo.",
+  },
+  {
+    id: "reptile-ridge",
+    name: "Reptile Ridge",
+    focusTags: ["Reptile", "Snake", "Swamp", "Desert", "Indoor", "Predator"],
+    blurb: "Serpents, reptiles, strange interiors, and darker corners with edge.",
+  },
+  {
+    id: "mystery-forest",
+    name: "Mystery Forest",
+    focusTags: ["Forest", "Primate", "Monkey", "Bird", "Cryptid", "Extinct", "Big Draw", "Walkthrough"],
+    blurb: "Woodland creatures, primates, cryptids, and adventure zones tucked off the main trail.",
+  },
+  {
+    id: "expansion-grounds",
+    name: "Expansion Grounds",
+    focusTags: ["Interactive", "Food", "Shopping"],
+    blurb: "Flexible future-growth space for overflow builds, mixed-use attractions, and later expansion.",
+  },
+];
+
+const ZOO_MAP_SLOTS = [
+  { id: "entry-gate-1", code: "E1", name: "Front Gate Plaza", primaryZone: "entry-plaza", secondaryZone: "kids-cove", left: 10, top: 16 },
+  { id: "entry-gate-2", code: "E2", name: "Welcome Loop", primaryZone: "entry-plaza", secondaryZone: "international-promenade", left: 16, top: 21 },
+  { id: "entry-gate-3", code: "E3", name: "Ticket Garden", primaryZone: "entry-plaza", secondaryZone: "international-promenade", left: 23, top: 25 },
+  { id: "entry-gate-4", code: "E4", name: "Guest Court", primaryZone: "entry-plaza", secondaryZone: "kids-cove", left: 11, top: 30 },
+  { id: "entry-gate-5", code: "E5", name: "Arrival Plaza", primaryZone: "entry-plaza", secondaryZone: "international-promenade", left: 28, top: 17 },
+  { id: "entry-gate-6", code: "E6", name: "Front Square", primaryZone: "entry-plaza", secondaryZone: "kids-cove", left: 24, top: 33 },
+
+  { id: "intl-west-1", code: "I1", name: "Promenade West", primaryZone: "international-promenade", secondaryZone: "kids-cove", left: 37, top: 19 },
+  { id: "intl-west-2", code: "I2", name: "China Terrace", primaryZone: "international-promenade", secondaryZone: "entry-plaza", left: 42, top: 14 },
+  { id: "intl-east-1", code: "I3", name: "Promenade East", primaryZone: "international-promenade", secondaryZone: "reptile-ridge", left: 55, top: 16 },
+  { id: "intl-east-2", code: "I4", name: "World Court", primaryZone: "international-promenade", secondaryZone: "wild-waterfront", left: 49, top: 24 },
+  { id: "intl-north-1", code: "I5", name: "India Walk", primaryZone: "international-promenade", secondaryZone: "wild-waterfront", left: 60, top: 11 },
+  { id: "intl-south-1", code: "I6", name: "Global Market", primaryZone: "international-promenade", secondaryZone: "safari-plains", left: 43, top: 32 },
+
+  { id: "waterfront-1", code: "W1", name: "Aquarium Quay", primaryZone: "wild-waterfront", secondaryZone: "international-promenade", left: 71, top: 18 },
+  { id: "waterfront-2", code: "W2", name: "Penguin Pier", primaryZone: "wild-waterfront", secondaryZone: "entry-plaza", left: 64, top: 23 },
+  { id: "waterfront-3", code: "W3", name: "Harbor Walk", primaryZone: "wild-waterfront", secondaryZone: "reptile-ridge", left: 77, top: 26 },
+  { id: "waterfront-4", code: "W4", name: "Lagoon Launch", primaryZone: "wild-waterfront", secondaryZone: "international-promenade", left: 66, top: 31 },
+  { id: "waterfront-5", code: "W5", name: "Tidal Edge", primaryZone: "wild-waterfront", secondaryZone: "reptile-ridge", left: 82, top: 17 },
+  { id: "waterfront-6", code: "W6", name: "Ice Shelf Way", primaryZone: "wild-waterfront", secondaryZone: "entry-plaza", left: 59, top: 28 },
+
+  { id: "kids-1", code: "K1", name: "Kids Midway", primaryZone: "kids-cove", secondaryZone: "entry-plaza", left: 12, top: 50 },
+  { id: "kids-2", code: "K2", name: "Barn Walk", primaryZone: "kids-cove", secondaryZone: "mystery-forest", left: 18, top: 58 },
+  { id: "kids-3", code: "K3", name: "Petting Path", primaryZone: "kids-cove", secondaryZone: "mystery-forest", left: 23, top: 65 },
+  { id: "kids-4", code: "K4", name: "Family Snack Corner", primaryZone: "kids-cove", secondaryZone: "entry-plaza", left: 26, top: 54 },
+  { id: "kids-5", code: "K5", name: "Stage Lawn", primaryZone: "kids-cove", secondaryZone: "entry-plaza", left: 8, top: 45 },
+  { id: "kids-6", code: "K6", name: "Tortoise Corner", primaryZone: "kids-cove", secondaryZone: "mystery-forest", left: 20, top: 71 },
+
+  { id: "safari-1", code: "S1", name: "Safari Overlook", primaryZone: "safari-plains", secondaryZone: "international-promenade", left: 36, top: 47 },
+  { id: "safari-2", code: "S2", name: "Lion Rail Stop", primaryZone: "safari-plains", secondaryZone: "wild-waterfront", left: 45, top: 48 },
+  { id: "safari-3", code: "S3", name: "Savanna Bend", primaryZone: "safari-plains", secondaryZone: "reptile-ridge", left: 54, top: 49 },
+  { id: "safari-4", code: "S4", name: "Elephant Route", primaryZone: "safari-plains", secondaryZone: "reptile-ridge", left: 59, top: 56 },
+  { id: "safari-5", code: "S5", name: "Monorail Loop", primaryZone: "safari-plains", secondaryZone: "wild-waterfront", left: 47, top: 60 },
+  { id: "safari-6", code: "S6", name: "South Savanna", primaryZone: "safari-plains", secondaryZone: "mystery-forest", left: 39, top: 67 },
+
+  { id: "reptile-1", code: "R1", name: "Reptile Terrace", primaryZone: "reptile-ridge", secondaryZone: "international-promenade", left: 70, top: 48 },
+  { id: "reptile-2", code: "R2", name: "Serpent Hollow", primaryZone: "reptile-ridge", secondaryZone: "mystery-forest", left: 80, top: 59 },
+  { id: "reptile-3", code: "R3", name: "Shadow Bluff", primaryZone: "reptile-ridge", secondaryZone: "wild-waterfront", left: 75, top: 66 },
+  { id: "reptile-4", code: "R4", name: "Swamp Walk", primaryZone: "reptile-ridge", secondaryZone: "safari-plains", left: 66, top: 59 },
+  { id: "reptile-5", code: "R5", name: "Ranch Turn", primaryZone: "reptile-ridge", secondaryZone: "kids-cove", left: 74, top: 72 },
+  { id: "reptile-6", code: "R6", name: "Desert Bend", primaryZone: "reptile-ridge", secondaryZone: "wild-waterfront", left: 84, top: 48 },
+
+  { id: "mystery-1", code: "M1", name: "Cryptid Trail", primaryZone: "mystery-forest", secondaryZone: "kids-cove", left: 14, top: 82 },
+  { id: "mystery-2", code: "M2", name: "Canopy Crossing", primaryZone: "mystery-forest", secondaryZone: "international-promenade", left: 27, top: 76 },
+  { id: "mystery-3", code: "M3", name: "Howl Hollow", primaryZone: "mystery-forest", secondaryZone: "kids-cove", left: 23, top: 79 },
+  { id: "mystery-4", code: "M4", name: "Bear Ridge", primaryZone: "mystery-forest", secondaryZone: "safari-plains", left: 34, top: 71 },
+  { id: "mystery-5", code: "M5", name: "Owl Hollow", primaryZone: "mystery-forest", secondaryZone: "reptile-ridge", left: 30, top: 84 },
+  { id: "mystery-6", code: "M6", name: "Woodland Rise", primaryZone: "mystery-forest", secondaryZone: "kids-cove", left: 10, top: 74 },
+
+  { id: "expansion-1", code: "X1", name: "Future Grove", primaryZone: "expansion-grounds", secondaryZone: "reptile-ridge", left: 69, top: 84 },
+  { id: "expansion-2", code: "X2", name: "Festival Yard", primaryZone: "expansion-grounds", secondaryZone: "safari-plains", left: 78, top: 78 },
+  { id: "expansion-3", code: "X3", name: "Lakeside Annex", primaryZone: "expansion-grounds", secondaryZone: "wild-waterfront", left: 61, top: 73 },
+  { id: "expansion-4", code: "X4", name: "Discovery Court", primaryZone: "expansion-grounds", secondaryZone: "international-promenade", left: 85, top: 86 },
+];
+
+const MAP_PRIMARY_REVENUE_PER_MATCH = 40;
+const MAP_SECONDARY_REVENUE_PER_MATCH = 15;
+const MAP_VISITOR_PER_STRONG_FIT = 5;
+
+
+
+function scheduleAutoReveal(delay = 260) {
+  if (autoRevealTimer) {
+    clearTimeout(autoRevealTimer);
+  }
+  autoRevealTimer = setTimeout(() => {
+    autoRevealTimer = null;
+    if (state.auction || state.roundStartPause || state.pendingLoanOffer || state.pendingLoanDecision) return;
+    if (elements.roundSummaryDialog?.open || elements.gameOverDialog?.open) return;
+    if (!state.revealQueue.length) return;
+    revealNextCard();
+  }, delay);
+}
+
+const elements = {
+  screens: [...document.querySelectorAll(".screen")],
+  tutorialDialog: document.getElementById("tutorial-dialog"),
+  roundSummaryDialog: document.getElementById("round-summary-dialog"),
+  gameOverDialog: document.getElementById("game-over-dialog"),
+  officeGoalCopy: document.getElementById("office-goal-copy"),
+  officeAiSummary: document.getElementById("office-ai-summary"),
+  playerZooNameInput: document.getElementById("player-zoo-name"),
+    draftPicksLeft: document.getElementById("draft-picks-left"),
+  draftCashPreview: document.getElementById("draft-cash-preview"),
+  draftTurnLabel: document.getElementById("draft-turn-label"),
+  draftPool: document.getElementById("draft-pool"),
+  draftPlayerPicks: document.getElementById("draft-player-picks"),
+  draftAiPicks: document.getElementById("draft-ai-picks"),
+  draftStandings: document.getElementById("draft-standings"),
+  roundDisplay: document.getElementById("round-display"),
+  playerMoney: document.getElementById("player-money"),
+  playerCrowd: document.getElementById("player-crowd"),
+  playerCrowdValue: document.getElementById("player-crowd-value"),
+  playerIncomeValue: document.getElementById("player-income-value"),
+  playerInventory: document.getElementById("player-inventory"),
+  playerStaff: document.getElementById("player-staff"),
+  playerMapSummary: document.getElementById("player-map-summary"),
+  playerMapSummaryFull: document.getElementById("player-map-summary-full"),
+  playerMapBoard: document.getElementById("player-map-board"),
+  playerMapAssignments: document.getElementById("player-map-assignments"),
+  zooMapOverlay: document.getElementById("zoo-map-overlay"),
+  openMapButton: document.getElementById("open-map-button"),
+  closeMapButton: document.getElementById("close-map-button"),
+  auctionTitle: document.getElementById("auction-title"),
+  auctionTypeBadge: document.getElementById("auction-type-badge"),
+  auctionCard: document.getElementById("auction-card"),
+  highestBid: document.getElementById("highest-bid"),
+  highestBidder: document.getElementById("highest-bidder"),
+  minimumBid: document.getElementById("minimum-bid"),
+  auctionLog: document.getElementById("auction-log"),
+  aiList: document.getElementById("ai-list"),
+  playerAssets: document.getElementById("player-assets"),
+  playerPeople: document.getElementById("player-people"),
+  fixedPriceActions: document.getElementById("fixed-price-actions"),
+  buyFixedButton: document.getElementById("buy-fixed-button"),
+  passFixedButton: document.getElementById("pass-fixed-button"),
+  fixedThemePanel: document.getElementById("fixed-theme-panel"),
+  fixedThemeOptions: document.getElementById("fixed-theme-options"),
+  summaryTitle: document.getElementById("summary-title"),
+  summaryContent: document.getElementById("summary-content"),
+  takeLoanButton: document.getElementById("take-loan-button"),
+  repayLoanButton: document.getElementById("repay-loan-button"),
+  gameOverTitle: document.getElementById("game-over-title"),
+  gameOverContent: document.getElementById("game-over-content"),
+  marketGrid: document.getElementById("market-grid"),
+  peopleMarket: document.getElementById("people-market"),
+  startAuctionButton: document.getElementById("start-auction-button"),
+  preferenceBattle: document.getElementById("preference-battle"),
+  bidPanel: document.getElementById("bid-panel"),
+  auctionActions: document.getElementById("auction-actions"),
+  auctionOnlyActions: document.getElementById("auction-only-actions"),
+};
+
+function makePlayer(name, isHuman, style = "", id = null) {
+  return {
+    id: id ?? slugifyCharacterName(name || (isHuman ? "your-zoo" : "zoo")),
+    name,
+    isHuman,
+    style,
+    money: STARTING_MONEY,
+    loanBalance: 0,
+    totalCrowd: 0,
+    assets: [],
+    people: [],
+    passed: false,
+    loanJustIssued: false,
+    distressRounds: 0,
+    lastReliefRound: 0,
+    draftSpent: 0,
+    draftPicks: 0,
+    zooMap: { assignments: {} },
+  };
+}
+
+function chosenPlayerZooName() {
+  const raw = elements.playerZooNameInput?.value?.trim() || "";
+  return raw || DEFAULT_PLAYER_ZOO_NAME;
+}
+
+function currency(amount) {
+  return `$${amount.toLocaleString()}`;
+}
+
+function formatVisitors(amount) {
+  return amount.toLocaleString();
+}
+
+function costLabel(card) {
+  return card.type === "Staff" ? "Salary" : "Upkeep";
+}
+
+function isPremiumHeadlineCard(card) {
+  return card.tags.includes("Big Draw") || card.tags.includes("Cryptid") || card.tags.includes("Extinct");
+}
+
+function isFixedPriceCard(card) {
+  if (!card || card.type !== "Attraction") return false;
+  return (
+    card.tags.includes("Food") ||
+    card.tags.includes("Gift Shop") ||
+    card.tags.includes("Souvenir") ||
+    card.tags.includes("Donation") ||
+    card.tags.includes("Operations") ||
+    card.tags.includes("Guest Relations")
+  );
+}
+
+function fixedOfferFamily(card) {
+  if (!isFixedPriceCard(card)) return null;
+  if (card.tags.includes("Gift Shop") || card.tags.includes("Souvenir")) {
+    return "gift-offer";
+  }
+  if (card.tags.includes("Food")) {
+    return "food-offer";
+  }
+  if (card.tags.includes("Donation")) {
+    return "donation-offer";
+  }
+  return card.id;
+}
+
+function dedupeTags(tags) {
+  return [...new Set(tags)];
+}
+
+function fixedCardThemes(card) {
+  if (!isFixedPriceCard(card)) return [];
+
+  if (card.tags.includes("Gift Shop") || card.tags.includes("Souvenir")) {
+    return [
+      {
+        key: "safari",
+        name: "Jungle Trading Post",
+        crowd: 50,
+        upkeep: 900,
+        tags: ["Gift Shop", "Souvenir", "Safari"],
+        description: "A themed gift shop that works best in busy family safari parks.",
+      },
+      {
+        key: "penguin",
+        name: "Polar Postcard Shop",
+        crowd: 50,
+        upkeep: 900,
+        tags: ["Gift Shop", "Souvenir", "Penguin", "Water"],
+        description: "A cool-weather souvenir shop that pairs well with penguin exhibits.",
+      },
+      {
+        key: "aviary",
+        name: "Skyfeather Keepsake Corner",
+        crowd: 50,
+        upkeep: 900,
+        tags: ["Gift Shop", "Souvenir", "Bird"],
+        description: "A bright bird-themed keepsake stand that fits aviary-focused zoos.",
+      },
+      {
+        key: "reptile",
+        name: "Scales and Souvenirs",
+        crowd: 50,
+        upkeep: 900,
+        tags: ["Gift Shop", "Souvenir", "Reptile", "Snake"],
+        description: "A reptile-themed gift stand that rewards specialist scales-and-slither builds.",
+      },
+      {
+        key: "prehistoric",
+        name: "Dino Discovery Store",
+        crowd: 100,
+        upkeep: 1800,
+        tags: ["Gift Shop", "Souvenir", "Extinct", "Interactive"],
+        description: "A high-interest shop that becomes very strong beside extinct attractions.",
+      },
+    ];
+  }
+
+  if (card.tags.includes("Food")) {
+    return [
+      {
+        key: "safari",
+        name: "Safari Snack Station",
+        crowd: 100,
+        upkeep: 1800,
+        tags: ["Food", "Safari", "Interactive"],
+        description: "A steady safari pit stop that fits neatly into expedition-style zoos.",
+      },
+      {
+        key: "penguin",
+        name: "Frosty Penguin Slushee Bar",
+        crowd: 100,
+        upkeep: 1800,
+        tags: ["Food", "Penguin", "Water", "Cute"],
+        description: "An icy penguin-themed refreshment stop that families love.",
+      },
+      {
+        key: "predator",
+        name: "Carnivore Burger Bar",
+        crowd: 100,
+        upkeep: 1800,
+        tags: ["Food", "Lion", "Predator"],
+        description: "A bold predator-themed burger stop that helps big-cat builds.",
+      },
+      {
+        key: "bird",
+        name: "Aviary Tea Garden",
+        crowd: 100,
+        upkeep: 1800,
+        tags: ["Food", "Bird", "Walkthrough"],
+        description: "A graceful bird-themed cafe that pairs nicely with aviary builds.",
+      },
+      {
+        key: "reptile",
+        name: "Reptile Ranch Grill",
+        crowd: 100,
+        upkeep: 1800,
+        tags: ["Food", "Reptile", "Snake"],
+        description: "A quirky reptile-themed grill that boosts specialist zoo combos.",
+      },
+    ];
+  }
+
+  return [];
+}
+
+function isCustomizableFixedCard(card) {
+  return fixedCardThemes(card).length > 0;
+}
+
+function customizeFixedCard(card, themeKey) {
+  const option = fixedCardThemes(card).find((entry) => entry.key === themeKey);
+  if (!option) return { ...card };
+
+  return {
+    ...card,
+    id: `${card.id}-${option.key}`,
+    baseOfferId: card.id,
+    name: option.name,
+    crowd: option.crowd ?? card.crowd,
+    upkeep: option.upkeep ?? card.upkeep,
+    tags: dedupeTags(option.tags),
+    description: option.description ?? card.description,
+  };
+}
+
+function playerOwnsCardName(player, cardName) {
+  return player.assets.some((asset) => asset.name === cardName);
+}
+
+function currentFixedBuyer() {
+  if (!state.fixedOfferState) return null;
+  const { order, index } = state.fixedOfferState;
+  return order[index] ?? null;
+}
+
+function buildFixedOfferOrder() {
+  return [...state.players].sort((a, b) => {
+    if (a.totalCrowd !== b.totalCrowd) return a.totalCrowd - b.totalCrowd;
+    if (a.isHuman && !b.isHuman) return -1;
+    if (!a.isHuman && b.isHuman) return 1;
+    return a.name.localeCompare(b.name);
+  });
+}
+
+function themeChoiceValue(player, baseCard, themeKey) {
+  const themedCard = customizeFixedCard(baseCard, themeKey);
+  if (playerOwnsCardName(player, themedCard.name)) {
+    return Number.NEGATIVE_INFINITY;
+  }
+  let score = cardStrategicValue(themedCard, player);
+  state.pendingPeople.forEach((personCard) => {
+    const currentFocus = evaluateZooFocus(player, personCard.preferences);
+    const futureFocus =
+      currentFocus + personCard.preferences.filter((tag) => cardMatchesTag(themedCard, tag)).length;
+    score += Math.max(0, futureFocus - currentFocus) * 3 * MONEY_SCALE;
+  });
+  return score;
+}
+
+function bestThemeChoiceForPlayer(player, card) {
+  const options = fixedCardThemes(card);
+  if (!options.length) return null;
+  return [...options].sort(
+    (a, b) => themeChoiceValue(player, card, b.key) - themeChoiceValue(player, card, a.key)
+  )[0].key;
+}
+
+function bestAvailableThemeChoiceForPlayer(player, card, usedThemeKeys = []) {
+  const options = fixedCardThemes(card).filter(
+    (option) =>
+      !usedThemeKeys.includes(option.key) &&
+      !playerOwnsCardName(player, option.name)
+  );
+  if (!options.length) return null;
+  return [...options].sort(
+    (a, b) => themeChoiceValue(player, card, b.key) - themeChoiceValue(player, card, a.key)
+  )[0].key;
+}
+
+function tagWeight(card, tagList, weight) {
+  return card.tags.some((tag) => tagList.includes(tag)) ? weight : 0;
+}
+
+function formatInventory(inventory = {}) {
+  const entries = Object.entries(inventory);
+  if (!entries.length) return "No animals added directly by this card.";
+  return entries.map(([name, count]) => `${name} x${count}`).join(", ");
+}
+
+function shortStaffRole(card) {
+  const roleMap = {
+    "johnny-pepper": "Clown entertainer",
+    "jimmy-pepper": "Kids World director",
+    "wilfred-pepper": "Bartending director",
+    "smiley-boy": "Guest performer",
+    "angel-sweet": "Guest Services Manager",
+    "bambi-reese": "Woodland animals director",
+    donkeyfoot: "Rap performer",
+    "cheshire-cat": "Mystery greeter",
+    "renee-potato-salad-long": "Dining director",
+    "easter-bunny-costumed-character": "Costumed greeter",
+    "the-muffin-man": "Costumed baker",
+  "hot-dog-hannah": "Costumed hot dog vendor",
+  "officer-eman-and-pok": "Security officer",
+  "giuseppe-tiramisu": "Cryptozoologist",
+    "doctor-dolittle": "Roaming animal expert",
+    "ichabod-crane": "Avian education specialist",
+    "bumbles-the-magician": "Magician",
+  };
+  return roleMap[card.id] ?? "Zoo staff";
+}
+
+function collectInventory(player) {
+  const totals = {};
+  player.assets.forEach((card) => {
+    Object.entries(card.inventory ?? {}).forEach(([name, count]) => {
+      totals[name] = (totals[name] ?? 0) + count;
+    });
+  });
+  return Object.entries(totals).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+}
+
+function totalAnimalCount(player) {
+  return collectInventory(player).reduce((sum, [, count]) => sum + count, 0);
+}
+
+function directAnimalCount(card) {
+  return Object.values(card.inventory ?? {}).reduce((sum, count) => sum + count, 0);
+}
+
+const IMPLICIT_INVENTORY_CATEGORY_TAGS = [
+  "Safari",
+  "Bird",
+  "Water",
+  "Reptile",
+  "Primate",
+  "Gentle",
+  "Cute",
+  "Cold",
+  "Fish",
+  "Aquatic",
+  "Predator",
+  "Big Draw",
+];
+
+const INVENTORY_IMPLIED_TAGS = {
+  Penguin: ["Bird", "Cold", "Aquatic"],
+  "King Penguin": ["Bird", "Cold", "Aquatic"],
+  "Adelie Penguin": ["Bird", "Cold", "Aquatic"],
+  Flamingo: ["Bird", "Water"],
+  "Greater Flamingo": ["Bird", "Water"],
+  "Chilean Flamingo": ["Bird", "Water"],
+  "American Flamingo": ["Bird", "Water"],
+  Herring: ["Fish", "Water", "Aquatic"],
+  Sardine: ["Fish", "Water", "Aquatic"],
+  Anchovy: ["Fish", "Water", "Aquatic"],
+  Trout: ["Fish", "Water", "Aquatic"],
+  Catfish: ["Fish", "Water", "Aquatic"],
+  Bass: ["Fish", "Water", "Aquatic"],
+  Clownfish: ["Fish", "Water", "Aquatic"],
+  "Blue Tang": ["Fish", "Water", "Aquatic"],
+  Angelfish: ["Fish", "Water", "Aquatic"],
+  Butterflyfish: ["Fish", "Water", "Aquatic"],
+  Pufferfish: ["Fish", "Water", "Aquatic"],
+};
+
+function matchingTagsForCard(card) {
+  const tags = new Set((card.tags || []).map((tag) => normalizeTag(tag)));
+  Object.keys(card.inventory ?? {}).forEach((animalName) => {
+    const normalizedAnimal = normalizeTag(animalName);
+    tags.add(normalizedAnimal);
+    IMPLICIT_INVENTORY_CATEGORY_TAGS.forEach((tag) => {
+      const relatedAnimals = relatedTagsFor(tag).map((entry) => normalizeTag(entry));
+      if (relatedAnimals.includes(normalizedAnimal)) {
+        tags.add(normalizeTag(tag));
+      }
+    });
+    (INVENTORY_IMPLIED_TAGS[animalName] ?? []).forEach((tag) => {
+      tags.add(normalizeTag(tag));
+    });
+  });
+  return [...tags];
+}
+
+function cardMatchesTag(card, tag) {
+  const equivalentTags = equivalentTagsFor(tag);
+  return matchingTagsForCard(card).some((entry) => equivalentTags.includes(entry));
+}
+
+function getAnimalCollectionBonusMap() {
+  const ranked = state.players
+    .map((player) => ({ player, animals: totalAnimalCount(player) }))
+    .sort((a, b) => b.animals - a.animals || b.player.totalCrowd - a.player.totalCrowd);
+
+  const bonuses = new Map();
+  if (!ranked.length || ranked[0].animals <= 0) return bonuses;
+
+  const topAnimals = ranked[0].animals;
+  const topGroup = ranked.filter((entry) => entry.animals === topAnimals);
+  if (topGroup.length === 1) {
+    bonuses.set(topGroup[0].player.id, MOST_ANIMALS_BONUS);
+  }
+
+  const remaining = ranked.filter((entry) => entry.animals < topAnimals);
+  if (!remaining.length || remaining[0].animals <= 0) return bonuses;
+
+  const secondAnimals = remaining[0].animals;
+  const secondGroup = remaining.filter((entry) => entry.animals === secondAnimals);
+  if (secondGroup.length === 1) {
+    bonuses.set(secondGroup[0].player.id, SECOND_MOST_ANIMALS_BONUS);
+  }
+
+  return bonuses;
+}
+
+const animalAttendanceValue = {
+  Bigfoot: 100,
+  Alien: 94,
+  "Loch Ness Monster": 98,
+  "Woolly Mammoth": 90,
+  Lion: 89,
+  Tiger: 88,
+  "Bengal Tiger": 88,
+  "Polar Bear": 87,
+  Gorilla: 86,
+  Elephant: 85,
+  "Komodo Dragon": 79,
+  Giraffe: 59,
+  Penguin: 57,
+  "King Penguin": 58,
+  "Adelie Penguin": 54,
+  Flamingo: 56,
+  "Red Panda": 55,
+  Otter: 52,
+  Seal: 50,
+  Zebra: 58,
+  Monkey: 61,
+  Chimpanzee: 62,
+  Goat: 43,
+  Sheep: 42,
+  Rabbit: 13,
+  Hedgehog: 30,
+  Ferret: 10,
+  "Guinea Pig": 11,
+  Baboon: 55,
+  Snake: 25,
+  Anaconda: 68,
+  Iguana: 23,
+  Lizard: 24,
+  Tortoise: 28,
+  Turtle: 29,
+  Fish: 4,
+  Parrot: 22,
+  Macaw: 21,
+  Peacock: 50,
+  Triceratops: 96,
+  Stegosaurus: 95,
+  Pteranodon: 92,
+  Kangaroo: 65,
+};
+
+function inventoryTier(animalName) {
+  const score = animalAttendanceValue[animalName] ?? 20;
+  if (score >= 85) return "Headline Animals";
+  if (score >= 50) return "Strong Draws";
+  return "Supporting Animals";
+}
+
+function playerLoanText(player) {
+  return player.loanBalance > 0 ? currency(player.loanBalance) : "None";
+}
+
+function revenueScalingFactor(card) {
+  if (card.type === "Staff") return 0.65;
+  if (isFixedPriceCard(card)) return 0.78;
+  if (card.type === "Attraction" && !isPremiumHeadlineCard(card)) return 0.8;
+  return 1;
+}
+
+function admissionLift(card) {
+  const baseStrength =
+    (
+    tagWeight(card, ["Big Draw", "Extinct", "Cryptid"], 1.3) +
+    tagWeight(card, ["Predator", "Lion", "Elephant", "Immersive"], 0.7) +
+    tagWeight(card, ["Water", "Safari", "Bird", "Walkthrough", "Transportation"], 0.35) +
+    tagWeight(card, ["Cute", "Gentle", "Primate"], 0.2)
+    );
+  return baseStrength * revenueScalingFactor(card);
+}
+
+function guestSpendingStrength(card) {
+  const baseStrength =
+    (
+    tagWeight(card, ["Donation"], 1.2) +
+    tagWeight(card, ["Food"], 1.3) +
+    tagWeight(card, ["Gift Shop", "Souvenir"], 1.15) +
+    tagWeight(card, ["Interactive", "Walkthrough", "Immersive", "Transportation"], 0.75) +
+    tagWeight(card, ["Water", "Bird"], 0.25)
+    );
+  return baseStrength * revenueScalingFactor(card);
+}
+
+function formatRevenueRole(card) {
+  if (card.tags.includes("Donation")) {
+    return "Revenue Role: adds a small steady stream of support income";
+  }
+  const admission = admissionLift(card);
+  const spending = guestSpendingStrength(card);
+  if (admission >= 1 && spending >= 1) {
+    return "Revenue Role: raises premium admission and boosts guest spending";
+  }
+  if (admission >= 1) {
+    return "Revenue Role: helps the zoo charge stronger admission prices";
+  }
+  if (spending >= 1) {
+    return "Revenue Role: boosts food, souvenir, and in-zoo spending";
+  }
+  return "Revenue Role: mainly improves attendance rather than direct revenue";
+}
+
+function crowdBand(totalCrowd) {
+  if (totalCrowd < 60 * VISITOR_SCALE) return "low";
+  if (totalCrowd < 240 * VISITOR_SCALE) return "mid";
+  return "high";
+}
+
+function calculateUpkeep(player) {
+  return player.assets.reduce((sum, card) => sum + (card.upkeep ?? 0), 0);
+}
+
+function calculateAdmissionRate(player) {
+  const premiumStrength = player.assets.reduce((sum, card) => sum + admissionLift(card), 0);
+  const varietyBonus = Math.min(2.2, player.assets.length * 0.1);
+  return Math.max(5, 5 + premiumStrength * 0.4 + varietyBonus);
+}
+
+function calculateAttendanceRevenue(player) {
+  return Math.round(player.totalCrowd * calculateAdmissionRate(player) * 0.3);
+}
+
+function calculateGuestSpendingRevenue(player) {
+  const spendingStrength = player.assets.reduce(
+    (sum, card) => sum + guestSpendingStrength(card),
+    0
+  );
+  const crowdMultiplier = Math.max(0.15, Math.min(0.78, player.totalCrowd / 12000));
+  return Math.round(spendingStrength * crowdMultiplier * 2000);
+}
+
+function isMapPlaceable(card) {
+  return card.type !== "Staff";
+}
+
+function mapCardKey(card, index) {
+  return `${card.id || slugifyCharacterName(card.name)}::${index}`;
+}
+
+function ensureZooMap(player) {
+  if (!player.zooMap) {
+    player.zooMap = { assignments: {} };
+  }
+  if (!player.zooMap.assignments) {
+    player.zooMap.assignments = {};
+  }
+  return player.zooMap;
+}
+
+function mapEligibleAssets(player) {
+  return player.assets.filter((card) => isMapPlaceable(card));
+}
+
+function zoneById(zoneId) {
+  return ZOO_MAP_ZONES.find((zone) => zone.id === zoneId) ?? ZOO_MAP_ZONES[0];
+}
+
+function slotById(slotId) {
+  return ZOO_MAP_SLOTS.find((slot) => slot.id === slotId) ?? ZOO_MAP_SLOTS[0];
+}
+
+function normalizedCardTags(card) {
+  return (card.tags || []).map((tag) => normalizeTag(tag));
+}
+
+function directZoneTagMatches(card, zone) {
+  const tags = normalizedCardTags(card);
+  return tags.reduce((sum, tag) => sum + (zone.focusTags.includes(tag) ? 1 : 0), 0);
+}
+
+function hasDinosaurTheme(card) {
+  const searchableText = `${card.id || ""} ${card.name || ""}`.toLowerCase();
+  const dinosaurWords = ["dino", "dinosaur", "jurassic", "prehistoric", "triceratops", "stegosaurus", "pteranodon"];
+  const hasDinosaurWord = dinosaurWords.some((word) => searchableText.includes(word));
+  const inventoryNames = Object.keys(card.inventory || {}).map((name) => name.toLowerCase());
+  const hasDinosaurAnimal = inventoryNames.some((name) => dinosaurWords.some((word) => name.includes(word)));
+  return hasDinosaurWord || hasDinosaurAnimal;
+}
+
+function zonePlacementAdjustment(card, zone) {
+  const tags = normalizedCardTags(card);
+  const dinosaurTheme = hasDinosaurTheme(card);
+  let score = 0;
+  if (zone.id === "entry-plaza" && (isInfrastructureCard(card) || tags.some((tag) => ["Food", "Gift Shop", "Souvenir", "Operations", "Accessibility", "Parking", "Guest Relations"].includes(tag)))) {
+    score += 1;
+  }
+  if (zone.id === "safari-plains" && tags.includes("Big Draw")) {
+    score += 1;
+  }
+  if (zone.id === "reptile-ridge" && dinosaurTheme) {
+    score += 2;
+  }
+  if (zone.id === "mystery-forest" && (tags.includes("Canine") || tags.includes("Birds of Prey") || tags.includes("Extinct") || dinosaurTheme)) {
+    score += 1;
+  }
+  if (zone.id === "international-promenade" && tags.some((tag) => ["China", "India", "Australia", "Brazil", "Galapagos", "Antarctica", "International"].includes(tag))) {
+    score += 1;
+  }
+  if (zone.id === "wild-waterfront" && tags.some((tag) => ["Antarctica", "Penguin", "Whale", "Otter", "Aquatic"].includes(tag))) {
+    score += 1;
+  }
+  if (zone.id === "expansion-grounds") {
+    score -= 1;
+  }
+  return score;
+}
+
+function zonePlacementScore(card, zone) {
+  return directZoneTagMatches(card, zone) + zonePlacementAdjustment(card, zone);
+}
+
+function assignedCountForSlot(player, slotId) {
+  const assignments = ensureZooMap(player).assignments;
+  return Object.values(assignments).filter((value) => value === slotId).length;
+}
+
+function slotPlacementBreakdown(card, slot) {
+  const primaryZone = zoneById(slot.primaryZone);
+  const secondaryZone = zoneById(slot.secondaryZone);
+  const primaryMatches = zonePlacementScore(card, primaryZone);
+  const secondaryMatches = secondaryZone ? directZoneTagMatches(card, secondaryZone) : 0;
+  const revenueBonus = primaryMatches * MAP_PRIMARY_REVENUE_PER_MATCH + secondaryMatches * MAP_SECONDARY_REVENUE_PER_MATCH;
+  const visitorBonus = primaryMatches >= 2 ? MAP_VISITOR_PER_STRONG_FIT : 0;
+  let fitLevel = "weak";
+  if (primaryMatches >= 2) {
+    fitLevel = "strong";
+  } else if (primaryMatches >= 1 || secondaryMatches >= 1) {
+    fitLevel = "light";
+  }
+  return {
+    slot,
+    primaryZone,
+    secondaryZone,
+    primaryMatches,
+    secondaryMatches,
+    revenueBonus,
+    visitorBonus,
+    fitLevel,
+  };
+}
+
+function bestSlotIdForCard(player, card, takenSlotIds = new Set()) {
+  const availableSlots = ZOO_MAP_SLOTS.filter((slot) => !takenSlotIds.has(slot.id));
+  const candidateSlots = availableSlots.length ? availableSlots : ZOO_MAP_SLOTS;
+  const ranked = candidateSlots.map((slot) => {
+    const breakdown = slotPlacementBreakdown(card, slot);
+    return {
+      id: slot.id,
+      score: breakdown.primaryMatches * 100 + breakdown.secondaryMatches * 10,
+      load: assignedCountForSlot(player, slot.id),
+    };
+  }).sort((a, b) => b.score - a.score || a.load - b.load || a.id.localeCompare(b.id));
+  return ranked[0]?.id ?? ZOO_MAP_SLOTS[0].id;
+}
+
+function ensureZooMapAssignments(player) {
+  const zooMap = ensureZooMap(player);
+  const validKeys = new Set();
+  const nextAssignments = {};
+  const takenSlotIds = new Set();
+  const cards = mapEligibleAssets(player);
+
+  cards.forEach((card, index) => {
+    const key = mapCardKey(card, index);
+    validKeys.add(key);
+    const existingSlot = zooMap.assignments[key];
+    if (existingSlot && slotById(existingSlot) && !takenSlotIds.has(existingSlot)) {
+      nextAssignments[key] = existingSlot;
+      takenSlotIds.add(existingSlot);
+    }
+  });
+
+  cards.forEach((card, index) => {
+    const key = mapCardKey(card, index);
+    if (nextAssignments[key]) return;
+    const chosenSlot = bestSlotIdForCard(player, card, takenSlotIds);
+    nextAssignments[key] = chosenSlot;
+    takenSlotIds.add(chosenSlot);
+  });
+
+  Object.keys(zooMap.assignments).forEach((key) => {
+    if (!validKeys.has(key)) delete zooMap.assignments[key];
+  });
+  zooMap.assignments = nextAssignments;
+  return zooMap.assignments;
+}
+
+function calculateZooMapBonus(player) {
+  const assignments = ensureZooMapAssignments(player);
+  const zoneSummaries = ZOO_MAP_ZONES.map((zone) => ({
+    ...zone,
+    revenueBonus: 0,
+    visitorBonus: 0,
+    strongFits: 0,
+    cards: [],
+  }));
+  const zoneLookup = {};
+  zoneSummaries.forEach((zone) => {
+    zoneLookup[zone.id] = zone;
+  });
+  const slotSummaries = ZOO_MAP_SLOTS.map((slot) => ({
+    ...slot,
+    primaryZoneMeta: zoneById(slot.primaryZone),
+    secondaryZoneMeta: zoneById(slot.secondaryZone),
+    assigned: [],
+    revenueBonus: 0,
+    visitorBonus: 0,
+    fitLevel: "weak",
+  }));
+  const slotLookup = {};
+  slotSummaries.forEach((slot) => {
+    slotLookup[slot.id] = slot;
+  });
+
+  mapEligibleAssets(player).forEach((card, index) => {
+    const key = mapCardKey(card, index);
+    const slotId = assignments[key] || bestSlotIdForCard(player, card);
+    const slotSummary = slotLookup[slotId];
+    const breakdown = slotPlacementBreakdown(card, slotSummary);
+    const entry = { key, card, ...breakdown };
+    slotSummary.assigned.push(entry);
+    slotSummary.revenueBonus += breakdown.revenueBonus;
+    slotSummary.visitorBonus += breakdown.visitorBonus;
+    if (breakdown.fitLevel === "strong") {
+      slotSummary.fitLevel = "strong";
+    } else if (breakdown.fitLevel === "light" && slotSummary.fitLevel === "weak") {
+      slotSummary.fitLevel = "light";
+    }
+
+    const primaryZone = zoneLookup[breakdown.primaryZone.id];
+    primaryZone.cards.push(entry);
+    primaryZone.revenueBonus += breakdown.primaryMatches * MAP_PRIMARY_REVENUE_PER_MATCH;
+    primaryZone.visitorBonus += breakdown.primaryMatches >= 2 ? MAP_VISITOR_PER_STRONG_FIT : 0;
+    if (breakdown.primaryMatches >= 2) primaryZone.strongFits += 1;
+
+    if (breakdown.secondaryZone && breakdown.secondaryMatches > 0) {
+      const secondaryZone = zoneLookup[breakdown.secondaryZone.id];
+      secondaryZone.cards.push({ ...entry, secondaryOnly: true });
+      secondaryZone.revenueBonus += breakdown.secondaryMatches * MAP_SECONDARY_REVENUE_PER_MATCH;
+    }
+  });
+
+  return {
+    revenueBonus: slotSummaries.reduce((sum, slot) => sum + slot.revenueBonus, 0),
+    visitorBonus: slotSummaries.reduce((sum, slot) => sum + slot.visitorBonus, 0),
+    zones: zoneSummaries,
+    slots: slotSummaries,
+  };
+}
+
+function slotBadgeText(slot) {
+  if (!slot.secondaryZoneMeta) return slot.primaryZoneMeta.name;
+  const first = slot.primaryZoneMeta.name.split(" ")[0];
+  const second = slot.secondaryZoneMeta.name.split(" ")[0];
+  return `${first} / ${second}`;
+}
+
+function slotCardSummary(slot) {
+  if (!slot.assigned.length) {
+    return '<span class="map-board-slot-empty">Open build spot</span>';
+  }
+  if (slot.assigned.length === 1) {
+    return `<span class="map-board-slot-name">${slot.assigned[0].card.name}</span>`;
+  }
+  return `<span class="map-board-slot-name">${slot.assigned[0].card.name}</span><span class="map-board-slot-more">+${slot.assigned.length - 1} more</span>`;
+}
+
+function mapSlotLabelOffset(slotId) {
+  const offsets = {
+    "front-gate-plaza": { left: -10, top: 42 },
+    "welcome-loop": { left: -14, top: 42 },
+    "safari-overlook": { left: -10, top: 42 },
+    "lion-rail-stop": { left: -8, top: 42 },
+    "aquarium-quay": { left: -12, top: 42 },
+    "penguin-pier": { left: -10, top: 42 },
+    "kids-midway": { left: -12, top: 42 },
+    "petting-path": { left: -16, top: 42 },
+    "promenade-west": { left: -16, top: 42 },
+    "promenade-east": { left: -14, top: 42 },
+    "reptile-terrace": { left: -12, top: 42 },
+    "serpent-hollow": { left: -12, top: 42 },
+    "cryptid-trail": { left: -12, top: 42 },
+    "canopy-crossing": { left: -15, top: 42 },
+  };
+  return offsets[slotId] ?? { left: -12, top: 42 };
+}
+
+function mapSlotCodeOffset(slot) {
+  const horizontal = slot.left < 22 ? 12 : slot.left > 74 ? -12 : slot.left < 50 ? -10 : 10;
+  const vertical = slot.top < 24 ? -12 : slot.top > 74 ? 12 : -10;
+  const zoneTweaks = {
+    "entry-plaza": { left: -8, top: -14 },
+    "kids-cove": { left: -10, top: 12 },
+    "mystery-forest": { left: 12, top: -10 },
+    "international-promenade": { left: 10, top: -12 },
+    "wild-waterfront": { left: -10, top: 12 },
+    "reptile-ridge": { left: 12, top: -10 },
+    "safari-plains": { left: 0, top: -14 },
+    "expansion-grounds": { left: 10, top: 12 },
+  };
+  const tweak = zoneTweaks[slot.primaryZone] ?? { left: 0, top: 0 };
+  return {
+    left: slot.left + (horizontal * 0.18) + (tweak.left * 0.18),
+    top: slot.top + (vertical * 0.18) + (tweak.top * 0.18),
+  };
+}
+
+function mapAreaTagLayout() {
+  return {
+    "entry-plaza": { className: "tag-entry", leaderClass: "l1" },
+    "international-promenade": { className: "tag-intl", leaderClass: "l2" },
+    "wild-waterfront": { className: "tag-water", leaderClass: "l3" },
+    "kids-cove": { className: "tag-kids", leaderClass: "l4" },
+    "safari-plains": { className: "tag-safari", leaderClass: "l5" },
+    "reptile-ridge": { className: "tag-reptile", leaderClass: "l6" },
+    "mystery-forest": { className: "tag-forest", leaderClass: "l7" },
+    "expansion-grounds": { className: "tag-expansion", leaderClass: "l8" },
+  };
+}
+
+function renderZooMap(player) {
+  if (!elements.playerMapSummary || !elements.playerMapAssignments || !elements.playerMapBoard || !elements.zooMapOverlay || !elements.playerMapSummaryFull) return;
+  const mapBonus = calculateZooMapBonus(player);
+  const summaryText = mapBonus.revenueBonus || mapBonus.visitorBonus
+    ? `Current layout bonus: ${currency(mapBonus.revenueBonus)} extra revenue and ${formatVisitors(mapBonus.visitorBonus)} extra visitors each round.`
+    : "Use the full map to place exhibits and infrastructure where they fit best and earn modest layout bonuses.";
+
+  elements.playerMapSummary.textContent = summaryText;
+  elements.playerMapSummaryFull.textContent = summaryText;
+  elements.zooMapOverlay.classList.toggle("hidden", !state.mapOpen);
+
+  const tagLayout = mapAreaTagLayout();
+  const areaNotes = ZOO_MAP_ZONES.map((zone) => `
+    <div class="desc-card">
+      <h3>${zone.name}</h3>
+      <p>${zone.blurb}</p>
+    </div>
+  `).join("");
+  const occupiedSlots = mapBonus.slots.filter((slot) => slot.assigned.length);
+  const slotMarkerLookup = new Map(occupiedSlots.map((slot, index) => [slot.id, index + 1]));
+  const openSlots = mapBonus.slots.filter((slot) => !slot.assigned.length);
+  const placedLegend = occupiedSlots.length
+    ? occupiedSlots.map((slot, index) => `
+        <div class="map-board-legend-item">
+          <div class="map-board-legend-number map-board-slot--${slot.fitLevel}">${index + 1}</div>
+          <div class="map-board-legend-content">
+            <div class="map-board-legend-title">${slot.assigned[0]?.card?.name ?? slot.name} <span class="map-board-legend-code">${slot.code}</span></div>
+          </div>
+        </div>
+      `).join("")
+    : '<p class="map-zone-empty">Your placed exhibits will appear here as numbered locations on the map.</p>';
+
+  elements.playerMapBoard.innerHTML = `
+    <div class="map-board-canvas map-board-canvas--path-first">
+      ${ZOO_MAP_ZONES.map((zone) => {
+        const layout = tagLayout[zone.id] ?? { className: "", leaderClass: "" };
+        return `<div class="map-area-tag ${layout.className}">${zone.name}</div>`;
+      }).join("")}
+      ${openSlots.map((slot) => `
+          <div class="map-slot-code map-slot-code--open" style="left:${slot.left}%; top:${slot.top}%">${slot.code ?? ""}</div>
+        `).join("")}
+      ${occupiedSlots.map((slot, index) => `
+          <div class="map-slot-code map-slot-code--occupied" style="left:${slot.left}%; top:${slot.top}%">${slot.code ?? ""}</div>
+          <div class="map-pin-wrap" style="left:${slot.left}%; top:${slot.top}%">
+            <div class="map-board-slot map-board-slot--${slot.fitLevel}">
+              <span>${index + 1}</span>
+            </div>
+          </div>
+        `).join("")}
+    </div>
+    <div class="map-board-notes">
+      <div>
+        <h4>Placed Locations</h4>
+        <p class="map-sidebar-copy">Numbered markers on the map show only the spots you are actively using. Match each number to the attraction list below. Faint codes like S2 or M4 show the available placement choices on the board.</p>
+        <div class="map-fit-key">
+          <span class="map-fit-chip map-fit-chip--strong">Green = strong fit</span>
+          <span class="map-fit-chip map-fit-chip--light">Tan = good fit</span>
+          <span class="map-fit-chip map-fit-chip--weak">Pink = weak fit</span>
+        </div>
+        <div class="map-board-legend">${placedLegend}</div>
+      </div>
+      <div>
+        <h4>District Notes</h4>
+        <p class="map-sidebar-copy">The map itself stays light and readable. The fuller district descriptions live here, while the assignment controls below keep the strategy flexible.</p>
+        <div class="description-grid">${areaNotes}</div>
+      </div>
+    </div>
+  `;
+
+  const placeableAssets = mapEligibleAssets(player);
+  if (!placeableAssets.length) {
+    elements.playerMapAssignments.innerHTML = '<p class="map-zone-empty">Add your first exhibit or infrastructure card to start shaping the zoo map.</p>';
+    return;
+  }
+
+  const assignments = ensureZooMapAssignments(player);
+  elements.playerMapAssignments.innerHTML = placeableAssets.map((card, index) => {
+    const key = mapCardKey(card, index);
+    const currentSlot = assignments[key] || bestSlotIdForCard(player, card);
+    const currentMarker = slotMarkerLookup.get(currentSlot);
+    const takenByOthers = new Set(Object.entries(assignments)
+      .filter(([otherKey, slotId]) => otherKey !== key && slotId)
+      .map(([, slotId]) => slotId));
+    return `
+      <label class="map-assignment-row">
+        <span class="map-assignment-name">${card.name}${currentMarker ? ` <span class="map-assignment-marker">Map ${currentMarker} · ${ZOO_MAP_SLOTS.find((slot) => slot.id === currentSlot)?.code ?? ""}</span>` : ""}</span>
+        <select class="map-slot-select" data-map-key="${key}">
+          ${ZOO_MAP_SLOTS.map((slot) => `<option value="${slot.id}" ${slot.id === currentSlot ? "selected" : ""} ${takenByOthers.has(slot.id) ? "disabled" : ""}>${slot.code} · ${slot.name}</option>`).join("")}
+        </select>
+      </label>
+    `;
+  }).join("");
+}
+
+function calculateRevenueBreakdown(player) {
+  const admissions = calculateAttendanceRevenue(player);
+  const guestSpending = calculateGuestSpendingRevenue(player);
+  const mapBonus = calculateZooMapBonus(player);
+  return {
+    admissions,
+    guestSpending,
+    mapRevenueBonus: mapBonus.revenueBonus,
+    mapVisitorBonus: mapBonus.visitorBonus,
+    total: admissions + guestSpending + mapBonus.revenueBonus,
+  };
+}
+
+function calculateExpectedProfit(player) {
+  return calculateRevenueBreakdown(player).total - calculateUpkeep(player);
+}
+
+function clonePlayerWithCard(player, card, crowd = player.totalCrowd) {
+  return {
+    ...player,
+    totalCrowd: crowd,
+    assets: [...player.assets, card],
+  };
+}
+
+function clonePlayerAfterWinningCard(player, card) {
+  return {
+    ...player,
+    totalCrowd: player.totalCrowd + card.crowd,
+    assets: [...player.assets, card],
+  };
+}
+
+function estimateCardRevenueAtCurrentCrowd(player, card) {
+  const currentRevenue = calculateRevenueBreakdown(player).total;
+  const projectedRevenue = calculateRevenueBreakdown(clonePlayerAfterWinningCard(player, card)).total;
+  return Math.max(0, projectedRevenue - currentRevenue);
+}
+
+function estimateCardProfitCrowd(card, player) {
+  for (let crowd = 0; crowd <= TARGET_VISITORS; crowd += 250) {
+    const basePlayer = { ...player, totalCrowd: crowd };
+    const currentRevenue = calculateRevenueBreakdown(basePlayer).total;
+    const projectedRevenue = calculateRevenueBreakdown(clonePlayerAfterWinningCard(basePlayer, card)).total;
+    const addedRevenue = projectedRevenue - currentRevenue;
+    if (addedRevenue >= card.upkeep) {
+      return crowd;
+    }
+  }
+  return null;
+}
+
+function formatCardEconomics(card, player = getPlayer()) {
+  const currentLift = estimateCardRevenueAtCurrentCrowd(player, card);
+  const profitCrowd = estimateCardProfitCrowd(card, player);
+  const breakEvenLabel = card.type === "Staff" ? "salary" : "upkeep";
+  return {
+    currentLiftText:
+      currentLift > 0
+        ? `About ${currency(currentLift)} in added round revenue for your zoo right now`
+        : "Very little added revenue for your zoo at its current crowd",
+    profitText: profitCrowd !== null
+      ? `Starts covering its ${breakEvenLabel} at about ${formatVisitors(profitCrowd)} visitors`
+      : `Likely needs a very large crowd before it covers its ${breakEvenLabel}`,
+  };
+}
+
+function rollDie(sides = 6) {
+  return Math.floor(Math.random() * sides) + 1;
+}
+
+function rollTwoDice() {
+  return rollDie(6) + rollDie(6);
+}
+
+function lookupRevenue(rating, roll) {
+  if (rating <= 0) return 0;
+  const cappedRating = Math.min(30, rating);
+  return Math.max(cappedRating, Math.round(cappedRating * REVENUE_ROLL_FACTORS[roll]));
+}
+
+function getPlayer() {
+  return state.players[0];
+}
+
+function shuffle(array) {
+  const copy = [...array];
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]];
+  }
+  return copy;
+}
+
+function drawCards(drawPile, count, kind) {
+  const drawn = [];
+  while (drawn.length < count && drawPile.length) {
+    const card = drawPile.shift();
+    drawn.push({ ...card, kind });
+  }
+  return drawn;
+}
+
+function countEligiblePeopleCards(drawPile) {
+  return drawPile.filter((card) => !card.minRound || state.currentRound >= card.minRound).length;
+}
+
+function drawEligiblePeopleCards(drawPile, count) {
+  const picks = [];
+  for (let index = 0; index < drawPile.length && picks.length < count; ) {
+    const card = drawPile[index];
+    if (!card.minRound || state.currentRound >= card.minRound) {
+      picks.push({ ...drawPile.splice(index, 1)[0], kind: "people" });
+    } else {
+      index += 1;
+    }
+  }
+  return picks;
+}
+
+function buildStarterDraftPool() {
+  return shuffle(foundingDeck).map((card) => ({
+    ...card,
+    crowd: card.crowd * VISITOR_SCALE,
+  }));
+}
+
+function applyStarterPick(player, card) {
+  player.assets.push({ ...card });
+  player.totalCrowd += card.crowd;
+  player.draftSpent += 0;
+  player.draftPicks += 1;
+}
+
+function currentDraftPlayer() {
+  return state.players[state.draftTurnIndex % state.players.length];
+}
+
+function canDraftCard(player, card) {
+  return player.draftPicks < STARTER_DRAFT_PICKS;
+}
+
+function removeDraftCard(cardId) {
+  state.draftPool = state.draftPool.filter((card) => card.id !== cardId);
+  state.zooDrawPile = state.zooDrawPile.filter((card) => card.id !== cardId);
+}
+
+function hasAnyDraftMove(player) {
+  return (
+    player.draftPicks < STARTER_DRAFT_PICKS &&
+    state.draftPool.some((card) => canDraftCard(player, card))
+  );
+}
+
+function allDraftingFinished() {
+  return (
+    state.draftPool.length === 0 ||
+    state.players.every((player) => !hasAnyDraftMove(player))
+  );
+}
+
+function advanceDraftTurn() {
+  let safety = 0;
+  do {
+    state.draftTurnIndex = (state.draftTurnIndex + 1) % state.players.length;
+    safety += 1;
+    if (safety > state.players.length) break;
+  } while (!hasAnyDraftMove(currentDraftPlayer()) && !allDraftingFinished());
+}
+
+function aiDraftCurrentTurn() {
+  const ai = currentDraftPlayer();
+  if (!ai || ai.isHuman || !hasAnyDraftMove(ai)) return;
+
+  const affordable = state.draftPool.filter((card) => canDraftCard(ai, card));
+  if (!affordable.length) return;
+  const choice = [...affordable].sort(
+    (a, b) => evaluateAiInterest(ai, b) - evaluateAiInterest(ai, a)
+  )[0];
+  applyStarterPick(ai, choice);
+  removeDraftCard(choice.id);
+}
+
+function processAiDraftTurnsUntilHuman() {
+  while (!allDraftingFinished() && !currentDraftPlayer().isHuman) {
+    aiDraftCurrentTurn();
+    advanceDraftTurn();
+  }
+}
+
+function publicityCardsPlannedForRound(roundNumber) {
+  if (roundNumber <= 1) return 1;
+  if (roundNumber <= 9) return 2;
+  return 1;
+}
+
+function buildRoundQueue() {
+  const requestedPeopleCount = publicityCardsPlannedForRound(state.currentRound);
+  const peopleCount = Math.min(requestedPeopleCount, countEligiblePeopleCards(state.peopleDrawPile));
+  const zooCount = Math.min(ROUND_CARD_COUNT - peopleCount, state.zooDrawPile.length);
+  let zooSelection = [];
+  const localFixedOfferCounts = { ...state.fixedOfferCounts };
+
+  function canUseFixedOfferCard(card) {
+    const family = fixedOfferFamily(card);
+    return !family || (localFixedOfferCounts[family] ?? 0) < 2;
+  }
+
+  function takeCardsWithCap(pool, count) {
+    const picks = [];
+    shuffle(pool).forEach((card) => {
+      if (picks.length >= count) return;
+      if (!canUseFixedOfferCard(card)) return;
+      picks.push(card);
+      const family = fixedOfferFamily(card);
+      if (family) {
+        localFixedOfferCounts[family] = (localFixedOfferCounts[family] ?? 0) + 1;
+      }
+    });
+    return picks;
+  }
+
+  if (state.currentRound <= 2) {
+    const earlyPool = state.zooDrawPile.filter((card) => {
+      const family = fixedOfferFamily(card);
+      if (family && (state.fixedOfferCounts[family] ?? 0) >= 2) {
+        return false;
+      }
+      return !isPremiumHeadlineCard(card) || card.upkeep <= 2 * MONEY_SCALE;
+    });
+    const fixedSupportPool = earlyPool.filter(isFixedPriceCard);
+    const animalPool = earlyPool.filter(
+      (card) =>
+        !isFixedPriceCard(card) &&
+        ["Animal", "Zoo Section", "Founding Pack"].includes(card.type)
+    );
+    const otherEarlyPool = earlyPool.filter(
+      (card) => !isFixedPriceCard(card) && !animalPool.includes(card)
+    );
+
+    const fixedTarget = Math.min(1, fixedSupportPool.length, zooCount);
+    const animalTarget = Math.min(
+      Math.max(2, zooCount - fixedTarget - 1),
+      animalPool.length,
+      zooCount - fixedTarget
+    );
+
+    zooSelection = [
+      ...takeCardsWithCap(fixedSupportPool, fixedTarget),
+      ...takeCardsWithCap(animalPool, animalTarget),
+    ];
+
+    const remainingNeeded = zooCount - zooSelection.length;
+    if (remainingNeeded > 0) {
+      const remainingPool = [
+        ...otherEarlyPool.filter((card) => !zooSelection.includes(card)),
+        ...animalPool.filter((card) => !zooSelection.includes(card)),
+      ];
+      zooSelection.push(...takeCardsWithCap(remainingPool, remainingNeeded));
+    }
+  } else {
+    zooSelection = takeCardsWithCap(
+      shuffle(
+      state.zooDrawPile.filter(
+        (card) => {
+          const family = fixedOfferFamily(card);
+          return !family || (state.fixedOfferCounts[family] ?? 0) < 2;
+        }
+      )
+      ),
+      zooCount
+    );
+  }
+
+  const selected = [
+    ...zooSelection.map((card) => {
+      state.zooDrawPile = state.zooDrawPile.filter((entry) => entry.id !== card.id);
+      const family = fixedOfferFamily(card);
+      if (family) {
+        state.fixedOfferCounts[family] = (state.fixedOfferCounts[family] ?? 0) + 1;
+        if (state.fixedOfferCounts[family] >= 2) {
+          state.zooDrawPile = state.zooDrawPile.filter(
+            (entry) => fixedOfferFamily(entry) !== family
+          );
+        }
+      }
+      return { ...card, kind: "zoo" };
+    }),
+    ...drawEligiblePeopleCards(state.peopleDrawPile, peopleCount),
+  ];
+  return shuffle(selected).map((card, index) => ({
+    ...card,
+    marketId: `${card.id}-r${state.currentRound}-${index}`,
+    status: "queued",
+    owner: null,
+  }));
+}
+
+function renderDraftStandings() {
+  if (!elements.draftStandings) return;
+  elements.draftStandings.innerHTML = "";
+  state.players.forEach((player) => {
+    const div = document.createElement("div");
+    div.className = "mini-card";
+    div.innerHTML = `
+      <div class="zoo-card-head">
+        ${zooLogoMarkup(player.name)}
+        <div>
+          <strong>${player.name}</strong>
+          <p>Cash: ${currency(player.money)}</p>
+          <p>Visitors: ${formatVisitors(player.totalCrowd)}/${formatVisitors(TARGET_VISITORS)}</p>
+        </div>
+      </div>
+      <p>Animals: ${formatVisitors(totalAnimalCount(player))}</p>
+      <p>Founding packages: ${player.assets.length}</p>
+    `;
+    elements.draftStandings.appendChild(div);
+  });
+}
+
+function renderDraft() {
+  const player = getPlayer();
+  if (!allDraftingFinished() && currentDraftPlayer().isHuman && !hasAnyDraftMove(player)) {
+    advanceDraftTurn();
+    processAiDraftTurnsUntilHuman();
+  }
+    elements.draftPicksLeft.textContent = String(state.draftPicksRemaining);
+  elements.draftCashPreview.textContent = currency(player.money);
+  elements.draftTurnLabel.textContent = currentDraftPlayer().name;
+  renderDraftStandings();
+
+  elements.draftPool.innerHTML = "";
+  state.draftPool.forEach((card) => {
+    const buttonDisabled = !currentDraftPlayer().isHuman || state.draftPicksRemaining <= 0;
+    const economics = formatCardEconomics(card, player);
+    const imageMarkup = foundingPackageImageMarkup(
+      card,
+      "infrastructure-card-photo infrastructure-card-photo-preview"
+    );
+    const div = document.createElement("div");
+    div.className = "draft-card draft-card-wide";
+    div.innerHTML = `
+      <div class="staff-card-shell draft-package-shell">
+        <h4>${card.name}</h4>
+        <div class="staff-preview-layout attraction-preview-layout draft-package-layout">
+          ${imageMarkup}
+          <div class="staff-preview-body attraction-preview-body draft-package-body">
+            <p>${card.description}</p>
+            <p><strong>Animals:</strong> ${formatInventory(card.inventory)}</p>
+            <p><strong>Donated by:</strong> ${card.source}</p>
+            <div class="card-meta">
+              <span class="meta-pill">Visitors +${formatVisitors(card.crowd)}</span>
+              <span class="meta-pill">${costLabel(card)} ${currency(card.upkeep)}</span>
+            </div>
+            <p>${economics.currentLiftText}</p>
+            <p>${economics.profitText}</p>
+            <div class="card-meta">
+              ${card.tags.map((tag) => `<span class="meta-pill">${tag}</span>`).join("")}
+            </div>
+            <button class="secondary-button draft-pick-button" data-card-id="${card.id}" ${
+              buttonDisabled ? "disabled" : ""
+            }>Choose Package</button>
+          </div>
+        </div>
+      </div>
+    `;
+    elements.draftPool.appendChild(div);
+  });
+
+  renderCollection(elements.draftPlayerPicks, player.assets, "No founding packages chosen yet.");
+
+  elements.draftAiPicks.innerHTML = "";
+  state.players.slice(1).forEach((ai) => {
+    const div = document.createElement("div");
+    div.className = "collection-item";
+    div.innerHTML = `
+      <div class="zoo-card-head">
+        ${zooLogoMarkup(ai.name, "zoo-logo-sm")}
+        <div>
+          <strong>${ai.name}</strong>
+          <p>${ai.assets.length} founding package${ai.assets.length === 1 ? "" : "s"} | Cash ${currency(ai.money)}</p>
+        </div>
+      </div>
+      <p>${ai.assets.map((card) => card.name).join(", ") || "Still choosing."}</p>
+    `;
+    elements.draftAiPicks.appendChild(div);
+  });
+}
+
+function draftStarterCard(cardId) {
+  const player = getPlayer();
+  const card = state.draftPool.find((entry) => entry.id === cardId);
+  if (!card || !currentDraftPlayer().isHuman || state.draftPicksRemaining <= 0) {
+    return;
+  }
+
+  applyStarterPick(player, card);
+  state.draftPicksRemaining -= 1;
+  removeDraftCard(cardId);
+  advanceDraftTurn();
+  processAiDraftTurnsUntilHuman();
+  renderDraft();
+}
+
+function finishDraft() {
+  startRound();
+  showScreen("office-screen");
+  renderOffice();
+}
+
+function zooLogoMarkup(playerName, extraClass = "") {
+  const logoSources = ZOO_LOGOS[playerName];
+  if (!logoSources) return "";
+  const primaryLogo = Array.isArray(logoSources) ? logoSources[0] : logoSources;
+  const fallbackLogo = Array.isArray(logoSources) && logoSources[1] ? logoSources[1] : primaryLogo;
+  return `<img class="zoo-logo${extraClass ? ` ${extraClass}` : ""}" src="${primaryLogo}" alt="${playerName} logo" onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='${fallbackLogo}';}else{this.remove();}" />`;
+}
+
+function slugifyCharacterName(name) {
+  return name
+    .toLowerCase()
+    .replace(/["'`.]/g, "")
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .replace(/-+/g, "-");
+}
+
+function imageMarkupWithFallbacks(className, altText, sources) {
+  if (!sources.length) return "";
+  const sourceJson = JSON.stringify(sources).replace(/'/g, "&#39;");
+  return `<img class="${className}" src="${sources[0]}" alt="${altText}" data-image-candidates='${sourceJson}' onerror="(function(img){const candidates=JSON.parse(img.dataset.imageCandidates||'[]');const current=img.dataset.imageIndex?Number(img.dataset.imageIndex):0;const next=current+1;if(next<candidates.length){img.dataset.imageIndex=String(next);img.src=candidates[next];}else{img.remove();}})(this)" />`;
+}
+
+function staffImageMarkup(card, className = "staff-card-photo") {
+  if (!card || card.type !== "Staff") return "";
+  const slug = slugifyCharacterName(card.name);
+  return imageMarkupWithFallbacks(className, card.name, [
+    `./assets/characters/staff/${slug}.jpg`,
+    `./assets/characters/staff/${slug}.png`,
+  ]);
+}
+
+function infrastructureImageMarkup(card, className = "infrastructure-card-photo") {
+  if (!card) return "";
+  const tier = exhibitTier(card);
+  if (tier !== "Infrastructure") return "";
+  const slug = slugifyCharacterName(card.name);
+  return imageMarkupWithFallbacks(className, card.name, [
+    `./assets/Infrastructure/${slug}.jpg`,
+    `./assets/Infrastructure/${slug}.png`,
+    `./assets/infrastructure/${slug}.jpg`,
+    `./assets/infrastructure/${slug}.png`,
+    `./assets/Infrastructure/infrastructure-placeholder.jpg`,
+    `./assets/infrastructure/infrastructure-placeholder.jpg`,
+  ]);
+}
+
+function mainExhibitImageMarkup(card, className = "infrastructure-card-photo") {
+  if (!card) return "";
+  const tier = exhibitTier(card);
+  if (!["Headline Exhibits", "Strong Draws", "Supporting Exhibits", "Rides"].includes(tier)) return "";
+  const slug = slugifyCharacterName(card.name);
+  return imageMarkupWithFallbacks(className, card.name, [
+    `./assets/exhibits/${slug}.jpg`,
+    `./assets/exhibits/${slug}.png`,
+    `./assets/Exhibits/${slug}.jpg`,
+    `./assets/Exhibits/${slug}.png`,
+    `./assets/Exhibits/400x500/${slug}.jpg`,
+    `./assets/Exhibits/400x500/${slug}.png`,
+    `./assets/exhibits/main-exhibits-placeholder.jpg`,
+    `./assets/Exhibits/main-exhibits-placeholder.jpg`,
+    `./assets/Exhibits/400x500/main-exhibits-placeholder.jpg`,
+  ]);
+}
+
+function foundingPackageImageMarkup(card, className = "infrastructure-card-photo") {
+  if (!card || card.type !== "Founding Pack") return "";
+  const slug = slugifyCharacterName(card.name);
+  return imageMarkupWithFallbacks(className, card.name, [
+    `./assets/exhibits/${slug}.jpg`,
+    `./assets/exhibits/${slug}.png`,
+    `./assets/Exhibits/${slug}.jpg`,
+    `./assets/Exhibits/${slug}.png`,
+    `./assets/Exhibits/400x500/${slug}.jpg`,
+    `./assets/Exhibits/400x500/${slug}.png`,
+    `./assets/exhibits/main-exhibits-placeholder.jpg`,
+    `./assets/Exhibits/main-exhibits-placeholder.jpg`,
+    `./assets/Exhibits/400x500/main-exhibits-placeholder.jpg`,
+  ]);
+}
+
+function publicityImageMarkup(card, className = "infrastructure-card-photo") {
+  if (!card || card.type !== "People") return "";
+  const slug = card.imageFile || slugifyCharacterName(card.name);
+  return imageMarkupWithFallbacks(className, card.name, [
+    `./assets/publicity/${slug}.jpg`,
+    `./assets/publicity/${slug}.png`,
+    `./assets/Publicity/${slug}.jpg`,
+    `./assets/Publicity/${slug}.png`,
+  ]);
+}
+
+function fixedImageMarkup(card, className = "infrastructure-card-photo") {
+  if (!card) return "";
+  const isThemedFixed = Boolean(card.baseOfferId) || isCustomizableFixedCard(card);
+  if (!isThemedFixed) return "";
+  const slug = slugifyCharacterName(card.name);
+  return imageMarkupWithFallbacks(className, card.name, [
+    `./assets/fixed/${slug}.jpg`,
+    `./assets/fixed/${slug}.png`,
+    `./assets/Fixed/${slug}.jpg`,
+    `./assets/Fixed/${slug}.png`,
+  ]);
+}
+
+function diningImageMarkup(card, className = "infrastructure-card-photo") {
+  if (!card) return "";
+  if (exhibitTier(card) !== "Food & Dining") return "";
+  const slug = slugifyCharacterName(card.name);
+  return imageMarkupWithFallbacks(className, card.name, [
+    `./assets/dining/${slug}.jpg`,
+    `./assets/dining/${slug}.png`,
+    `./assets/Dining/${slug}.jpg`,
+    `./assets/Dining/${slug}.png`,
+  ]);
+}
+
+function cardImageMarkup(card, className = "staff-card-photo") {
+  return (
+    staffImageMarkup(card, className) ||
+    publicityImageMarkup(card, className.replace(/staff/g, "infrastructure")) ||
+    fixedImageMarkup(card, className.replace(/staff/g, "infrastructure")) ||
+    diningImageMarkup(card, className.replace(/staff/g, "infrastructure")) ||
+    infrastructureImageMarkup(card, className.replace(/staff/g, "infrastructure")) ||
+    foundingPackageImageMarkup(card, className.replace(/staff/g, "infrastructure")) ||
+    mainExhibitImageMarkup(card, className.replace(/staff/g, "infrastructure"))
+  );
+}
+
+function publicityPreviewMarkup(card, resolvedText, extraNotice = "") {
+  const imageMarkup = publicityImageMarkup(card, "infrastructure-card-photo infrastructure-card-photo-preview");
+  const isSpecialTroubledZooCard = card.specialRule === "lowest-visitors";
+  const brandingMarkup = card.lastingTags?.length
+    ? `<div class="publicity-branding-callout"><strong>Branding Effect:</strong> The zoo that benefits from this publicity permanently gains <strong>${naturalJoin(card.lastingTags)}</strong>.</div>`
+    : "";
+  const metaMarkup = isSpecialTroubledZooCard
+    ? `
+      <div class="card-meta">
+        <span class="meta-pill">Visitors +${formatVisitors(card.visitorBonus)}</span>
+        <span class="meta-pill">Donations ${currency(card.donationBonus ?? 0)}</span>
+        <span class="meta-pill">Effect: Lowest visitors from Round ${card.minRound}</span>
+      </div>
+    `
+    : `
+      <div class="card-meta">
+        <span class="meta-pill">Visitors +${formatVisitors(card.visitorBonus)}</span>
+        <span class="meta-pill">Likes ${card.preferences.join(", ")}</span>
+      </div>
+    `;
+  const strengthMarkup = isSpecialTroubledZooCard ? "" : currentStrengthMarkup(card.preferences);
+  const ruleMarkup = isSpecialTroubledZooCard
+    ? `<p><strong>Special Rule:</strong> The zoo with the fewest visitors gets the coverage boost and ${currency(card.donationBonus ?? 0)} in support. If multiple zoos are tied for last, they split both.</p>`
+    : "";
+
+  if (imageMarkup) {
+    return `
+      <div class="staff-card-shell">
+        <h4>${card.name}</h4>
+        <div class="staff-preview-layout attraction-preview-layout">
+          ${imageMarkup}
+          <div class="staff-preview-body attraction-preview-body">
+            <p>${card.description}</p>
+            ${metaMarkup}
+            ${ruleMarkup}
+            ${brandingMarkup}
+            ${strengthMarkup}
+            <p>${resolvedText}</p>
+          </div>
+        </div>
+      </div>
+      ${extraNotice}
+    `;
+  }
+
+  return `
+    <h4>${card.name}</h4>
+    <p>${card.description}</p>
+    ${metaMarkup}
+    ${ruleMarkup}
+    ${brandingMarkup}
+    ${strengthMarkup}
+    <p>${resolvedText}</p>
+    ${extraNotice}
+  `;
+}
+
+function attractionPreviewMarkup(card, economics, extraLines = "", extraNotice = "") {
+  const imageMarkup =
+    fixedImageMarkup(card, "infrastructure-card-photo infrastructure-card-photo-preview") ||
+    diningImageMarkup(card, "infrastructure-card-photo infrastructure-card-photo-preview") ||
+    infrastructureImageMarkup(card, "infrastructure-card-photo infrastructure-card-photo-preview") ||
+    mainExhibitImageMarkup(card, "infrastructure-card-photo infrastructure-card-photo-preview");
+  if (imageMarkup) {
+    return `
+      <div class="staff-card-shell">
+        <h4>${card.name}</h4>
+        <div class="staff-preview-layout attraction-preview-layout">
+          ${imageMarkup}
+          <div class="staff-preview-body attraction-preview-body">
+            <p>${card.description}</p>
+            ${currentStrengthMarkup(card.tags)}
+            <div class="card-meta">
+              <span class="meta-pill">Visitors +${formatVisitors(card.crowd)}</span>
+              <span class="meta-pill">${costLabel(card)} ${currency(card.upkeep)}</span>
+              <span class="meta-pill">${formatRevenueRole(card)}</span>
+            </div>
+            ${extraLines}
+            <p><strong>Value If Added:</strong> ${economics.currentLiftText}</p>
+            <p><strong>Profit Point:</strong> ${economics.profitText}</p>
+            <p><strong>Animals:</strong> ${formatInventory(card.inventory)}</p>
+            <div class="card-meta">
+              ${card.tags.map((tag) => `<span class="meta-pill">${tag}</span>`).join("")}
+            </div>
+          </div>
+        </div>
+      </div>
+      ${extraNotice}
+    `;
+  }
+
+  return `
+    ${cardImageMarkup(card)}
+    <h4>${card.name}</h4>
+    <p>${card.description}</p>
+    ${currentStrengthMarkup(card.tags)}
+    <div class="card-meta">
+      <span class="meta-pill">Visitors +${formatVisitors(card.crowd)}</span>
+      <span class="meta-pill">${costLabel(card)} ${currency(card.upkeep)}</span>
+      <span class="meta-pill">${formatRevenueRole(card)}</span>
+    </div>
+    ${extraLines}
+    <p><strong>Value If Added:</strong> ${economics.currentLiftText}</p>
+    <p><strong>Profit Point:</strong> ${economics.profitText}</p>
+    <p><strong>Animals:</strong> ${formatInventory(card.inventory)}</p>
+    <div class="card-meta">
+      ${card.tags.map((tag) => `<span class="meta-pill">${tag}</span>`).join("")}
+    </div>
+    ${extraNotice}
+  `;
+}
+
+function getTagCount(player, tag) {
+  const assetCount = player.assets.reduce(
+    (sum, card) => sum + (cardMatchesTag(card, tag) ? 1 : 0),
+    0
+  );
+  const publicityCount = (player.people || []).reduce(
+    (sum, card) =>
+      sum +
+      ((card.grantedTags || []).filter((entry) =>
+        equivalentTagsFor(tag).includes(normalizeTag(entry))
+      ).length),
+    0
+  );
+  return assetCount + publicityCount;
+}
+
+function strengthLevelForTag(tag) {
+  const player = getPlayer();
+  const counts = state.players.map((entry) => getTagCount(entry, tag));
+  const current = getTagCount(player, tag);
+  const maxCount = Math.max(...counts, 0);
+
+  if (current <= 0) {
+    return { label: "Weak", className: "strength-weak", count: current };
+  }
+  if (current === maxCount) {
+    return { label: "Leading", className: "strength-leading", count: current };
+  }
+  if (current >= Math.max(2, Math.ceil(maxCount * 0.6))) {
+    return { label: "Strong", className: "strength-strong", count: current };
+  }
+  if (current >= Math.max(1, Math.ceil(maxCount * 0.3))) {
+    return { label: "Average", className: "strength-average", count: current };
+  }
+  return { label: "Weak", className: "strength-weak", count: current };
+}
+
+function currentStrengthMarkup(tags) {
+  const relevantTags = [...new Set((tags || []).filter(Boolean).map((tag) => normalizeTag(tag)))];
+  if (!relevantTags.length) return "";
+  const items = relevantTags
+    .map((tag) => {
+      const strength = strengthLevelForTag(tag);
+      return `
+        <div class="strength-item ${strength.className}" title="${tag}: ${strength.count} (${strength.label})">
+          <span class="strength-item-tag">${tag}</span>
+          <span class="strength-item-meta">${strength.count} • ${strength.label}</span>
+        </div>
+      `;
+    })
+    .join("");
+
+  return `
+    <div class="current-strength-panel">
+      <div class="current-strength-head">
+        <strong>Your Current Strength</strong>
+        <div class="strength-legend">
+          <span class="strength-key strength-leading">Leading</span>
+          <span class="strength-key strength-strong">Strong</span>
+          <span class="strength-key strength-average">Average</span>
+          <span class="strength-key strength-weak">Weak</span>
+        </div>
+      </div>
+      <div class="current-strength-grid">${items}</div>
+    </div>
+  `;
+}
+
+const RELATED_TAG_GROUPS = {
+  Safari: ["Lion", "Giraffe", "Zebra", "Gazelle", "Antelope", "Elephant"],
+  Ride: ["Transportation", "Interactive", "Walkthrough", "Safari"],
+  Elephant: ["Safari", "Gentle", "Big Draw"],
+  Bird: ["Parrot", "Macaw", "Peacock", "Flamingo", "Walkthrough"],
+  Penguin: ["Water", "Cute", "Cold"],
+  Water: ["Penguin", "Otter", "Flamingo"],
+  Reptile: ["Snake", "Lizard", "Iguana", "Turtle", "Tortoise", "Indoor"],
+  Snake: ["Reptile", "Indoor"],
+  Indoor: ["Reptile", "Snake", "Walkthrough"],
+  Interactive: ["Walkthrough", "Transportation", "Gentle", "Cute", "Kids World"],
+  Food: ["Guest Relations", "Transportation", "Donation"],
+  Dining: ["Food", "Guest Relations", "Transportation"],
+  "Gift Shop": ["Souvenir", "Interactive"],
+  Souvenir: ["Gift Shop", "Interactive"],
+  Extinct: ["Big Draw", "Walkthrough", "Interactive"],
+  Rare: ["Extinct", "Cryptid", "Big Draw", "Panda"],
+  Cryptid: ["Forest", "Water", "Big Draw", "Magic", "Nocturnal"],
+  Forest: ["Bigfoot", "Cryptid", "Gentle"],
+  Gentle: ["Cute", "Interactive", "Giraffe", "Elephant"],
+  Cute: ["Gentle", "Interactive", "Penguin", "Kids World"],
+  Music: ["Entertainment", "Cute"],
+  Entertainment: ["Music", "Interactive", "Cute", "Themed"],
+  Educational: ["Animal Expert", "Walkthrough"],
+  "Animal Expert": ["Educational", "Interactive"],
+  "Guest Relations": ["Interactive", "Gentle", "Souvenir", "Operations", "Accessibility"],
+  Primate: ["Monkey", "Chimpanzee", "Baboon", "Gorilla", "Interactive"],
+  Monkey: ["Primate", "Interactive"],
+  Predator: ["Lion", "Big Draw", "Tiger", "Jaguar"],
+  Lion: ["Predator", "Safari"],
+  "Big Draw": ["Safari", "Elephant", "Extinct", "Cryptid", "Predator", "Ride"],
+  Desert: ["Reptile", "Snake", "Meerkat", "Camel", "Scorpion", "Tortoise"],
+  Insects: ["Interactive", "Predator"],
+  Galapagos: ["Penguin", "Turtle", "Iguana", "Water", "Bird"],
+  Antarctica: ["Seal", "Bird", "Cold", "Penguin"],
+  Brazil: ["Bird", "Macaw", "Predator", "Jaguar", "Water"],
+  Australia: ["Kangaroo", "Gentle", "Water", "Aquatic", "Koala"],
+  India: ["Tiger", "Elephant", "Predator", "Water"],
+  China: ["Panda", "Gentle", "Bird", "Predator"],
+  "Birds of Prey": ["Bird", "Predator", "Eagle", "Owl"],
+  Aquatic: ["Water", "Fish", "Penguin", "Otter", "Seal", "Dolphin", "Shark", "Octopus", "Turtle", "Whale"],
+  Panda: ["China", "Gentle", "Cute"],
+  Tiger: ["India", "Predator"],
+  Jaguar: ["Brazil", "Predator"],
+  Fish: ["Aquatic"],
+  Parking: ["Guest Relations", "Operations", "Accessibility"],
+  Security: ["Operations", "Guest Relations", "Parking"],
+  "Kids World": ["Cute", "Interactive", "Entertainment"],
+  Transportation: ["Ride", "Parking", "Guest Relations", "Interactive"],
+  Themed: ["Costumed", "Entertainment", "Interactive", "Magic"],
+  Accessibility: ["Walkthrough", "Guest Relations", "Parking", "Operations"],
+  International: ["China", "India", "Australia", "Brazil", "Galapagos", "Antarctica"],
+  Nocturnal: ["Cryptid", "Predator", "Magic"],
+};
+
+function normalizeTag(tag) {
+  return tag === "Dining" ? "Food" : tag;
+}
+
+function equivalentTagsFor(tag) {
+  const normalized = normalizeTag(tag);
+  return normalized === "Food" ? ["Food", "Dining"] : [normalized];
+}
+
+function relatedTagsFor(tag) {
+  return RELATED_TAG_GROUPS[normalizeTag(tag)] ?? [];
+}
+
+function getPreferenceBreakdown(player, preferences) {
+  const directTags = [];
+  const relatedTags = [];
+  let directPoints = 0;
+  let relatedPoints = 0;
+
+  preferences.forEach((tag) => {
+    if (tag === "Most Animals") {
+      const animalCount = totalAnimalCount(player);
+      if (animalCount > 0) {
+        directTags.push(`Animals x${animalCount}`);
+        directPoints += animalCount;
+      }
+      return;
+    }
+
+    const directCount = getTagCount(player, tag);
+    if (directCount > 0) {
+      directTags.push(directCount > 1 ? `${tag} x${directCount}` : tag);
+      directPoints += 2 + Math.max(0, directCount - 1);
+      return;
+    }
+
+    const relatedMatches = relatedTagsFor(tag)
+      .map((relatedTag) => ({
+        tag: relatedTag,
+        count: getTagCount(player, relatedTag),
+      }))
+      .filter((entry) => entry.count > 0);
+    if (relatedMatches.length) {
+      const relatedCount = relatedMatches.reduce((sum, entry) => sum + entry.count, 0);
+      const relatedLabel = relatedMatches
+        .map((entry) => (entry.count > 1 ? `${entry.tag} x${entry.count}` : entry.tag))
+        .join(", ");
+      relatedTags.push(`${tag} via ${relatedLabel}`);
+      relatedPoints += relatedCount * 0.25;
+    }
+  });
+
+  return {
+    score: directPoints + relatedPoints,
+    directPoints,
+    relatedPoints,
+    directTags,
+    relatedTags,
+  };
+}
+
+function evaluateZooFocus(player, preferences) {
+  return getPreferenceBreakdown(player, preferences).score;
+}
+
+function formatPreferenceScore(score) {
+  if (Number.isInteger(score)) return String(score);
+  const quarterRounded = Math.round(score * 4) / 4;
+  return quarterRounded.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1");
+}
+
+function getPeopleScores(personCard) {
+  if (personCard.specialRule === "lowest-visitors") {
+    const lowestVisitors = Math.min(...state.players.map((player) => player.totalCrowd));
+    return state.players.map((player) => ({
+      player,
+      score: player.totalCrowd === lowestVisitors ? 1 : 0,
+      directPoints: player.totalCrowd === lowestVisitors ? 1 : 0,
+      relatedPoints: 0,
+      directTags: player.totalCrowd === lowestVisitors ? [`Lowest visitors (${formatVisitors(player.totalCrowd)})`] : [],
+      relatedTags: [],
+    }));
+  }
+
+  return state.players.map((player) => ({
+    player,
+    ...getPreferenceBreakdown(player, personCard.preferences),
+  }));
+}
+
+function getDirectMatchingTags(card, personCard) {
+  const cardTags = matchingTagsForCard(card);
+  return personCard.preferences.filter((tag) => cardTags.includes(normalizeTag(tag)));
+}
+
+function getRelatedMatchingTags(card, personCard) {
+  const cardTags = matchingTagsForCard(card);
+  return personCard.preferences
+    .map((tag) => {
+      if (cardTags.includes(normalizeTag(tag))) return null;
+      const related = relatedTagsFor(tag).find((relatedTag) =>
+        cardTags.includes(normalizeTag(relatedTag))
+      );
+      return related ? `${tag} via ${related}` : null;
+    })
+    .filter(Boolean);
+}
+
+function pendingPeopleForCard(card) {
+  return state.pendingPeople
+    .map((personCard) => {
+      const currentScores = getPeopleScores(personCard);
+      const bestCurrent = Math.max(...currentScores.map((entry) => entry.score));
+      const directTags = getDirectMatchingTags(card, personCard);
+      const relatedTags = getRelatedMatchingTags(card, personCard);
+      if ((!directTags.length && !relatedTags.length) || bestCurrent > 0) return null;
+      const reasonParts = [];
+      if (directTags.length) reasonParts.push(`direct matches ${directTags.join(", ")}`);
+      if (relatedTags.length) reasonParts.push(`related bonus from ${relatedTags.join(", ")}`);
+      return `${personCard.name} could be attracted by this card because it adds ${reasonParts.join(
+        " and "
+      )}, worth +${formatVisitors(personCard.visitorBonus)} visitors.`;
+    })
+    .filter(Boolean);
+}
+
+function unlockedPeopleValue(card) {
+  return state.pendingPeople.reduce((sum, personCard) => {
+    const currentScores = getPeopleScores(personCard);
+    const bestCurrent = Math.max(...currentScores.map((entry) => entry.score));
+    const directTags = getDirectMatchingTags(card, personCard);
+    const relatedTags = getRelatedMatchingTags(card, personCard);
+    if ((!directTags.length && !relatedTags.length) || bestCurrent > 0) {
+      return sum;
+    }
+
+    return (
+      sum +
+      personCard.visitorBonus * 4 +
+      directTags.length * MONEY_SCALE +
+      relatedTags.length * (MONEY_SCALE / 2)
+    );
+  }, 0);
+}
+
+function revenuePotentialValue(card, crowdTotal = 20 * VISITOR_SCALE) {
+  const simulatedPlayer = { totalCrowd: crowdTotal + card.crowd, assets: [card] };
+  return (
+    calculateAttendanceRevenue(simulatedPlayer) * 0.12 +
+    calculateGuestSpendingRevenue(simulatedPlayer)
+  );
+}
+
+function cardStrategicValue(card, player = null) {
+  const referencePlayer = player ?? makePlayer("Reference", false, "", "reference-player");
+  const currentRevenueLift = estimateCardRevenueAtCurrentCrowd(referencePlayer, card);
+  const revenueValue = revenuePotentialValue(card, referencePlayer.totalCrowd);
+  const peopleValue = unlockedPeopleValue(card);
+  const visitorValue = card.crowd * 16;
+  const upkeepPenalty = card.upkeep * 0.45;
+  const headlineBonus = admissionLift(card) * 1700 + guestSpendingStrength(card) * 1100;
+  const profitCrowd = estimateCardProfitCrowd(card, referencePlayer);
+  const paybackPenalty =
+    profitCrowd === null
+      ? 3 * MONEY_SCALE
+      : profitCrowd >= 160 * VISITOR_SCALE
+        ? 2.5 * MONEY_SCALE
+        : profitCrowd >= 100 * VISITOR_SCALE
+          ? 1.5 * MONEY_SCALE
+          : profitCrowd >= 70 * VISITOR_SCALE
+            ? 0.75 * MONEY_SCALE
+            : 0;
+  const supportPenalty =
+    card.type === "Staff"
+      ? 2.5 * MONEY_SCALE
+      : card.type === "Attraction" && guestSpendingStrength(card) < 1 && admissionLift(card) < 1
+        ? MONEY_SCALE
+        : 0;
+  return (
+    card.costHint +
+    visitorValue +
+    currentRevenueLift * 2.1 +
+    revenueValue +
+    peopleValue +
+    headlineBonus -
+    upkeepPenalty -
+    paybackPenalty -
+    supportPenalty
+  );
+}
+
+function tryResolvePendingPeople(triggerCard = null, winningPlayer = null) {
+  const resolutions = [];
+  const stillWaiting = [];
+
+  state.pendingPeople.forEach((personCard) => {
+    const scores = getPeopleScores(personCard);
+    const bestScore = Math.max(...scores.map((entry) => entry.score));
+    const winners = scores.filter((entry) => entry.score === bestScore && entry.score > 0);
+
+    if (!winners.length) {
+      stillWaiting.push(personCard);
+      return;
+    }
+
+    const splitBase = Math.floor(personCard.visitorBonus / winners.length);
+    const splitRemainder = personCard.visitorBonus % winners.length;
+    const donationSplitBase = Math.floor((personCard.donationBonus ?? 0) / winners.length);
+    const donationSplitRemainder = (personCard.donationBonus ?? 0) % winners.length;
+    const winnerNames = winners.map((entry) => entry.player.name).join(" and ");
+
+    winners.forEach((entry, index) => {
+      const share = splitBase + (index < splitRemainder ? 1 : 0);
+      const donationShare = donationSplitBase + (index < donationSplitRemainder ? 1 : 0);
+      const grantedTags = personCard.lastingTags || [];
+      entry.player.totalCrowd += share;
+      entry.player.money += donationShare;
+      entry.player.people.push({ ...personCard, splitShare: share, donationShare, grantedTags });
+    });
+
+    personCard.status = "won";
+    personCard.owner = winnerNames;
+
+    if (personCard.specialRule === "lowest-visitors") {
+      const outcomeText = publicityOutcomeText(personCard, winners);
+      if (winners.length === 1) {
+        resolutions.push(`${outcomeText} ${winnerNames} had the lowest visitor total at the moment the segment aired.`);
+      } else {
+        resolutions.push(`${outcomeText} They were tied for the lowest visitor total when the segment aired.`);
+      }
+      if (personCard.lastingTags?.length) {
+        const tagText = naturalJoin(personCard.lastingTags);
+        if (winners.length === 1) {
+          resolutions.push(`MAJOR BRANDING BOOST: ${winnerNames} permanently gains ${tagText} from ${personCard.name}.`);
+        } else {
+          resolutions.push(`MAJOR BRANDING BOOST: each zoo in the shared spotlight permanently gains ${tagText} from ${personCard.name}.`);
+        }
+      }
+      return;
+    }
+
+    if (personCard.lastingTags?.length) {
+      const tagText = naturalJoin(personCard.lastingTags);
+      if (winners.length === 1) {
+        resolutions.push(`MAJOR BRANDING BOOST: ${winnerNames} permanently gains ${tagText} from ${personCard.name}.`);
+      } else {
+        resolutions.push(`MAJOR BRANDING BOOST: each zoo in the shared spotlight permanently gains ${tagText} from ${personCard.name}.`);
+      }
+    }
+
+    if (winners.length === 1) {
+      const winnerEntry = winners[0];
+      const winner = winnerEntry.player;
+      const directText = winnerEntry.directTags.length
+        ? `direct ${winnerEntry.directTags.join(", ")}`
+        : "";
+      const relatedText = winnerEntry.relatedTags.length
+        ? `related ${winnerEntry.relatedTags.join(", ")}`
+        : "";
+      const scoringText = [directText, relatedText].filter(Boolean).join(" and ");
+      const cardTriggeredDirect =
+        triggerCard && winningPlayer && winner.name === winningPlayer.name
+          ? getDirectMatchingTags(triggerCard, personCard)
+          : [];
+      const cardTriggeredRelated =
+        triggerCard && winningPlayer && winner.name === winningPlayer.name
+          ? getRelatedMatchingTags(triggerCard, personCard)
+          : [];
+      const cardTriggerText = [
+        cardTriggeredDirect.length ? `direct ${cardTriggeredDirect.join(", ")}` : "",
+        cardTriggeredRelated.length ? `related ${cardTriggeredRelated.join(", ")}` : "",
+      ]
+        .filter(Boolean)
+        .join(" and ");
+      const resolvedScore = formatPreferenceScore(winnerEntry.score);
+
+      if (cardTriggeredDirect.length || cardTriggeredRelated.length) {
+        resolutions.push(
+          `${publicityWinnerLine(personCard, winner.name)} Winning ${triggerCard.name} gave that zoo ${cardTriggerText}, and it finished with ${resolvedScore} points from ${scoringText}.`
+        );
+      } else {
+        resolutions.push(
+          `${publicityWinnerLine(personCard, winner.name)} ${winner.name} finished with ${resolvedScore} points from ${scoringText}.`
+        );
+      }
+    } else {
+      const resolvedScore = formatPreferenceScore(bestScore);
+      resolutions.push(
+        `${publicityOutcomeText(personCard, winners)} Each tied zoo finished with ${resolvedScore} points.`
+      );
+    }
+  });
+
+  state.pendingPeople = stillWaiting;
+  return resolutions;
+}
+
+function startRound() {
+  state.currentReveal = null;
+  state.market = [];
+  state.revealQueue = buildRoundQueue();
+  state.auction = null;
+  state.roundStartNotices = [];
+  state.roundStartPause = state.currentRound === 1;
+  state.auctionLog = [
+    `Round ${state.currentRound} begins with 8 random reveals.`,
+    "Cards appear one by one. Publicity cards send visitors to the zoo that matches them best.",
+  ];
+  state.players.forEach((player) => {
+    player.passed = false;
+    player.loanJustIssued = false;
+  });
+
+  state.players.forEach((player) => {
+    const eligibleForRelief =
+      player.money === 0 &&
+      player.distressRounds >= DISTRESS_RELIEF_TRIGGER;
+    if (eligibleForRelief) {
+      player.money += DISTRESS_RELIEF_CASH;
+      player.lastReliefRound = state.currentRound;
+      const notice = `${player.name} receives ${currency(
+        DISTRESS_RELIEF_CASH
+      )} in city operating support this round after repeated zero-cash losses. The support continues only while the zoo remains stuck at zero cash.`;
+      state.auctionLog.push(notice);
+      state.roundStartNotices.push(notice);
+    }
+  });
+
+  state.players.forEach((player) => {
+    if (!player.isHuman && player.money < LOAN_TRIGGER_CASH && player.loanBalance === 0) {
+      player.money += LOAN_AMOUNT;
+      player.loanBalance += LOAN_AMOUNT;
+      player.loanJustIssued = true;
+      const notice = `${player.name} receives a city emergency loan of ${currency(
+        LOAN_AMOUNT
+      )}. Interest will cost ${currency(LOAN_INTEREST)} each round until it is repaid.`;
+      state.auctionLog.push(notice);
+      state.roundStartNotices.push(notice);
+    }
+  });
+
+  if (state.roundStartNotices.length) {
+    state.roundStartPause = true;
+  }
+}
+
+function resetGame() {
+  state.currentRound = 1;
+  state.currentReveal = null;
+  state.revealQueue = [];
+  state.market = [];
+  state.auction = null;
+  state.auctionLog = [];
+  state.roundStartNotices = [];
+  state.roundStartPause = false;
+  state.winner = null;
+  state.pendingLoanDecision = false;
+  state.pendingLoanOffer = false;
+  state.pendingPeople = [];
+  state.zooDrawPile = shuffle(zooDeck).map((card) => ({ ...card }));
+  state.peopleDrawPile = shuffle(peopleDeck).map((card) => ({ ...card }));
+  state.draftPicksRemaining = STARTER_DRAFT_PICKS;
+  state.draftTurnIndex = 0;
+  state.fixedOfferCounts = {};
+  const playerZooName = chosenPlayerZooName();
+  if (!ZOO_LOGOS[playerZooName]) {
+    ZOO_LOGOS[playerZooName] = ["./assets/Logos/generic-zoo400x400.jpg", "./assets/logos/generic-zoo400x400.jpg"];
+  }
+  state.players = [
+    makePlayer(playerZooName, true, "", "human-player"),
+    ...rivals.map((rival) => makePlayer(rival.name, false, rival.style, rival.id)),
+  ];
+  state.draftPool = buildStarterDraftPool();
+  processAiDraftTurnsUntilHuman();
+  renderDraft();
+}
+
+function showScreen(id) {
+  state.currentScreen = id;
+  if (id !== "game-screen") {
+    state.mapOpen = false;
+  }
+  elements.screens.forEach((screen) => {
+    screen.classList.toggle("screen-active", screen.id === id);
+  });
+}
+
+function renderOffice() {
+  const player = getPlayer();
+  elements.officeGoalCopy.textContent = `Review your zoo status, then open the zoo console to run the next round. The first zoo to ${formatVisitors(TARGET_VISITORS)} visitors wins.`;
+  elements.officeAiSummary.innerHTML = "";
+
+  state.players.forEach((zoo) => {
+    const div = document.createElement("div");
+    div.className = "ai-card";
+    div.innerHTML = `
+      <div class="zoo-card-head">
+        ${zooLogoMarkup(zoo.name, "zoo-logo-sm")}
+        <div>
+          <strong>${zoo.name}</strong>
+          <p>Cash: ${currency(zoo.money)} | Visitors: ${formatVisitors(zoo.totalCrowd)}/${formatVisitors(TARGET_VISITORS)}</p>
+        </div>
+      </div>
+      <p>Loan: ${playerLoanText(zoo)}</p>
+      <p>Animals: ${formatVisitors(totalAnimalCount(zoo))}</p>
+      <p>Zoo cards: ${zoo.assets.length} | People cards won: ${zoo.people.length}</p>
+    `;
+    elements.officeAiSummary.appendChild(div);
+  });
+}
+
+function renderMarket() {
+  if (!elements.marketGrid) return;
+  elements.marketGrid.innerHTML = "";
+}
+
+function renderPeopleMarket() {
+  if (!elements.peopleMarket) return;
+  elements.peopleMarket.innerHTML = "";
+  if (elements.peopleMarket.parentElement) {
+    elements.peopleMarket.parentElement.style.display = "none";
+  }
+}
+
+function renderAuctionCard() {
+  if (state.auction) {
+    const { card } = state.auction;
+    const economics = formatCardEconomics(card);
+    const influenceLines = pendingPeopleForCard(card);
+    elements.auctionTitle.textContent = `Round ${state.currentRound} Auction`;
+    elements.auctionTypeBadge.textContent = card.type;
+    elements.auctionCard.innerHTML =
+      card.type === "Staff"
+        ? `
+      <div class="staff-card-shell">
+        <h4>${card.name}</h4>
+        <div class="staff-preview-layout">
+          ${staffImageMarkup(card, "staff-card-photo staff-card-photo-preview")}
+          <div class="staff-preview-body">
+            <p>${card.description}</p>
+            ${currentStrengthMarkup(card.tags)}
+          <div class="card-meta">
+            <span class="meta-pill">Visitors +${formatVisitors(card.crowd)}</span>
+            <span class="meta-pill">${costLabel(card)} ${currency(card.upkeep)}</span>
+          </div>
+          <p><strong>Revenue Role:</strong> ${formatRevenueRole(card).replace(/^Revenue Role: /, "")}</p>
+          <p><strong>Value If Added:</strong> ${economics.currentLiftText}</p>
+          <p><strong>Profit Point:</strong> ${economics.profitText}</p>
+          <p><strong>Animals:</strong> ${formatInventory(card.inventory)}</p>
+            <div class="card-meta">
+              ${card.tags.map((tag) => `<span class="meta-pill">${tag}</span>`).join("")}
+            </div>
+          </div>
+        </div>
+      </div>
+      ${
+        influenceLines.length
+          ? `<div class="impact-alert"><strong>This card could immediately attract waiting people cards</strong><ul>${influenceLines
+              .map((line) => `<li>${line}</li>`)
+              .join("")}</ul></div>`
+          : ""
+      }
+    `
+        : `
+      ${attractionPreviewMarkup(
+        card,
+        economics,
+        "",
+        influenceLines.length
+          ? `<div class="impact-alert"><strong>This card could immediately attract waiting people cards</strong><ul>${influenceLines
+              .map((line) => `<li>${line}</li>`)
+              .join("")}</ul></div>`
+          : ""
+      )}
+    `;
+    return;
+  }
+
+  if (state.currentReveal) {
+    const card = state.currentReveal;
+    const specialNoticeBlock = state.specialNotice
+      ? `<div class="impact-alert"><strong>${state.specialNotice.title}</strong><p>${state.specialNotice.body}</p></div>`
+      : "";
+    elements.auctionTitle.textContent = `Round ${state.currentRound} Reveal`;
+    elements.auctionTypeBadge.textContent = card.kind === "people" ? "Publicity" : card.type;
+    if (card.kind === "people") {
+      const scores = getPeopleScores(card);
+      const bestScore = Math.max(...scores.map((entry) => entry.score));
+      const winners = scores.filter((entry) => entry.score === bestScore && entry.score > 0);
+      const splitBase = winners.length ? Math.floor(card.visitorBonus / winners.length) : 0;
+      const splitRemainder = winners.length ? card.visitorBonus % winners.length : 0;
+      const resolvedText = publicityOutcomeText(card, winners);
+      elements.auctionCard.innerHTML = publicityPreviewMarkup(card, resolvedText, specialNoticeBlock);
+    } else {
+      const displayCard =
+        isCustomizableFixedCard(card) && state.fixedThemeChoice
+          ? customizeFixedCard(card, state.fixedThemeChoice)
+          : card;
+      const economics = formatCardEconomics(displayCard);
+      const influenceLines = pendingPeopleForCard(displayCard);
+      const priceLine = isFixedPriceCard(card)
+        ? `<p><strong>Fixed Price:</strong> ${currency(card.costHint)}</p>`
+        : "";
+      const buyerLine =
+        isFixedPriceCard(card) && card.buyers?.length
+          ? `<p><strong>Purchased By:</strong> ${card.buyers.join(", ")}</p>`
+          : "";
+      const themeLine =
+        isCustomizableFixedCard(card) && state.fixedThemeChoice
+          ? `<p><strong>Selected Theme:</strong> ${displayCard.name}</p>`
+          : "";
+      const fixedTurnLine =
+        state.fixedOfferState && isFixedPriceCard(card)
+          ? `<p><strong>Selection Turn:</strong> ${currentFixedBuyer()?.name ?? "None"}</p>`
+          : "";
+      elements.auctionCard.innerHTML =
+        displayCard.type === "Staff"
+          ? `
+        <div class="staff-card-shell">
+          <h4>${displayCard.name}</h4>
+          <div class="staff-preview-layout">
+            ${staffImageMarkup(displayCard, "staff-card-photo staff-card-photo-preview")}
+            <div class="staff-preview-body">
+              <p>${displayCard.description}</p>
+              ${currentStrengthMarkup(displayCard.tags)}
+            <div class="card-meta">
+              <span class="meta-pill">Visitors +${formatVisitors(displayCard.crowd)}</span>
+              <span class="meta-pill">${costLabel(displayCard)} ${currency(displayCard.upkeep)}</span>
+            </div>
+            ${priceLine}
+            ${buyerLine}
+            ${themeLine}
+            ${fixedTurnLine}
+            <p><strong>Revenue Role:</strong> ${formatRevenueRole(displayCard).replace(/^Revenue Role: /, "")}</p>
+            <p><strong>Value If Added:</strong> ${economics.currentLiftText}</p>
+            <p><strong>Profit Point:</strong> ${economics.profitText}</p>
+            <p><strong>Animals:</strong> ${formatInventory(displayCard.inventory)}</p>
+              <div class="card-meta">
+                ${displayCard.tags.map((tag) => `<span class="meta-pill">${tag}</span>`).join("")}
+              </div>
+            </div>
+          </div>
+        </div>
+        ${
+          influenceLines.length
+            ? `<div class="impact-alert"><strong>This theme could immediately attract waiting people cards</strong><ul>${influenceLines
+                .map((line) => `<li>${line}</li>`)
+                .join("")}</ul></div>`
+            : ""
+        }
+        ${specialNoticeBlock}
+      `
+          : `
+        ${attractionPreviewMarkup(
+          displayCard,
+          economics,
+          `${priceLine}${buyerLine}${themeLine}${fixedTurnLine}`,
+          `${
+            influenceLines.length
+              ? `<div class="impact-alert"><strong>This theme could immediately attract waiting people cards</strong><ul>${influenceLines
+                  .map((line) => `<li>${line}</li>`)
+                  .join("")}</ul></div>`
+              : ""
+          }${specialNoticeBlock}`
+        )}
+      `;
+    }
+    return;
+  }
+
+  if (state.roundStartPause) {
+    elements.auctionTitle.textContent = `Round ${state.currentRound}`;
+    elements.auctionTypeBadge.textContent = state.roundStartNotices.length ? "Notice" : "Reveal";
+    elements.auctionCard.innerHTML = state.roundStartNotices.length
+      ? `
+      <h4>Round Start Notice</h4>
+      <p>Review this update before revealing the first card of the round.</p>
+      <div class="impact-alert"><strong>Round Start Notice</strong><ul>${state.roundStartNotices
+        .map((line) => `<li>${line}</li>`)
+        .join("")}</ul></div>
+    `
+      : `
+      <h4>Reveal the first card</h4>
+      <p>Each round reveals 8 random cards one by one. Most cards are resolved by bidding. Publicity cards send visitors to the zoo that matches their preferences best. If there is a tie, the tied zoos split the visitors. At the end of each round, the zoo with the most animals gains ${MOST_ANIMALS_BONUS} extra visitors and second place gains ${SECOND_MOST_ANIMALS_BONUS}.</p>
+    `;
+    return;
+  }
+
+  elements.auctionTitle.textContent = `Round ${state.currentRound}`;
+  elements.auctionTypeBadge.textContent = "Reveal";
+  elements.auctionCard.innerHTML = `
+    <p>Preparing the next reveal...</p>
+  `;
+}
+
+function renderPreferenceBattle() {
+  elements.preferenceBattle.classList.add("hidden");
+  elements.preferenceBattle.innerHTML = "";
+
+  const card =
+    state.currentReveal?.kind === "people"
+      ? state.currentReveal
+      : state.auction?.card?.kind === "people"
+        ? state.auction.card
+        : null;
+
+  if (!card) return;
+
+  const baseScores = getPeopleScores(card);
+  const scores = card.specialRule === "lowest-visitors"
+    ? baseScores.sort((a, b) => a.player.totalCrowd - b.player.totalCrowd)
+    : baseScores.sort((a, b) => b.score - a.score);
+  const bestScore = Math.max(...scores.map((entry) => entry.score));
+  const winners = scores.filter((entry) => entry.score === bestScore && entry.score > 0);
+
+  const summary =
+    card.specialRule === "lowest-visitors"
+      ? `This segment directed support toward the zoo with the fewest visitors, with any tied trailing zoos sharing the attention.`
+      : winners.length > 1
+        ? `This publicity card split the spotlight between the zoos that matched it best.`
+        : `This publicity card had the strongest impact on ${winners[0]?.player.name || "the leading zoo"}.`;
+  const explainerText =
+    card.specialRule === "lowest-visitors"
+      ? `This spotlight helps the zoo with the fewest current visitors. If multiple zoos are tied for last, they split both the visitor boost and the donation support.`
+      : `The closer a zoo's features align with the publicity themes, the more visitors it attracts. Exact matches have the biggest impact, while related matches provide a smaller boost.`;
+
+  elements.preferenceBattle.innerHTML = `
+    <h4>Publicity Impact</h4>
+    <p>${summary}</p>
+    <p>${explainerText}</p>
+    <div class="battle-grid battle-grid-narrative">
+      ${scores
+        .map(
+          (entry) => `
+            <div class="impact-card ${winners.some((winnerEntry) => winnerEntry.player.id === entry.player.id) ? "impact-card-winner" : "impact-card-chasing"}">
+              <div class="impact-card-header">
+                <strong>${entry.player.name}</strong>
+                <span class="impact-card-label">${publicityImpactLabel(entry, winners)}</span>
+              </div>
+              <p class="impact-card-copy">${publicityImpactNarrative(card, entry, winners)}</p>
+              <details class="impact-details">
+                <summary>Expand Details</summary>
+                <div class="impact-details-body">
+                  ${publicityImpactDetails(entry, card, winners)}
+                </div>
+              </details>
+            </div>
+          `
+        )
+        .join("")}
+    </div>
+  `;
+  elements.preferenceBattle.classList.remove("hidden");
+}
+
+function renderAuctionStats() {
+  elements.highestBid.textContent = currency(state.auction?.highestBid ?? 0);
+  elements.highestBidder.textContent = state.auction?.highestBidder?.name ?? "None";
+  const minimumBid = state.auction
+    ? state.auction.highestBid > 0
+      ? state.auction.highestBid + 1
+      : state.auction.openingFloor ?? 1
+    : 1;
+  elements.minimumBid.textContent = currency(minimumBid);
+  elements.auctionLog.innerHTML = "";
+  state.auctionLog.slice(-8).forEach((entry) => {
+    const li = document.createElement("li");
+    li.textContent = entry;
+    elements.auctionLog.appendChild(li);
+  });
+}
+
+function isInfrastructureCard(card) {
+  return ["Food", "Gift Shop", "Souvenir", "Donation", "Operations", "Parking", "Guest Relations", "Security"].some(
+    (tag) => card.tags.includes(tag)
+  );
+}
+
+function exhibitTier(card) {
+  if (card.tags.includes("Food")) return "Food & Dining";
+  if (card.tags.includes("Gift Shop") || card.tags.includes("Souvenir")) return "Shopping";
+  if (card.tags.includes("Ride") || card.tags.includes("Transportation")) return "Rides";
+  if (isInfrastructureCard(card)) return "Infrastructure";
+  if (card.crowd >= 500) return "Headline Exhibits";
+  if (card.crowd >= 300) return "Strong Draws";
+  return "Supporting Exhibits";
+}
+
+function renderCollection(container, cards, emptyLabel) {
+  container.innerHTML = "";
+  if (!cards.length) {
+    const div = document.createElement("div");
+    div.className = "collection-item";
+    div.innerHTML = `<p>${emptyLabel}</p>`;
+    container.appendChild(div);
+    return;
+  }
+
+  cards.forEach((card) => {
+    const div = document.createElement("div");
+    div.className = "collection-item";
+    div.innerHTML = `
+      <h4>${card.name}</h4>
+      <p>Visitors +${formatVisitors(card.crowd)} | ${costLabel(card)} ${currency(card.upkeep)}</p>
+      <p><strong>Animals:</strong> ${formatInventory(card.inventory)}</p>
+      ${card.source ? `<p><strong>Donated by:</strong> ${card.source}</p>` : ""}
+    `;
+    container.appendChild(div);
+  });
+}
+
+function renderAssetSections(container, cards, emptyLabel) {
+  container.innerHTML = "";
+  if (!cards.length) {
+    const div = document.createElement("div");
+    div.className = "collection-item";
+    div.innerHTML = `<p>${emptyLabel}</p>`;
+    container.appendChild(div);
+    return;
+  }
+
+  const groups = {
+    "Headline Exhibits": [],
+    "Strong Draws": [],
+    "Supporting Exhibits": [],
+    Rides: [],
+    "Food & Dining": [],
+    Shopping: [],
+    Infrastructure: [],
+  };
+
+  cards.forEach((card) => {
+    groups[exhibitTier(card)].push(card);
+  });
+
+  Object.entries(groups).forEach(([label, entries]) => {
+    if (!entries.length) return;
+    const div = document.createElement("div");
+    div.className = "inventory-group compact-group";
+    div.innerHTML = `
+      <h5>${label}</h5>
+      <div class="inventory-lines compact-lines">
+        ${entries
+          .map(
+            (card) => `<div class="inventory-line compact-line"><span>${card.name}</span><span>${costLabel(card)} ${currency(
+              card.upkeep
+            )}</span></div>`
+          )
+          .join("")}
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function renderStaffCollection(container, cards, emptyLabel) {
+  container.innerHTML = "";
+  if (!cards.length) {
+    const div = document.createElement("div");
+    div.className = "collection-item";
+    div.innerHTML = `<p>${emptyLabel}</p>`;
+    container.appendChild(div);
+    return;
+  }
+
+  const div = document.createElement("div");
+  div.className = "inventory-group compact-group";
+  div.innerHTML = `
+    <div class="inventory-lines compact-lines">
+      ${cards
+        .map(
+          (card) => `<div class="inventory-line compact-line"><span>${card.name} - ${shortStaffRole(card)}</span><span>Salary ${currency(
+            card.upkeep
+          )}</span></div>`
+        )
+        .join("")}
+    </div>
+  `;
+  container.appendChild(div);
+}
+
+function renderPeopleList(container, cards, emptyLabel) {
+  container.innerHTML = "";
+  if (!cards.length) {
+    const div = document.createElement("div");
+    div.className = "collection-item";
+    div.innerHTML = `<p>${emptyLabel}</p>`;
+    container.appendChild(div);
+    return;
+  }
+
+  const div = document.createElement("div");
+  div.className = "inventory-group compact-group";
+  div.innerHTML = `
+    <div class="inventory-lines compact-lines">
+      ${cards
+        .map((card) => `<div class="inventory-line compact-line"><span>${card.name}</span></div>`)
+        .join("")}
+    </div>
+  `;
+  container.appendChild(div);
+}
+
+function renderPlayerArea() {
+  const player = getPlayer();
+  const inventory = collectInventory(player);
+  const staffCards = player.assets.filter((card) => card.type === "Staff");
+  const nonStaffAssets = player.assets.filter((card) => card.type !== "Staff");
+  elements.roundDisplay.textContent = String(state.currentRound);
+  elements.playerMoney.textContent = currency(player.money);
+  elements.playerCrowd.textContent = formatVisitors(player.totalCrowd);
+  elements.playerCrowdValue.textContent = currency(calculateRevenueBreakdown(player).total);
+  elements.playerIncomeValue.textContent = currency(calculateExpectedProfit(player));
+  renderZooMap(player);
+  renderAssetSections(elements.playerAssets, nonStaffAssets, "No animals or exhibits yet.");
+  renderStaffCollection(elements.playerStaff, staffCards, "No staff hired yet.");
+  renderPeopleList(elements.playerPeople, player.people.slice(-10), "No publicity earned yet.");
+  elements.playerInventory.innerHTML = "";
+  if (!inventory.length) {
+    const div = document.createElement("div");
+    div.className = "collection-item";
+    div.innerHTML = "<p>No tracked animals in your zoo yet.</p>";
+    elements.playerInventory.appendChild(div);
+  } else {
+    const groupedInventory = {
+      "Headline Animals": [],
+      "Strong Draws": [],
+      "Supporting Animals": [],
+    };
+    inventory.forEach(([name, count]) => {
+      groupedInventory[inventoryTier(name)].push([name, count]);
+    });
+    Object.entries(groupedInventory).forEach(([label, entries]) => {
+      if (!entries.length) return;
+      const div = document.createElement("div");
+      div.className = "inventory-group";
+      div.innerHTML = `
+        <h5>${label}</h5>
+        <div class="inventory-lines">
+          ${entries
+            .slice(0, 8)
+            .map(
+              ([name, count]) =>
+                `<div class="inventory-line"><span>${name}</span><span>x${count}</span></div>`
+            )
+            .join("")}
+        </div>
+      `;
+      elements.playerInventory.appendChild(div);
+    });
+  }
+  if (!document.getElementById("player-loan-note")) {
+    const note = document.createElement("div");
+    note.id = "player-loan-note";
+    note.className = "collection-item";
+    elements.playerPeople.parentElement.appendChild(note);
+  }
+  document.getElementById("player-loan-note").innerHTML = `<strong>City Loan</strong><p>${playerLoanText(
+    player
+  )}</p>`;
+}
+
+function renderRivals() {
+  elements.aiList.innerHTML = "";
+  state.players.forEach((player) => {
+    const div = document.createElement("div");
+    div.className = "mini-card";
+    const isHuman = player.isHuman;
+    div.innerHTML = `
+      <div class="zoo-card-head">
+        ${zooLogoMarkup(player.name)}
+        <div>
+          <strong>${player.name}</strong>
+          <p>Cash: ${currency(player.money)}</p>
+          <p>Visitors: ${formatVisitors(player.totalCrowd)}/${formatVisitors(TARGET_VISITORS)}</p>
+        </div>
+      </div>
+      <p>Loan: ${playerLoanText(player)}</p>
+      <p>Animals: ${formatVisitors(totalAnimalCount(player))}</p>
+      <p>Zoo cards: ${player.assets.length} | People cards won: ${player.people.length}</p>
+    `;
+    elements.aiList.appendChild(div);
+  });
+}
+
+function renderButtons() {
+  const auctionActive = Boolean(state.auction);
+  const peopleReveal = state.currentReveal?.kind === "people" && !auctionActive;
+  const fixedPriceReveal =
+    state.currentReveal?.kind === "zoo" && !auctionActive && isFixedPriceCard(state.currentReveal);
+  const fixedBuyer = currentFixedBuyer();
+  const humanFixedTurn = fixedPriceReveal && fixedBuyer?.isHuman;
+  const fixedOfferResolved = fixedPriceReveal && !state.fixedOfferState;
+  const roundComplete = !state.auction && !state.currentReveal && state.revealQueue.length === 0;
+  const revealPaused = state.roundStartPause;
+  elements.startAuctionButton.disabled = auctionActive || roundComplete;
+  elements.bidPanel.classList.toggle("hidden", peopleReveal || fixedPriceReveal);
+  elements.auctionOnlyActions.classList.toggle("hidden", !auctionActive);
+  elements.fixedPriceActions.classList.toggle("hidden", !humanFixedTurn);
+  elements.fixedThemePanel.classList.toggle(
+    "hidden",
+    !humanFixedTurn || !isCustomizableFixedCard(state.currentReveal)
+  );
+  const showRevealButton = (revealPaused || peopleReveal || fixedOfferResolved) && !roundComplete;
+  elements.startAuctionButton.classList.toggle("hidden", !showRevealButton);
+  elements.startAuctionButton.textContent = revealPaused ? "Reveal First Card" : "Reveal Next Card";
+  if (fixedPriceReveal) {
+    elements.buyFixedButton.textContent = `Buy for ${currency(state.currentReveal.costHint)}`;
+    if (humanFixedTurn && isCustomizableFixedCard(state.currentReveal)) {
+      const options = fixedCardThemes(state.currentReveal);
+      elements.fixedThemeOptions.innerHTML = options
+        .map((option) => {
+          const owned = playerOwnsCardName(getPlayer(), option.name);
+          return `
+            <button
+              class="secondary-button theme-choice-button${
+                state.fixedThemeChoice === option.key ? " theme-choice-selected" : ""
+              }"
+              data-theme-key="${option.key}"
+              ${owned ? "disabled" : ""}
+            >
+              ${option.name}${owned ? " (Owned)" : ""}
+            </button>
+          `;
+        })
+        .join("");
+    } else {
+      elements.fixedThemeOptions.innerHTML = "";
+    }
+  }
+  document.getElementById("bid-one-button").disabled = !auctionActive;
+  document.getElementById("bid-three-button").disabled = !auctionActive;
+  document.getElementById("pass-button").disabled = !auctionActive;
+}
+
+function renderAll() {
+  renderOffice();
+  renderMarket();
+  renderPeopleMarket();
+  renderAuctionCard();
+  renderPreferenceBattle();
+  renderAuctionStats();
+  renderPlayerArea();
+  renderRivals();
+  renderButtons();
+}
+
+function addLog(message) {
+  state.auctionLog.push(message);
+  renderAuctionStats();
+}
+
+function setSpecialNotice(title, body) {
+  state.specialNotice = { title, body };
+}
+
+function isMovableBumblesCard(card) {
+  return ["Animal", "Attraction", "Zoo Section", "Extinct", "Cryptid"].includes(card.type);
+}
+
+function chooseBumblesTarget(winner) {
+  const ranked = [...state.players].sort((a, b) => b.totalCrowd - a.totalCrowd);
+  if (!ranked.length) return null;
+  if (ranked[0].name === winner.name) {
+    return ranked.find((player) => player.name !== winner.name) ?? null;
+  }
+  return ranked[0];
+}
+
+function moveZooCard(card, fromPlayer, toPlayer) {
+  fromPlayer.assets = fromPlayer.assets.filter((asset) => asset !== card);
+  toPlayer.assets.push(card);
+  fromPlayer.totalCrowd = Math.max(0, fromPlayer.totalCrowd - card.crowd);
+  toPlayer.totalCrowd += card.crowd;
+}
+
+function resolveBumblesMagic(winner) {
+  const target = chooseBumblesTarget(winner);
+  if (!target) {
+    setSpecialNotice(
+      "Bumbles Magic Result",
+      "Bumbles had no valid rival target, so the trick fizzled without moving any attraction."
+    );
+    addLog("Bumbles the Magician has no valid rival target for his trick.");
+    return;
+  }
+
+  const backfire = Math.random() < 0.25;
+
+  if (!backfire) {
+    const targetCards = target.assets.filter(isMovableBumblesCard);
+    if (!targetCards.length) {
+      setSpecialNotice(
+        "Bumbles Magic Result",
+        `Bumbles targeted ${target.name}, but there was no movable attraction there to vanish.`
+      );
+      addLog(
+        `Bumbles targets ${target.name}, but there is no attraction there that can be whisked away.`
+      );
+      return;
+    }
+    const stolenCard = targetCards[Math.floor(Math.random() * targetCards.length)];
+    moveZooCard(stolenCard, target, winner);
+    setSpecialNotice(
+      "Bumbles Magic Result",
+      `${stolenCard.name} vanished from ${target.name} and reappeared in ${winner.name}, bringing ${formatVisitors(
+        stolenCard.crowd
+      )} visitors with it.`
+    );
+    addLog(
+      `Bumbles the Magician pulls off the trick. ${stolenCard.name} disappears from ${target.name} and reappears in ${winner.name}, bringing ${formatVisitors(
+        stolenCard.crowd
+      )} visitors with it.`
+    );
+    return;
+  }
+
+  const winnerCards = winner.assets.filter(
+    (card) => card.id !== "bumbles-the-magician" && isMovableBumblesCard(card)
+  );
+  if (!winnerCards.length) {
+    setSpecialNotice(
+      "Bumbles Magic Result",
+      `Bumbles backfired while targeting ${target.name}, but ${winner.name} had no other movable attraction to lose.`
+    );
+    addLog(
+      `Bumbles tries to target ${target.name}, but the trick backfires harmlessly because ${winner.name} has no other attraction to lose.`
+    );
+    return;
+  }
+  const lostCard = winnerCards[Math.floor(Math.random() * winnerCards.length)];
+  moveZooCard(lostCard, winner, target);
+  setSpecialNotice(
+    "Bumbles Magic Backfire",
+    `${lostCard.name} vanished from ${winner.name} and appeared in ${target.name}, taking ${formatVisitors(
+      lostCard.crowd
+    )} visitors with it.`
+  );
+  addLog(
+    `Bumbles the Magician backfires. ${lostCard.name} vanishes from ${winner.name} and appears in ${target.name}, taking ${formatVisitors(
+      lostCard.crowd
+    )} visitors with it.`
+  );
+}
+
+function beginAuction(card) {
+  state.players.forEach((player) => {
+    player.passed = false;
+  });
+  card.status = "available";
+  const openingFloor = auctionOpeningFloor(card);
+  state.auction = {
+    marketId: card.marketId,
+    card,
+    openingFloor,
+    highestBid: 0,
+    highestBidder: null,
+  };
+  if (openingFloor > MONEY_SCALE) {
+    addLog(`Auction begins for ${card.name}. Opening bid is ${currency(openingFloor)}.`);
+  } else {
+    addLog(`Auction begins for ${card.name}.`);
+  }
+  renderAll();
+}
+
+function awardZooCard(player, card, amountPaid, actionVerb = "wins") {
+  player.money -= amountPaid;
+  player.assets.push({ ...card });
+  player.totalCrowd += card.crowd;
+  card.status = "sold";
+  card.owner = player.name;
+  addLog(
+    `${player.name} ${actionVerb} ${card.name} for ${currency(amountPaid)} and gains ${formatVisitors(
+      card.crowd
+    )} visitors.`
+  );
+  if (card.id === "bumbles-the-magician") {
+    resolveBumblesMagic(player);
+  }
+  tryResolvePendingPeople(card, player).forEach((line) => addLog(line));
+}
+
+function playerCanBuyFixedCard(player, card) {
+  if (!player) return false;
+  const themeKey =
+    isCustomizableFixedCard(card)
+      ? state.fixedThemeChoice ?? fixedCardThemes(card)[0]?.key
+      : null;
+  const acquiredCard = themeKey ? customizeFixedCard(card, themeKey) : card;
+  return (
+    player.money >= card.costHint &&
+    !card.buyers?.includes(player.name) &&
+    !playerOwnsCardName(player, acquiredCard.name)
+  );
+}
+
+function awardSharedOfferCard(player, offeredCard, acquiredCard, amountPaid, actionVerb = "buys") {
+  player.money -= amountPaid;
+  player.assets.push({ ...acquiredCard });
+  player.totalCrowd += acquiredCard.crowd;
+  offeredCard.buyers = [...(offeredCard.buyers ?? []), player.name];
+  offeredCard.status = "sold";
+  offeredCard.owner = offeredCard.buyers.length === 1 ? player.name : "Multiple zoos";
+  addLog(
+    `${player.name} ${actionVerb} ${acquiredCard.name} for ${currency(amountPaid)} and gains ${formatVisitors(
+      acquiredCard.crowd
+    )} visitors.`
+  );
+  if (acquiredCard.id === "bumbles-the-magician") {
+    resolveBumblesMagic(player);
+  }
+  tryResolvePendingPeople(acquiredCard, player).forEach((line) => addLog(line));
+}
+
+function aiFixedPriceBuyers(card) {
+  return state.players
+    .slice(1)
+    .filter((ai) => ai.money >= card.costHint)
+    .map((ai) => ({
+      ai,
+      value: isCustomizableFixedCard(card)
+        ? themeChoiceValue(ai, card, bestThemeChoiceForPlayer(ai, card))
+        : evaluateAiInterest(ai, card),
+    }))
+    .filter(
+      (entry) =>
+        playerCanBuyFixedCard(entry.ai, card) &&
+        entry.value >= card.costHint
+    )
+    .sort((a, b) => b.value - a.value)
+    .map((entry) => entry.ai);
+}
+
+function aiFixedPriceThemeAssignments(card, usedThemeKeys = []) {
+  const assignments = [];
+  const taken = [...usedThemeKeys];
+
+  aiFixedPriceBuyers(card).forEach((ai) => {
+    const themeKey = isCustomizableFixedCard(card)
+      ? bestAvailableThemeChoiceForPlayer(ai, card, taken)
+      : null;
+    if (themeKey) {
+      taken.push(themeKey);
+    }
+    assignments.push({
+      ai,
+      themeKey,
+    });
+  });
+
+  return assignments;
+}
+
+function closeFixedPriceOffer(card) {
+  if (!card.buyers?.length) {
+    card.status = "unsold";
+    addLog(`${card.name} is passed over by every zoo at its fixed price.`);
+  }
+  state.fixedThemeChoice = null;
+  state.fixedOfferState = null;
+  if (state.revealQueue.length === 0) {
+    state.currentReveal = card;
+    resolveRound();
+    return;
+  }
+  state.currentReveal = card;
+  renderAll();
+  scheduleAutoReveal();
+}
+
+function buyFixedCard() {
+  const card = state.currentReveal;
+  const player = currentFixedBuyer();
+  if (!card || !isFixedPriceCard(card) || !playerCanBuyFixedCard(player, card)) {
+    addLog(`${getPlayer().name} cannot buy ${card?.name ?? "this card"} right now.`);
+    return;
+  }
+
+  const chosenTheme =
+    isCustomizableFixedCard(card)
+      ? state.fixedThemeChoice ?? fixedCardThemes(card)[0]?.key
+      : null;
+  const acquiredCard = chosenTheme ? customizeFixedCard(card, chosenTheme) : { ...card };
+  if (chosenTheme) {
+    card.selectedThemes = [...(card.selectedThemes ?? []), chosenTheme];
+  }
+  awardSharedOfferCard(player, card, acquiredCard, card.costHint, card.type === "Staff" ? "hires" : "buys");
+  state.fixedOfferState.index += 1;
+  processFixedOfferTurns();
+}
+
+function passFixedCard() {
+  const card = state.currentReveal;
+  if (!card || !isFixedPriceCard(card)) return;
+  const player = currentFixedBuyer();
+  addLog(`${player?.name ?? "This zoo"} passes on ${card.name}.`);
+  state.fixedOfferState.index += 1;
+  processFixedOfferTurns();
+}
+
+function processFixedOfferTurns() {
+  const card = state.currentReveal;
+  if (!card || !isFixedPriceCard(card) || !state.fixedOfferState) {
+    return;
+  }
+
+  while (state.fixedOfferState.index < state.fixedOfferState.order.length) {
+    const buyer = currentFixedBuyer();
+    if (!buyer) break;
+
+    if (buyer.isHuman) {
+      if (isCustomizableFixedCard(card)) {
+        const availableTheme = bestAvailableThemeChoiceForPlayer(
+          buyer,
+          card,
+          card.selectedThemes ?? []
+        );
+        state.fixedThemeChoice = availableTheme;
+      } else {
+        state.fixedThemeChoice = null;
+      }
+      renderAll();
+      return;
+    }
+
+    const themeKey = isCustomizableFixedCard(card)
+      ? bestAvailableThemeChoiceForPlayer(buyer, card, card.selectedThemes ?? [])
+      : null;
+    const aiCard = themeKey ? customizeFixedCard(card, themeKey) : { ...card };
+    const canBuy =
+      buyer.money >= card.costHint &&
+      !card.buyers?.includes(buyer.name) &&
+      !playerOwnsCardName(buyer, aiCard.name);
+    const value = themeKey
+      ? themeChoiceValue(buyer, card, themeKey)
+      : evaluateAiInterest(buyer, card);
+
+    if (canBuy && value >= card.costHint) {
+      if (themeKey) {
+        card.selectedThemes = [...(card.selectedThemes ?? []), themeKey];
+      }
+      const actionVerb = card.type === "Staff" ? "hires" : "buys";
+      awardSharedOfferCard(buyer, card, aiCard, card.costHint, actionVerb);
+    } else {
+      addLog(`${buyer.name} passes on ${card.name}.`);
+    }
+
+    state.fixedOfferState.index += 1;
+  }
+
+  closeFixedPriceOffer(card);
+}
+
+function canHumanBid(amount) {
+  return state.auction && amount > state.auction.highestBid && amount <= getPlayer().money;
+}
+
+function auctionOpeningFloor(card) {
+  let floor = MONEY_SCALE;
+
+  if (isPremiumHeadlineCard(card)) {
+    floor = 3 * MONEY_SCALE;
+  } else if (card.type === "Extinct" || card.type === "Cryptid") {
+    floor = 3 * MONEY_SCALE;
+  } else if (card.type === "Animal" || card.type === "Zoo Section") {
+    floor = 2 * MONEY_SCALE;
+  }
+
+  return Math.min(3 * MONEY_SCALE, Math.max(MONEY_SCALE, floor));
+}
+
+function evaluateAiInterest(ai, card) {
+  const leader = [...state.players].sort((a, b) => b.totalCrowd - a.totalCrowd)[0];
+  const gapToLeader = leader.totalCrowd - ai.totalCrowd;
+  const familyStyleTags = ["Interactive", "Gentle", "Cute", "Food", "Gift Shop", "Souvenir"];
+  const currentRevenueLift = estimateCardRevenueAtCurrentCrowd(ai, card);
+  const expectedProfit = calculateExpectedProfit(ai);
+  let score = cardStrategicValue(card, ai);
+  const profitCrowd = estimateCardProfitCrowd(card, ai);
+  const currentAnimals = totalAnimalCount(ai);
+  const addedAnimals = directAnimalCount(card);
+  const futureAnimals = currentAnimals + addedAnimals;
+  const rivalAnimalCounts = state.players.filter((player) => player.id !== ai.id).map(totalAnimalCount);
+  const bestRivalAnimals = Math.max(0, ...rivalAnimalCounts);
+
+  if (ai.style.includes("family")) {
+    score -= card.upkeep * 0.12;
+    if (state.currentRound <= 2 && isPremiumHeadlineCard(card)) {
+      score -= 3 * MONEY_SCALE;
+    }
+  }
+  if (ai.style.includes("prestige")) {
+    score += card.crowd * 2;
+    if (state.currentRound <= 2 && isPremiumHeadlineCard(card)) {
+      score += MONEY_SCALE;
+    }
+  }
+
+  if (state.currentRound <= 2) {
+    score += card.crowd * 7;
+  }
+  if (ai.totalCrowd >= 120 * VISITOR_SCALE) {
+    score += card.crowd * 5;
+  }
+  if (ai.totalCrowd >= 150 * VISITOR_SCALE) {
+    score += 1.5 * MONEY_SCALE;
+  }
+  if (TARGET_VISITORS - ai.totalCrowd <= 60 * VISITOR_SCALE) {
+    score += card.crowd * 12;
+  }
+  if (TARGET_VISITORS - ai.totalCrowd <= 40 * VISITOR_SCALE) {
+    score += 5 * MONEY_SCALE;
+  }
+  if (ai.money >= 30 * MONEY_SCALE && expectedProfit >= 8 * MONEY_SCALE) {
+    score += MONEY_SCALE;
+  }
+  if (ai.money >= 45 * MONEY_SCALE && expectedProfit >= 12 * MONEY_SCALE) {
+    score += 2 * MONEY_SCALE;
+  }
+  if (card.type === "Staff") {
+    score -= 3 * MONEY_SCALE;
+    if (guestSpendingStrength(card) < 1) {
+      score -= 2 * MONEY_SCALE;
+    }
+  }
+  if (profitCrowd === null) {
+    score -= 3 * MONEY_SCALE;
+  } else if (profitCrowd >= 140 * VISITOR_SCALE) {
+    score -= 3 * MONEY_SCALE;
+  } else if (profitCrowd >= 100 * VISITOR_SCALE) {
+    score -= 2 * MONEY_SCALE;
+  } else if (profitCrowd >= 70 * VISITOR_SCALE) {
+    score -= MONEY_SCALE;
+  }
+  if (ai.style.includes("family") && card.tags.some((tag) => familyStyleTags.includes(tag))) {
+    score += 2 * MONEY_SCALE;
+  }
+  if (ai.style.includes("prestige") && card.tags.includes("Big Draw")) score += 2 * MONEY_SCALE;
+  if (leader.isHuman && gapToLeader >= 12 * VISITOR_SCALE) score += 4 * MONEY_SCALE;
+  if (gapToLeader >= 8 * VISITOR_SCALE) score += card.crowd * 6;
+  if (ai.loanBalance > 0 || expectedProfit < 0) {
+    score += currentRevenueLift * 1.35 + card.crowd * 8;
+  }
+  if (addedAnimals > 0) {
+    score += addedAnimals * 0.2 * MONEY_SCALE;
+    if (futureAnimals > bestRivalAnimals && currentAnimals <= bestRivalAnimals) {
+      score += 2.5 * MONEY_SCALE;
+    } else if (futureAnimals === bestRivalAnimals && futureAnimals > 0) {
+      score += MONEY_SCALE;
+    } else if (bestRivalAnimals - futureAnimals <= 3 && bestRivalAnimals > futureAnimals) {
+      score += 0.5 * MONEY_SCALE;
+    }
+  }
+
+  state.pendingPeople.forEach((personCard) => {
+    const currentFocus = evaluateZooFocus(ai, personCard.preferences);
+    const currentBreakdown = getPreferenceBreakdown(ai, personCard.preferences);
+    const futureBreakdown = getPreferenceBreakdown(
+      { ...ai, assets: [...ai.assets, card] },
+      personCard.preferences
+    );
+    const futureFocus = futureBreakdown.score;
+    score += Math.max(0, futureFocus - currentFocus) * 3 * MONEY_SCALE;
+  });
+
+  if (
+    expectedProfit < 0 &&
+    guestSpendingStrength(card) < 1 &&
+    admissionLift(card) < 1 &&
+    card.upkeep >= 3 * MONEY_SCALE
+  ) {
+    score -= 4 * MONEY_SCALE;
+  }
+  if (ai.money <= 6 * MONEY_SCALE) score -= 3 * MONEY_SCALE;
+  score = Math.max(card.costHint, score);
+  return score;
+}
+
+function aiReserveCash(ai, card = null) {
+  let reserve = 0;
+  const expectedProfit = calculateExpectedProfit(ai);
+
+  if (expectedProfit < 0) {
+    reserve += 8 * MONEY_SCALE;
+  }
+  if (expectedProfit < -4 * MONEY_SCALE) {
+    reserve += 5 * MONEY_SCALE;
+  }
+  if (ai.loanBalance > 0) {
+    reserve += 4 * MONEY_SCALE;
+  }
+  if (ai.money <= 20 * MONEY_SCALE) {
+    reserve += 4 * MONEY_SCALE;
+  }
+
+  if (card) {
+    const recoveryValue = estimateCardRevenueAtCurrentCrowd(ai, card) + card.crowd * 12;
+    if (recoveryValue >= 5 * MONEY_SCALE) {
+      reserve -= 4 * MONEY_SCALE;
+    }
+    if (recoveryValue >= 8 * MONEY_SCALE) {
+      reserve -= 3 * MONEY_SCALE;
+    }
+    if (ai.loanBalance > 0 && recoveryValue >= 10 * MONEY_SCALE) {
+      reserve -= 4 * MONEY_SCALE;
+    }
+  }
+
+  if (ai.style.includes("family")) {
+    reserve += 3 * MONEY_SCALE;
+  }
+  if (ai.style.includes("prestige")) {
+    reserve -= MONEY_SCALE;
+  }
+  if (ai.money >= 30 * MONEY_SCALE && expectedProfit >= 8 * MONEY_SCALE) {
+    reserve -= 3 * MONEY_SCALE;
+  }
+  if (TARGET_VISITORS - ai.totalCrowd <= 60 * VISITOR_SCALE && expectedProfit >= 5 * MONEY_SCALE) {
+    reserve -= 4 * MONEY_SCALE;
+  }
+  if (TARGET_VISITORS - ai.totalCrowd <= 40 * VISITOR_SCALE && ai.money >= 20 * MONEY_SCALE) {
+    reserve -= 5 * MONEY_SCALE;
+  }
+
+  return Math.min(Math.max(0, reserve), Math.max(0, ai.money - MONEY_SCALE));
+}
+
+function aiOpeningBid(ai, card, desiredValue) {
+  let openingBid = state.auction?.openingFloor ?? MONEY_SCALE;
+
+  if (desiredValue >= 12 * MONEY_SCALE) openingBid = Math.max(openingBid, 4 * MONEY_SCALE);
+  else if (desiredValue >= 8 * MONEY_SCALE) openingBid = Math.max(openingBid, 3 * MONEY_SCALE);
+  else if (desiredValue >= 5 * MONEY_SCALE) openingBid = Math.max(openingBid, 2 * MONEY_SCALE);
+
+  if (ai.loanBalance > 0) {
+    openingBid = Math.min(openingBid, 2 * MONEY_SCALE);
+  }
+  if (calculateExpectedProfit(ai) < -4 * MONEY_SCALE) {
+    openingBid = Math.min(openingBid, 2 * MONEY_SCALE);
+  }
+  if (ai.style.includes("family")) {
+    openingBid = Math.min(openingBid, 2 * MONEY_SCALE);
+  }
+  if (ai.style.includes("prestige") && desiredValue >= 8 * MONEY_SCALE) {
+    openingBid = Math.max(openingBid, 2 * MONEY_SCALE);
+  }
+
+  return Math.max(state.auction?.openingFloor ?? MONEY_SCALE, openingBid);
+}
+
+function aiBidIncrement(ai, card, desiredValue) {
+  const gap = Math.max(0, desiredValue - (state.auction?.highestBid ?? 0));
+  let increment = MONEY_SCALE;
+
+  if (gap >= 9 * MONEY_SCALE) {
+    increment = 3 * MONEY_SCALE;
+  } else if (gap >= 5 * MONEY_SCALE) {
+    increment = 2 * MONEY_SCALE;
+  }
+
+  if (gap >= 7 * MONEY_SCALE && Math.random() < 0.35) {
+    increment = 2 * MONEY_SCALE;
+  } else if (gap >= 4 * MONEY_SCALE && Math.random() < 0.25) {
+    increment = MONEY_SCALE;
+  } else if (gap >= 10 * MONEY_SCALE && Math.random() < 0.25) {
+    increment = 3 * MONEY_SCALE;
+  }
+
+  if (ai.style.includes("family")) {
+    increment = Math.min(increment, 2 * MONEY_SCALE);
+  }
+  if (ai.loanBalance > 0 || calculateExpectedProfit(ai) < -3 * MONEY_SCALE) {
+    increment = MONEY_SCALE;
+  }
+
+  return increment;
+}
+
+function aiDenialBidLimit(ai, card, desiredValue, usableCash) {
+  const highestBidder = state.auction?.highestBidder;
+  if (!highestBidder || highestBidder.name === ai.name) return desiredValue;
+
+  const opponentValue =
+    highestBidder.isHuman || highestBidder.style
+      ? evaluateAiInterest(highestBidder, card)
+      : 0;
+
+  if (opponentValue <= desiredValue) return desiredValue;
+
+  const aiProfit = calculateExpectedProfit(ai);
+  const crowdLead = highestBidder.totalCrowd - ai.totalCrowd;
+  const canApplyPressure =
+    usableCash >= 8 * MONEY_SCALE &&
+    ai.money >= 12 * MONEY_SCALE &&
+    ai.loanBalance === 0 &&
+    aiProfit > -3 * MONEY_SCALE;
+
+  if (!canApplyPressure) return desiredValue;
+
+  let denialLimit = desiredValue;
+  if (crowdLead >= 6 * VISITOR_SCALE || highestBidder.isHuman) {
+    denialLimit = Math.max(denialLimit, Math.min(opponentValue - MONEY_SCALE, usableCash));
+  } else if (crowdLead >= 3 * VISITOR_SCALE) {
+    denialLimit = Math.max(
+      denialLimit,
+      Math.min(desiredValue + 2 * MONEY_SCALE, opponentValue - 2 * MONEY_SCALE, usableCash)
+    );
+  }
+
+  return Math.max(desiredValue, denialLimit);
+}
+
+function runAiTurns() {
+  const card = state.auction?.card;
+  if (!card) return;
+
+  state.players.slice(1).forEach((ai) => {
+    if (ai.passed) return;
+    if (state.auction.highestBidder?.name === ai.name) return;
+    const desiredValue = evaluateAiInterest(ai, card);
+    const usableCash = Math.max(0, ai.money - aiReserveCash(ai, card));
+    const increment = aiBidIncrement(ai, card, desiredValue);
+    const nextBid =
+      state.auction.highestBid === 0
+        ? aiOpeningBid(ai, card, desiredValue)
+        : state.auction.highestBid + increment;
+    const maxComfortBid = aiDenialBidLimit(ai, card, desiredValue, usableCash);
+    const expectedProfit = calculateExpectedProfit(ai);
+    const obviousBargain =
+      nextBid <= ai.money - MONEY_SCALE &&
+      desiredValue >= nextBid + 3 * MONEY_SCALE &&
+      !(ai.loanBalance > 0 && ai.money <= 6 * MONEY_SCALE) &&
+      expectedProfit > -8 * MONEY_SCALE;
+
+    if ((nextBid <= usableCash && nextBid <= maxComfortBid) || (obviousBargain && nextBid <= desiredValue)) {
+      state.auction.highestBid = nextBid;
+      state.auction.highestBidder = ai;
+      addLog(`${ai.name} bids ${currency(nextBid)}.`);
+    } else {
+      ai.passed = true;
+      addLog(`${ai.name} passes.`);
+    }
+  });
+}
+
+function activeAiBidders() {
+  return state.players
+    .slice(1)
+    .filter(
+      (ai) =>
+        !ai.passed &&
+        ai.money > state.auction.highestBid &&
+        state.auction.highestBidder?.name !== ai.name
+    );
+}
+
+function runAiAuctionToCompletion() {
+  if (!state.auction) return;
+
+  let previousBid = -1;
+  let safety = 0;
+
+  while (state.auction && safety < 40) {
+    safety += 1;
+    const beforeBid = state.auction.highestBid;
+    runAiTurns();
+
+    if (state.auction.highestBid === beforeBid) {
+      break;
+    }
+
+    if (state.auction.highestBid === previousBid) {
+      break;
+    }
+
+    previousBid = state.auction.highestBid;
+
+    if (activeAiBidders().length <= 1) {
+      runAiTurns();
+      break;
+    }
+  }
+}
+
+function humanBid(increase) {
+  const nextBid =
+    state.auction?.highestBid > 0
+      ? state.auction.highestBid + increase * MONEY_SCALE
+      : Math.max(state.auction?.openingFloor ?? MONEY_SCALE, increase * MONEY_SCALE);
+  if (!canHumanBid(nextBid)) {
+    addLog(`${getPlayer().name} cannot bid ${currency(nextBid)} right now.`);
+    return;
+  }
+
+  state.auction.highestBid = nextBid;
+  state.auction.highestBidder = getPlayer();
+  addLog(`${getPlayer().name} raises the bid to ${currency(nextBid)}.`);
+  runAiTurns();
+  renderAll();
+}
+
+function passAuction() {
+  if (!state.auction) return;
+  getPlayer().passed = true;
+  addLog(`${getPlayer().name} passes on this auction.`);
+  runAiAuctionToCompletion();
+  finishAuction(false);
+}
+
+function finishAuction(runFinalAiTurns = true) {
+  if (!state.auction) return;
+  if (runFinalAiTurns) runAiTurns();
+
+  const winner = state.auction.highestBidder;
+  const marketCard = state.market.find((entry) => entry.marketId === state.auction.marketId);
+
+  if (winner && marketCard) {
+    const acquisitionVerb = marketCard.type === "Staff" ? "hires" : "wins";
+    awardZooCard(winner, marketCard, state.auction.highestBid, acquisitionVerb);
+  } else if (marketCard) {
+    marketCard.status = "unsold";
+    addLog(`${marketCard.name} receives no bids this round.`);
+  }
+
+  state.auction = null;
+  state.currentReveal = marketCard ?? null;
+
+  if (state.revealQueue.length === 0) {
+    resolveRound();
+    return;
+  }
+  renderAll();
+  scheduleAutoReveal();
+}
+
+function revealNextCard() {
+  if (state.auction || !state.revealQueue.length) return;
+  if (state.roundStartPause) {
+    state.roundStartPause = false;
+  }
+  state.specialNotice = null;
+  const card = state.revealQueue.shift();
+  state.market.push(card);
+  state.currentReveal = card;
+
+  if (card.kind === "people") {
+    card.status = "waiting";
+    state.pendingPeople.push(card);
+    addLog(`${card.name} is revealed and starts waiting for a matching zoo.`);
+    tryResolvePendingPeople().forEach((line) => addLog(line));
+    if (state.revealQueue.length === 0) {
+      resolveRound();
+      return;
+    }
+    renderAll();
+    return;
+  }
+
+  if (isFixedPriceCard(card)) {
+    card.status = "available";
+    card.buyers = [];
+    card.selectedThemes = [];
+    state.fixedOfferState = {
+      order: buildFixedOfferOrder(),
+      index: 0,
+    };
+    state.fixedThemeChoice = null;
+    const offerLabel = isCustomizableFixedCard(card)
+      ? `${card.name} is available as a themed support offer for ${currency(card.costHint)}.`
+      : `${card.name} is available for a fixed price of ${currency(card.costHint)}.`;
+    addLog(offerLabel);
+    processFixedOfferTurns();
+    return;
+  }
+
+  addLog(`${card.name} is revealed for auction.`);
+  beginAuction(card);
+}
+
+function resolveRound() {
+  const summaryNotes = [];
+  const summaryRows = [];
+  const animalBonusMap = getAnimalCollectionBonusMap();
+
+  if (state.pendingPeople.length) {
+    summaryNotes.push(
+      `${state.pendingPeople.length} people card(s) are still waiting for the right zoo match and will carry into the next round.`
+    );
+  }
+
+  state.players.forEach((player) => {
+    const startingVisitors = player.totalCrowd;
+    const naturalGrowth = rollDie(6) * VISITOR_SCALE;
+    const animalBonus = animalBonusMap.get(player.id) ?? 0;
+    const mapBonus = calculateZooMapBonus(player);
+    player.totalCrowd += naturalGrowth + animalBonus + mapBonus.visitorBonus;
+    const revenueBreakdown = calculateRevenueBreakdown(player);
+    const revenue = revenueBreakdown.total;
+    const upkeep = calculateUpkeep(player);
+    const loanInterest = player.loanBalance > 0 ? LOAN_INTEREST : 0;
+    const profit = revenue - upkeep - loanInterest;
+    player.money = Math.max(0, player.money + profit);
+    if (profit < 0 && player.money === 0) {
+      player.distressRounds = (player.distressRounds ?? 0) + 1;
+    } else {
+      player.distressRounds = 0;
+    }
+
+    summaryRows.push({
+      name: player.name,
+      naturalGrowth,
+      animalBonus,
+      mapVisitorBonus: mapBonus.visitorBonus,
+      admissions: revenueBreakdown.admissions,
+      mapRevenueBonus: revenueBreakdown.mapRevenueBonus,
+      guestSpending: revenueBreakdown.guestSpending,
+      revenue,
+      upkeep,
+      loanInterest,
+      profit,
+      fromVisitors: startingVisitors,
+      toVisitors: player.totalCrowd,
+      cash: player.money,
+    });
+
+    if (mapBonus.revenueBonus > 0 || mapBonus.visitorBonus > 0) {
+      summaryNotes.push(
+        `${player.name}'s zoo layout adds ${currency(mapBonus.revenueBonus)} in extra revenue and ${formatVisitors(mapBonus.visitorBonus)} visitors this round.`
+      );
+    }
+    if (loanInterest > 0) {
+      const payVerb = player.isHuman ? "pay" : "pays";
+      summaryNotes.push(
+        `${player.name} ${payVerb} ${currency(loanInterest)} in city loan interest this round.`
+      );
+    }
+    if (!player.isHuman && player.loanJustIssued) {
+      summaryNotes.push(
+        `${player.name} began the round below ${currency(
+          LOAN_TRIGGER_CASH
+        )}, so the city issued an emergency loan of ${currency(
+          LOAN_AMOUNT
+        )}. That loan now costs ${currency(LOAN_INTEREST)} in interest each round until it is repaid.`
+      );
+    } else if (player.money < LOAN_TRIGGER_CASH && player.loanBalance === 0) {
+      summaryNotes.push(
+        player.isHuman
+          ? `${player.name} finishes the round below ${currency(
+              LOAN_TRIGGER_CASH
+            )}. ${player.name} can choose a city emergency loan of ${currency(
+              LOAN_AMOUNT
+            )}, but it will cost ${currency(LOAN_INTEREST)} in interest each round until it is repaid.`
+          : `${player.name} finishes the round below ${currency(
+              LOAN_TRIGGER_CASH
+            )} and will receive a city emergency loan of ${currency(
+              LOAN_AMOUNT
+            )} at the start of the next round.`
+      );
+    }
+  });
+
+  const player = getPlayer();
+  state.pendingLoanOffer =
+    player.loanBalance === 0 && player.money < LOAN_TRIGGER_CASH;
+  state.pendingLoanDecision =
+    player.loanBalance > 0 && player.money >= LOAN_REPAY_PROMPT_CASH;
+  if (state.pendingLoanOffer) {
+    summaryNotes.push(
+      `If ${player.name} takes the city loan now, cash will increase to ${currency(
+        player.money + LOAN_AMOUNT
+      )}. If ${player.name} skips it, the next round will start with the current cash and no debt.`
+    );
+  }
+  if (state.pendingLoanDecision) {
+    summaryNotes.push(
+      `${player.name} currently owes ${currency(player.loanBalance)} on the city loan. Since ${player.name} has ${currency(
+        player.money
+      )} cash, the loan can be repaid now or kept while continuing to pay ${currency(
+        LOAN_INTEREST
+      )} interest each round.`
+    );
+  }
+
+  elements.summaryTitle.textContent = `Round ${state.currentRound} Complete`;
+  elements.summaryContent.innerHTML = `
+    <div class="summary-table-wrap">
+      <div class="summary-table summary-table-head">
+        <div>Zoo</div>
+        <div>Natural</div>
+        <div>Animal Bonus</div>
+        <div>Revenue</div>
+        <div>Upkeep</div>
+        <div>Profit</div>
+        <div>Visitors</div>
+        <div>Cash</div>
+      </div>
+      ${summaryRows
+        .map(
+          (row) => `
+            <div class="summary-table summary-table-row">
+              <div class="summary-zoo-name">${row.name}</div>
+              <div>
+                ${formatVisitors(row.naturalGrowth)}${row.mapVisitorBonus ? ` + ${formatVisitors(row.mapVisitorBonus)} map` : ""}
+              </div>
+              <div>${row.animalBonus ? `+${formatVisitors(row.animalBonus)}` : "-"}</div>
+              <div>
+                ${currency(row.revenue)}
+                <span class="summary-subline">${currency(row.admissions)} admission</span>
+                <span class="summary-subline">${currency(row.guestSpending)} guest spending</span>
+                ${row.mapRevenueBonus ? `<span class="summary-subline">${currency(row.mapRevenueBonus)} map bonus</span>` : ""}
+              </div>
+              <div>
+                ${currency(row.upkeep)}${row.loanInterest ? ` + ${currency(row.loanInterest)} loan` : ""}
+              </div>
+              <div>${currency(row.profit)}</div>
+              <div>${formatVisitors(row.fromVisitors)} -> ${formatVisitors(row.toVisitors)}</div>
+              <div>${currency(row.cash)}</div>
+            </div>
+          `
+        )
+        .join("")}
+    </div>
+    ${summaryNotes.length ? `<div class="summary-notes">${summaryNotes.map((line) => `<div>${line}</div>`).join("")}</div>` : ""}
+  `;
+  elements.takeLoanButton.classList.toggle("hidden", !state.pendingLoanOffer);
+  elements.repayLoanButton.classList.toggle("hidden", !state.pendingLoanDecision);
+  elements.roundSummaryDialog.showModal();
+}
+
+function continueToNextRound() {
+  elements.roundSummaryDialog.close();
+  state.pendingLoanDecision = false;
+  state.pendingLoanOffer = false;
+  elements.takeLoanButton.classList.add("hidden");
+  elements.repayLoanButton.classList.add("hidden");
+  state.specialNotice = null;
+  if (state.players.some((player) => player.totalCrowd >= TARGET_VISITORS)) {
+    endGame("target");
+    return;
+  }
+
+  state.currentRound += 1;
+  startRound();
+  if (state.revealQueue.length === 0) {
+    endGame("deck");
+    return;
+  }
+  if (!state.roundStartPause) {
+    revealNextCard();
+  }
+  renderAll();
+}
+
+function endGame(reason = "target") {
+  const ranked = [...state.players].sort((a, b) => b.totalCrowd - a.totalCrowd);
+  state.winner = ranked[0];
+  elements.gameOverTitle.textContent =
+    reason === "deck"
+      ? ranked[0].isHuman
+        ? `${ranked[0].name} wins when the card deck runs out`
+        : `${ranked[0].name} wins when the card deck runs out`
+      : ranked[0].isHuman
+        ? `${ranked[0].name} reaches 15,000 visitors first`
+        : `${ranked[0].name} reaches 15,000 visitors first`;
+  elements.gameOverContent.innerHTML = ranked
+    .map(
+      (player, index) =>
+        `<div><strong>${index + 1}. ${player.name}</strong> - Visitors ${formatVisitors(
+          player.totalCrowd
+        )}, Cash ${currency(player.money)}</div>`
+    )
+    .join("");
+  elements.gameOverDialog.showModal();
+}
+
+function attachEvents() {
+  document.getElementById("start-game-button").addEventListener("click", () => {
+    resetGame();
+    showScreen("draft-screen");
+  });
+
+  document.getElementById("show-tutorial-button").addEventListener("click", () => {
+    elements.tutorialDialog.showModal();
+  });
+
+  document.getElementById("open-tutorial-button").addEventListener("click", () => {
+    elements.tutorialDialog.showModal();
+  });
+
+  document.getElementById("close-tutorial-button").addEventListener("click", () => {
+    elements.tutorialDialog.close();
+  });
+
+  document.getElementById("open-console-button").addEventListener("click", () => {
+    showScreen("game-screen");
+    renderAll();
+    if (!state.roundStartPause && !state.currentReveal && !state.market.length && !state.auction) {
+      revealNextCard();
+    }
+  });
+
+  document.getElementById("return-office-button").addEventListener("click", () => {
+    showScreen("office-screen");
+    renderOffice();
+  });
+
+  elements.startAuctionButton.addEventListener("click", revealNextCard);
+  elements.buyFixedButton.addEventListener("click", buyFixedCard);
+  elements.passFixedButton.addEventListener("click", passFixedCard);
+
+  document.getElementById("bid-one-button").addEventListener("click", () => {
+    humanBid(1);
+  });
+
+  document.getElementById("bid-three-button").addEventListener("click", () => {
+    humanBid(3);
+  });
+
+  document.getElementById("pass-button").addEventListener("click", passAuction);
+  document.getElementById("finish-draft-button").addEventListener("click", finishDraft);
+  document.getElementById("next-round-button").addEventListener("click", continueToNextRound);
+  elements.draftPool.addEventListener("click", (event) => {
+    const button = event.target.closest(".draft-pick-button");
+    if (!button) return;
+    draftStarterCard(button.dataset.cardId);
+  });
+  elements.fixedThemeOptions.addEventListener("click", (event) => {
+    const button = event.target.closest(".theme-choice-button");
+    if (!button) return;
+    state.fixedThemeChoice = button.dataset.themeKey;
+    renderAll();
+  });
+  elements.openMapButton?.addEventListener("click", () => {
+    state.mapOpen = true;
+    renderAll();
+  });
+  elements.closeMapButton?.addEventListener("click", () => {
+    state.mapOpen = false;
+    renderAll();
+  });
+  elements.playerMapAssignments?.addEventListener("change", (event) => {
+    const select = event.target.closest(".map-slot-select");
+    if (!select) return;
+    const player = getPlayer();
+    ensureZooMap(player).assignments[select.dataset.mapKey] = select.value;
+    renderAll();
+  });
+  elements.takeLoanButton.addEventListener("click", () => {
+    const player = getPlayer();
+    if (player.loanBalance > 0 || player.money >= LOAN_TRIGGER_CASH) return;
+
+    player.money += LOAN_AMOUNT;
+    player.loanBalance += LOAN_AMOUNT;
+    state.pendingLoanOffer = false;
+    elements.takeLoanButton.classList.add("hidden");
+    elements.summaryContent.innerHTML += `<div>${player.name} accepts a city emergency loan of ${currency(
+      LOAN_AMOUNT
+    )}. Interest will cost ${currency(LOAN_INTEREST)} each round until it is repaid.</div>`;
+    renderAll();
+  });
+  elements.repayLoanButton.addEventListener("click", () => {
+    const player = getPlayer();
+    const repayment = Math.min(player.money, player.loanBalance);
+    if (repayment <= 0) return;
+
+    player.money -= repayment;
+    player.loanBalance -= repayment;
+    state.pendingLoanDecision = false;
+    elements.repayLoanButton.classList.add("hidden");
+    elements.summaryContent.innerHTML += `<div>${player.name} repays ${currency(
+      repayment
+    )} of the city loan. Remaining balance: ${currency(player.loanBalance)}.</div>`;
+    renderAll();
+  });
+
+  document.getElementById("restart-game-button").addEventListener("click", () => {
+    elements.gameOverDialog.close();
+    resetGame();
+    showScreen("office-screen");
+  });
+}
+
+attachEvents();

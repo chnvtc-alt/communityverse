@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Staff Card Preview</title>
+    <style>
+      :root {
+        --bg: #f4efe3;
+        --panel: rgba(255, 250, 240, 0.92);
+        --panel-strong: #fff8ea;
+        --ink: #1e2a22;
+        --muted: #5a6c62;
+        --line: rgba(38, 58, 45, 0.14);
+        --accent: #ba6c1d;
+        --green: #2f6f52;
+        --shadow: 0 24px 80px rgba(36, 37, 27, 0.12);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Manrope", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(255, 213, 128, 0.6), transparent 25%),
+          radial-gradient(circle at bottom right, rgba(81, 147, 110, 0.32), transparent 25%),
+          linear-gradient(180deg, #f7f3ea 0%, #efe5cf 100%);
+      }
+
+      .page {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 24px 20px 40px;
+      }
+
+      .site-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 24px;
+        padding: 16px 20px;
+        background: rgba(255, 250, 240, 0.88);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        box-shadow: var(--shadow);
+      }
+
+      .site-brand {
+        color: var(--green);
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-size: 0.84rem;
+      }
+
+      .site-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .site-links a {
+        text-decoration: none;
+        color: var(--ink);
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 10px 14px;
+        font-weight: 700;
+      }
+
+      .hero {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        box-shadow: var(--shadow);
+        padding: 22px 24px;
+        margin-bottom: 18px;
+      }
+
+      .eyebrow {
+        margin: 0 0 10px;
+        font-size: 0.8rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--green);
+        font-weight: 700;
+      }
+
+      .hero h1 {
+        margin: 0 0 8px;
+        font-family: "Fraunces", serif;
+        font-size: clamp(2rem, 5vw, 3rem);
+      }
+
+      .hero p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .card-preview {
+        display: grid;
+        grid-template-columns: minmax(220px, 320px) 1fr;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .card-image {
+        min-height: 100%;
+        background: linear-gradient(180deg, rgba(47, 111, 82, 0.1), rgba(186, 108, 29, 0.1));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .card-image.placeholder {
+        padding: 24px;
+        text-align: center;
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      .card-body {
+        padding: 22px 24px;
+      }
+
+      .card-body h2 {
+        margin: 0 0 10px;
+        font-family: "Fraunces", serif;
+        font-size: clamp(1.8rem, 4vw, 2.7rem);
+        letter-spacing: -0.03em;
+      }
+
+      .card-body p {
+        margin: 0 0 14px;
+        color: var(--muted);
+        line-height: 1.5;
+        font-size: 1rem;
+      }
+
+      .stat-pills, .tag-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .stat-pills { margin-bottom: 14px; }
+      .tag-pills { margin-top: 16px; }
+
+      .pill {
+        border: 1px solid var(--line);
+        background: white;
+        border-radius: 999px;
+        padding: 10px 14px;
+        font-weight: 700;
+      }
+
+      .detail {
+        margin-top: 10px;
+        font-size: 1.05rem;
+      }
+
+      .detail strong {
+        color: var(--ink);
+      }
+
+      .empty {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        box-shadow: var(--shadow);
+        padding: 24px;
+      }
+
+      @media (max-width: 760px) {
+        .card-preview {
+          grid-template-columns: 1fr;
+        }
+
+        .card-image {
+          aspect-ratio: 4 / 5;
+          min-height: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <nav class="site-nav">
+        <div class="site-brand">Community Verse Games</div>
+        <div class="site-links">
+          <a href="./index.html">Play The Zoo Game</a>
+          <a href="./character-roster.html">Character Roster</a>
+        </div>
+      </nav>
+
+      <section class="hero">
+        <p class="eyebrow">Card Preview</p>
+        <h1 id="preview-title">Staff Game Card</h1>
+        <p>This page shows a quick game-card preview for a staff character. Dynamic values like current revenue lift still depend on the exact zoo state during play.</p>
+      </section>
+
+      <div id="preview-root"></div>
+    </main>
+
+    <script>
+      const staffCards = [
+        {
+          id: 'johnny-pepper',
+          name: 'Johnny Pepper',
+          visitors: 150,
+          salary: 1800,
+          revenueRole: 'adds a small steady stream of support income',
+          description: 'A clown who entertains guests and raises extra money by making balloon animals around the zoo.',
+          tags: ['Entertainment', 'Interactive', 'Cute', 'Donation', 'Costumed'],
+        },
+        {
+          id: 'jimmy-pepper',
+          name: 'Jimmy Pepper',
+          visitors: 200,
+          salary: 1800,
+          revenueRole: 'mainly improves attendance rather than direct revenue',
+          description: "A clown and musician who runs the zoo's Kids World area and helps younger guests feel energized, included, and excited to explore.",
+          tags: ['Entertainment', 'Music', 'Interactive', 'Kids World', 'Costumed'],
+        },
+        {
+          id: 'wilfred-pepper',
+          name: 'Wilfred Pepper',
+          visitors: 100,
+          salary: 1800,
+          revenueRole: 'boosts food and in-zoo spending',
+          description: "The father of Johnny and Jimmy Pepper, and the zoo's director of bartending, helping beverage stands and evening service earn more.",
+          tags: ['Dining', 'Food', 'Operations', 'Entertainment'],
+        },
+        {
+          id: 'smiley-boy',
+          name: 'Smiley Boy',
+          visitors: 250,
+          salary: 1800,
+          revenueRole: 'mainly improves attendance rather than direct revenue',
+          description: 'A folk-pop heartthrob whose performances lift the guest experience and attract a strong teen following.',
+          tags: ['Entertainment', 'Cute', 'Music'],
+        },
+        {
+          id: 'angel-sweet',
+          name: 'Angel Sweet',
+          visitors: 100,
+          salary: 1800,
+          revenueRole: 'mainly improves attendance rather than direct revenue',
+          description: 'In charge of customer relations, she smooths out the guest experience and helps visitors leave happier.',
+          tags: ['Guest Relations', 'Operations', 'Gentle', 'Interactive'],
+        },
+        {
+          id: 'bambi-reese',
+          name: 'Bambi Reese',
+          visitors: 250,
+          salary: 2700,
+          revenueRole: 'mainly improves attendance rather than direct revenue',
+          description: 'A singer with remarkable leaping ability who also serves as director of woodland animals, blending performance with animal-focused charm.',
+          tags: ['Entertainment', 'Music', 'Gentle', 'Animal Expert', 'Forest'],
+        },
+        {
+          id: 'donkeyfoot',
+          name: 'DonkeyFoot',
+          visitors: 250,
+          salary: 2700,
+          revenueRole: 'helps the zoo charge stronger admission prices',
+          description: 'A rap artist whose performances energize the zoo and turn a normal visit into an event.',
+          tags: ['Entertainment', 'Music', 'Interactive', 'Big Draw'],
+        },
+        {
+          id: 'cheshire-cat',
+          name: 'The Cheshire Cat',
+          visitors: 150,
+          salary: 1800,
+          revenueRole: 'helps the zoo charge stronger admission prices',
+          description: 'A mysterious grinning wanderer whose surprising appearances delight guests and make the zoo feel a little magical.',
+          tags: ['Entertainment', 'Cute', 'Interactive', 'Cryptid'],
+        },
+        {
+          id: 'renee-potato-salad-long',
+          name: 'Renee "Potato Salad" Long',
+          visitors: 50,
+          salary: 1800,
+          revenueRole: 'boosts food, souvenir, and in-zoo spending',
+          description: 'The head of dining operations. She sharpens the food experience and helps restaurants and snack stands earn more.',
+          tags: ['Dining', 'Food', 'Operations'],
+        },
+        {
+          id: 'easter-bunny-costumed-character',
+          name: 'Easter Bunny Costumed Character',
+          visitors: 150,
+          salary: 1800,
+          revenueRole: 'mainly improves attendance rather than direct revenue',
+          description: 'A cheerful costumed character who waves, poses for photos, and makes the zoo feel more festive for families.',
+          tags: ['Entertainment', 'Cute', 'Interactive', 'Gentle'],
+        },
+        {
+          id: 'the-muffin-man',
+          name: 'The Muffin Man',
+          visitors: 150,
+          salary: 1800,
+          revenueRole: 'boosts food and in-zoo spending',
+          description: 'A costumed nursery-rhyme character who works beneath a Drury Lane street sign, entertains guests, and sells muffins from his stand to add a little international charm and food revenue.',
+          tags: ['Entertainment', 'Food', 'Costumed', 'International'],
+        },
+        {
+          id: 'hot-dog-hannah',
+          name: 'Hot Dog Hannah',
+          visitors: 150,
+          salary: 1800,
+          revenueRole: 'boosts food and in-zoo spending',
+          description: 'A cheerful costumed hot dog vendor whose cute style helps her sell a surprising number of hot dogs while adding family-friendly entertainment to the zoo.',
+          tags: ['Entertainment', 'Food', 'Costumed', 'Cute'],
+        },
+        {
+          id: 'officer-eman-and-pok',
+          name: 'Officer Eman and Pok',
+          visitors: 150,
+          salary: 1800,
+          revenueRole: 'mainly improves attendance rather than direct revenue',
+          description: 'A friendly zoo security officer who patrols with her dog Pok. Together they make guests feel safe while Pok wins over kids all across the zoo.',
+          tags: ['Security', 'Guest Relations', 'Cute', 'Interactive'],
+        },
+        {
+          id: 'giuseppe-tiramisu',
+          name: 'Giuseppe Tiramisu',
+          visitors: 200,
+          salary: 2700,
+          revenueRole: 'mainly improves attendance rather than direct revenue',
+          description: 'A traveling cryptozoologist who educates guests about legendary creatures and gets young visitors excited about the search for animals that may still be hiding just beyond proof.',
+          tags: ['Educational', 'Cryptid', 'Interactive', 'Big Draw'],
+        },
+        {
+          id: 'charles-darwin',
+          name: 'Charles Darwin',
+          visitors: 200,
+          salary: 2700,
+          revenueRole: 'mainly improves attendance rather than direct revenue',
+          description: "A thoughtful naturalist who turns the zoo's island exhibits into memorable lessons on adaptation, wildlife, and the strange brilliance of the Galapagos.",
+          tags: ['Educational', 'Galapagos', 'Animal Expert', 'Bird'],
+        },
+        {
+          id: 'doctor-dolittle',
+          name: 'Doctor Dolittle',
+          visitors: 250,
+          salary: 2700,
+          revenueRole: 'mainly improves attendance rather than direct revenue',
+          description: 'A roaming animal expert whose strolls and guest interactions make the whole zoo feel more alive and welcoming.',
+          tags: ['Entertainment', 'Gentle', 'Interactive', 'Animal Expert', 'Educational'],
+        },
+        {
+          id: 'ichabod-crane',
+          name: 'Ichabod Crane',
+          visitors: 200,
+          salary: 1800,
+          revenueRole: 'mainly improves attendance rather than direct revenue',
+          description: 'A lanky avian education specialist who fascinates guests with bird lessons, odd folklore, and nervous comic reactions whenever the wings start flapping too close.',
+          tags: ['Bird', 'Educational', 'Interactive', 'Music'],
+        },
+        {
+          id: 'noah',
+          name: 'Noah',
+          visitors: 250,
+          salary: 2700,
+          revenueRole: 'mainly improves attendance rather than direct revenue',
+          description: 'A calm, animal-loving guide who makes the zoo feel full of purpose and wonder while helping guests connect with wildlife across the whole park.',
+          tags: ['Educational', 'Animal Expert', 'Gentle', 'Big Draw'],
+        },
+        {
+          id: 'jonah',
+          name: 'Jonah',
+          visitors: 250,
+          salary: 2700,
+          revenueRole: 'mainly improves attendance rather than direct revenue',
+          description: 'An aquarium specialist and whale expert whose talks give the water exhibits more depth, drama, and educational appeal.',
+          tags: ['Educational', 'Aquatic', 'Whale', 'Animal Expert'],
+        },
+        {
+          id: 'bumbles-the-magician',
+          name: 'Bumbles the Magician',
+          visitors: 250,
+          salary: 2700,
+          revenueRole: 'adds entertainment value and a special magic effect',
+          description: "A lovable but unreliable magician. When hired, Bumbles attempts to make one zoo attraction vanish from the leading rival and reappear in his own zoo. About 25% of the time, the trick backfires and sends one of his own zoo's attractions to the target instead.",
+          tags: ['Entertainment', 'Interactive', 'Magic', 'Special'],
+        },
+      ];
+
+      function slugifyCharacterName(name) {
+        return name
+          .toLowerCase()
+          .replace(/["'`.]/g, '')
+          .replace(/&/g, ' and ')
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+          .replace(/-+/g, '-');
+      }
+
+      function currency(value) {
+        return `$${value.toLocaleString()}`;
+      }
+
+      function getRequestedCard() {
+        const params = new URLSearchParams(window.location.search);
+        const requested = params.get('card');
+        return staffCards.find((card) => card.id === requested || slugifyCharacterName(card.name) === requested);
+      }
+
+      function fillImage(container, card) {
+        const slug = slugifyCharacterName(card.name);
+        const img = new Image();
+        img.alt = card.name;
+        img.onload = () => {
+          container.classList.remove('placeholder');
+          container.textContent = '';
+          container.appendChild(img);
+        };
+        img.onerror = () => {
+          if (img.src.endsWith('.jpg')) {
+            img.src = `./assets/characters/staff/${slug}.png`;
+          }
+        };
+        img.src = `./assets/characters/staff/${slug}.jpg`;
+      }
+
+      function renderPreview() {
+        const root = document.getElementById('preview-root');
+        const card = getRequestedCard();
+        if (!card) {
+          root.innerHTML = `
+            <section class="empty">
+              <h2>Card not found</h2>
+              <p>This staff preview link does not match any current character card.</p>
+            </section>
+          `;
+          return;
+        }
+
+        document.getElementById('preview-title').textContent = `${card.name} Card Preview`;
+        root.innerHTML = `
+          <section class="card-preview">
+            <div class="card-image placeholder">No image added yet</div>
+            <div class="card-body">
+              <h2>${card.name}</h2>
+              <p>${card.description}</p>
+              <div class="stat-pills">
+                <span class="pill">Visitors +${card.visitors.toLocaleString()}</span>
+                <span class="pill">Salary ${currency(card.salary)}</span>
+              </div>
+              <div class="detail"><strong>Revenue Role:</strong> ${card.revenueRole}</div>
+              <div class="detail"><strong>Preview Note:</strong> Value If Added and Profit Point depend on your current zoo, so those are only shown inside an active game.</div>
+              <div class="tag-pills">
+                ${card.tags.map((tag) => `<span class="pill">${tag}</span>`).join('')}
+              </div>
+            </div>
+          </section>
+        `;
+        fillImage(root.querySelector('.card-image'), card);
+      }
+
+      try {
+        renderPreview();
+      } catch (error) {
+        const root = document.getElementById('preview-root');
+        root.innerHTML = `
+          <section class="empty">
+            <h2>Preview unavailable</h2>
+            <p>The staff card preview hit a script error. Reload the page after uploading the newest preview file.</p>
+          </section>
+        `;
+        console.error(error);
+      }
+    </script>
+  </body>
+</html>
