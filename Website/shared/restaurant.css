@@ -1389,7 +1389,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 }
 
 .opening-guest-card-starter {
-  grid-template-columns: 146px minmax(0, 1fr);
+  grid-template-columns: 136px minmax(0, 1fr);
   background:
     linear-gradient(180deg, rgba(251, 247, 239, 0.98), rgba(243, 235, 221, 0.98));
   border: 1px solid rgba(133, 105, 72, 0.14);
@@ -1424,10 +1424,15 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   gap: 6px;
   padding: 16px 15px;
   background: transparent;
+  align-items: flex-start;
+  justify-content: center;
+  text-align: left;
 }
 
 .opening-guest-photo-starter {
-  min-height: 152px;
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   display: block;
 }
@@ -1465,6 +1470,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   font-size: 1.02rem;
   line-height: 1.06;
   max-width: 12ch;
+  text-align: left;
 }
 
 .opening-guest-subcopy {
@@ -1481,6 +1487,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 .opening-guest-subcopy-starter {
   max-width: 16ch;
   color: #5b6f63;
+  text-align: left;
 }
 
 .opening-start-actions {
@@ -2297,7 +2304,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .opening-guest-card-starter {
-    grid-template-columns: 1fr;
+    grid-template-columns: 108px minmax(0, 1fr);
   }
 
   .opening-guest-copy {
@@ -2306,8 +2313,8 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .opening-guest-copy-starter {
-    min-height: 46px;
-    padding: 7px 8px 8px;
+    min-height: 108px;
+    padding: 10px 10px 10px 11px;
   }
 
   .opening-guest-photo {
