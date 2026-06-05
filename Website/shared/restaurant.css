@@ -156,6 +156,93 @@ img {
   background: radial-gradient(circle, rgba(47, 111, 82, 0.14), transparent 68%);
 }
 
+html.restaurant-hub-mode .challenge-splash {
+  display: none;
+}
+
+.challenge-splash {
+  margin-bottom: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.challenge-splash-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
+  gap: 22px;
+  align-items: center;
+  padding: 26px;
+  border: 1px solid var(--line);
+  border-radius: 32px;
+  background:
+    radial-gradient(circle at top left, rgba(213, 138, 43, 0.18), transparent 24%),
+    radial-gradient(circle at bottom right, rgba(47, 111, 82, 0.12), transparent 28%),
+    linear-gradient(135deg, rgba(255, 251, 243, 0.98), rgba(246, 238, 219, 0.94));
+  box-shadow: var(--shadow);
+}
+
+.challenge-splash-copy {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.challenge-splash-title {
+  margin: 0;
+  font-size: clamp(2.3rem, 4.6vw, 4.3rem);
+  max-width: 12ch;
+}
+
+.challenge-splash-lead,
+.challenge-splash-note {
+  margin: 0;
+  max-width: 60ch;
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.challenge-splash-lead {
+  font-size: 1.04rem;
+}
+
+.challenge-splash-note {
+  font-size: 0.96rem;
+}
+
+.challenge-splash-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.challenge-splash-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.challenge-splash-art {
+  min-width: 0;
+  display: grid;
+  place-items: center;
+}
+
+.challenge-splash-art img {
+  width: 100%;
+  max-width: 560px;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 26px;
+  border: 1px solid rgba(93, 116, 105, 0.14);
+  box-shadow: 0 18px 40px rgba(39, 55, 44, 0.12);
+  background: rgba(255, 255, 255, 0.4);
+}
+
 .hero-stack {
   position: relative;
   z-index: 1;
@@ -1856,6 +1943,29 @@ img {
     gap: 16px;
     min-height: calc(100dvh - 205px);
     align-content: space-between;
+  }
+
+  .challenge-splash-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 18px;
+  }
+
+  .challenge-splash-title {
+    max-width: 15ch;
+    font-size: clamp(2rem, 9vw, 2.8rem);
+  }
+
+  .challenge-splash-actions {
+    gap: 10px;
+  }
+
+  .challenge-splash-actions .button {
+    width: 100%;
+  }
+
+  .challenge-splash-art img {
+    max-width: 100%;
   }
 
   .page-title {

@@ -6,17 +6,25 @@
     <title>Restaurant Challenge | CommunityVerse Games</title>
     <meta
       name="description"
-      content="Restaurant Challenge is the CommunityVerse hub for restaurant-branded trivia games, player profiles, customer collection, and leaderboards."
+      content="Restaurant Challenge is the CommunityVerse browser game where you build a fictional restaurant, play quick trivia rounds, collect customers, and climb a shared leaderboard."
     />
     <link rel="canonical" href="https://communityversegames.com/restaurant" />
     <meta property="og:title" content="Restaurant Challenge | CommunityVerse Games" />
     <meta
       property="og:description"
-      content="Create your own restaurant, play Americana Diner trivia, win customers, and climb the leaderboards."
+      content="Build your restaurant, jump into fast trivia rounds, win customers, and climb a shared leaderboard that updates across devices."
     />
     <meta property="og:url" content="https://communityversegames.com/restaurant" />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      (() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("hub") === "1" || params.get("view") === "hub") {
+          document.documentElement.classList.add("restaurant-hub-mode");
+        }
+      })();
+    </script>
     <link rel="stylesheet" href="../shared/restaurant.css" />
     <script defer src="../shared/restaurant-core.js"></script>
     <script defer src="hub.js"></script>
@@ -28,6 +36,38 @@
           <a class="brand" href="../index.html">CommunityVerse Games</a>
         </div>
       </header>
+
+      <section class="panel challenge-splash">
+        <div class="challenge-splash-grid">
+          <div class="challenge-splash-copy">
+            <p class="kicker">Restaurant Challenge</p>
+            <h1 class="page-title challenge-splash-title">Build a restaurant people remember.</h1>
+            <p class="challenge-splash-lead">
+              Create your own fictional restaurant, answer fast trivia rounds, win customers, and climb a leaderboard that follows you from device to device.
+            </p>
+            <p class="challenge-splash-note">
+              Scan a restaurant QR code to jump straight into that location's game page, or start here and create your own restaurant first.
+            </p>
+            <div class="challenge-splash-actions">
+              <a class="button button-primary" href="?hub=1#hero-panel">Create Your Restaurant</a>
+              <a class="button" href="../americana/">Play Americana Diner</a>
+              <a class="button button-muted" href="?hub=1#leaderboard-panel">See The Leaderboard</a>
+            </div>
+            <div class="challenge-splash-pills" aria-label="Restaurant Challenge features">
+              <span class="chip">Shared leaderboard</span>
+              <span class="chip">Customer collection</span>
+              <span class="chip">Mobile-friendly</span>
+              <span class="chip">QR code ready</span>
+            </div>
+          </div>
+          <div class="challenge-splash-art">
+            <img
+              src="../assets/restaurant-challenge/restaurant-challenge-splash.svg"
+              alt="Restaurant Challenge splash art showing a menu board, score cards, and a restaurant pin"
+            />
+          </div>
+        </div>
+      </section>
 
       <section class="panel hero" id="hero-panel"></section>
 

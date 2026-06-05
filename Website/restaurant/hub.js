@@ -2,6 +2,7 @@
   const core = window.RestaurantChallengeCore;
   const query = new URLSearchParams(window.location.search);
   const editMode = query.has("edit");
+  const hubMode = query.get("hub") === "1" || query.get("view") === "hub";
 
   const metricOptions = [
     { value: "estimatedSales", label: "Sales" },
@@ -24,6 +25,21 @@
   };
 
   const mobileHubQuery = "(max-width: 960px)";
+
+  function withHubMode(url) {
+    if (!hubMode) {
+      return url;
+    }
+
+    const stringUrl = String(url || "");
+    if (stringUrl.includes("hub=1")) {
+      return stringUrl;
+    }
+
+    const [path, hash = ""] = stringUrl.split("#");
+    const separator = path.includes("?") ? "&" : "?";
+    return `${path}${separator}hub=1${hash ? `#${hash}` : ""}`;
+  }
 
   const elements = {
     tabs: null,
@@ -365,7 +381,7 @@
                           ? ""
                           : `
                             <div class="hero-profile-actions hero-profile-actions-top">
-                              <a class="button button-muted button-sm" href="${profile.isGuest ? "../americana/?home=1" : "./?edit=1"}">${profile.isGuest ? "Register" : "Edit My Profile"}</a>
+                              <a class="button button-muted button-sm" href="${withHubMode(profile.isGuest ? "../americana/?home=1" : "./?edit=1")}">${profile.isGuest ? "Register" : "Edit My Profile"}</a>
                             </div>
                           `
                       }
@@ -385,7 +401,7 @@
                               <div class="hero-profile-edit-row">
                                 <input class="input hero-profile-input" id="hero-restaurant-name" name="restaurantName" type="text" value="${escapeHtml(profile.restaurantName)}" />
                                 <button class="button button-primary button-sm" type="submit">Save Changes</button>
-                                <a class="button button-muted button-sm" href="./">Cancel</a>
+                                <a class="button button-muted button-sm" href="${withHubMode("./")}">Cancel</a>
                               </div>
                             </div>
                             <p class="helper" style="margin: 8px 0 0;">Your player name stays the same. Only the restaurant name changes here.</p>
@@ -421,7 +437,7 @@
                         ? ""
                         : `
                           <div class="hero-profile-actions hero-profile-actions-top">
-                            <a class="button button-muted button-sm" href="${profile.isGuest ? "../americana/?home=1" : "./?edit=1"}">${profile.isGuest ? "Register" : "Edit My Profile"}</a>
+                            <a class="button button-muted button-sm" href="${withHubMode(profile.isGuest ? "../americana/?home=1" : "./?edit=1")}">${profile.isGuest ? "Register" : "Edit My Profile"}</a>
                           </div>
                         `
                     }

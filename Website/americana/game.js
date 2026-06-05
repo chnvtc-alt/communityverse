@@ -162,11 +162,11 @@
             replayCustomer
               ? `
                 <a class="button button-muted" href="./?home=1">Cancel Invite Back</a>
-                <a class="button button-muted" href="../restaurant/">Back to Hub</a>
+                <a class="button button-muted" href="../restaurant/?hub=1">Back to Hub</a>
               `
               : profile && !profile.isGuest
                 ? `
-                  <a class="button button-muted" href="../restaurant/">View My Restaurant</a>
+                  <a class="button button-muted" href="../restaurant/?hub=1">View My Restaurant</a>
                 `
               : ""
           }
@@ -508,7 +508,7 @@
               : `
                 <div class="button-row result-followup-actions">
                   <button class="button button-hot" id="play-again-button" type="button">Play Again</button>
-                  <a class="button button-muted" href="../restaurant/">View My Restaurant</a>
+                  <a class="button button-muted" href="../restaurant/?hub=1">View My Restaurant</a>
                 </div>
               `
         }
