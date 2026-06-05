@@ -1379,6 +1379,15 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   box-shadow: 0 10px 22px rgba(39, 55, 44, 0.08);
 }
 
+.opening-guest-card-placeholder {
+  grid-template-columns: 1fr;
+  background:
+    linear-gradient(180deg, rgba(252, 247, 237, 0.98), rgba(243, 234, 215, 0.98));
+  border: 1px solid rgba(133, 105, 72, 0.14);
+  box-shadow: 0 10px 22px rgba(39, 55, 44, 0.08);
+  min-height: 152px;
+}
+
 .opening-guest-photo {
   width: 100%;
   height: 100%;
@@ -1395,6 +1404,12 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   padding: 14px 14px;
 }
 
+.opening-guest-copy-placeholder {
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 16px;
+}
+
 .opening-guest-name {
   margin: 0;
   color: #fffdf8;
@@ -1403,6 +1418,35 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   font-weight: 800;
   line-height: 1.04;
   text-align: center;
+}
+
+.opening-guest-kicker {
+  margin: 0;
+  color: #a25b13;
+  font-family: Arial, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.opening-guest-name-placeholder {
+  color: #1f463a;
+  font-size: 1.08rem;
+  line-height: 1.12;
+  max-width: 12ch;
+}
+
+.opening-guest-subcopy {
+  margin: 0;
+  color: #5b6f63;
+  font-family: Arial, sans-serif;
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.24;
+  text-align: center;
+  max-width: 18ch;
 }
 
 .opening-start-actions {
