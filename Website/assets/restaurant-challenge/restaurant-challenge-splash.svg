@@ -79,12 +79,18 @@
   </g>
 
   <g>
-    <rect x="676" y="140" width="414" height="180" rx="28" fill="#FFF8EA" stroke="#E1D4B9" stroke-width="2"/>
+    <rect x="676" y="140" width="424" height="188" rx="28" fill="#FFF8EA" stroke="#E1D4B9" stroke-width="2"/>
     <text x="708" y="182" fill="#2F6F52" font-family="Arial, sans-serif" font-size="15" font-weight="800" letter-spacing="4">START HERE</text>
-    <text x="708" y="220" fill="#203129" font-family="Georgia, serif" font-size="32" font-weight="700">Your restaurant, your rules.</text>
-    <text x="708" y="258" fill="#5A6E63" font-family="Arial, sans-serif" font-size="16" font-weight="700">Make a profile, pick a name, and track your progress.</text>
-    <rect x="708" y="276" width="176" height="26" rx="13" fill="#EAF2EB"/>
-    <text x="725" y="294" fill="#2F6F52" font-family="Arial, sans-serif" font-size="13" font-weight="800" letter-spacing="2">SHARED SAVE DATA</text>
+    <text x="708" y="216" fill="#203129" font-family="Georgia, serif" font-size="26" font-weight="700">
+      <tspan x="708" dy="0">Your restaurant,</tspan>
+      <tspan x="708" dy="30">your rules.</tspan>
+    </text>
+    <text x="708" y="274" fill="#5A6E63" font-family="Arial, sans-serif" font-size="14" font-weight="700">
+      <tspan x="708" dy="0">Make a profile, pick a name,</tspan>
+      <tspan x="708" dy="20">and track your progress.</tspan>
+    </text>
+    <rect x="708" y="288" width="176" height="26" rx="13" fill="#EAF2EB"/>
+    <text x="725" y="306" fill="#2F6F52" font-family="Arial, sans-serif" font-size="13" font-weight="800" letter-spacing="2">SHARED SAVE DATA</text>
   </g>
 
   <g>
