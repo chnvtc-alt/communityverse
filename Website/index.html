@@ -6,7 +6,7 @@
     <title>CommunityVerse Games | Browser Strategy Games</title>
     <meta
       name="description"
-      content="Play free browser strategy games from CommunityVerse Games, featuring Restaurant Challenge plus The Zoo Game, World Tour, The Empty Suit, and City Manager: Pepperville."
+      content="Play five free browser strategy games from CommunityVerse Games, led by Restaurant Challenge, plus The Zoo Game, World Tour, The Empty Suit, and City Manager: Pepperville."
     />
     <link rel="canonical" href="https://communityversegames.com/" />
     <meta
@@ -15,7 +15,7 @@
     />
     <meta
       property="og:description"
-      content="Play free browser strategy games from CommunityVerse Games, featuring Restaurant Challenge plus The Zoo Game, World Tour, The Empty Suit, and City Manager: Pepperville."
+      content="Play five free browser strategy games from CommunityVerse Games, led by Restaurant Challenge, plus The Zoo Game, World Tour, The Empty Suit, and City Manager: Pepperville."
     />
     <meta property="og:url" content="https://communityversegames.com/" />
     <meta property="og:type" content="website" />
@@ -72,13 +72,11 @@
       }
 
       .hero {
-        margin-bottom: 24px;
+        margin-bottom: 28px;
       }
 
       .hero-panel {
-        position: relative;
         overflow: hidden;
-        padding: 28px;
         border-radius: 34px;
         border: 1px solid rgba(93, 116, 105, 0.16);
         background:
@@ -86,130 +84,25 @@
         box-shadow: 0 24px 56px rgba(39, 55, 44, 0.1);
       }
 
-      .hero-panel::before,
-      .hero-panel::after {
-        content: "";
-        position: absolute;
-        border-radius: 999px;
-        pointer-events: none;
-      }
-
-      .hero-panel::before {
-        top: -90px;
-        left: -70px;
-        width: 260px;
-        height: 260px;
-        background: radial-gradient(circle, rgba(212, 133, 34, 0.2), transparent 72%);
-      }
-
-      .hero-panel::after {
-        top: -30px;
-        right: -40px;
-        width: 240px;
-        height: 240px;
-        background: radial-gradient(circle, rgba(47, 111, 82, 0.14), transparent 72%);
-      }
-
-      .featured-hero {
-        position: relative;
-        z-index: 1;
-        display: grid;
-        grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
-        gap: 28px;
-        align-items: center;
-      }
-
-      .featured-copy h1 {
-        margin: 0 0 12px;
-        max-width: none;
-        font-size: clamp(2.3rem, 4.2vw, 3.65rem);
-        line-height: 0.92;
-        letter-spacing: -0.04em;
-      }
-
-      .featured-headline-line {
+      .featured-hero-link {
         display: block;
+        outline: none;
       }
 
-      .featured-copy p {
-        margin: 0 0 12px;
-        max-width: 760px;
-        font-family: Arial, sans-serif;
-        font-size: 1rem;
-        line-height: 1.45;
-        color: var(--muted);
+      .featured-hero-link:focus-visible {
+        box-shadow: inset 0 0 0 4px rgba(212, 133, 34, 0.5);
       }
 
-      .featured-chips {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 22px;
-      }
-
-      .hero-chip {
-        display: inline-flex;
-        align-items: center;
-        padding: 0;
-        border: 0;
-        background: transparent;
-        font-family: Arial, sans-serif;
-        font-size: 0.88rem;
-        font-weight: 700;
-        letter-spacing: 0.02em;
-        color: var(--green);
-      }
-
-      .hero-chip::before {
-        content: "";
-        width: 8px;
-        height: 8px;
-        margin-right: 9px;
-        border-radius: 999px;
-        background: rgba(212, 133, 34, 0.78);
-        box-shadow: 0 0 0 4px rgba(212, 133, 34, 0.12);
-      }
-
-      .featured-image-wrap {
-        position: relative;
-        display: flex;
-        align-self: stretch;
-      }
-
-      .featured-image {
+      .featured-hero-image {
+        display: block;
         width: 100%;
-        height: 100%;
-        min-height: 360px;
-        object-fit: cover;
-        border-radius: 26px;
-        border: 1px solid var(--line);
-        background:
-          linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(249, 242, 226, 0.88));
-        box-shadow: 0 14px 32px rgba(39, 55, 44, 0.08);
-      }
-
-      .featured-badge {
-        position: absolute;
-        left: 18px;
-        bottom: 18px;
-        display: inline-flex;
-        align-items: center;
-        min-height: 34px;
-        padding: 0 14px;
-        border-radius: 999px;
-        background: rgba(22, 63, 45, 0.9);
-        color: #fffdf8;
-        font-family: Arial, sans-serif;
-        font-size: 0.74rem;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
+        height: auto;
       }
 
       .section-intro {
         display: grid;
         gap: 10px;
-        margin: 0 0 20px;
+        margin: 4px 0 20px;
       }
 
       .section-kicker {
@@ -237,13 +130,6 @@
         color: var(--muted);
       }
 
-      .hero-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        margin-top: 18px;
-      }
-
       .button {
         display: inline-flex;
         align-items: center;
@@ -264,13 +150,6 @@
         border-color: rgba(186, 108, 29, 0.4);
         color: #fffdf8;
         box-shadow: 0 16px 34px rgba(212, 133, 34, 0.28);
-      }
-
-      .games-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 24px;
-        margin-top: 28px;
       }
 
       .games-section {
@@ -375,31 +254,12 @@
       }
 
       @media (max-width: 900px) {
-        .featured-hero,
         .games-grid {
           grid-template-columns: 1fr;
         }
 
         .hero-panel {
-          padding: 24px 22px;
-        }
-
-        .featured-image {
-          min-height: 280px;
-        }
-
-        .featured-copy h1 {
-          font-size: clamp(2rem, 8.5vw, 2.55rem);
-        }
-
-        .featured-copy p,
-        .section-copy,
-        .games-section-copy {
-          max-width: none;
-        }
-
-        .hero-actions .button {
-          width: 100%;
+          border-radius: 28px;
         }
 
         .games-grid {
@@ -412,42 +272,23 @@
     <main class="page">
       <section class="hero">
         <div class="hero-panel">
-          <div class="featured-hero">
-            <div class="featured-copy">
-              <p class="eyebrow">Flagship Game</p>
-              <h1>
-                <span class="featured-headline-line">Restaurant Challenge</span>
-                <span class="featured-headline-line">Answer trivia. Collect customers.</span>
-                <span class="featured-headline-line">Build your restaurant legend.</span>
-              </h1>
-              <p>
-                Create your own restaurant, answer fast trivia questions, earn memorable customers, improve your restaurant rating, and compete on the leaderboard in quick games you can play in under five minutes.
-              </p>
-              <p>
-                Restaurant Challenge is the flagship CommunityVerse game, built to be a fast, replayable experience that feels easy to jump into and exciting to return to.
-              </p>
-              <div class="hero-actions">
-                <a class="button button-primary" href="https://communityversegames.com/restaurant">Play Restaurant Challenge</a>
-                <a class="button" href="https://communityversegames.com/restaurant?hub=1">Learn More</a>
-              </div>
-              <div class="featured-chips">
-                <span class="hero-chip">Light-hearted strategy</span>
-                <span class="hero-chip">Quick five-minute rounds</span>
-                <span class="hero-chip">Recurring characters</span>
-                <span class="hero-chip">Shared leaderboard</span>
-                <span class="hero-chip">Free in your browser</span>
-              </div>
-            </div>
-
-            <div class="featured-image-wrap">
-              <img
-                class="featured-image"
-                src="assets/restaurant-challenge/restaurant-challenge-home-screen.jpg"
-                alt="Restaurant Challenge home screen art"
+          <a
+            class="featured-hero-link"
+            href="https://communityversegames.com/restaurant"
+            aria-label="Play Restaurant Challenge"
+          >
+            <picture>
+              <source
+                media="(max-width: 900px)"
+                srcset="assets/restaurant-challenge/restaurant-challenge-mobile-hero.jpg"
               />
-              <div class="featured-badge">Flagship Game</div>
-            </div>
-          </div>
+              <img
+                class="featured-hero-image"
+                src="assets/restaurant-challenge/restaurant-challenge-desktop-hero.jpg"
+                alt="Restaurant Challenge hero art"
+              />
+            </picture>
+          </a>
         </div>
       </section>
 
@@ -456,7 +297,7 @@
           <p class="section-kicker">More CommunityVerse Games</p>
           <h2 class="section-heading">Explore the connected worlds of CommunityVerse.</h2>
           <p class="section-copy">
-            From zoos and world tours to elections and city-building, each game has its own world, its own characters, and its own style of strategy.
+            CommunityVerse Games is a connected collection of light-hearted browser strategy games. Restaurant Challenge is the flagship, and the other worlds live below.
           </p>
         </div>
 
@@ -532,6 +373,7 @@
               </div>
             </div>
           </article>
+        </div>
       </section>
       <footer class="site-footer">
         Copyright - CommunityVerse Games. All rights reserved
