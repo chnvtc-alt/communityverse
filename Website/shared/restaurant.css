@@ -160,8 +160,8 @@ html.restaurant-hub-mode .challenge-splash {
   display: none;
 }
 
-html:not(.restaurant-hub-mode) .hero,
-html:not(.restaurant-hub-mode) .grid-two {
+html:not(.restaurant-hub-mode) body[data-page="hub"] .hero,
+html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   display: none;
 }
 
