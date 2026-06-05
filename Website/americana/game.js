@@ -43,6 +43,11 @@
     },
   ];
 
+  const starterCustomer = {
+    name: "Savannah Pierce",
+    image: "../assets/restaurant-challenge/customers/savannah-pierce.jpg",
+  };
+
   function escapeHtml(value) {
     return String(value || "")
       .replace(/&/g, "&amp;")
@@ -154,11 +159,13 @@
                   )
                   .join("")
                   : `
-                    <article class="opening-guest-card opening-guest-card-placeholder">
-                      <div class="opening-guest-copy opening-guest-copy-placeholder">
+                    <article class="opening-guest-card opening-guest-card-starter">
+                      <img class="opening-guest-photo opening-guest-photo-starter" src="${starterCustomer.image}" alt="${escapeHtml(starterCustomer.name)}" />
+                      <div class="opening-guest-copy opening-guest-copy-starter">
                         <p class="opening-guest-kicker">FIRST CUSTOMER</p>
-                        <p class="opening-guest-name opening-guest-name-placeholder">Your first customer is waiting.</p>
-                        <p class="opening-guest-subcopy">Answer your first trivia round to reveal who it is.</p>
+                        <p class="opening-guest-name opening-guest-name-starter">${formatGuestDisplayName(starterCustomer.name)}</p>
+                        <p class="opening-guest-subcopy opening-guest-subcopy-starter">Your first customer is waiting.</p>
+                        <p class="opening-guest-subcopy opening-guest-subcopy-starter">Answer your first trivia round to reveal who it is.</p>
                       </div>
                     </article>
                   `}
@@ -232,11 +239,13 @@
           <div class="opening-start-side opening-start-side-wide">
             <div class="opening-guest-stack">
               <div class="opening-guest-grid">
-                <article class="opening-guest-card opening-guest-card-placeholder">
-                  <div class="opening-guest-copy opening-guest-copy-placeholder">
+                <article class="opening-guest-card opening-guest-card-starter">
+                  <img class="opening-guest-photo opening-guest-photo-starter" src="${starterCustomer.image}" alt="${escapeHtml(starterCustomer.name)}" />
+                  <div class="opening-guest-copy opening-guest-copy-starter">
                     <p class="opening-guest-kicker">FIRST CUSTOMER</p>
-                    <p class="opening-guest-name opening-guest-name-placeholder">Your first customer is waiting.</p>
-                    <p class="opening-guest-subcopy">Answer your first trivia round to reveal who it is.</p>
+                    <p class="opening-guest-name opening-guest-name-starter">${formatGuestDisplayName(starterCustomer.name)}</p>
+                    <p class="opening-guest-subcopy opening-guest-subcopy-starter">Your first customer is waiting.</p>
+                    <p class="opening-guest-subcopy opening-guest-subcopy-starter">Answer your first trivia round to reveal who it is.</p>
                   </div>
                 </article>
               </div>
