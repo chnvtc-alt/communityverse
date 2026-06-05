@@ -638,20 +638,20 @@ function slugifyBandName(name) {
 }
 
 function bandPhotoPath(bandName) {
-  return `/world-tour/assets/bands/${slugifyBandName(bandName)}.jpg`;
+  return `/assets/world-tour/bands/${slugifyBandName(bandName)}.jpg`;
 }
 
 function promoterPhotoPath(manager) {
   const slug = manager?.photoSlug || slugifyAssetName(manager?.name || "guest-promoter");
-  return `/world-tour/assets/promoters/${slug}.jpg`;
+  return `/assets/world-tour/promoters/${slug}.jpg`;
 }
 
 function promoterChoicePhotoPath(slug) {
-  return `/world-tour/assets/promoters/${slug}.jpg`;
+  return `/assets/world-tour/promoters/${slug}.jpg`;
 }
 
 function venuePhotoPath(venueName) {
-  return `/world-tour/assets/venues/${slugifyAssetName(venueName)}.jpg`;
+  return `/assets/world-tour/venues/${slugifyAssetName(venueName)}.jpg`;
 }
 
 function bandInitials(name) {
