@@ -1,0 +1,36 @@
+{
+  "rewrites": [
+    {
+      "source": "/zoo",
+      "destination": "/zoo-game.html"
+    },
+    {
+      "source": "/zoo/",
+      "destination": "/zoo-game.html"
+    },
+    {
+      "source": "/world-tour",
+      "destination": "/world-tour-game.html"
+    },
+    {
+      "source": "/world-tour/",
+      "destination": "/world-tour-game.html"
+    },
+    {
+      "source": "/empty-suit",
+      "destination": "/empty-suit-game.html"
+    },
+    {
+      "source": "/empty-suit/",
+      "destination": "/empty-suit-game.html"
+    },
+    {
+      "source": "/cm-pepperville",
+      "destination": "/cm-pepperville-game.html"
+    },
+    {
+      "source": "/cm-pepperville/",
+      "destination": "/cm-pepperville-game.html"
+    }
+  ]
+}
