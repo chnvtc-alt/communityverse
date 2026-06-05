@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>World Tour</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Manrope:wght@400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <section class="hero panel">
+        <div>
+          <p class="eyebrow">Live Music Strategy Game</p>
+          <h1>World Tour</h1>
+          <p class="hero-copy">
+            Build a roster, win bands at auction, and turn smart bookings into
+            Victory Points before the rest of the tour catches up.
+          </p>
+        </div>
+
+        <div class="hero-grid">
+          <div class="note-card">
+            <h2>Rules and Strategy</h2>
+            <p>
+              Each round has three venues: a smaller C stop, a mid-level B
+              stop, and a headline A stop. The first five rounds are visible,
+              so you can plan ahead and decide where your strongest acts should
+              peak.
+            </p>
+            <p>
+              Four bands go up for auction each round, one at a time. After the
+              auction, each promoter can book a headliner and an opener at the
+              venues they can afford, then use World Tour cards to shift the
+              race before the show begins.
+            </p>
+            <p>
+              Strategy matters as much as star power. Sometimes the best move
+              is saving cash, cards, or advertising for a later round instead
+              of chasing the biggest room right away. First to 50 Victory
+              Points wins the tour.
+            </p>
+            <p>
+              Quick note: <strong>D</strong> means dice. For example,
+              <strong>2D</strong> means roll two dice, and <strong>1D+3</strong>
+              means roll one die and add 3.
+            </p>
+          </div>
+
+          <div class="note-card">
+            <h2>Start Your Tour</h2>
+            <label class="field-label" for="player-name">Promoter Name</label>
+            <input id="player-name" class="text-input" maxlength="32" value="Guest Promoter" />
+            <label class="field-label" for="player-icon">Promoter Portrait</label>
+            <input id="player-icon" type="hidden" value="gp" />
+            <div class="icon-picker" aria-label="Choose promoter icon">
+              <button class="icon-picker-button selected" type="button" data-player-icon-choice="gp" aria-label="Choose guest promoter icon GP"></button>
+              <button class="icon-picker-button" type="button" data-player-icon-choice="gp1" aria-label="Choose guest promoter icon GP1"></button>
+              <button class="icon-picker-button" type="button" data-player-icon-choice="gp2" aria-label="Choose guest promoter icon GP2"></button>
+              <button class="icon-picker-button" type="button" data-player-icon-choice="gp3" aria-label="Choose guest promoter icon GP3"></button>
+              <button class="icon-picker-button" type="button" data-player-icon-choice="gp4" aria-label="Choose guest promoter icon GP4"></button>
+              <button class="icon-picker-button" type="button" data-player-icon-choice="gp5" aria-label="Choose guest promoter icon GP5"></button>
+              <button class="icon-picker-button" type="button" data-player-icon-choice="gp6" aria-label="Choose guest promoter icon GP6"></button>
+              <button class="icon-picker-button" type="button" data-player-icon-choice="gp7" aria-label="Choose guest promoter icon GP7"></button>
+            </div>
+            <button id="start-button" class="primary-button">Start World Tour</button>
+            <button id="view-roster-button" class="secondary-button">Browse Bands</button>
+            <button id="view-venue-roster-button" class="secondary-button">Browse Venues</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="roster-screen" class="intro-screen hidden">
+        <article class="panel intro-panel roster-screen-panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Band Roster</p>
+              <h2>Meet The Full World Tour Lineup</h2>
+            </div>
+          </div>
+          <p class="roster-screen-copy">
+            Browse every band and artist in the World Tour deck before the bidding
+            starts. Photos use the same image files the game looks for on auction
+            cards and signing screens.
+          </p>
+          <div class="action-row roster-screen-actions">
+            <button id="roster-back-button" class="secondary-button">Back To Opening Page</button>
+          </div>
+          <div id="opening-band-roster" class="band-roster-grid"></div>
+        </article>
+      </section>
+
+      <section id="venue-roster-screen" class="intro-screen hidden">
+        <article class="panel intro-panel roster-screen-panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Venue Roster</p>
+              <h2>Tour Venues At A Glance</h2>
+            </div>
+          </div>
+          <p class="roster-screen-copy">
+            Browse every venue on the circuit, including its photo, capacity,
+            payout scale, crowd profile, and genre tendencies before the tour
+            begins.
+          </p>
+          <div class="action-row roster-screen-actions">
+            <button id="venue-roster-back-button" class="secondary-button">Back To Opening Page</button>
+          </div>
+          <div id="opening-venue-roster" class="venue-roster-grid"></div>
+        </article>
+      </section>
+
+      <section id="intro-screen" class="intro-screen hidden">
+        <article class="panel intro-panel">
+          <p class="eyebrow">Opening Night</p>
+          <h2 id="intro-title">Welcome to World Tour</h2>
+          <div id="intro-body" class="intro-body"></div>
+          <div class="action-row">
+            <button id="intro-next-button" class="primary-button">Next</button>
+          </div>
+        </article>
+      </section>
+
+      <section id="game-screen" class="game-screen hidden">
+        <section class="panel promoters-strip-panel">
+          <div id="standings" class="promoters-strip"></div>
+        </section>
+
+        <section class="panel phase-actions-panel">
+          <div class="action-row">
+            <button id="run-show-button" class="primary-button" disabled>
+              Begin Card Phase
+            </button>
+            <button id="skip-cards-button" class="secondary-button hidden">
+              Skip Cards
+            </button>
+            <button id="next-round-button" class="secondary-button hidden">
+              Next Round
+            </button>
+          </div>
+          <div id="phase-action-extra" class="phase-action-extra"></div>
+          <div id="phase-action-status" class="phase-action-status"></div>
+        </section>
+
+        <main class="main-grid">
+          <section class="column workspace-column">
+            <article class="panel workspace-panel" data-workspace="upcoming">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Tour Calendar</p>
+                  <h3>Next Five Rounds</h3>
+                </div>
+              </div>
+
+              <div id="schedule-preview" class="schedule-grid"></div>
+            </article>
+
+            <article class="panel venue-panel workspace-panel" data-workspace="this_week">
+              <div class="section-heading title-bar">
+                <div class="title-bar-copy">
+                  <p class="eyebrow">Current Round</p>
+                  <h3 id="venue-name">Round Venues</h3>
+                </div>
+              </div>
+
+              <div id="venue-meta" class="venue-meta"></div>
+              <div id="venue-cards" class="round-venues-grid"></div>
+            </article>
+
+            <article class="panel workspace-panel" data-workspace="this_week">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Your Bookings</p>
+                  <h3>Assign Headliners And Openers</h3>
+                </div>
+              </div>
+
+              <div id="assignment-grid" class="assignment-grid"></div>
+            </article>
+
+            <article class="panel workspace-panel" data-workspace="cards">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">World Tour Cards</p>
+                  <h3>Play Cards Before The Show</h3>
+                </div>
+              </div>
+
+              <div id="cards-panel" class="cards-panel"></div>
+            </article>
+
+            <article class="panel workspace-panel" data-workspace="auction">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Auction Market</p>
+                  <h3>Four Bands Up For Bids</h3>
+                </div>
+              </div>
+
+              <div id="auction-grid" class="auction-grid"></div>
+            </article>
+
+            <article class="panel workspace-panel" data-workspace="standouts">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">This Week</p>
+                  <h3>Projected Standouts</h3>
+                </div>
+              </div>
+
+              <div id="standouts-panel" class="results-panel"></div>
+            </article>
+
+            <article class="panel workspace-panel" data-workspace="advertising">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Future Planning</p>
+                  <h3>Advertising Outlook</h3>
+                </div>
+              </div>
+
+              <div id="advertising-panel" class="results-panel"></div>
+            </article>
+
+            <article class="panel workspace-panel" data-workspace="top_earners">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Tour Leaders</p>
+                  <h3>Top Earning Bands</h3>
+                </div>
+              </div>
+
+              <div id="top-earners-panel" class="results-panel"></div>
+            </article>
+
+            <article class="panel workspace-panel" data-workspace="results">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Round Results</p>
+                  <h3>Showtime</h3>
+                </div>
+              </div>
+
+              <div id="results-panel" class="results-panel"></div>
+            </article>
+
+            <article class="panel workspace-panel" data-workspace="bands">
+              <div class="section-heading">
+                <div>
+                  <p id="bands-panel-eyebrow" class="eyebrow">Your Roster</p>
+                  <h3 id="bands-panel-title">Bands Under Contract</h3>
+                </div>
+              </div>
+              <div id="player-roster" class="stack-list compact"></div>
+            </article>
+
+            <article class="panel workspace-panel" data-workspace="band_roster">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Band Roster</p>
+                  <h3>Full World Tour Lineup</h3>
+                </div>
+              </div>
+              <div id="band-roster-grid" class="band-roster-grid"></div>
+            </article>
+
+            <article class="panel workspace-panel" data-workspace="venue_roster">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Venue Roster</p>
+                  <h3>Full Venue Directory</h3>
+                </div>
+              </div>
+              <div id="venue-roster-grid" class="venue-roster-grid"></div>
+            </article>
+          </section>
+
+          <aside class="column side-column">
+            <article class="panel sidebar-panel">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Navigator</p>
+                  <h3>Focus Mode</h3>
+                </div>
+              </div>
+              <div id="workspace-nav" class="sidebar-nav"></div>
+            </article>
+          </aside>
+        </main>
+      </section>
+
+      <div id="photo-modal" class="photo-modal hidden" aria-hidden="true">
+        <button id="photo-modal-close" class="photo-modal-close" type="button" aria-label="Close photo viewer">Close</button>
+        <div class="photo-modal-panel">
+          <img id="photo-modal-image" src="" alt="" />
+          <div id="photo-modal-fallback" class="photo-modal-fallback hidden"></div>
+          <p id="photo-modal-caption" class="photo-modal-caption"></p>
+        </div>
+      </div>
+
+      <div id="climate-modal" class="climate-modal hidden" aria-hidden="true">
+        <div class="climate-modal-panel">
+          <p class="eyebrow">Tour-Wide Market Alert</p>
+          <h2 id="climate-modal-title">Market Shift</h2>
+          <p id="climate-modal-detail" class="climate-modal-detail hidden"></p>
+          <p id="climate-modal-body" class="climate-modal-body"></p>
+          <div class="action-row climate-modal-actions">
+            <button id="climate-modal-close" class="primary-button" type="button">Continue</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="band-reveal-modal" class="climate-modal hidden" aria-hidden="true">
+        <div class="climate-modal-panel band-reveal-modal-panel">
+          <p class="eyebrow">New Signing</p>
+          <h2 id="band-reveal-title">Special Guest Arrives</h2>
+          <p id="band-reveal-detail" class="climate-modal-detail hidden"></p>
+          <p id="band-reveal-body" class="climate-modal-body"></p>
+          <div id="band-reveal-card" class="band-reveal-card"></div>
+          <div class="action-row climate-modal-actions">
+            <button id="band-reveal-close" class="primary-button" type="button">Continue</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./script.js"></script>
+  </body>
+</html>

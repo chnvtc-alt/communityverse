@@ -10,27 +10,27 @@
     },
     {
       "source": "/world-tour",
-      "destination": "/world-tour-game.html"
+      "destination": "/world-tour/index.html"
     },
     {
       "source": "/world-tour/",
-      "destination": "/world-tour-game.html"
+      "destination": "/world-tour/index.html"
     },
     {
       "source": "/empty-suit",
-      "destination": "/empty-suit-game.html"
+      "destination": "/empty-suit/index.html"
     },
     {
       "source": "/empty-suit/",
-      "destination": "/empty-suit-game.html"
+      "destination": "/empty-suit/index.html"
     },
     {
       "source": "/cm-pepperville",
-      "destination": "/cm-pepperville-game.html"
+      "destination": "/cm-pepperville/index.html"
     },
     {
       "source": "/cm-pepperville/",
-      "destination": "/cm-pepperville-game.html"
+      "destination": "/cm-pepperville/index.html"
     }
   ]
 }
