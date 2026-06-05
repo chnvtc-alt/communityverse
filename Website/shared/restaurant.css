@@ -160,6 +160,11 @@ html.restaurant-hub-mode .challenge-splash {
   display: none;
 }
 
+html:not(.restaurant-hub-mode) .hero,
+html:not(.restaurant-hub-mode) .grid-two {
+  display: none;
+}
+
 .challenge-splash {
   margin-bottom: 18px;
   padding: 0;
