@@ -6,7 +6,7 @@
     <title>CommunityVerse Games | Browser Strategy Games</title>
     <meta
       name="description"
-      content="Play free browser strategy games from CommunityVerse Games including The Zoo Game, World Tour, The Empty Suit, City Manager: Pepperville, and Restaurant Challenge."
+      content="Play free browser strategy games from CommunityVerse Games, featuring Restaurant Challenge plus The Zoo Game, World Tour, The Empty Suit, and City Manager: Pepperville."
     />
     <link rel="canonical" href="https://communityversegames.com/" />
     <meta
@@ -15,7 +15,7 @@
     />
     <meta
       property="og:description"
-      content="Play free browser strategy games from CommunityVerse Games including The Zoo Game, World Tour, The Empty Suit, City Manager: Pepperville, and Restaurant Challenge."
+      content="Play free browser strategy games from CommunityVerse Games, featuring Restaurant Challenge plus The Zoo Game, World Tour, The Empty Suit, and City Manager: Pepperville."
     />
     <meta property="og:url" content="https://communityversegames.com/" />
     <meta property="og:type" content="website" />
@@ -72,13 +72,13 @@
       }
 
       .hero {
-        margin-bottom: 6px;
+        margin-bottom: 24px;
       }
 
       .hero-panel {
         position: relative;
         overflow: hidden;
-        padding: 34px;
+        padding: 28px;
         border-radius: 34px;
         border: 1px solid rgba(93, 116, 105, 0.16);
         background:
@@ -110,29 +110,28 @@
         background: radial-gradient(circle, rgba(47, 111, 82, 0.14), transparent 72%);
       }
 
-      .hero-grid {
+      .featured-hero {
         position: relative;
         z-index: 1;
         display: grid;
-        grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.82fr);
-        gap: 34px;
-        align-items: start;
+        grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+        gap: 28px;
+        align-items: center;
       }
 
-      .hero-copy h1 {
-        margin: 0 0 14px;
+      .featured-copy h1 {
+        margin: 0 0 12px;
         max-width: none;
-        font-size: clamp(2.2rem, 4vw, 3.25rem);
-        line-height: 0.94;
+        font-size: clamp(2.3rem, 4.2vw, 3.65rem);
+        line-height: 0.92;
         letter-spacing: -0.04em;
       }
 
-      .hero-headline-line {
+      .featured-headline-line {
         display: block;
-        white-space: nowrap;
       }
 
-      .hero-copy p {
+      .featured-copy p {
         margin: 0 0 12px;
         max-width: 760px;
         font-family: Arial, sans-serif;
@@ -141,7 +140,7 @@
         color: var(--muted);
       }
 
-      .hero-chips {
+      .featured-chips {
         display: flex;
         flex-wrap: wrap;
         gap: 10px;
@@ -171,22 +170,50 @@
         box-shadow: 0 0 0 4px rgba(212, 133, 34, 0.12);
       }
 
-      .hero-side {
+      .featured-image-wrap {
+        position: relative;
         display: flex;
+        align-self: stretch;
       }
 
-      .hero-side-card {
+      .featured-image {
         width: 100%;
-        padding: 24px;
-        border-radius: 28px;
+        height: 100%;
+        min-height: 360px;
+        object-fit: cover;
+        border-radius: 26px;
         border: 1px solid var(--line);
         background:
           linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(249, 242, 226, 0.88));
         box-shadow: 0 14px 32px rgba(39, 55, 44, 0.08);
       }
 
-      .hero-side-kicker {
-        margin: 0 0 8px;
+      .featured-badge {
+        position: absolute;
+        left: 18px;
+        bottom: 18px;
+        display: inline-flex;
+        align-items: center;
+        min-height: 34px;
+        padding: 0 14px;
+        border-radius: 999px;
+        background: rgba(22, 63, 45, 0.9);
+        color: #fffdf8;
+        font-family: Arial, sans-serif;
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .section-intro {
+        display: grid;
+        gap: 10px;
+        margin: 0 0 20px;
+      }
+
+      .section-kicker {
+        margin: 0;
         font-family: Arial, sans-serif;
         font-size: 0.8rem;
         font-weight: 700;
@@ -195,22 +222,17 @@
         color: var(--green);
       }
 
-      .hero-side-card h2 {
+      .section-heading {
         margin: 0;
-        font-size: clamp(1.5rem, 2.45vw, 2.05rem);
-        line-height: 0.98;
+        font-size: clamp(1.9rem, 3.2vw, 2.65rem);
+        line-height: 0.96;
         letter-spacing: -0.04em;
       }
 
-      .hero-side-line {
-        display: block;
-      }
-
-      .hero-side-copy,
-      .hero-side-note {
-        margin: 12px 0 0;
+      .section-copy {
+        margin: 0;
         font-family: Arial, sans-serif;
-        font-size: 0.96rem;
+        font-size: 1rem;
         line-height: 1.5;
         color: var(--muted);
       }
@@ -249,6 +271,33 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 24px;
         margin-top: 28px;
+      }
+
+      .games-section {
+        margin-top: 22px;
+      }
+
+      .games-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+        margin-top: 20px;
+      }
+
+      .games-section-title {
+        margin: 0 0 8px;
+        font-size: clamp(1.8rem, 3vw, 2.4rem);
+        line-height: 0.98;
+        letter-spacing: -0.04em;
+      }
+
+      .games-section-copy {
+        margin: 0;
+        max-width: 760px;
+        font-family: Arial, sans-serif;
+        font-size: 1rem;
+        line-height: 1.55;
+        color: var(--muted);
       }
 
       .game-panel {
@@ -326,7 +375,7 @@
       }
 
       @media (max-width: 900px) {
-        .hero-grid,
+        .featured-hero,
         .games-grid {
           grid-template-columns: 1fr;
         }
@@ -335,162 +384,154 @@
           padding: 24px 22px;
         }
 
-        .hero-copy h1 {
-          font-size: clamp(1.85rem, 8.2vw, 2.4rem);
+        .featured-image {
+          min-height: 280px;
         }
 
-        .hero-headline-line {
-          white-space: normal;
+        .featured-copy h1 {
+          font-size: clamp(2rem, 8.5vw, 2.55rem);
         }
 
-        .hero-copy p {
+        .featured-copy p,
+        .section-copy,
+        .games-section-copy {
           max-width: none;
         }
 
         .hero-actions .button {
           width: 100%;
         }
-      }
 
+        .games-grid {
+          margin-top: 16px;
+        }
+      }
     </style>
   </head>
   <body>
     <main class="page">
       <section class="hero">
         <div class="hero-panel">
-          <div class="hero-grid">
-            <div class="hero-copy">
-              <p class="eyebrow">Connected Strategy Games</p>
+          <div class="featured-hero">
+            <div class="featured-copy">
+              <p class="eyebrow">Flagship Game</p>
               <h1>
-                <span class="hero-headline-line">Build a Zoo.</span>
-                <span class="hero-headline-line">Book a World Tour.</span>
-                <span class="hero-headline-line">Run for President.</span>
-                <span class="hero-headline-line">Build a Quirky City.</span>
+                <span class="featured-headline-line">Restaurant Challenge</span>
+                <span class="featured-headline-line">Answer trivia. Collect customers.</span>
+                <span class="featured-headline-line">Build your restaurant legend.</span>
               </h1>
               <p>
-                CommunityVerse Games is a growing collection of light-hearted strategy games that play like digital board games: easy to start, funny to explore, and full of recurring characters across different worlds.
+                Create your own restaurant, answer fast trivia questions, earn memorable customers, improve your restaurant rating, and compete on the leaderboard in quick games you can play in under five minutes.
               </p>
               <p>
-                You may run into Buzz Smiley, Romeo Tiramisu, Wicked Jim DeVito, Johnny Pepper, Captain Hernando Zoogle, and other familiar faces in the fictional communities located within Chattawa County: Pepperville, St. Hilton, Noel, and the Wakona Nation reservation.
+                Restaurant Challenge is the flagship CommunityVerse game, built to be a fast, replayable experience that feels easy to jump into and exciting to return to.
               </p>
-              <div class="hero-chips">
+              <div class="hero-actions">
+                <a class="button button-primary" href="https://communityversegames.com/restaurant">Play Restaurant Challenge</a>
+                <a class="button" href="https://communityversegames.com/restaurant?hub=1">Learn More</a>
+              </div>
+              <div class="featured-chips">
                 <span class="hero-chip">Light-hearted strategy</span>
-                <span class="hero-chip">Board-game style play</span>
+                <span class="hero-chip">Quick five-minute rounds</span>
                 <span class="hero-chip">Recurring characters</span>
+                <span class="hero-chip">Shared leaderboard</span>
                 <span class="hero-chip">Free in your browser</span>
               </div>
             </div>
 
-            <aside class="hero-side">
-              <div class="hero-side-card">
-                <p class="hero-side-kicker">Game Portal</p>
-                <h2>
-                  <span class="hero-side-line">Four Games,</span>
-                  <span class="hero-side-line">One Community,</span>
-                  <span class="hero-side-line">Zero Cost.</span>
-                </h2>
-                <div class="hero-actions">
-                  <a class="button button-primary" href="#games">Play Free Games</a>
-                </div>
-                <p class="hero-side-note">
-                  Coming later: Time Travel Tours and Tourtown USA.
-                </p>
-              </div>
-            </aside>
+            <div class="featured-image-wrap">
+              <img
+                class="featured-image"
+                src="assets/restaurant-challenge/restaurant-challenge-home-screen.jpg"
+                alt="Restaurant Challenge home screen art"
+              />
+              <div class="featured-badge">Flagship Game</div>
+            </div>
           </div>
         </div>
       </section>
 
-      <section class="games-grid" id="games">
-        <article class="game-panel">
-          <img
-            class="game-image"
-            src="assets/zoo/the-zoo-game-splash-screen.jpg"
-            alt="The Zoo Game splash art"
-          />
-          <div class="game-body">
-            <h2 class="sr-only">The Zoo Game</h2>
-            <p>
-              Build themed animal collections, win premium attractions, and use smart publicity to turn your zoo into the city's favorite attraction.
-            </p>
-            <div class="game-links">
-              <a class="button button-primary" href="https://communityversegames.com/zoo/">Play The Zoo Game</a>
-              <a class="button" href="https://communityversegames.com/zoo-game.html">Learn More</a>
-            </div>
-          </div>
-        </article>
+      <section class="games-section" id="games">
+        <div class="section-intro">
+          <p class="section-kicker">More CommunityVerse Games</p>
+          <h2 class="section-heading">Explore the connected worlds of CommunityVerse.</h2>
+          <p class="section-copy">
+            From zoos and world tours to elections and city-building, each game has its own world, its own characters, and its own style of strategy.
+          </p>
+        </div>
 
-        <article class="game-panel">
-          <img
-            class="game-image"
-            src="assets/world-tour/world-tour-splash-screen.jpg"
-            alt="World Tour splash art"
-          />
-          <div class="game-body">
-            <h2 class="sr-only">World Tour</h2>
-            <p>
-              <strong>The Music Game</strong> lets you manage multiple bands, rent venues, and build bigger crowds from show to show while we continue improving it.
-            </p>
-            <div class="game-links">
-              <a class="button button-primary" href="https://communityversegames.com/world-tour/">Play World Tour</a>
-              <a class="button" href="https://communityversegames.com/world-tour-game.html">Learn More</a>
+        <div class="games-grid">
+          <article class="game-panel">
+            <img
+              class="game-image"
+              src="assets/zoo/the-zoo-game-splash-screen.jpg"
+              alt="The Zoo Game splash art"
+            />
+            <div class="game-body">
+              <h2 class="sr-only">The Zoo Game</h2>
+              <p>
+                Build themed animal collections, win premium attractions, and use smart publicity to turn your zoo into the city's favorite attraction.
+              </p>
+              <div class="game-links">
+                <a class="button button-primary" href="https://communityversegames.com/zoo/">Play The Zoo Game</a>
+                <a class="button" href="https://communityversegames.com/zoo-game.html">Learn More</a>
+              </div>
             </div>
-          </div>
-        </article>
+          </article>
 
-        <article class="game-panel">
-          <img
-            class="game-image"
-            src="assets/empty-suit/empty-suit-splash-screen.jpg"
-            alt="The Empty Suit splash art"
-          />
-          <div class="game-body">
-            <h2 class="sr-only">The Empty Suit</h2>
-            <p>
-              Fight to win the Democratic or Republican nomination, shape your candidate, debate your rivals, and outmaneuver the rest of the field.
-            </p>
-            <div class="game-links">
-              <a class="button button-primary" href="https://communityversegames.com/empty-suit/">Play The Empty Suit</a>
-              <a class="button" href="https://communityversegames.com/empty-suit-game.html">Learn More</a>
+          <article class="game-panel">
+            <img
+              class="game-image"
+              src="assets/world-tour/world-tour-splash-screen.jpg"
+              alt="World Tour splash art"
+            />
+            <div class="game-body">
+              <h2 class="sr-only">World Tour</h2>
+              <p>
+                <strong>The Music Game</strong> lets you manage multiple bands, rent venues, and build bigger crowds from show to show while we continue improving it.
+              </p>
+              <div class="game-links">
+                <a class="button button-primary" href="https://communityversegames.com/world-tour/">Play World Tour</a>
+                <a class="button" href="https://communityversegames.com/world-tour-game.html">Learn More</a>
+              </div>
             </div>
-          </div>
-        </article>
+          </article>
 
-        <article class="game-panel">
-          <img
-            class="game-image"
-            src="assets/cm-pepperville/city-manager-pepperville-logo.jpg"
-            alt="City Manager Pepperville logo art"
-          />
-          <div class="game-body">
-            <h2 class="sr-only">City Manager: Pepperville</h2>
-            <p>
-              Plan districts, grow the local economy, manage city priorities, and shape the future of Pepperville.
-            </p>
-            <div class="game-links">
-              <a class="button button-primary" href="https://communityversegames.com/cm-pepperville/">Visit Pepperville</a>
-              <a class="button" href="https://communityversegames.com/cm-pepperville-game.html">Learn More</a>
+          <article class="game-panel">
+            <img
+              class="game-image"
+              src="assets/empty-suit/empty-suit-splash-screen.jpg"
+              alt="The Empty Suit splash art"
+            />
+            <div class="game-body">
+              <h2 class="sr-only">The Empty Suit</h2>
+              <p>
+                Fight to win the Democratic or Republican nomination, shape your candidate, debate your rivals, and outmaneuver the rest of the field.
+              </p>
+              <div class="game-links">
+                <a class="button button-primary" href="https://communityversegames.com/empty-suit/">Play The Empty Suit</a>
+                <a class="button" href="https://communityversegames.com/empty-suit-game.html">Learn More</a>
+              </div>
             </div>
-          </div>
-        </article>
+          </article>
 
-        <article class="game-panel">
-          <img
-            class="game-image"
-            src="assets/restaurant-challenge/restaurant-challenge-home-screen.jpg"
-            alt="Restaurant Challenge home screen art"
-          />
-          <div class="game-body">
-            <h2 class="sr-only">Restaurant Challenge</h2>
-            <p>
-              Create your own restaurant, answer trivia questions in under five minutes, collect memorable customers and historic figures, improve your rating, and compete on the leaderboard.
-            </p>
-            <div class="game-links">
-              <a class="button button-primary" href="https://communityversegames.com/restaurant">Play Restaurant Challenge</a>
-              <a class="button" href="americana/">Play Americana Diner</a>
+          <article class="game-panel">
+            <img
+              class="game-image"
+              src="assets/cm-pepperville/city-manager-pepperville-logo.jpg"
+              alt="City Manager Pepperville logo art"
+            />
+            <div class="game-body">
+              <h2 class="sr-only">City Manager: Pepperville</h2>
+              <p>
+                Plan districts, grow the local economy, manage city priorities, and shape the future of Pepperville.
+              </p>
+              <div class="game-links">
+                <a class="button button-primary" href="https://communityversegames.com/cm-pepperville/">Visit Pepperville</a>
+                <a class="button" href="https://communityversegames.com/cm-pepperville-game.html">Learn More</a>
+              </div>
             </div>
-          </div>
-        </article>
+          </article>
       </section>
       <footer class="site-footer">
         Copyright - CommunityVerse Games. All rights reserved
