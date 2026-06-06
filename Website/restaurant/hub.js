@@ -176,10 +176,10 @@
     elements.splashPlayButton.href = selectedRestaurant?.available && selectedRestaurant.href ? selectedRestaurant.href : "#splash-chooser";
     elements.splashPlayButton.textContent = selectedRestaurant?.available ? "Play Selected Restaurant" : "Coming Soon";
     if (elements.splashMyRestaurantButton) {
-      elements.splashMyRestaurantButton.href = "./?hub=1#hero-panel";
+      elements.splashMyRestaurantButton.href = "/restaurant/?hub=1#hero-panel";
     }
     if (elements.splashLeaderboardButton) {
-      elements.splashLeaderboardButton.href = "./?hub=1#leaderboard-panel";
+      elements.splashLeaderboardButton.href = "/restaurant/?hub=1#leaderboard-panel";
     }
     elements.splashRestaurantSelect.onchange = (event) => {
       state.selectedDirectorySlug = event.currentTarget.value;
@@ -304,7 +304,7 @@
           slug: restaurant.slug,
           name: restaurant.name,
           image: restaurant.logoSquare || restaurant.squareImage || restaurant.logoHorizontal || restaurant.heroImage,
-          href: `../${restaurant.slug}/?home=1`,
+          href: `/${restaurant.slug}/?home=1`,
           available: true,
         })),
         ...placeholderRestaurants,
@@ -316,7 +316,7 @@
         slug: "americana",
         name: "Americana Diner",
         image: "../assets/restaurant-challenge/restaurants/americana/americana-diner-logo.jpg",
-        href: "../americana/?home=1",
+        href: "/americana/?home=1",
         available: true,
       },
       ...placeholderRestaurants,
@@ -352,7 +352,7 @@
       return {
         slug: recentSlug,
         name: restaurantName,
-        href: `../${recentSlug}/?home=1`,
+        href: `/${recentSlug}/?home=1`,
       };
     }
 
@@ -360,7 +360,7 @@
     return {
       slug: fallbackRestaurant?.slug || "americana",
       name: fallbackRestaurant?.name || "Americana Diner",
-      href: fallbackRestaurant?.slug ? `../${fallbackRestaurant.slug}/?home=1` : "../americana/?home=1",
+      href: fallbackRestaurant?.slug ? `/${fallbackRestaurant.slug}/?home=1` : "/americana/?home=1",
     };
   }
 
@@ -843,7 +843,7 @@
                   <div class="collection-selected-mobile-actions">
                     <span class="collection-selected-value">${core.formatCurrency(selectedCustomer.status === "regular" ? selectedCustomer.regularValue : selectedCustomer.occasionalValue)}</span>
                     <span class="chip collection-selected-rarity-chip">${selectedCustomer.rarity}</span>
-                    <a class="button button-primary" id="selected-invite-back-button" href="../americana/?home=1&customerId=${encodeURIComponent(selectedCustomer.customerId)}">Invite Back</a>
+                    <a class="button button-primary" id="selected-invite-back-button" href="/americana/?home=1&customerId=${encodeURIComponent(selectedCustomer.customerId)}">Invite Back</a>
                   </div>
                 </div>
               </div>
@@ -871,7 +871,7 @@
                   <span class="chip">${core.formatCurrency(selectedCustomer.status === "regular" ? selectedCustomer.regularValue : selectedCustomer.occasionalValue)}</span>
                 </div>
                 <div class="button-row" style="margin-top: 10px;">
-                  <a class="button button-primary" id="selected-invite-back-button" href="../americana/?home=1&customerId=${encodeURIComponent(selectedCustomer.customerId)}">Invite Back</a>
+                  <a class="button button-primary" id="selected-invite-back-button" href="/americana/?home=1&customerId=${encodeURIComponent(selectedCustomer.customerId)}">Invite Back</a>
                 </div>
               </div>
             `
