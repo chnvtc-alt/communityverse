@@ -225,11 +225,31 @@
     return String(Math.round(value || 0));
   }
 
+  function getPlayableRestaurants() {
+    return core.restaurants.filter((restaurant) => restaurant.active !== false);
+  }
+
   function getSelectedLeaderboardRestaurant() {
-    return core.getRestaurantBySlug(state.leaderboardRestaurantSlug) || core.restaurants[0] || null;
+    return (
+      core.getRestaurantBySlug(state.leaderboardRestaurantSlug) ||
+      getPlayableRestaurants()[0] ||
+      core.restaurants[0] ||
+      null
+    );
   }
 
   function getDirectoryRestaurants() {
+    const playableRestaurants = getPlayableRestaurants();
+    if (playableRestaurants.length) {
+      return playableRestaurants.map((restaurant) => ({
+        slug: restaurant.slug,
+        name: restaurant.name,
+        image: restaurant.logoSquare || restaurant.squareImage || restaurant.logoHorizontal || restaurant.heroImage,
+        href: `../${restaurant.slug}/?home=1`,
+        available: true,
+      }));
+    }
+
     return [
       {
         slug: "americana",
@@ -237,20 +257,6 @@
         image: "../assets/restaurant-challenge/restaurants/americana/americana-diner-logo.jpg",
         href: "../americana/?home=1",
         available: true,
-      },
-      {
-        slug: "changs-grill",
-        name: "Chang's Grill",
-        image: "../assets/restaurant-challenge/restaurants/americana/changs-grill-logo.jpg",
-        href: "",
-        available: false,
-      },
-      {
-        slug: "waffle-master",
-        name: "Waffle Master",
-        image: "../assets/restaurant-challenge/restaurants/americana/waffle-master-logo.jpg",
-        href: "",
-        available: false,
       },
     ];
   }
@@ -327,10 +333,19 @@
     };
   }
 
+  function getProfileState(profile) {
+    if (!profile) {
+      return "new";
+    }
+
+    return profile.isGuest ? "guest" : "registered";
+  }
+
   function renderHero() {
     const compactMobile = isMobileHub();
     const profile = core.getActiveProfile();
-    const summary = profile ? core.getProfileSummary(profile, "americana") : null;
+    const profileState = getProfileState(profile);
+    const summary = profileState === "registered" ? core.getProfileSummary(profile, "americana") : null;
     const overallRank = profile ? core.getPlayerRank(profile.id, "estimatedSales") : null;
     const selectedDirectoryRestaurant = getSelectedDirectoryRestaurant(profile);
     const lastPlayedSlug = getDefaultDirectorySlug(profile);
@@ -354,7 +369,7 @@
         <div class="hero-grid">
           <div class="hero-content-panel hero-content-panel-main">
           ${
-            profile
+            profileState === "registered"
               ? compactMobile
                 ? `
                   <div class="hero-profile-strip hero-profile-strip-compact">
@@ -376,15 +391,9 @@
                             : ""
                         }
                       </div>
-                      ${
-                        editMode && !profile.isGuest
-                          ? ""
-                          : `
-                            <div class="hero-profile-actions hero-profile-actions-top">
-                              <a class="button button-muted button-sm" href="${withHubMode(profile.isGuest ? "../americana/?home=1" : "./?edit=1")}">${profile.isGuest ? "Register" : "Edit My Profile"}</a>
-                            </div>
-                          `
-                      }
+                        <div class="hero-profile-actions hero-profile-actions-top">
+                          <a class="button button-muted button-sm" href="${withHubMode("./?edit=1")}">Edit My Profile</a>
+                        </div>
                     </div>
                     <div class="hero-profile-meta hero-profile-meta-compact">
                       <span class="chip hero-stat-chip">${overallRank ? `Overall #${overallRank}` : "No overall rank"}</span>
@@ -393,7 +402,7 @@
                       <span class="chip hero-stat-chip hero-stat-chip-compact">Occasional Customers ${summary.stats.occasionalCustomers}</span>
                     </div>
                     ${
-                      editMode && !profile.isGuest
+                      editMode
                         ? `
                           <form class="hero-profile-edit-form hero-profile-edit-form-compact" id="hero-profile-edit-form">
                             <div class="field" style="gap: 6px;">
@@ -432,15 +441,9 @@
                           : ""
                       }
                     </div>
-                    ${
-                      editMode && !profile.isGuest
-                        ? ""
-                        : `
-                          <div class="hero-profile-actions hero-profile-actions-top">
-                            <a class="button button-muted button-sm" href="${withHubMode(profile.isGuest ? "../americana/?home=1" : "./?edit=1")}">${profile.isGuest ? "Register" : "Edit My Profile"}</a>
-                          </div>
-                        `
-                    }
+                    <div class="hero-profile-actions hero-profile-actions-top">
+                      <a class="button button-muted button-sm" href="${withHubMode("./?edit=1")}">Edit My Profile</a>
+                    </div>
                   </div>
                   <div class="hero-profile-meta">
                     <span class="chip hero-stat-chip">${overallRank ? `Overall #${overallRank}` : "No overall rank"}</span>
@@ -450,25 +453,36 @@
                   </div>
                 </div>
                 `
-                : `
-                <div class="hero-profile-strip hero-profile-strip-guest">
-                  <div>
-                    <p class="kicker" style="margin: 0 0 4px;">Your Restaurant</p>
-                    <h2 class="hero-profile-name">Play to create one</h2>
-                    <p class="copy compact-copy" style="margin: 4px 0 0;">Finish Americana to save progress and collect customers.</p>
-                  </div>
-                  <a class="button button-primary button-sm" href="${playAgainTarget.href}">Play ${escapeHtml(playAgainTarget.name)}</a>
-                </div>
-              `
+                : profileState === "guest"
+                  ? `
+                    <div class="hero-profile-strip hero-profile-strip-guest">
+                      <div>
+                        <p class="kicker" style="margin: 0 0 4px;">Guest Progress</p>
+                        <h2 class="hero-profile-name">Play first, then register to save your restaurant.</h2>
+                        <p class="copy compact-copy" style="margin: 4px 0 0;">You can keep playing as a guest, but registering after your next game keeps your customers and leaderboard progress with you.</p>
+                      </div>
+                      <a class="button button-primary button-sm" href="${playAgainTarget.href}">Play ${escapeHtml(playAgainTarget.name)}</a>
+                    </div>
+                  `
+                  : `
+                    <div class="hero-profile-strip hero-profile-strip-guest">
+                      <div>
+                        <p class="kicker" style="margin: 0 0 4px;">Welcome</p>
+                        <h2 class="hero-profile-name">Choose a restaurant, play your first game, then register after you win a customer.</h2>
+                        <p class="copy compact-copy" style="margin: 4px 0 0;">New players should pick a restaurant from the host list on the right. After the first game, we’ll ask you to save your restaurant name so progress can follow you.</p>
+                      </div>
+                      <a class="button button-primary button-sm" href="#directory-card">Choose A Restaurant</a>
+                    </div>
+                  `
           }
           </div>
           <div class="hero-content-panel hero-content-panel-side">
             <div class="hero-side">
               <div class="hero-card hero-card-strong hero-directory-showcase hero-directory-showcase-compact" id="directory-card">
                 <div class="hero-directory-picker">
-                  <p class="kicker" style="margin: 0;">Choose A Restaurant To Play</p>
+                  <p class="kicker" style="margin: 0;">Choose A Trivia Host To Play</p>
                   <label class="field" style="gap: 6px;">
-                    <select class="select hero-directory-select" id="directory-select" aria-label="Choose a restaurant to play">
+                    <select class="select hero-directory-select" id="directory-select" aria-label="Choose a trivia host to play">
                       ${getDirectoryRestaurants()
                         .map(
                           (restaurantOption) => `
@@ -484,7 +498,7 @@
                 ${
                   selectedDirectoryRestaurant
                     ? `
-                      <article class="hero-directory-item hero-directory-item-compact ${selectedDirectoryRestaurant.available ? "" : "hero-directory-item-muted"}">
+                  <article class="hero-directory-item hero-directory-item-compact ${selectedDirectoryRestaurant.available ? "" : "hero-directory-item-muted"}">
                         <img class="hero-directory-image" src="${selectedDirectoryRestaurant.image}" alt="${escapeHtml(selectedDirectoryRestaurant.name)} logo" />
                         <div>
                           <h2 class="section-title" style="margin-bottom: 4px; color: inherit; font-size: 1.2rem;">${escapeHtml(selectedDirectoryRestaurant.name)}</h2>
@@ -595,7 +609,7 @@
                 <label class="field" style="gap: 6px;">
                   <span class="field-label">Restaurant</span>
                   <select class="select leaderboard-select" data-control="restaurant" aria-label="Restaurant leaderboard">
-                    ${core.restaurants
+                    ${getPlayableRestaurants()
                       .map(
                         (restaurantOption) => `
                           <option value="${restaurantOption.slug}" ${restaurantOption.slug === (restaurant?.slug || "americana") ? "selected" : ""}>
@@ -713,7 +727,7 @@
     if (!profile) {
       elements.collection.innerHTML = `
         <h2 class="section-title">Customer Collection</h2>
-        <p class="copy">Once you create a profile, your collected customers will show up here.</p>
+        <p class="copy">Play your first game to start collecting customers. After that, we’ll ask you to register your restaurant so your progress can follow you to the next device.</p>
       `;
       return;
     }
