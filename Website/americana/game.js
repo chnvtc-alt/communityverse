@@ -3,7 +3,7 @@
   const restaurant = core.getRestaurantBySlug("americana");
   const query = new URLSearchParams(window.location.search);
   const demoMode = query.has("demo");
-  const homeMode = query.has("home");
+  let homeMode = query.has("home");
   const replayCustomerId = String(query.get("customerId") || "").trim();
   const replayCustomer = replayCustomerId ? core.getCustomerById(replayCustomerId) : null;
 
@@ -133,6 +133,19 @@
     }
 
     return core.createGuestProfile();
+  }
+
+  function normalizeDirectAmericanaRoute() {
+    if (demoMode || homeMode) {
+      return;
+    }
+
+    homeMode = true;
+    query.set("home", "1");
+
+    const normalizedUrl = new URL(window.location.href);
+    normalizedUrl.searchParams.set("home", "1");
+    window.history.replaceState({}, "", normalizedUrl.toString());
   }
 
   async function initializeAmericanaPage() {
@@ -774,6 +787,8 @@
       core.createProfile("Demo Player", "Tim's Roadhouse");
     }
   }
+
+  normalizeDirectAmericanaRoute();
 
   if (homeMode) {
     core.clearActiveSession();
