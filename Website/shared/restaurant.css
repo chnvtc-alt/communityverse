@@ -2354,6 +2354,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   .opening-guest-photo-starter {
     min-height: 0;
     aspect-ratio: 1 / 1;
+    height: auto;
   }
 
   .opening-guest-name {
@@ -2369,10 +2370,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .opening-guest-subcopy-starter {
-    font-size: 0.74rem;
-    line-height: 1.16;
-    max-width: 18ch;
-    text-align: center;
+    display: none;
   }
 
   .opening-title-small-bottom {
