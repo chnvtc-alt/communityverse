@@ -26,6 +26,33 @@
     "americana diner",
   ];
 
+  const GUEST_RESTAURANT_NAME_PARTS = {
+    adjectives: [
+      "Wandering",
+      "Golden",
+      "Lucky",
+      "Friendly",
+      "Harvest",
+      "Cedar",
+      "Bluebird",
+      "Sunset",
+      "Maple",
+      "Hearth",
+    ],
+    nouns: [
+      "Spoon",
+      "Fork",
+      "Lantern",
+      "Table",
+      "Porch",
+      "Kitchen",
+      "Cafe",
+      "Diner",
+      "Grill",
+      "Bistro",
+    ],
+  };
+
   const restaurants = [
     {
       id: "americana",
@@ -3174,11 +3201,12 @@
   }
 
   function createGuestProfile() {
+    const restaurantName = generateGuestRestaurantName();
     const profile = {
       id: makeId("guest"),
       playerName: "Guest Player",
-      restaurantName: "Guest Restaurant",
-      restaurantSlug: "guest-restaurant",
+      restaurantName,
+      restaurantSlug: slugify(restaurantName),
       createdAt: nowIso(),
       lastPlayedAt: null,
       isGuest: true,
@@ -3193,6 +3221,12 @@
     saveProfiles(profiles);
     setActiveProfileId(profile.id);
     return ensureProfileShape(profile);
+  }
+
+  function generateGuestRestaurantName() {
+    const adjective = pickOne(GUEST_RESTAURANT_NAME_PARTS.adjectives);
+    const noun = pickOne(GUEST_RESTAURANT_NAME_PARTS.nouns);
+    return `The ${adjective} ${noun}`;
   }
 
   function updateProfile(updatedProfile) {
@@ -4034,6 +4068,7 @@
     clearActiveProfileId,
     createProfile,
     createGuestProfile,
+    generateGuestRestaurantName,
     updateProfile,
     getRestaurantBySlug,
     getCustomerById,

@@ -111,6 +111,24 @@
   function ensurePlayableProfile() {
     const existingProfile = getProfile();
     if (existingProfile) {
+      if (
+        existingProfile.isGuest &&
+        (!String(existingProfile.restaurantName || "").trim() ||
+          existingProfile.restaurantSlug === "guest-restaurant" ||
+          String(existingProfile.restaurantName || "").trim() === "Guest Restaurant")
+      ) {
+        const restaurantName = core.generateGuestRestaurantName();
+        const updatedProfile = core.updateProfile({
+          ...existingProfile,
+          restaurantName,
+          restaurantSlug: core.slugify(restaurantName),
+        });
+        if (updatedProfile) {
+          core.setActiveProfileId(updatedProfile.id);
+          return updatedProfile;
+        }
+      }
+
       return existingProfile;
     }
 
