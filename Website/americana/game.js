@@ -320,7 +320,7 @@
     renderAll();
     renderGamePanel();
     window.requestAnimationFrame(() => {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      elements.game.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   }
 

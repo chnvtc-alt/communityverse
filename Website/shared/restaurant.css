@@ -2319,6 +2319,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   .opening-guest-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
+    justify-items: center;
   }
 
   .opening-guest-grid .opening-guest-card:nth-child(n + 3) {
@@ -2332,6 +2333,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
   .opening-guest-card-starter {
     grid-template-columns: 1fr;
+    width: min(100%, 360px);
   }
 
   .opening-guest-copy {
