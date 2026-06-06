@@ -175,10 +175,10 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .challenge-splash-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
-  gap: 22px;
-  align-items: center;
-  padding: 26px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+  padding: 24px;
   border: 1px solid var(--line);
   border-radius: 32px;
   background:
@@ -190,8 +190,9 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .challenge-splash-copy {
   display: grid;
-  gap: 14px;
+  gap: 12px;
   align-content: start;
+  max-width: 860px;
 }
 
 .challenge-splash-title {
@@ -240,23 +241,6 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 8px;
-}
-
-.challenge-splash-art {
-  min-width: 0;
-  display: grid;
-  place-items: center;
-}
-
-.challenge-splash-art img {
-  width: 100%;
-  max-width: 560px;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-  border-radius: 26px;
-  border: 1px solid rgba(93, 116, 105, 0.14);
-  box-shadow: 0 18px 40px rgba(39, 55, 44, 0.12);
-  background: rgba(255, 255, 255, 0.4);
 }
 
 .hero-stack {
@@ -2092,10 +2076,6 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
   .challenge-splash-actions .button {
     width: 100%;
-  }
-
-  .challenge-splash-art img {
-    max-width: 100%;
   }
 
   .page-title {
