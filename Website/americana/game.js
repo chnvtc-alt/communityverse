@@ -108,6 +108,15 @@
     return session;
   }
 
+  function ensurePlayableProfile() {
+    const existingProfile = getProfile();
+    if (existingProfile) {
+      return existingProfile;
+    }
+
+    return core.createGuestProfile();
+  }
+
   function renderHero(visible) {
     if (!visible) {
       elements.hero.classList.add("hidden");
@@ -223,11 +232,14 @@
       </div>`;
 
     document.getElementById("start-game-button").addEventListener("click", () => {
-      if (!getProfile()) {
-        core.createGuestProfile();
+      const profile = ensurePlayableProfile();
+      if (profile) {
+        core.setActiveProfileId(profile.id);
       }
 
-      startGame();
+      window.requestAnimationFrame(() => {
+        startGame();
+      });
     });
 
     const resumeButton = document.getElementById("resume-game-button");
@@ -322,12 +334,15 @@
   }
 
   function startGame() {
+    const openingCustomerIds = getDisplayedOpeningCustomers().map((customer) => customer.id);
     const options = replayCustomer
       ? { customerId: replayCustomer.id }
-      : { customerPoolIds: getDisplayedOpeningCustomers().map((customer) => customer.id) };
+      : openingCustomerIds.length
+        ? { customerPoolIds: openingCustomerIds }
+        : {};
     const session = core.startNewSession("americana", options);
     if (!session) {
-      window.alert("No available guests are ready for Americana right now.");
+      window.alert("No available guests are ready for Americana right now. Please try again.");
       return;
     }
     state.feedback = null;
