@@ -3498,6 +3498,12 @@
     };
   }
 
+  function isGeneralTriviaQuestion(question) {
+    const tags = Array.isArray(question.tags) ? question.tags : [];
+    const blockedTags = new Set(["americana", "pepperville", "communityverse", "storybook", "cryptid", "food"]);
+    return tags.every((tag) => !blockedTags.has(tag));
+  }
+
   function prepareQuestion(question) {
     const options = shuffle([
       question.correctAnswer,
@@ -3524,7 +3530,8 @@
     const pools = getQuestionPoolForSession(restaurant, customer);
     const chosen = Array(10).fill(null);
     const usedIds = new Set();
-    const restaurantSlots = [0, 3, 5, 8];
+    const isAmericanaDemo = restaurant.slug === "americana";
+    const restaurantSlots = isAmericanaDemo ? [0] : [0, 3, 5, 8];
 
     const restaurantQuestions = shuffle(pools.restaurantQuestions);
     const restaurantImageQuestions = pools.restaurantQuestions.filter(
@@ -3546,7 +3553,7 @@
           !usedIds.has(question.id) &&
           (!restaurantImageQuestion || question.id !== restaurantImageQuestion.id)
       ),
-      4 - restaurantSelection.length
+      restaurantSlots.length - restaurantSelection.length
     ).forEach((question) => {
       restaurantSelection.push(question);
     });
@@ -3557,15 +3564,18 @@
     });
 
     const challengingCustomer = customer.group === "historical" || customer.group === "storybook";
-    const customerQuestionCount = challengingCustomer ? 3 : 1;
-    const focusQuestionCount = challengingCustomer ? 0 : 1;
-    const globalQuestionCount = challengingCustomer ? 2 : 3;
+    const customerQuestionCount = isAmericanaDemo ? 0 : challengingCustomer ? 3 : 1;
+    const focusQuestionCount = isAmericanaDemo ? 0 : challengingCustomer ? 0 : 1;
+    const globalQuestionCount = isAmericanaDemo ? 8 : challengingCustomer ? 2 : 3;
     const areaQuestionCount = 1;
+    const globalQuestionPool = isAmericanaDemo
+      ? pools.globalQuestions.filter(isGeneralTriviaQuestion)
+      : pools.globalQuestions;
 
     const buckets = [
       { count: customerQuestionCount, pool: pools.customerQuestions },
       { count: focusQuestionCount, pool: pools.focusedQuestions },
-      { count: globalQuestionCount, pool: pools.globalQuestions },
+      { count: globalQuestionCount, pool: globalQuestionPool },
       { count: areaQuestionCount, pool: pools.areaQuestions },
     ];
 
