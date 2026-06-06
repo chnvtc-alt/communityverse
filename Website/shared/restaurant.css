@@ -1962,7 +1962,8 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 @media (max-width: 960px) {
   body.mobile-hub-overview-only {
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   .mobile-hub-header {
@@ -2174,12 +2175,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .hero-profile-detailline-compact {
-    display: block;
-    margin: 6px 0 0;
-    font-family: Arial, sans-serif;
-    font-size: 0.7rem;
-    line-height: 1.1;
-    color: var(--muted);
+    display: none;
   }
 
   .hero-profile-customer-status {
@@ -2453,14 +2449,18 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .hero-directory-item-compact {
-    grid-template-columns: 66px minmax(0, 1fr);
-    align-items: center;
-    gap: 8px;
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 6px;
   }
 
   .hero-directory-image {
     width: 66px;
     border-radius: 10px;
+  }
+
+  .hero-directory-showcase-compact .hero-directory-image {
+    display: none;
   }
 
   .hero-directory-picker .kicker {
@@ -2481,6 +2481,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     min-height: 28px;
     padding: 0 10px;
     font-size: 0.68rem;
+    width: 100%;
   }
 
   .hero-directory-preview {
@@ -2488,8 +2489,8 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .hero-directory-item-compact {
-    grid-template-columns: 66px minmax(0, 1fr);
-    gap: 8px;
+    grid-template-columns: 1fr;
+    gap: 6px;
   }
 
   .hero-directory-showcase-compact {
