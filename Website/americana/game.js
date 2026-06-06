@@ -3,9 +3,16 @@
   const restaurant = core.getRestaurantBySlug("americana");
   const query = new URLSearchParams(window.location.search);
   const demoMode = query.has("demo");
-  const homeMode = true;
+  const homeMode = query.has("home");
   const replayCustomerId = String(query.get("customerId") || "").trim();
   const replayCustomer = replayCustomerId ? core.getCustomerById(replayCustomerId) : null;
+
+  if (!demoMode && !homeMode) {
+    const canonicalUrl = new URL(window.location.href);
+    canonicalUrl.searchParams.set("home", "1");
+    window.location.replace(canonicalUrl.toString());
+    return;
+  }
 
   const elements = {
     hero: document.getElementById("hero-panel"),
