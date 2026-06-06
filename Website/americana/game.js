@@ -48,6 +48,10 @@
     image: "../assets/restaurant-challenge/customers/amelia-earhart.jpg",
   };
 
+  function isMobileOpeningLayout() {
+    return window.matchMedia(mobileGuestQuery).matches;
+  }
+
   function escapeHtml(value) {
     return String(value || "")
       .replace(/&/g, "&amp;")
@@ -75,13 +79,25 @@
   }
 
   function getVisibleOpeningGuestCount() {
-    return window.matchMedia(mobileGuestQuery).matches
+    return isMobileOpeningLayout()
       ? mobileVisibleGuestCount
       : desktopVisibleGuestCount;
   }
 
   function getDisplayedOpeningCustomers() {
-    return getOpeningCustomers().slice(0, getVisibleOpeningGuestCount());
+    const featuredGuests = getOpeningCustomers();
+    if (featuredGuests.length) {
+      return featuredGuests.slice(0, getVisibleOpeningGuestCount());
+    }
+
+    if (!isMobileOpeningLayout()) {
+      return core
+        .getCustomersForRestaurant("americana")
+        .filter((customer) => customer.image && !customer.image.includes("customer-placeholder"))
+        .slice(0, desktopVisibleGuestCount);
+    }
+
+    return [];
   }
 
   function getSession() {
@@ -114,11 +130,12 @@
     const session = getSession();
     const openingCustomers = getDisplayedOpeningCustomers();
     const safeOpeningCustomers = Array.isArray(openingCustomers) ? openingCustomers : [];
+    const showIntroCopy = !(profile && !profile.isGuest && !isMobileOpeningLayout());
     const introCopy = replayCustomer
       ? `This is an invite-back visit for ${replayCustomer.name}. If you do better, they move up. If you do worse, the newer result replaces the old one.`
-      : profile && !profile.isGuest
-        ? ""
-        : "Play a quick game of trivia, win your first customer, and get on the leaderboard!";
+      : showIntroCopy
+        ? "Play a quick game of trivia, win your first customer, and get on the leaderboard!"
+        : "";
     const introCopyMarkup = introCopy
       ? `<p class="copy opening-title-copy">${escapeHtml(introCopy)}</p>`
       : "";
@@ -320,7 +337,10 @@
     renderAll();
     renderGamePanel();
     window.requestAnimationFrame(() => {
-      elements.game.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.requestAnimationFrame(() => {
+        const gameTop = Math.max(0, elements.game.getBoundingClientRect().top + window.scrollY - 12);
+        window.scrollTo({ top: gameTop, behavior: "smooth" });
+      });
     });
   }
 
