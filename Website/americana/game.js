@@ -5,6 +5,11 @@
   const demoMode = query.has("demo");
   const replayCustomerId = String(query.get("customerId") || "").trim();
   const replayCustomer = replayCustomerId ? core.getCustomerById(replayCustomerId) : null;
+  const buildMarker = document.getElementById("americana-build-marker");
+
+  if (buildMarker) {
+    buildMarker.textContent = "Americana JS loaded";
+  }
 
   const elements = {
     hero: document.getElementById("hero-panel"),
