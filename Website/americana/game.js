@@ -3,16 +3,8 @@
   const restaurant = core.getRestaurantBySlug("americana");
   const query = new URLSearchParams(window.location.search);
   const demoMode = query.has("demo");
-  const homeMode = query.has("home");
   const replayCustomerId = String(query.get("customerId") || "").trim();
   const replayCustomer = replayCustomerId ? core.getCustomerById(replayCustomerId) : null;
-
-  if (!demoMode && !homeMode) {
-    const canonicalUrl = new URL(window.location.href);
-    canonicalUrl.searchParams.set("home", "1");
-    window.location.replace(canonicalUrl.toString());
-    return;
-  }
 
   const elements = {
     hero: document.getElementById("hero-panel"),
@@ -30,10 +22,10 @@
     showGame: false,
   };
 
-  const openingGuestCount = 4;
   const mobileGuestQuery = "(max-width: 960px)";
   const mobileVisibleGuestCount = 2;
   const desktopVisibleGuestCount = 3;
+  const openingGuestIds = ["curtis-coolwater", "pastor-caleb-brooks", "ming-wu"];
 
   const openingMenuItems = [
     {
@@ -50,10 +42,6 @@
     },
   ];
 
-  const starterCustomer = {
-    name: "Amelia Earhart",
-    image: "../assets/restaurant-challenge/customers/amelia-earhart.jpg",
-  };
   const openerCopy =
     "Play a quick game of trivia, win a customer, and progress on the leaderboard!";
 
@@ -84,7 +72,9 @@
   }
 
   function getOpeningCustomers() {
-    return core.getFeaturedGuestLineup(getProfile(), "americana", openingGuestCount);
+    return openingGuestIds
+      .map((customerId) => core.getCustomerById(customerId))
+      .filter((customer) => Boolean(customer && customer.image));
   }
 
   function getVisibleOpeningGuestCount() {
@@ -205,8 +195,7 @@
           <div class="opening-start-side opening-start-side-wide">
             <div class="opening-guest-stack">
               <div class="opening-guest-grid">
-                ${safeOpeningCustomers.length
-                  ? safeOpeningCustomers
+                ${safeOpeningCustomers
                   .map(
                     (customer) => `
                       <article class="opening-guest-card">
@@ -217,18 +206,7 @@
                       </article>
                     `
                   )
-                  .join("")
-                  : `
-                    <article class="opening-guest-card opening-guest-card-starter">
-                      <img class="opening-guest-photo opening-guest-photo-starter" src="${starterCustomer.image}" alt="${escapeHtml(starterCustomer.name)}" />
-                      <div class="opening-guest-copy opening-guest-copy-starter">
-                        <p class="opening-guest-kicker">FIRST CUSTOMER</p>
-                        <p class="opening-guest-name opening-guest-name-starter">${formatGuestDisplayName(starterCustomer.name)}</p>
-                        <p class="opening-guest-subcopy opening-guest-subcopy-starter">Your first customer is waiting.</p>
-                        <p class="opening-guest-subcopy opening-guest-subcopy-starter">Answer your first trivia round to reveal who it is.</p>
-                      </div>
-                    </article>
-                  `}
+                  .join("")}
               </div>
             </div>
           </div>
@@ -295,15 +273,18 @@
           <div class="opening-start-side opening-start-side-wide">
             <div class="opening-guest-stack">
               <div class="opening-guest-grid">
-                <article class="opening-guest-card opening-guest-card-starter">
-                  <img class="opening-guest-photo opening-guest-photo-starter" src="${starterCustomer.image}" alt="${escapeHtml(starterCustomer.name)}" />
-                  <div class="opening-guest-copy opening-guest-copy-starter">
-                    <p class="opening-guest-kicker">FIRST CUSTOMER</p>
-                    <p class="opening-guest-name opening-guest-name-starter">${formatGuestDisplayName(starterCustomer.name)}</p>
-                    <p class="opening-guest-subcopy opening-guest-subcopy-starter">Your first customer is waiting.</p>
-                    <p class="opening-guest-subcopy opening-guest-subcopy-starter">Answer your first trivia round to reveal who it is.</p>
-                  </div>
-                </article>
+                ${getDisplayedOpeningCustomers()
+                  .map(
+                    (customer) => `
+                      <article class="opening-guest-card">
+                        <img class="opening-guest-photo" src="${customer.image}" alt="${escapeHtml(customer.name)}" />
+                        <div class="opening-guest-copy">
+                          <p class="opening-guest-name">${formatGuestDisplayName(customer.name)}</p>
+                        </div>
+                      </article>
+                    `
+                  )
+                  .join("")}
               </div>
             </div>
           </div>
@@ -363,12 +344,7 @@
       core.setActiveProfileId(profile.id);
     }
 
-    const openingCustomerIds = getDisplayedOpeningCustomers().map((customer) => customer.id);
-    const options = replayCustomer
-      ? { customerId: replayCustomer.id }
-      : openingCustomerIds.length
-        ? { customerPoolIds: openingCustomerIds }
-        : {};
+    const options = replayCustomer ? { customerId: replayCustomer.id } : {};
     const session = core.startNewSession("americana", options);
     if (!session) {
       window.alert("No available guests are ready for Americana right now. Please try again.");
@@ -774,10 +750,6 @@
     if (!getProfile()) {
       core.createProfile("Demo Player", "Tim's Roadhouse");
     }
-  }
-
-  if (homeMode) {
-    core.clearActiveSession();
   }
 
   renderAll();
