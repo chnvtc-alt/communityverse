@@ -135,6 +135,16 @@
     return core.createGuestProfile();
   }
 
+  async function initializeAmericanaPage() {
+    await core.whenReady();
+
+    if (!getProfile()) {
+      ensurePlayableProfile();
+    }
+
+    renderAll();
+  }
+
   function renderHero(visible) {
     if (!visible) {
       elements.hero.classList.add("hidden");
@@ -250,14 +260,7 @@
       </div>`;
 
     document.getElementById("start-game-button").addEventListener("click", () => {
-      const profile = ensurePlayableProfile();
-      if (profile) {
-        core.setActiveProfileId(profile.id);
-      }
-
-      window.requestAnimationFrame(() => {
-        startGame();
-      });
+      void startGame();
     });
 
     const resumeButton = document.getElementById("resume-game-button");
@@ -351,7 +354,14 @@
     state.showGame = false;
   }
 
-  function startGame() {
+  async function startGame() {
+    await core.whenReady();
+
+    const profile = ensurePlayableProfile();
+    if (profile) {
+      core.setActiveProfileId(profile.id);
+    }
+
     const openingCustomerIds = getDisplayedOpeningCustomers().map((customer) => customer.id);
     const options = replayCustomer
       ? { customerId: replayCustomer.id }
@@ -769,9 +779,6 @@
     core.clearActiveSession();
   }
 
-  if (!getProfile()) {
-    ensurePlayableProfile();
-  }
-
   renderAll();
+  void initializeAmericanaPage();
 })();
