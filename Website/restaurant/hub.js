@@ -590,6 +590,10 @@
       const form = document.getElementById("hero-profile-edit-form");
       const error = document.getElementById("hero-profile-error");
 
+      if (!form || !error) {
+        return;
+      }
+
       form.addEventListener("submit", (event) => {
         event.preventDefault();
         const restaurantName = document.getElementById("hero-restaurant-name").value.trim();
@@ -794,7 +798,8 @@
       return;
     }
 
-    const collection = [...profile.customerCollection].sort((left, right) =>
+    const collectionSource = Array.isArray(profile.customerCollection) ? profile.customerCollection : [];
+    const collection = [...collectionSource].sort((left, right) =>
       String(right.dateWon).localeCompare(String(left.dateWon))
     );
     const filteredCollection =
