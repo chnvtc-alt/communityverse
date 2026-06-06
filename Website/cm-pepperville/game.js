@@ -369,7 +369,7 @@
     const fileStem = card.photoFile
       ? String(card.photoFile).replace(/\.jpg$/i, '')
       : aliasMap[folder]?.[slug] || slug;
-    return `assets/cards/${folder}/${fileStem}.jpg`;
+    return `../assets/cm-pepperville/${folder}/${fileStem}.jpg`;
   }
 
   function cardPhotoMarkup(card, className = 'card-photo') {
