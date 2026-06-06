@@ -5,11 +5,6 @@
   const demoMode = query.has("demo");
   const replayCustomerId = String(query.get("customerId") || "").trim();
   const replayCustomer = replayCustomerId ? core.getCustomerById(replayCustomerId) : null;
-  const buildMarker = document.getElementById("americana-build-marker");
-
-  if (buildMarker) {
-    buildMarker.textContent = "Americana JS loaded";
-  }
 
   const elements = {
     hero: document.getElementById("hero-panel"),
@@ -623,7 +618,7 @@
             ? `
               <div class="hero-card result-followup-card result-followup-card-guest" style="margin-top: 0; padding: 16px;">
                 <p class="kicker" style="margin: 0 0 6px;">Save progress</p>
-                <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">Do you want to register to save your progress before you try for another customer?</h3>
+                <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">Save your progress and choose a restaurant name for the leaderboard.</h3>
                 <p class="copy" style="margin: 0 0 12px;">Registering keeps your stats, customers, and leaderboard spot on this device.</p>
                 <div class="button-row">
                   <button class="button button-hot" id="register-now-button" type="button">Register Now</button>
