@@ -2028,6 +2028,23 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     grid-template-columns: 1fr;
   }
 
+  .opening-start-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .opening-start-hero {
+    min-height: 0;
+  }
+
+  .opening-start-side {
+    gap: 10px;
+  }
+
+  .opening-start-shell {
+    gap: 10px;
+  }
+
   .top-actions {
     display: none;
   }
@@ -2046,10 +2063,22 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     align-content: space-between;
   }
 
+  .app-shell {
+    padding-bottom: calc(28px + env(safe-area-inset-bottom));
+  }
+
   .challenge-splash-grid {
     grid-template-columns: 1fr;
     gap: 18px;
     padding: 18px;
+  }
+
+  .challenge-splash-actions {
+    margin-top: 2px;
+  }
+
+  .challenge-splash-picker {
+    max-width: none;
   }
 
   .challenge-splash-title {
