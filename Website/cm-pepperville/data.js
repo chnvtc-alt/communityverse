@@ -851,6 +851,7 @@ window.CITY_MANAGER_PEPPERVILLE = {
       value: 12,
       revenue: `100+ = 2R; 60-99 = 1R; 30-59 = 0R; 0-29 = -1R`,
       tags: [`Media`, `Pepperville Riverwalk`],
+      photoFile: `640-the-chatt.jpg`,
       notes: `This radio station serves the Chattawa Valley with news and information.`,
     },
     {
