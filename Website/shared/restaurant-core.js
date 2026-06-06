@@ -1005,14 +1005,6 @@
       wrongAnswers: ["Sausage", "Hash browns", "Toast"],
     },
     {
-      id: "global-food-4",
-      scope: "global",
-      tags: ["food"],
-      prompt: "What drink is a diner classic?",
-      correctAnswer: "Coffee",
-      wrongAnswers: ["Orange juice", "Iced tea", "Milk"],
-    },
-    {
       id: "global-history-1",
       scope: "global",
       tags: ["historical"],
