@@ -45,8 +45,14 @@
             <p class="challenge-splash-lead">
               Pick a restaurant, answer fast trivia rounds, win your first customer, and keep your progress moving from device to device.
             </p>
+            <div class="challenge-splash-picker" id="splash-chooser">
+              <label class="field challenge-splash-field" for="splash-restaurant-select">
+                <span class="field-label">Choose a restaurant to play</span>
+                <select class="select" id="splash-restaurant-select" aria-label="Choose a restaurant to play"></select>
+              </label>
+            </div>
             <div class="challenge-splash-actions">
-              <a class="button button-primary" href="?hub=1#directory-card">Choose A Restaurant To Play</a>
+              <a class="button button-primary" id="splash-play-button" href="../americana/?home=1">Play Selected Restaurant</a>
               <a class="button" href="?hub=1#hero-panel">View My Restaurant</a>
               <a class="button button-muted" href="?hub=1#leaderboard-panel">See The Leaderboard</a>
             </div>

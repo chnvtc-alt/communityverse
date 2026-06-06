@@ -44,6 +44,8 @@
   const elements = {
     tabs: null,
     mobileHeader: null,
+    splashRestaurantSelect: document.getElementById("splash-restaurant-select"),
+    splashPlayButton: document.getElementById("splash-play-button"),
     hero: document.getElementById("hero-panel"),
     collection: document.getElementById("collection-panel"),
     leaderboard: document.getElementById("leaderboard-panel"),
@@ -127,6 +129,35 @@
         });
       });
     });
+  }
+
+  function renderSplashChooser() {
+    if (hubMode || !elements.splashRestaurantSelect || !elements.splashPlayButton) {
+      return;
+    }
+
+    const directoryRestaurants = getDirectoryRestaurants();
+    const selectedSlug = state.selectedDirectorySlug || directoryRestaurants[0]?.slug || "americana";
+    const selectedRestaurant =
+      directoryRestaurants.find((restaurant) => restaurant.slug === selectedSlug) ||
+      directoryRestaurants[0] ||
+      null;
+
+    elements.splashRestaurantSelect.innerHTML = directoryRestaurants
+      .map(
+        (restaurantOption) => `
+          <option value="${restaurantOption.slug}" ${restaurantOption.slug === selectedRestaurant?.slug ? "selected" : ""}>
+            ${escapeHtml(restaurantOption.name)}
+          </option>
+        `
+      )
+      .join("");
+
+    elements.splashPlayButton.href = selectedRestaurant?.href || "../americana/?home=1";
+    elements.splashRestaurantSelect.onchange = (event) => {
+      state.selectedDirectorySlug = event.currentTarget.value;
+      renderSplashChooser();
+    };
   }
 
   function scrollMobileSection(section, extraOffset = 0) {
@@ -869,6 +900,7 @@
   }
 
   function renderAll() {
+    renderSplashChooser();
     renderMobileHeader();
     renderMobileTabs();
     renderHero();

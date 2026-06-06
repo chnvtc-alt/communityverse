@@ -217,6 +217,17 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   font-size: 0.96rem;
 }
 
+.challenge-splash-picker {
+  display: grid;
+  gap: 8px;
+  max-width: 420px;
+  margin-top: 2px;
+}
+
+.challenge-splash-field {
+  gap: 6px;
+}
+
 .challenge-splash-actions {
   display: flex;
   flex-wrap: wrap;
