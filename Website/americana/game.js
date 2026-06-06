@@ -3,7 +3,7 @@
   const restaurant = core.getRestaurantBySlug("americana");
   const query = new URLSearchParams(window.location.search);
   const demoMode = query.has("demo");
-  let homeMode = query.has("home");
+  const homeMode = true;
   const replayCustomerId = String(query.get("customerId") || "").trim();
   const replayCustomer = replayCustomerId ? core.getCustomerById(replayCustomerId) : null;
 
@@ -47,6 +47,8 @@
     name: "Amelia Earhart",
     image: "../assets/restaurant-challenge/customers/amelia-earhart.jpg",
   };
+  const openerCopy =
+    "Play a quick game of trivia, win a customer, and progress on the leaderboard!";
 
   function isMobileOpeningLayout() {
     return window.matchMedia(mobileGuestQuery).matches;
@@ -89,15 +91,10 @@
     if (featuredGuests.length) {
       return featuredGuests.slice(0, getVisibleOpeningGuestCount());
     }
-
-    if (!isMobileOpeningLayout()) {
-      return core
-        .getCustomersForRestaurant("americana")
-        .filter((customer) => customer.image && !customer.image.includes("customer-placeholder"))
-        .slice(0, desktopVisibleGuestCount);
-    }
-
-    return [];
+    return core
+      .getCustomersForRestaurant("americana")
+      .filter((customer) => customer.image && !customer.image.includes("customer-placeholder"))
+      .slice(0, getVisibleOpeningGuestCount());
   }
 
   function getSession() {
@@ -135,19 +132,6 @@
     return core.createGuestProfile();
   }
 
-  function normalizeDirectAmericanaRoute() {
-    if (demoMode || homeMode) {
-      return;
-    }
-
-    homeMode = true;
-    query.set("home", "1");
-
-    const normalizedUrl = new URL(window.location.href);
-    normalizedUrl.searchParams.set("home", "1");
-    window.history.replaceState({}, "", normalizedUrl.toString());
-  }
-
   async function initializeAmericanaPage() {
     await core.whenReady();
 
@@ -180,12 +164,9 @@
     const session = getSession();
     const openingCustomers = getDisplayedOpeningCustomers();
     const safeOpeningCustomers = Array.isArray(openingCustomers) ? openingCustomers : [];
-    const showIntroCopy = !(profile && !profile.isGuest && !isMobileOpeningLayout());
     const introCopy = replayCustomer
       ? `This is an invite-back visit for ${replayCustomer.name}. If you do better, they move up. If you do worse, the newer result replaces the old one.`
-      : showIntroCopy
-        ? "Play a quick game of trivia, win your first customer, and get on the leaderboard!"
-        : "";
+      : openerCopy;
     const introCopyMarkup = introCopy
       ? `<p class="copy opening-title-copy">${escapeHtml(introCopy)}</p>`
       : "";
@@ -291,7 +272,7 @@
         <div class="opening-start-heading">
           <h2 class="opening-title">The Americana Diner Game</h2>
           <p class="copy opening-title-copy">
-            Choose a restaurant, answer fast trivia rounds, win your first customer, and keep building from there.
+            ${openerCopy}
           </p>
         </div>
 
@@ -787,8 +768,6 @@
       core.createProfile("Demo Player", "Tim's Roadhouse");
     }
   }
-
-  normalizeDirectAmericanaRoute();
 
   if (homeMode) {
     core.clearActiveSession();
