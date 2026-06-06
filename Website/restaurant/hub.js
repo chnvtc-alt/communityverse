@@ -62,6 +62,8 @@
     mobileHeader: null,
     splashRestaurantSelect: document.getElementById("splash-restaurant-select"),
     splashPlayButton: document.getElementById("splash-play-button"),
+    splashMyRestaurantButton: document.getElementById("splash-my-restaurant-button"),
+    splashLeaderboardButton: document.getElementById("splash-leaderboard-button"),
     hero: document.getElementById("hero-panel"),
     collection: document.getElementById("collection-panel"),
     leaderboard: document.getElementById("leaderboard-panel"),
@@ -169,14 +171,16 @@
       )
       .join("");
 
-    elements.splashPlayButton.disabled = !selectedRestaurant?.available;
+    elements.splashPlayButton.setAttribute("aria-disabled", selectedRestaurant?.available ? "false" : "true");
+    elements.splashPlayButton.classList.toggle("is-disabled", !selectedRestaurant?.available);
+    elements.splashPlayButton.href = selectedRestaurant?.available && selectedRestaurant.href ? selectedRestaurant.href : "#splash-chooser";
     elements.splashPlayButton.textContent = selectedRestaurant?.available ? "Play Selected Restaurant" : "Coming Soon";
-    elements.splashPlayButton.onclick = () => {
-      if (!selectedRestaurant?.available || !selectedRestaurant?.href) {
-        return;
-      }
-      window.location.href = selectedRestaurant.href;
-    };
+    if (elements.splashMyRestaurantButton) {
+      elements.splashMyRestaurantButton.href = "./?hub=1#hero-panel";
+    }
+    if (elements.splashLeaderboardButton) {
+      elements.splashLeaderboardButton.href = "./?hub=1#leaderboard-panel";
+    }
     elements.splashRestaurantSelect.onchange = (event) => {
       state.selectedDirectorySlug = event.currentTarget.value;
       renderSplashChooser();
