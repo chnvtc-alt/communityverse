@@ -687,8 +687,8 @@
     }
 
     const availableHeight = Math.max(
-      420,
-      Math.floor(window.innerHeight - elements.sections.offsetTop - 24)
+      560,
+      Math.floor(window.innerHeight - elements.sections.offsetTop - 8)
     );
 
     elements.sections.style.height = `${availableHeight}px`;
