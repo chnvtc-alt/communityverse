@@ -3531,7 +3531,7 @@
     const chosen = Array(10).fill(null);
     const usedIds = new Set();
     const isAmericanaDemo = restaurant.slug === "americana";
-    const restaurantSlots = isAmericanaDemo ? [0] : [0, 3, 5, 8];
+    const restaurantSlots = isAmericanaDemo ? [3] : [0, 3, 5, 8];
 
     const restaurantQuestions = shuffle(pools.restaurantQuestions);
     const restaurantImageQuestions = pools.restaurantQuestions.filter(
