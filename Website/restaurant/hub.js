@@ -304,7 +304,7 @@
           slug: restaurant.slug,
           name: restaurant.name,
           image: restaurant.logoSquare || restaurant.squareImage || restaurant.logoHorizontal || restaurant.heroImage,
-          href: `/${restaurant.slug}/?home=1`,
+          href: `/${restaurant.slug}/?fresh=1`,
           available: true,
         })),
         ...placeholderRestaurants,
@@ -316,7 +316,7 @@
         slug: "americana",
         name: "Americana Diner",
         image: "../assets/restaurant-challenge/restaurants/americana/americana-diner-logo.jpg",
-        href: "/americana/?home=1",
+        href: "/americana/?fresh=1",
         available: true,
       },
       ...placeholderRestaurants,
@@ -352,7 +352,7 @@
       return {
         slug: recentSlug,
         name: restaurantName,
-        href: `/${recentSlug}/?home=1`,
+        href: `/${recentSlug}/?fresh=1`,
       };
     }
 
@@ -360,7 +360,7 @@
     return {
       slug: fallbackRestaurant?.slug || "americana",
       name: fallbackRestaurant?.name || "Americana Diner",
-      href: fallbackRestaurant?.slug ? `/${fallbackRestaurant.slug}/?home=1` : "/americana/?home=1",
+      href: fallbackRestaurant?.slug ? `/${fallbackRestaurant.slug}/?fresh=1` : "/americana/?fresh=1",
     };
   }
 

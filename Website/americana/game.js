@@ -3,8 +3,10 @@
   const restaurant = core.getRestaurantBySlug("americana");
   const query = new URLSearchParams(window.location.search);
   const demoMode = query.has("demo");
+  const freshMode = query.has("fresh");
   const replayCustomerId = String(query.get("customerId") || "").trim();
   const replayCustomer = replayCustomerId ? core.getCustomerById(replayCustomerId) : null;
+  const RESULT_VISIBLE_SESSION_KEY = "americana_result_visible_session_v1";
 
   const elements = {
     hero: document.getElementById("hero-panel"),
@@ -131,6 +133,17 @@
 
   async function initializeAmericanaPage() {
     await core.whenReady();
+
+    if (freshMode) {
+      core.clearActiveSession();
+      window.sessionStorage.removeItem(RESULT_VISIBLE_SESSION_KEY);
+    } else {
+      const existingSession = getSession();
+      const visibleSessionId = window.sessionStorage.getItem(RESULT_VISIBLE_SESSION_KEY);
+      if (existingSession && existingSession.completed && visibleSessionId !== existingSession.id) {
+        core.clearActiveSession();
+      }
+    }
 
     if (!getProfile()) {
       ensurePlayableProfile();
@@ -350,6 +363,7 @@
       window.alert("No available guests are ready for Americana right now. Please try again.");
       return;
     }
+    window.sessionStorage.removeItem(RESULT_VISIBLE_SESSION_KEY);
     state.feedback = null;
     state.isLocked = false;
     state.resultBioExpanded = false;
@@ -482,6 +496,10 @@
     };
 
     renderGamePanel();
+
+    if (outcome.completed && outcome.session && outcome.session.id) {
+      window.sessionStorage.setItem(RESULT_VISIBLE_SESSION_KEY, outcome.session.id);
+    }
 
     state.answerTimer = window.setTimeout(() => {
       state.feedback = null;
@@ -721,11 +739,12 @@
     } else {
       document.getElementById("play-again-button").addEventListener("click", () => {
         core.clearActiveSession();
+        window.sessionStorage.removeItem(RESULT_VISIBLE_SESSION_KEY);
         state.feedback = null;
         state.isLocked = false;
         state.showProfileForm = false;
         state.resultBioExpanded = false;
-        renderAll();
+        void startGame();
       });
     }
   }
