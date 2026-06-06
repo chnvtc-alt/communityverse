@@ -25,6 +25,22 @@
   };
 
   const mobileHubQuery = "(max-width: 960px)";
+  const placeholderRestaurants = [
+    {
+      slug: "placeholder-1",
+      name: "Placeholder 1",
+      image: "../assets/restaurant-challenge/restaurants/americana/americana-diner-logo.jpg",
+      href: "",
+      available: false,
+    },
+    {
+      slug: "placeholder-2",
+      name: "Placeholder 2",
+      image: "../assets/restaurant-challenge/restaurants/americana/americana-diner-logo.jpg",
+      href: "",
+      available: false,
+    },
+  ];
 
   function withHubMode(url) {
     if (!hubMode) {
@@ -153,7 +169,14 @@
       )
       .join("");
 
-    elements.splashPlayButton.href = selectedRestaurant?.href || "../americana/?home=1";
+    elements.splashPlayButton.disabled = !selectedRestaurant?.available;
+    elements.splashPlayButton.textContent = selectedRestaurant?.available ? "Play Selected Restaurant" : "Coming Soon";
+    elements.splashPlayButton.onclick = () => {
+      if (!selectedRestaurant?.available || !selectedRestaurant?.href) {
+        return;
+      }
+      window.location.href = selectedRestaurant.href;
+    };
     elements.splashRestaurantSelect.onchange = (event) => {
       state.selectedDirectorySlug = event.currentTarget.value;
       renderSplashChooser();
@@ -272,13 +295,16 @@
   function getDirectoryRestaurants() {
     const playableRestaurants = getPlayableRestaurants();
     if (playableRestaurants.length) {
-      return playableRestaurants.map((restaurant) => ({
-        slug: restaurant.slug,
-        name: restaurant.name,
-        image: restaurant.logoSquare || restaurant.squareImage || restaurant.logoHorizontal || restaurant.heroImage,
-        href: `../${restaurant.slug}/?home=1`,
-        available: true,
-      }));
+      return [
+        ...playableRestaurants.map((restaurant) => ({
+          slug: restaurant.slug,
+          name: restaurant.name,
+          image: restaurant.logoSquare || restaurant.squareImage || restaurant.logoHorizontal || restaurant.heroImage,
+          href: `../${restaurant.slug}/?home=1`,
+          available: true,
+        })),
+        ...placeholderRestaurants,
+      ];
     }
 
     return [
@@ -289,6 +315,7 @@
         href: "../americana/?home=1",
         available: true,
       },
+      ...placeholderRestaurants,
     ];
   }
 
@@ -900,14 +927,34 @@
   }
 
   function renderAll() {
-    renderSplashChooser();
-    renderMobileHeader();
-    renderMobileTabs();
-    renderHero();
-    renderLeaderboard();
-    renderCollection();
-    applyMobileTabVisibility();
-    requestAnimationFrame(syncDesktopPanelHeights);
+    try {
+      renderSplashChooser();
+      renderMobileHeader();
+      renderMobileTabs();
+      renderHero();
+      renderLeaderboard();
+      renderCollection();
+      applyMobileTabVisibility();
+      requestAnimationFrame(syncDesktopPanelHeights);
+    } catch (error) {
+      console.error("Restaurant hub render failed:", error);
+      if (elements.hero) {
+        elements.hero.innerHTML = `
+          <div class="hero-stack">
+            <div class="hero-content-panel">
+              <h1 class="page-title">Restaurant Challenge</h1>
+              <p class="copy">The hub hit an error while loading. Refresh the page or open Americana directly for now.</p>
+            </div>
+          </div>
+        `;
+      }
+      if (elements.collection) {
+        elements.collection.innerHTML = `<h2 class="section-title">Customer Collection</h2><p class="copy">Unable to load this section right now.</p>`;
+      }
+      if (elements.leaderboard) {
+        elements.leaderboard.innerHTML = `<h2 class="section-title">Leaderboards</h2><p class="copy">Unable to load this section right now.</p>`;
+      }
+    }
   }
 
   function escapeHtml(value) {
