@@ -3532,6 +3532,7 @@
     const usedIds = new Set();
     const isAmericanaDemo = restaurant.slug === "americana";
     const restaurantSlots = isAmericanaDemo ? [3] : [0, 3, 5, 8];
+    const openerSlots = [0];
 
     const restaurantQuestions = shuffle(pools.restaurantQuestions);
     const restaurantImageQuestions = pools.restaurantQuestions.filter(
@@ -3562,6 +3563,20 @@
       usedIds.add(question.id);
       chosen[restaurantSlots[index]] = question;
     });
+
+    if (isAmericanaDemo) {
+      const openerQuestion = pickMany(
+        pools.globalQuestions.filter(
+          (question) => isGeneralTriviaQuestion(question) && !usedIds.has(question.id)
+        ),
+        1
+      )[0];
+
+      if (openerQuestion) {
+        usedIds.add(openerQuestion.id);
+        chosen[openerSlots[0]] = openerQuestion;
+      }
+    }
 
     const challengingCustomer = customer.group === "historical" || customer.group === "storybook";
     const customerQuestionCount = isAmericanaDemo ? 0 : challengingCustomer ? 3 : 1;
