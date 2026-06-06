@@ -751,5 +751,9 @@
     core.clearActiveSession();
   }
 
+  if (!getProfile()) {
+    ensurePlayableProfile();
+  }
+
   renderAll();
 })();
