@@ -2329,7 +2329,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .opening-guest-card-starter {
-    grid-template-columns: 108px minmax(0, 1fr);
+    grid-template-columns: 1fr;
   }
 
   .opening-guest-copy {
@@ -2338,8 +2338,10 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .opening-guest-copy-starter {
-    min-height: 108px;
-    padding: 10px 10px 10px 11px;
+    min-height: 0;
+    padding: 10px 10px 11px;
+    align-items: center;
+    text-align: center;
   }
 
   .opening-guest-photo {
@@ -2361,13 +2363,14 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   .opening-guest-name-starter {
     font-size: 0.76rem;
     line-height: 1.08;
-    max-width: 10ch;
+    max-width: none;
   }
 
   .opening-guest-subcopy-starter {
     font-size: 0.74rem;
     line-height: 1.16;
-    max-width: 17ch;
+    max-width: 18ch;
+    text-align: center;
   }
 
   .opening-title-small-bottom {

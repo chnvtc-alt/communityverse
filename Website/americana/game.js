@@ -116,7 +116,7 @@
     const safeOpeningCustomers = Array.isArray(openingCustomers) ? openingCustomers : [];
     const introCopy = replayCustomer
       ? `This is an invite-back visit for ${replayCustomer.name}. If you do better, they move up. If you do worse, the newer result replaces the old one.`
-      : "Create your restaurant name, answer fast trivia rounds, win your first customer, and keep building from there.";
+      : "Choose a restaurant, answer fast trivia rounds, win your first customer, and keep building from there.";
     elements.start.innerHTML = `
       <div class="opening-start-shell">
         <div class="opening-start-heading">
@@ -223,7 +223,7 @@
         <div class="opening-start-heading">
           <h2 class="opening-title">The Americana Diner Game</h2>
           <p class="copy opening-title-copy">
-            Create your restaurant name, answer fast trivia rounds, win your first customer, and keep building from there.
+            Choose a restaurant, answer fast trivia rounds, win your first customer, and keep building from there.
           </p>
         </div>
 
