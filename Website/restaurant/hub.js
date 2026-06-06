@@ -527,7 +527,7 @@
                       <div>
                         <p class="kicker" style="margin: 0 0 4px;">Welcome</p>
                         <h2 class="hero-profile-name">Choose a restaurant, play your first game, then register after you win a customer.</h2>
-                        <p class="copy compact-copy" style="margin: 4px 0 0;">New players should pick a restaurant from the host list on the right. After the first game, we’ll ask you to save your restaurant name so progress can follow you.</p>
+                        <p class="copy compact-copy" style="margin: 4px 0 0;">New players should pick a restaurant from the host list below. After the first game, we’ll ask you to save your restaurant name so progress can follow you.</p>
                       </div>
                       <a class="button button-primary button-sm" href="#directory-card">Choose A Restaurant</a>
                     </div>

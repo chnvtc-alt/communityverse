@@ -44,8 +44,8 @@
   ];
 
   const starterCustomer = {
-    name: "Savannah Pierce",
-    image: "../assets/restaurant-challenge/customers/savannah-pierce.jpg",
+    name: "Amelia Earhart",
+    image: "../assets/restaurant-challenge/customers/amelia-earhart.jpg",
   };
 
   function escapeHtml(value) {
