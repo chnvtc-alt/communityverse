@@ -2334,6 +2334,8 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   .opening-guest-card-starter {
     grid-template-columns: 1fr;
     width: min(100%, 360px);
+    justify-self: center;
+    grid-column: 1 / -1;
   }
 
   .opening-guest-copy {
