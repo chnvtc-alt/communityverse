@@ -853,20 +853,64 @@
 
   let customers = [];
 
+  function normalizeRestaurant(value) {
+    const raw = String(value || "").trim().toLowerCase();
+    if (!raw || raw === "shared") {
+      return "shared";
+    }
+
+    if (raw === "americana" || raw === "americana-diner" || raw === "americana diner") {
+      return "americana";
+    }
+
+    if (["communityverse", "historical", "storybook", "cryptid", "exclusive"].includes(raw)) {
+      return "shared";
+    }
+
+    return raw.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "shared";
+  }
+
+  function normalizeCharacterType(value) {
+    return String(value || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  }
+
+  function restaurantLabel(value) {
+    const restaurant = String(value || "").trim().toLowerCase();
+    if (!restaurant || restaurant === "shared") {
+      return "all restaurants";
+    }
+
+    if (restaurant === "americana") {
+      return "Americana Diner";
+    }
+
+    return restaurant
+      .split("-")
+      .filter(Boolean)
+      .map((part) => part[0].toUpperCase() + part.slice(1))
+      .join(" ");
+  }
+
   function normalizeCustomer(customer) {
     const safeCustomer = typeof customer === "object" && customer ? structuredClone(customer) : {};
     safeCustomer.id = String(safeCustomer.id || "").trim();
     safeCustomer.name = String(safeCustomer.name || "").trim();
-    safeCustomer.group = String(safeCustomer.group || safeCustomer.groupName || "").trim();
+    safeCustomer.characterType = normalizeCharacterType(
+      safeCustomer.characterType || safeCustomer.group || safeCustomer.groupName || ""
+    );
+    safeCustomer.group = safeCustomer.characterType;
+    safeCustomer.groupName = safeCustomer.characterType;
     safeCustomer.rarity = String(safeCustomer.rarity || "").trim();
     safeCustomer.regularValue = Number(safeCustomer.regularValue) || 0;
     safeCustomer.occasionalValue = Number(safeCustomer.occasionalValue) || 0;
-    safeCustomer.focusTag = String(safeCustomer.focusTag || "").trim();
+    safeCustomer.restaurant = normalizeRestaurant(
+      safeCustomer.restaurant || safeCustomer.focusTag || safeCustomer.focus_tag || ""
+    );
+    safeCustomer.focusTag = safeCustomer.restaurant;
     safeCustomer.image = String(safeCustomer.image || "").trim();
     safeCustomer.bio = String(safeCustomer.bio || "").trim();
     safeCustomer.questionPlace = String(safeCustomer.questionPlace || "").trim();
     safeCustomer.questionFact = String(safeCustomer.questionFact || "").trim();
-    safeCustomer.groupName = String(safeCustomer.groupName || safeCustomer.group || "").trim();
     safeCustomer.active = safeCustomer.active !== false;
     safeCustomer.sortOrder = Number(safeCustomer.sortOrder) || 0;
     safeCustomer.customQuestions = Array.isArray(safeCustomer.customQuestions)
@@ -1052,7 +1096,10 @@
             id: `customer-${customer.id}-${question.id}`,
             scope: "customer",
             customerIds: [customer.id],
-            tags: [customer.focusTag || customer.group || "customer"],
+            tags: [
+              customer.characterType || customer.group || "customer",
+              customer.restaurant && customer.restaurant !== "shared" ? customer.restaurant : "",
+            ].filter(Boolean),
             difficulty: question.difficulty || "hard",
             prompt: question.prompt,
             correctAnswer: question.correctAnswer,
@@ -1066,7 +1113,10 @@
         id: `customer-${customer.id}-place`,
         scope: "customer",
         customerIds: [customer.id],
-        tags: [customer.focusTag || customer.group || "customer"],
+        tags: [
+          customer.characterType || customer.group || "customer",
+          customer.restaurant && customer.restaurant !== "shared" ? customer.restaurant : "",
+        ].filter(Boolean),
         difficulty: "hard",
         prompt: `Which place or story is ${customer.name} most associated with?`,
         correctAnswer: customer.questionPlace,
@@ -1077,19 +1127,25 @@
         id: `customer-${customer.id}-fact`,
         scope: "customer",
         customerIds: [customer.id],
-        tags: [customer.focusTag || customer.group || "customer"],
+        tags: [
+          customer.characterType || customer.group || "customer",
+          customer.restaurant && customer.restaurant !== "shared" ? customer.restaurant : "",
+        ].filter(Boolean),
         difficulty: "hard",
         prompt: `What is ${customer.name} best known for?`,
         correctAnswer: customer.questionFact,
         wrongAnswers: uniqueWrongAnswers(factPool, customer.questionFact, 3),
       });
 
-      if (customer.group === "historical") {
+      if (customer.characterType === "historical") {
         generated.push({
           id: `customer-${customer.id}-clue`,
           scope: "customer",
           customerIds: [customer.id],
-          tags: [customer.focusTag || customer.group || "customer"],
+          tags: [
+            customer.characterType || customer.group || "customer",
+            customer.restaurant && customer.restaurant !== "shared" ? customer.restaurant : "",
+          ].filter(Boolean),
           difficulty: "hard",
           prompt: `Which clue best matches ${customer.name}?`,
           correctAnswer: customer.questionFact,
@@ -2112,20 +2168,20 @@
       return `${customer.name} is closely associated with ${customer.questionPlace} and is best known for ${customer.questionFact}.`;
     }
 
-    if (customer.group === "historical") {
+    if (customer.characterType === "historical") {
       return `${customer.name} is one of the famous historical figures in the game, and people usually recognize their place in history right away.`;
     }
 
-    if (customer.group === "storybook") {
+    if (customer.characterType === "storybook") {
       return `${customer.name} is a storybook character with a memorable tale and a strong personality.`;
     }
 
-    if (customer.group === "communityverse") {
+    if (customer.characterType === "communityverse") {
       return `${customer.name} is one of the Pepperville regulars with plenty of local personality.`;
     }
 
-    if (customer.group === "exclusive") {
-      return `${customer.name} is a special restaurant regular who only shows up in certain games.`;
+    if (customer.restaurant && customer.restaurant !== "shared") {
+      return `${customer.name} is a special restaurant regular who only shows up at ${restaurantLabel(customer.restaurant)}.`;
     }
 
     return `${customer.name} is a recurring CommunityVerse customer.`;
@@ -2137,7 +2193,7 @@
       return [];
     }
 
-    return customers.slice();
+    return customers.filter((customer) => customer.restaurant === "shared" || customer.restaurant === restaurant.slug);
   }
 
   function isRestaurantNameBlocked(name) {
@@ -2196,9 +2252,12 @@
 
       return (isCustomerScoped || isTargetedGlobal) && targetedCustomerIds.includes(customer.id);
     });
+    const customerTags = new Set(
+      [customer.characterType, customer.group, customer.restaurant !== "shared" ? customer.restaurant : ""].filter(Boolean)
+    );
     const focusedQuestions = questions.filter(
       (question) =>
-        question.tags.includes(customer.focusTag) &&
+        question.tags.some((tag) => customerTags.has(tag)) &&
         !(question.customerIds || []).includes(customer.id)
     );
 
@@ -2291,7 +2350,7 @@
       }
     }
 
-    const challengingCustomer = customer.group === "historical" || customer.group === "storybook";
+    const challengingCustomer = customer.characterType === "historical" || customer.characterType === "storybook";
     const customerQuestionCount = isAmericanaDemo ? 0 : challengingCustomer ? 3 : 1;
     const focusQuestionCount = isAmericanaDemo ? 0 : challengingCustomer ? 0 : 1;
     const globalQuestionCount = isAmericanaDemo ? 8 : challengingCustomer ? 2 : 3;

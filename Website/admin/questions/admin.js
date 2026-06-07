@@ -257,6 +257,61 @@ function displayImageUrl(image) {
   return source;
 }
 
+function normalizeRestaurant(value) {
+  const raw = String(value || "").trim().toLowerCase();
+  if (!raw || raw === "shared") {
+    return "shared";
+  }
+
+  if (raw === "americana" || raw === "americana-diner" || raw === "americana diner") {
+    return "americana";
+  }
+
+  if (["communityverse", "historical", "storybook", "cryptid", "exclusive"].includes(raw)) {
+    return "shared";
+  }
+
+  return raw.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "shared";
+}
+
+function normalizeCharacterType(value) {
+  return String(value || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+function formatRestaurantLabel(value) {
+  const restaurant = String(value || "").trim().toLowerCase();
+  if (!restaurant || restaurant === "shared") {
+    return "Shared";
+  }
+
+  if (restaurant === "americana") {
+    return "Americana Diner";
+  }
+
+  return restaurant
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part[0].toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function formatCharacterTypeLabel(value) {
+  const type = String(value || "").trim().toLowerCase();
+  if (!type) {
+    return "";
+  }
+
+  const labels = {
+    communityverse: "CommunityVerse regular",
+    historical: "Historical person",
+    storybook: "Storybook character",
+    cryptid: "Cryptid",
+    exclusive: "Exclusive",
+  };
+
+  return labels[type] || type.split("-").filter(Boolean).map((part) => part[0].toUpperCase() + part.slice(1)).join(" ");
+}
+
 function showCustomerMessage(text, isError = false) {
   elements.customerMessage.textContent = text;
   elements.customerMessage.classList.toggle("message-error", isError);
@@ -282,24 +337,30 @@ function normalizeCustomer(customer) {
   const safeCustomer = typeof customer === "object" && customer ? structuredClone(customer) : {};
   safeCustomer.id = String(safeCustomer.id || "").trim();
   safeCustomer.name = String(safeCustomer.name || "").trim();
-  safeCustomer.group = String(safeCustomer.group || safeCustomer.groupName || "").trim();
+  safeCustomer.characterType = normalizeCharacterType(
+    safeCustomer.characterType || safeCustomer.group || safeCustomer.groupName || ""
+  );
+  safeCustomer.group = safeCustomer.characterType;
+  safeCustomer.groupName = safeCustomer.characterType;
   safeCustomer.rarity = String(safeCustomer.rarity || "").trim();
   safeCustomer.regularValue = Number(safeCustomer.regularValue) || 0;
   safeCustomer.occasionalValue = Number(safeCustomer.occasionalValue) || 0;
-  safeCustomer.focusTag = String(safeCustomer.focusTag || "").trim();
+  safeCustomer.restaurant = normalizeRestaurant(
+    safeCustomer.restaurant || safeCustomer.focusTag || safeCustomer.focus_tag || ""
+  );
+  safeCustomer.focusTag = safeCustomer.restaurant;
   safeCustomer.image = String(safeCustomer.image || "").trim();
   safeCustomer.bio = String(safeCustomer.bio || "").trim();
   safeCustomer.questionPlace = String(safeCustomer.questionPlace || "").trim();
   safeCustomer.questionFact = String(safeCustomer.questionFact || "").trim();
-  safeCustomer.groupName = String(safeCustomer.groupName || safeCustomer.group || "").trim();
   safeCustomer.active = safeCustomer.active !== false;
   safeCustomer.sortOrder = Number(safeCustomer.sortOrder) || 0;
   return safeCustomer;
 }
 
 function populateCustomerSuggestions() {
-  populateDatalist("customer-group-options", customers.map((customer) => customer.group));
-  populateDatalist("customer-focus-options", customers.map((customer) => customer.focusTag));
+  populateDatalist("customer-group-options", customers.map((customer) => customer.characterType));
+  populateDatalist("customer-focus-options", customers.map((customer) => customer.restaurant));
   populateDatalist("customer-rarity-options", customers.map((customer) => customer.rarity));
 }
 
@@ -386,8 +447,8 @@ function customerFilterParams() {
   const mapping = {
     "customer-filter-query": "q",
     "customer-filter-status": "status",
-    "customer-filter-group": "group",
-    "customer-filter-focus-tag": "focusTag",
+    "customer-filter-group": "characterType",
+    "customer-filter-focus-tag": "restaurant",
     "customer-filter-rarity": "rarity",
   };
   const params = new URLSearchParams();
@@ -412,8 +473,8 @@ function renderCustomers() {
   elements.customerList.innerHTML = customers
     .map((customer) => {
       const chips = [
-        customer.group,
-        customer.focusTag ? `#${customer.focusTag}` : "",
+        formatRestaurantLabel(customer.restaurant),
+        formatCharacterTypeLabel(customer.characterType),
         customer.rarity,
         customer.active ? "" : "inactive",
       ].filter(Boolean);
@@ -501,11 +562,11 @@ function resetCustomerEditor(customer = null) {
   elements.customerPhotoFile.value = "";
   elements.customerId.value = customer?.id || "";
   elements.customerName.value = customer?.name || "";
-  elements.customerGroup.value = customer?.group || "";
+  elements.customerGroup.value = customer?.characterType || customer?.group || "";
   elements.customerRarity.value = customer?.rarity || "";
   elements.customerRegularValue.value = customer?.regularValue || 0;
   elements.customerOccasionalValue.value = customer?.occasionalValue || 0;
-  elements.customerFocusTag.value = customer?.focusTag || "";
+  elements.customerFocusTag.value = customer?.restaurant || customer?.focusTag || "";
   elements.customerSortOrder.value = customer?.sortOrder || 0;
   elements.customerActive.checked = customer?.active !== false;
   elements.customerBio.value = customer?.bio || "";
@@ -521,10 +582,12 @@ function customerFromForm() {
   return {
     id: elements.customerId.value.trim(),
     name: elements.customerName.value.trim(),
+    characterType: elements.customerGroup.value.trim(),
     group: elements.customerGroup.value.trim(),
     rarity: elements.customerRarity.value.trim(),
     regularValue: Number(elements.customerRegularValue.value) || 0,
     occasionalValue: Number(elements.customerOccasionalValue.value) || 0,
+    restaurant: elements.customerFocusTag.value.trim(),
     focusTag: elements.customerFocusTag.value.trim(),
     sortOrder: Number(elements.customerSortOrder.value) || 0,
     active: elements.customerActive.checked,

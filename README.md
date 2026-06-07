@@ -20,6 +20,7 @@ The admin lets you:
 - Search prompts, answers, IDs, tags, and targets
 
 The same page also has a `Customers` tab for editing customer records and swapping photos.
+In the customer editor, `Restaurant` means either `shared` or a specific restaurant like `americana`, and `Character type` describes what kind of customer they are.
 
 Deactivating is safer than deleting. An inactive question remains in Supabase but is not sent to the game.
 

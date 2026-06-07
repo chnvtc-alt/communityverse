@@ -145,12 +145,12 @@
               </select>
             </label>
             <label>
-              Group
+              Character type
               <input id="customer-filter-group" list="customer-group-options" placeholder="historical" />
             </label>
             <label>
-              Focus tag
-              <input id="customer-filter-focus-tag" list="customer-focus-options" placeholder="communityverse" />
+              Restaurant
+              <input id="customer-filter-focus-tag" list="customer-focus-options" placeholder="shared" />
             </label>
             <label>
               Rarity
@@ -163,6 +163,7 @@
           <h2>Customer photos</h2>
           <p>Upload JPGs at 512 x 512. The filename and current image path will be saved in Supabase.</p>
           <p>Use the editor to change names, bios, values, and the photo whenever you need to.</p>
+          <p><strong>Restaurant</strong> is usually <code>shared</code> or <code>americana</code>. <strong>Character type</strong> is what kind of customer they are.</p>
         </section>
       </aside>
 
@@ -354,7 +355,7 @@
             <input id="customer-name" required />
           </label>
           <label>
-            Group
+            Character type
             <input id="customer-group" list="customer-group-options" placeholder="historical" />
           </label>
           <label>
@@ -370,8 +371,8 @@
             <input id="customer-occasional-value" type="number" value="0" />
           </label>
           <label>
-            Focus tag
-            <input id="customer-focus-tag" list="customer-focus-options" placeholder="historical" />
+            Restaurant
+            <input id="customer-focus-tag" list="customer-focus-options" placeholder="shared" />
           </label>
           <label>
             Sort order

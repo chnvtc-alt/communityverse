@@ -24,20 +24,47 @@ function uniqueStrings(values) {
   return [...new Set((Array.isArray(values) ? values : []).map((value) => String(value || "").trim()).filter(Boolean))];
 }
 
+function normalizeRestaurant(value) {
+  const raw = String(value || "").trim().toLowerCase();
+  if (!raw || raw === "shared") {
+    return "shared";
+  }
+
+  if (raw === "americana" || raw === "americana-diner" || raw === "americana diner") {
+    return "americana";
+  }
+
+  if (["communityverse", "historical", "storybook", "cryptid", "exclusive"].includes(raw)) {
+    return "shared";
+  }
+
+  return raw.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "shared";
+}
+
+function normalizeCharacterType(value) {
+  return String(value || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
 export function normalizeCustomer(customer) {
   const safeCustomer = typeof customer === "object" && customer ? structuredClone(customer) : {};
   safeCustomer.id = String(safeCustomer.id || "").trim();
   safeCustomer.name = String(safeCustomer.name || "").trim();
-  safeCustomer.group = String(safeCustomer.group || safeCustomer.groupName || "").trim();
+  safeCustomer.characterType = normalizeCharacterType(
+    safeCustomer.characterType || safeCustomer.group || safeCustomer.groupName || ""
+  );
+  safeCustomer.group = safeCustomer.characterType;
+  safeCustomer.groupName = safeCustomer.characterType;
   safeCustomer.rarity = String(safeCustomer.rarity || "").trim();
   safeCustomer.regularValue = Number(safeCustomer.regularValue) || 0;
   safeCustomer.occasionalValue = Number(safeCustomer.occasionalValue) || 0;
-  safeCustomer.focusTag = String(safeCustomer.focusTag || "").trim();
+  safeCustomer.restaurant = normalizeRestaurant(
+    safeCustomer.restaurant || safeCustomer.focusTag || safeCustomer.focus_tag || ""
+  );
+  safeCustomer.focusTag = safeCustomer.restaurant;
   safeCustomer.image = String(safeCustomer.image || "").trim();
   safeCustomer.bio = String(safeCustomer.bio || "").trim();
   safeCustomer.questionPlace = String(safeCustomer.questionPlace || "").trim();
   safeCustomer.questionFact = String(safeCustomer.questionFact || "").trim();
-  safeCustomer.groupName = String(safeCustomer.groupName || safeCustomer.group || "").trim();
   safeCustomer.active = safeCustomer.active !== false;
   safeCustomer.sortOrder = Number(safeCustomer.sortOrder) || 0;
   safeCustomer.customQuestions = Array.isArray(safeCustomer.customQuestions)
@@ -66,11 +93,11 @@ export function customerFromRecord(record) {
     active: record.active ?? payload.active,
     sortOrder: record.sort_order ?? payload.sortOrder,
     name: record.name ?? payload.name,
-    group: record.group_name ?? payload.group ?? payload.groupName,
+    characterType: record.group_name ?? payload.characterType ?? payload.group ?? payload.groupName,
     rarity: record.rarity ?? payload.rarity,
     regularValue: record.regular_value ?? payload.regularValue,
     occasionalValue: record.occasional_value ?? payload.occasionalValue,
-    focusTag: record.focus_tag ?? payload.focusTag,
+    restaurant: record.focus_tag ?? payload.restaurant ?? payload.focusTag,
     image: record.image ?? payload.image,
     bio: record.bio ?? payload.bio,
     questionPlace: record.question_place ?? payload.questionPlace,
@@ -87,11 +114,11 @@ export function customerToRecord(customer, sortOrder = 0) {
     active: normalized.active,
     sort_order: Number.isFinite(Number(sortOrder)) ? Number(sortOrder) : normalized.sortOrder || 0,
     name: normalized.name,
-    group_name: normalized.groupName || normalized.group || "",
+    group_name: normalized.characterType || normalized.group || normalized.groupName || "",
     rarity: normalized.rarity || "",
     regular_value: normalized.regularValue || 0,
     occasional_value: normalized.occasionalValue || 0,
-    focus_tag: normalized.focusTag || "",
+    focus_tag: normalized.restaurant || normalized.focusTag || "",
     image: normalized.image || "",
     bio: normalized.bio || "",
     question_place: normalized.questionPlace || "",
@@ -155,8 +182,12 @@ export async function seedCustomersToSupabase(seedCustomers) {
 export function filterAdminCustomers(customers, searchParams) {
   const query = String(searchParams.get("q") || "").trim().toLowerCase();
   const status = String(searchParams.get("status") || "all").trim();
-  const group = String(searchParams.get("group") || "").trim().toLowerCase();
-  const focusTag = String(searchParams.get("focusTag") || "").trim().toLowerCase();
+  const characterType = String(searchParams.get("characterType") || searchParams.get("group") || "")
+    .trim()
+    .toLowerCase();
+  const restaurant = String(searchParams.get("restaurant") || searchParams.get("focusTag") || "")
+    .trim()
+    .toLowerCase();
   const rarity = String(searchParams.get("rarity") || "").trim().toLowerCase();
 
   return (Array.isArray(customers) ? customers : []).filter((customer) => {
@@ -164,7 +195,9 @@ export function filterAdminCustomers(customers, searchParams) {
       customer.id,
       customer.name,
       customer.group,
+      customer.characterType,
       customer.rarity,
+      customer.restaurant,
       customer.focusTag,
       customer.bio,
       customer.questionPlace,
@@ -181,8 +214,8 @@ export function filterAdminCustomers(customers, searchParams) {
     return (
       (!query || searchable.includes(query)) &&
       (status === "all" || (status === "active" ? customer.active : !customer.active)) &&
-      (!group || String(customer.group || "").toLowerCase() === group) &&
-      (!focusTag || String(customer.focusTag || "").toLowerCase() === focusTag) &&
+      (!characterType || String(customer.characterType || customer.group || "").toLowerCase() === characterType) &&
+      (!restaurant || String(customer.restaurant || customer.focusTag || "").toLowerCase() === restaurant) &&
       (!rarity || String(customer.rarity || "").toLowerCase() === rarity)
     );
   });
