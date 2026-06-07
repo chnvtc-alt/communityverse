@@ -267,7 +267,7 @@ function renderAiResults(drafts) {
             <span>Answer: ${escapeHtml(draft.correctAnswer)}</span>
           </div>
           <button class="button button-secondary use-ai-draft" type="button" data-index="${index}">
-            Use this question
+            Review and edit
           </button>
         </article>
       `
@@ -343,7 +343,7 @@ async function generateQuestionDrafts() {
       difficulty: document.querySelector("#question-difficulty").value,
     });
     renderAiResults(drafts);
-    showAiStatus("Choose a draft below. You can edit every word before saving.");
+    showAiStatus("Choose Review and edit to inspect all four answers. Nothing saves until you click Save question.");
   } catch (error) {
     showAiStatus(error.message, true);
   } finally {
