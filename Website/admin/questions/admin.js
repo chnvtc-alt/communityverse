@@ -420,6 +420,16 @@ function renderQuestions() {
   elements.list.innerHTML = questions
     .map((question) => {
       const target = question.restaurantSlug || question.areaSlug || question.customerIds?.join(", ");
+      const image = String(question.image || "").trim();
+      const imageHtml = image
+        ? `
+          <img
+            class="question-card-photo"
+            src="${escapeHtml(displayImageUrl(image))}"
+            alt="${escapeHtml(question.imageAlt || question.prompt || question.correctAnswer || "")}"
+          />
+        `
+        : "";
       const chips = [
         target,
         ...(question.tags || []).slice(0, 4).map((tag) => `#${tag}`),
@@ -428,13 +438,16 @@ function renderQuestions() {
 
       return `
         <article class="question-card ${question.active ? "" : "inactive"}" data-id="${escapeHtml(question.id)}">
-          <div>
-            <p class="question-prompt">${escapeHtml(question.prompt)}</p>
-            <p class="question-answer">Answer: ${escapeHtml(question.correctAnswer)}</p>
-            <div class="question-meta">
-              <span class="scope-badge">${escapeHtml(question.scope)}</span>
-              <span class="difficulty-badge">${escapeHtml(question.difficulty)}</span>
-              ${chips.map((chip) => `<span class="meta-chip">${escapeHtml(chip)}</span>`).join("")}
+          <div class="question-card-main ${image ? "has-image" : ""}">
+            ${imageHtml}
+            <div>
+              <p class="question-prompt">${escapeHtml(question.prompt)}</p>
+              <p class="question-answer">Answer: ${escapeHtml(question.correctAnswer)}</p>
+              <div class="question-meta">
+                <span class="scope-badge">${escapeHtml(question.scope)}</span>
+                <span class="difficulty-badge">${escapeHtml(question.difficulty)}</span>
+                ${chips.map((chip) => `<span class="meta-chip">${escapeHtml(chip)}</span>`).join("")}
+              </div>
             </div>
           </div>
           <div class="card-actions">

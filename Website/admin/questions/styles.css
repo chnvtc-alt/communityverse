@@ -322,6 +322,26 @@ textarea {
   box-shadow: 0 7px 20px rgba(53, 43, 27, 0.06);
 }
 
+.question-card-main {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.question-card-main.has-image {
+  grid-template-columns: 96px minmax(0, 1fr);
+  align-items: start;
+}
+
+.question-card-photo {
+  width: 96px;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid rgba(30, 41, 37, 0.14);
+  background: #fff;
+}
+
 .customer-card-layout {
   display: grid;
   grid-template-columns: 112px minmax(0, 1fr);
