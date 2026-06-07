@@ -1604,7 +1604,7 @@
 
   function readJson(key, fallback) {
     try {
-      const raw = window.localStorage.getItem(key);
+      const raw = window.localStorage?.getItem(key);
       return raw ? JSON.parse(raw) : fallback;
     } catch (error) {
       return fallback;
@@ -1612,7 +1612,11 @@
   }
 
   function writeJson(key, value) {
-    window.localStorage.setItem(key, JSON.stringify(value));
+    try {
+      window.localStorage?.setItem(key, JSON.stringify(value));
+    } catch (error) {
+      // Some browsers block persistent storage; keep using the in-memory cache.
+    }
   }
 
   function isDemoProfile(profile) {
@@ -1710,11 +1714,19 @@
       const remoteProfiles = await requestJson("/profiles", { method: "GET" });
       if (Array.isArray(remoteProfiles) && remoteProfiles.length) {
         setProfilesCache(remoteProfiles, "remote");
-        writeJson(STORAGE_KEYS.profiles, profilesCacheState.profiles);
+        try {
+          writeJson(STORAGE_KEYS.profiles, profilesCacheState.profiles);
+        } catch (error) {
+          // Keep the remote profiles even if browser storage is unavailable.
+        }
       } else {
         setProfilesCache(getLocalProfileSeed(), "local");
         if (!readJson(STORAGE_KEYS.profiles, []).length && profilesCacheState.profiles.length) {
-          writeJson(STORAGE_KEYS.profiles, profilesCacheState.profiles);
+          try {
+            writeJson(STORAGE_KEYS.profiles, profilesCacheState.profiles);
+          } catch (error) {
+            // Keep the local seed in memory even if browser storage is unavailable.
+          }
         }
 
         await syncProfilesToServer(profilesCacheState.profiles);
@@ -1775,20 +1787,36 @@
   function saveProfiles(profiles) {
     const normalized = normalizeProfiles(profiles);
     setProfilesCache(normalized, profilesCacheState.source);
-    writeJson(STORAGE_KEYS.profiles, normalized);
+    try {
+      writeJson(STORAGE_KEYS.profiles, normalized);
+    } catch (error) {
+      // Keep the updated profiles in memory even if browser storage is unavailable.
+    }
     void syncProfilesToServer(normalized);
   }
 
   function getActiveProfileId() {
-    return window.localStorage.getItem(STORAGE_KEYS.activeProfileId) || "";
+    try {
+      return window.localStorage?.getItem(STORAGE_KEYS.activeProfileId) || "";
+    } catch (error) {
+      return "";
+    }
   }
 
   function setActiveProfileId(profileId) {
-    window.localStorage.setItem(STORAGE_KEYS.activeProfileId, profileId);
+    try {
+      window.localStorage?.setItem(STORAGE_KEYS.activeProfileId, profileId);
+    } catch (error) {
+      // Ignore storage blocks and continue using the active profile cache.
+    }
   }
 
   function clearActiveProfileId() {
-    window.localStorage.removeItem(STORAGE_KEYS.activeProfileId);
+    try {
+      window.localStorage?.removeItem(STORAGE_KEYS.activeProfileId);
+    } catch (error) {
+      // Ignore storage blocks and continue using the active profile cache.
+    }
   }
 
   function getActiveProfile() {
