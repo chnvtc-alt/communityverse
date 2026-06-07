@@ -1,0 +1,2526 @@
+[
+  {
+    "id": "americana-signature-1",
+    "scope": "restaurant",
+    "restaurantSlug": "americana",
+    "tags": [
+      "americana"
+    ],
+    "prompt": "What kind of food is Americana Diner best known for?",
+    "correctAnswer": "Classic comfort diner food",
+    "wrongAnswers": [
+      "Sushi and ramen",
+      "Fine-dining tasting menus",
+      "Only frozen desserts"
+    ]
+  },
+  {
+    "id": "americana-signature-2",
+    "scope": "restaurant",
+    "restaurantSlug": "americana",
+    "tags": [
+      "americana"
+    ],
+    "prompt": "Which meal is Americana Diner happiest to serve all day?",
+    "correctAnswer": "Breakfast",
+    "wrongAnswers": [
+      "Only dinner",
+      "Only lunch",
+      "Late-night snacks only"
+    ]
+  },
+  {
+    "id": "americana-signature-3",
+    "scope": "restaurant",
+    "restaurantSlug": "americana",
+    "tags": [
+      "americana"
+    ],
+    "image": "../assets/restaurant-challenge/restaurants/americana/americana-mile-high-cherry-pie.jpg",
+    "imageAlt": "Americana Mile-High Cherry Pie",
+    "imagePrompt": "Which menu item is shown in this photo?",
+    "prompt": "Which menu item is shown in this photo?",
+    "correctAnswer": "Americana Mile-High Cherry Pie",
+    "wrongAnswers": [
+      "Cherry cobbler à la mode",
+      "Route 66 Burger",
+      "All-Day Breakfast Platter"
+    ]
+  },
+  {
+    "id": "americana-signature-4",
+    "scope": "restaurant",
+    "restaurantSlug": "americana",
+    "tags": [
+      "americana"
+    ],
+    "prompt": "What drink should you expect to see at a classic diner counter?",
+    "correctAnswer": "Fresh hot coffee",
+    "wrongAnswers": [
+      "Bubble tea",
+      "Champagne service",
+      "Energy shots only"
+    ]
+  },
+  {
+    "id": "americana-signature-5",
+    "scope": "restaurant",
+    "restaurantSlug": "americana",
+    "tags": [
+      "americana"
+    ],
+    "prompt": "Which menu item sounds like a strong Americana Diner special?",
+    "correctAnswer": "The Route 66 Burger",
+    "wrongAnswers": [
+      "The Galaxy Roll",
+      "The Alpine Bento",
+      "The Ocean Tasting"
+    ]
+  },
+  {
+    "id": "americana-signature-6",
+    "scope": "restaurant",
+    "restaurantSlug": "americana",
+    "tags": [
+      "americana"
+    ],
+    "prompt": "What kind of atmosphere does Americana Diner aim for?",
+    "correctAnswer": "Classic roadside comfort",
+    "wrongAnswers": [
+      "Ultra-minimal silence",
+      "Luxury nightclub energy",
+      "All seafood luxury"
+    ]
+  },
+  {
+    "id": "americana-signature-7",
+    "scope": "restaurant",
+    "restaurantSlug": "americana",
+    "tags": [
+      "americana"
+    ],
+    "image": "../assets/restaurant-challenge/restaurants/americana/route-66-burger.jpg",
+    "imageAlt": "Route 66 Burger",
+    "imagePrompt": "Which menu item is shown in this photo?",
+    "prompt": "Which menu item is shown in this photo?",
+    "correctAnswer": "Route 66 Burger",
+    "wrongAnswers": [
+      "Smokehouse Burger",
+      "Patty Melt Deluxe",
+      "All-Day Breakfast Platter"
+    ]
+  },
+  {
+    "id": "americana-signature-8",
+    "scope": "restaurant",
+    "restaurantSlug": "americana",
+    "tags": [
+      "americana"
+    ],
+    "image": "../assets/restaurant-challenge/restaurants/americana/all-day-breakfast-platter.jpg",
+    "imageAlt": "All-Day Breakfast Platter",
+    "imagePrompt": "Which menu item is shown in this photo?",
+    "prompt": "Which menu item is shown in this photo?",
+    "correctAnswer": "All-Day Breakfast Platter",
+    "wrongAnswers": [
+      "Route 66 Burger",
+      "Country Ham Breakfast",
+      "Americana Mile-High Cherry Pie"
+    ]
+  },
+  {
+    "id": "americana-signature-9",
+    "scope": "restaurant",
+    "restaurantSlug": "americana",
+    "tags": [
+      "americana"
+    ],
+    "prompt": "Which road is featured in Americana Diner's branding?",
+    "correctAnswer": "Route 66",
+    "wrongAnswers": [
+      "Route 11",
+      "Highway 14",
+      "County Road 7"
+    ]
+  },
+  {
+    "id": "americana-signature-10",
+    "scope": "restaurant",
+    "restaurantSlug": "americana",
+    "tags": [
+      "americana"
+    ],
+    "prompt": "What slogan appears under the Americana Diner name?",
+    "correctAnswer": "Classic Comfort in Pepperville",
+    "wrongAnswers": [
+      "Fresh Food in the Fast Lane",
+      "Home Cooking on the Hill",
+      "Breakfast by the Bay"
+    ]
+  },
+  {
+    "id": "americana-signature-11",
+    "scope": "restaurant",
+    "restaurantSlug": "americana",
+    "tags": [
+      "americana"
+    ],
+    "prompt": "Which Americana Diner menu item is built like a big roadside burger special?",
+    "correctAnswer": "The Route 66 Burger",
+    "wrongAnswers": [
+      "Smokehouse Burger",
+      "Patty Melt Deluxe",
+      "All-Day Breakfast Platter"
+    ]
+  },
+  {
+    "id": "americana-signature-12",
+    "scope": "restaurant",
+    "restaurantSlug": "americana",
+    "tags": [
+      "americana"
+    ],
+    "prompt": "Which Americana Diner dish is the best choice for a full morning plate?",
+    "correctAnswer": "All-Day Breakfast Platter",
+    "wrongAnswers": [
+      "Route 66 Burger",
+      "Country Ham Breakfast",
+      "Americana Mile-High Cherry Pie"
+    ]
+  },
+  {
+    "id": "americana-signature-13",
+    "scope": "restaurant",
+    "restaurantSlug": "americana",
+    "tags": [
+      "americana"
+    ],
+    "prompt": "Which Americana Diner item sounds most like a dessert showcase?",
+    "correctAnswer": "Americana Mile-High Cherry Pie",
+    "wrongAnswers": [
+      "Cherry cobbler à la mode",
+      "Route 66 Burger",
+      "All-Day Breakfast Platter"
+    ]
+  },
+  {
+    "id": "americana-signature-14",
+    "scope": "restaurant",
+    "restaurantSlug": "americana",
+    "tags": [
+      "americana"
+    ],
+    "prompt": "If you want a savory plate at Americana Diner, what should you order?",
+    "correctAnswer": "The Route 66 Burger",
+    "wrongAnswers": [
+      "Smokehouse Burger",
+      "Patty Melt Deluxe",
+      "All-Day Breakfast Platter"
+    ]
+  },
+  {
+    "id": "global-pepperville-1",
+    "scope": "global",
+    "tags": [
+      "communityverse"
+    ],
+    "prompt": "Who is Pepperville's mayor?",
+    "correctAnswer": "Mayor Joyce Pepper",
+    "wrongAnswers": [
+      "Miss Pearl",
+      "Captain Zoogle",
+      "Wicked Jim DeVito"
+    ]
+  },
+  {
+    "id": "global-pepperville-2",
+    "scope": "global",
+    "tags": [
+      "communityverse"
+    ],
+    "prompt": "Who serves as Pepperville's fire chief?",
+    "correctAnswer": "Fire Chief Hank Hatley",
+    "wrongAnswers": [
+      "Mayor Joyce Pepper",
+      "Wicked Jim DeVito",
+      "Miss Pearl"
+    ]
+  },
+  {
+    "id": "global-food-1",
+    "scope": "global",
+    "tags": [
+      "food"
+    ],
+    "prompt": "Which of these is a classic breakfast food?",
+    "correctAnswer": "Pancakes",
+    "wrongAnswers": [
+      "French fries",
+      "Spaghetti",
+      "Sushi"
+    ]
+  },
+  {
+    "id": "global-food-2",
+    "scope": "global",
+    "tags": [
+      "food"
+    ],
+    "prompt": "Which dessert is most likely to show up on a diner menu?",
+    "correctAnswer": "Apple pie",
+    "wrongAnswers": [
+      "Seaweed salad",
+      "Miso soup",
+      "Chimichurri toast"
+    ]
+  },
+  {
+    "id": "global-food-3",
+    "scope": "global",
+    "tags": [
+      "food"
+    ],
+    "prompt": "Which item usually comes with a breakfast plate?",
+    "correctAnswer": "Bacon",
+    "wrongAnswers": [
+      "Sausage",
+      "Hash browns",
+      "Toast"
+    ]
+  },
+  {
+    "id": "global-history-1",
+    "scope": "global",
+    "tags": [
+      "historical"
+    ],
+    "prompt": "Abraham Lincoln reached a national audience in the 1858 Senate campaign debates against who?",
+    "correctAnswer": "Stephen A. Douglas",
+    "wrongAnswers": [
+      "William H. Seward",
+      "Salmon P. Chase",
+      "John C. Fremont"
+    ]
+  },
+  {
+    "id": "global-history-2",
+    "scope": "global",
+    "tags": [
+      "historical"
+    ],
+    "prompt": "Which inventor is most closely associated with the light bulb?",
+    "correctAnswer": "Thomas Edison",
+    "wrongAnswers": [
+      "Neil Armstrong",
+      "Harriet Tubman",
+      "Babe Ruth"
+    ]
+  },
+  {
+    "id": "global-history-3",
+    "scope": "global",
+    "tags": [
+      "historical"
+    ],
+    "prompt": "Which famous pilot disappeared over the Pacific in 1937?",
+    "correctAnswer": "Amelia Earhart",
+    "wrongAnswers": [
+      "Cleopatra",
+      "Joan of Arc",
+      "Florence Nightingale"
+    ]
+  },
+  {
+    "id": "global-history-4",
+    "scope": "global",
+    "tags": [
+      "historical"
+    ],
+    "prompt": "Which historical figure is known for a kite in a lightning storm?",
+    "correctAnswer": "Benjamin Franklin",
+    "wrongAnswers": [
+      "Blackbeard",
+      "Winston Churchill",
+      "Meriwether Lewis"
+    ]
+  },
+  {
+    "id": "global-history-5",
+    "scope": "global",
+    "tags": [
+      "historical"
+    ],
+    "prompt": "Which ancient ruler is famously associated with Egypt?",
+    "correctAnswer": "Cleopatra",
+    "wrongAnswers": [
+      "Boudicca",
+      "Queen Victoria",
+      "Joan of Arc"
+    ]
+  },
+  {
+    "id": "global-history-6",
+    "scope": "global",
+    "tags": [
+      "historical"
+    ],
+    "prompt": "Which pirate is most famous for a black beard?",
+    "correctAnswer": "Blackbeard",
+    "wrongAnswers": [
+      "Captain Nemo",
+      "Long John Silver",
+      "Jack Sparrow"
+    ]
+  },
+  {
+    "id": "global-egypt-1",
+    "scope": "global",
+    "tags": [
+      "history"
+    ],
+    "customerIds": [
+      "cleopatra",
+      "king-tut"
+    ],
+    "prompt": "Which North African country is famous for its pyramids, pharaohs, and the Nile River?",
+    "correctAnswer": "Egypt",
+    "wrongAnswers": [
+      "Morocco",
+      "Algeria",
+      "Libya"
+    ]
+  },
+  {
+    "id": "global-egypt-2",
+    "scope": "global",
+    "tags": [
+      "history"
+    ],
+    "customerIds": [
+      "cleopatra",
+      "king-tut"
+    ],
+    "prompt": "Most pyramids in ancient Egypt were built as tombs for whom?",
+    "correctAnswer": "Pharaohs and their families",
+    "wrongAnswers": [
+      "Merchants and traders",
+      "Army generals",
+      "Temple musicians"
+    ]
+  },
+  {
+    "id": "global-egypt-3",
+    "scope": "global",
+    "tags": [
+      "history"
+    ],
+    "customerIds": [
+      "cleopatra",
+      "king-tut"
+    ],
+    "prompt": "What process did ancient Egyptians use to preserve bodies so the soul could live on?",
+    "correctAnswer": "Mummification",
+    "wrongAnswers": [
+      "Embalming with spices",
+      "Stone carving",
+      "Papyrus writing"
+    ]
+  },
+  {
+    "id": "global-egypt-4",
+    "scope": "global",
+    "tags": [
+      "history"
+    ],
+    "customerIds": [
+      "cleopatra",
+      "king-tut"
+    ],
+    "prompt": "How many symbols did the Egyptian writing system use?",
+    "correctAnswer": "More than 700 symbols",
+    "wrongAnswers": [
+      "About 70 symbols",
+      "About 200 symbols",
+      "More than 2,000 symbols"
+    ]
+  },
+  {
+    "id": "global-egypt-5",
+    "scope": "global",
+    "tags": [
+      "history"
+    ],
+    "customerIds": [
+      "cleopatra",
+      "king-tut"
+    ],
+    "prompt": "What is the name of Egypt's lifeline river?",
+    "correctAnswer": "The Nile River",
+    "wrongAnswers": [
+      "The Amazon River",
+      "The Mississippi River",
+      "The Tigris River"
+    ]
+  },
+  {
+    "id": "global-egypt-6",
+    "scope": "global",
+    "tags": [
+      "history"
+    ],
+    "customerIds": [
+      "cleopatra",
+      "king-tut"
+    ],
+    "prompt": "Which city is the capital of Egypt and home to its major museum?",
+    "correctAnswer": "Cairo",
+    "wrongAnswers": [
+      "Alexandria",
+      "Luxor",
+      "Giza"
+    ]
+  },
+  {
+    "id": "global-communityverse-1",
+    "scope": "global",
+    "tags": [
+      "communityverse"
+    ],
+    "prompt": "Which Pepperville character is known for sharp wit and troublemaking?",
+    "correctAnswer": "Wicked Jim DeVito",
+    "wrongAnswers": [
+      "Miss Pearl",
+      "Mayor Joyce Pepper",
+      "Captain Zoogle"
+    ]
+  },
+  {
+    "id": "global-communityverse-2",
+    "scope": "global",
+    "tags": [
+      "communityverse"
+    ],
+    "prompt": "Which Pepperville character is usually seen as a calm helper with a kind streak?",
+    "correctAnswer": "Miss Pearl",
+    "wrongAnswers": [
+      "Mayor Joyce Pepper",
+      "Wicked Jim DeVito",
+      "Captain Zoogle"
+    ]
+  },
+  {
+    "id": "global-communityverse-3",
+    "scope": "global",
+    "tags": [
+      "communityverse"
+    ],
+    "prompt": "Which Pepperville character sounds like a daring adventurer?",
+    "correctAnswer": "Captain Zoogle",
+    "wrongAnswers": [
+      "Mayor Joyce Pepper",
+      "Miss Pearl",
+      "Wicked Jim DeVito"
+    ]
+  },
+  {
+    "id": "global-area-1",
+    "scope": "area",
+    "areaSlug": "pepperville",
+    "tags": [
+      "pepperville"
+    ],
+    "prompt": "What river runs through Pepperville?",
+    "correctAnswer": "Chattawa River",
+    "wrongAnswers": [
+      "Maple Creek",
+      "Blueberry Bay",
+      "Oak Falls"
+    ]
+  },
+  {
+    "id": "global-area-2",
+    "scope": "area",
+    "areaSlug": "pepperville",
+    "tags": [
+      "pepperville"
+    ],
+    "prompt": "What county is Pepperville part of?",
+    "correctAnswer": "Chattawa County",
+    "wrongAnswers": [
+      "North Bend County",
+      "Riverstone County",
+      "Sunnyside County"
+    ]
+  },
+  {
+    "id": "global-area-3",
+    "scope": "area",
+    "areaSlug": "pepperville",
+    "tags": [
+      "pepperville"
+    ],
+    "prompt": "What is Pepperville's local baseball team called?",
+    "correctAnswer": "The Pepperville Poblanos",
+    "wrongAnswers": [
+      "The Pepperville Pickles",
+      "The County Cougars",
+      "The River Runners"
+    ]
+  },
+  {
+    "id": "global-area-4",
+    "scope": "area",
+    "areaSlug": "pepperville",
+    "tags": [
+      "pepperville"
+    ],
+    "prompt": "Which annual event is Pepperville known for?",
+    "correctAnswer": "Taste of Pepperville",
+    "wrongAnswers": [
+      "The Pepper Festival",
+      "The Ice Castle Gala",
+      "The Deep Sea Fair"
+    ]
+  },
+  {
+    "id": "georgia-area-1",
+    "scope": "area",
+    "areaSlug": "georgia",
+    "tags": [
+      "georgia"
+    ],
+    "prompt": "Who founded Georgia in 1732?",
+    "correctAnswer": "James Oglethorpe",
+    "wrongAnswers": [
+      "John Oglethorpe",
+      "James Madison",
+      "John Wesley"
+    ]
+  },
+  {
+    "id": "georgia-area-2",
+    "scope": "area",
+    "areaSlug": "georgia",
+    "tags": [
+      "georgia"
+    ],
+    "prompt": "Georgia was envisioned as a refuge for which group?",
+    "correctAnswer": "Debtors",
+    "wrongAnswers": [
+      "Gold miners",
+      "Sailors",
+      "Merchants"
+    ]
+  },
+  {
+    "id": "georgia-area-3",
+    "scope": "area",
+    "areaSlug": "georgia",
+    "tags": [
+      "georgia"
+    ],
+    "prompt": "In what year was Georgia founded?",
+    "correctAnswer": "1732",
+    "wrongAnswers": [
+      "1712",
+      "1752",
+      "1776"
+    ]
+  },
+  {
+    "id": "georgia-area-4",
+    "scope": "area",
+    "areaSlug": "georgia",
+    "tags": [
+      "georgia"
+    ],
+    "prompt": "Why did Britain want Georgia as a colony?",
+    "correctAnswer": "As a buffer zone against Spanish Florida",
+    "wrongAnswers": [
+      "To mine gold in the mountains",
+      "To build a Pacific trading post",
+      "To replace South Carolina as the capital"
+    ]
+  },
+  {
+    "id": "georgia-area-5",
+    "scope": "area",
+    "areaSlug": "georgia",
+    "tags": [
+      "georgia"
+    ],
+    "prompt": "On what date did Georgia secede from the Union?",
+    "correctAnswer": "January 19, 1861",
+    "wrongAnswers": [
+      "April 12, 1861",
+      "March 4, 1861",
+      "July 4, 1861"
+    ]
+  },
+  {
+    "id": "georgia-area-6",
+    "scope": "area",
+    "areaSlug": "georgia",
+    "tags": [
+      "georgia"
+    ],
+    "prompt": "About how many soldiers did Georgia contribute to the Confederacy?",
+    "correctAnswer": "Nearly 120,000",
+    "wrongAnswers": [
+      "About 20,000",
+      "About 60,000",
+      "About 250,000"
+    ]
+  },
+  {
+    "id": "georgia-area-7",
+    "scope": "area",
+    "areaSlug": "georgia",
+    "tags": [
+      "georgia"
+    ],
+    "prompt": "What was the first major battle fought in Georgia?",
+    "correctAnswer": "The Battle of Chickamauga",
+    "wrongAnswers": [
+      "The Battle of Atlanta",
+      "The Battle of Kennesaw Mountain",
+      "The Battle of Savannah"
+    ]
+  },
+  {
+    "id": "georgia-area-8",
+    "scope": "area",
+    "areaSlug": "georgia",
+    "tags": [
+      "georgia"
+    ],
+    "prompt": "Which Georgia city was the base of Martin Luther King Jr.?",
+    "correctAnswer": "Atlanta",
+    "wrongAnswers": [
+      "Savannah",
+      "Augusta",
+      "Macon"
+    ]
+  },
+  {
+    "id": "georgia-area-9",
+    "scope": "area",
+    "areaSlug": "georgia",
+    "tags": [
+      "georgia"
+    ],
+    "prompt": "What major sporting event did Atlanta host in 1996?",
+    "correctAnswer": "The Summer Olympics",
+    "wrongAnswers": [
+      "The Winter Olympics",
+      "The World Cup",
+      "The Pan American Games"
+    ]
+  },
+  {
+    "id": "georgia-area-10",
+    "scope": "area",
+    "areaSlug": "georgia",
+    "tags": [
+      "georgia"
+    ],
+    "prompt": "Which Spanish conquistador led the first European expedition deep into the southeastern United States?",
+    "correctAnswer": "Hernando de Soto",
+    "wrongAnswers": [
+      "Francisco Pizarro",
+      "Hernán Cortés",
+      "Juan Ponce de León"
+    ]
+  },
+  {
+    "id": "georgia-area-11",
+    "scope": "area",
+    "areaSlug": "georgia",
+    "tags": [
+      "georgia"
+    ],
+    "prompt": "Which city has been Georgia's capital since 1868?",
+    "correctAnswer": "Atlanta",
+    "wrongAnswers": [
+      "Savannah",
+      "Augusta",
+      "Milledgeville"
+    ]
+  },
+  {
+    "id": "georgia-area-12",
+    "scope": "area",
+    "areaSlug": "georgia",
+    "tags": [
+      "georgia"
+    ],
+    "prompt": "Which city was Georgia's capital during British colonial rule?",
+    "correctAnswer": "Savannah",
+    "wrongAnswers": [
+      "Atlanta",
+      "Louisville",
+      "Macon"
+    ]
+  },
+  {
+    "id": "georgia-area-13",
+    "scope": "area",
+    "areaSlug": "georgia",
+    "tags": [
+      "georgia"
+    ],
+    "prompt": "Which city was one of Georgia's former capitals after Augusta and before Atlanta?",
+    "correctAnswer": "Milledgeville",
+    "wrongAnswers": [
+      "Savannah",
+      "Louisville",
+      "Athens"
+    ]
+  },
+  {
+    "id": "georgia-area-14",
+    "scope": "area",
+    "areaSlug": "georgia",
+    "tags": [
+      "georgia"
+    ],
+    "prompt": "What university was established in Georgia in 1785 as the first U.S. university to gain a state charter?",
+    "correctAnswer": "University of Georgia",
+    "wrongAnswers": [
+      "Georgia Tech",
+      "University of South Carolina",
+      "University of Virginia"
+    ]
+  },
+  {
+    "id": "georgia-area-15",
+    "scope": "area",
+    "areaSlug": "georgia",
+    "tags": [
+      "georgia"
+    ],
+    "prompt": "When did the Atlanta Braves last win the World Series?",
+    "correctAnswer": "2021",
+    "wrongAnswers": [
+      "2019",
+      "2022",
+      "1995"
+    ]
+  },
+  {
+    "id": "georgia-area-16",
+    "scope": "area",
+    "areaSlug": "georgia",
+    "tags": [
+      "georgia"
+    ],
+    "prompt": "What year did the Atlanta Falcons begin as an NFL expansion team?",
+    "correctAnswer": "1966",
+    "wrongAnswers": [
+      "1956",
+      "1970",
+      "1981"
+    ]
+  },
+  {
+    "id": "georgia-area-17",
+    "scope": "area",
+    "areaSlug": "georgia",
+    "tags": [
+      "georgia"
+    ],
+    "prompt": "Which stadium has been the Falcons' home since 2017?",
+    "correctAnswer": "Mercedes-Benz Stadium",
+    "wrongAnswers": [
+      "Georgia Dome",
+      "Atlanta-Fulton County Stadium",
+      "Turner Field"
+    ]
+  },
+  {
+    "id": "georgia-area-18",
+    "scope": "area",
+    "areaSlug": "georgia",
+    "tags": [
+      "georgia"
+    ],
+    "prompt": "What NHL team played in Atlanta from 1972 to 1980?",
+    "correctAnswer": "Atlanta Flames",
+    "wrongAnswers": [
+      "Atlanta Thrashers",
+      "Calgary Flames",
+      "Boston Bruins"
+    ]
+  },
+  {
+    "id": "georgia-area-19",
+    "scope": "area",
+    "areaSlug": "georgia",
+    "tags": [
+      "georgia"
+    ],
+    "prompt": "Where did the Atlanta Flames play their home games?",
+    "correctAnswer": "Omni Coliseum",
+    "wrongAnswers": [
+      "Georgia Dome",
+      "Mercedes-Benz Stadium",
+      "Atlanta-Fulton County Stadium"
+    ]
+  },
+  {
+    "id": "georgia-area-20",
+    "scope": "area",
+    "areaSlug": "georgia",
+    "tags": [
+      "georgia"
+    ],
+    "prompt": "When did the Hawks move to Atlanta from St. Louis?",
+    "correctAnswer": "May 3, 1968",
+    "wrongAnswers": [
+      "May 3, 1958",
+      "May 3, 1978",
+      "May 3, 1988"
+    ]
+  },
+  {
+    "id": "georgia-area-21",
+    "scope": "area",
+    "areaSlug": "georgia",
+    "tags": [
+      "georgia"
+    ],
+    "prompt": "From what city did the Hawks move to become the Atlanta Hawks?",
+    "correctAnswer": "St. Louis",
+    "wrongAnswers": [
+      "Milwaukee",
+      "Kansas City",
+      "Cincinnati"
+    ]
+  },
+  {
+    "id": "global-storybook-1",
+    "scope": "global",
+    "tags": [
+      "storybook"
+    ],
+    "prompt": "Which character is known for a grin that appears and disappears?",
+    "correctAnswer": "Cheshire Cat",
+    "wrongAnswers": [
+      "Humpty Dumpty",
+      "Big Bad Wolf",
+      "Queen of Hearts"
+    ]
+  },
+  {
+    "id": "global-storybook-2",
+    "scope": "global",
+    "tags": [
+      "storybook"
+    ],
+    "prompt": "Which character is usually associated with a red hood and a walk through the woods?",
+    "correctAnswer": "Little Red Riding Hood",
+    "wrongAnswers": [
+      "Alice in Wonderland",
+      "Mad Hatter",
+      "The Tooth Fairy"
+    ]
+  },
+  {
+    "id": "global-storybook-3",
+    "scope": "global",
+    "tags": [
+      "storybook"
+    ],
+    "prompt": "Which nursery rhyme character is famous for a very bad fall?",
+    "correctAnswer": "Humpty Dumpty",
+    "wrongAnswers": [
+      "Sasquatch",
+      "Blackbeard the Pirate",
+      "Benjamin Franklin"
+    ]
+  },
+  {
+    "id": "global-storybook-4",
+    "scope": "global",
+    "tags": [
+      "storybook"
+    ],
+    "prompt": "Which Wonderland character is known for throwing a very strange tea party?",
+    "correctAnswer": "Mad Hatter",
+    "wrongAnswers": [
+      "Queen of Hearts",
+      "Alice in Wonderland",
+      "Big Bad Wolf"
+    ]
+  },
+  {
+    "id": "global-storybook-5",
+    "scope": "global",
+    "tags": [
+      "storybook"
+    ],
+    "prompt": "Which fairy tale character is best known for huffing and puffing?",
+    "correctAnswer": "Big Bad Wolf",
+    "wrongAnswers": [
+      "Cheshire Cat",
+      "Humpty Dumpty",
+      "Thomas Edison"
+    ]
+  },
+  {
+    "id": "global-storybook-6",
+    "scope": "global",
+    "tags": [
+      "storybook"
+    ],
+    "prompt": "Which tiny helper visits after a lost tooth?",
+    "correctAnswer": "The Tooth Fairy",
+    "wrongAnswers": [
+      "Queen of Hearts",
+      "George Washington",
+      "Billy the Kid"
+    ]
+  },
+  {
+    "id": "global-storybook-7",
+    "scope": "global",
+    "tags": [
+      "storybook"
+    ],
+    "prompt": "Which Wonderland ruler is famous for shouting 'Off with their heads!'?",
+    "correctAnswer": "Queen of Hearts",
+    "wrongAnswers": [
+      "Mad Hatter",
+      "Alice in Wonderland",
+      "Sasquatch"
+    ]
+  },
+  {
+    "id": "global-history-7",
+    "scope": "global",
+    "tags": [
+      "historical"
+    ],
+    "prompt": "Which inventor is most associated with the practical electric light bulb?",
+    "correctAnswer": "Thomas Edison",
+    "wrongAnswers": [
+      "Benjamin Franklin",
+      "Napoleon Bonaparte",
+      "Blackbeard the Pirate"
+    ]
+  },
+  {
+    "id": "global-history-8",
+    "scope": "global",
+    "tags": [
+      "historical"
+    ],
+    "prompt": "Which aviator became famous for pushing flight records and disappearing over the Pacific?",
+    "correctAnswer": "Amelia Earhart",
+    "wrongAnswers": [
+      "Cleopatra",
+      "George Washington",
+      "Billy the Kid"
+    ]
+  },
+  {
+    "id": "global-history-9",
+    "scope": "global",
+    "tags": [
+      "historical"
+    ],
+    "prompt": "Which U.S. leader is most closely linked to the Revolutionary era and Mount Vernon?",
+    "correctAnswer": "George Washington",
+    "wrongAnswers": [
+      "Thomas Edison",
+      "Christopher Columbus",
+      "King Tut"
+    ]
+  },
+  {
+    "id": "global-history-18",
+    "scope": "global",
+    "tags": [
+      "historical"
+    ],
+    "prompt": "Who was the first President of the United States?",
+    "correctAnswer": "George Washington",
+    "wrongAnswers": [
+      "Thomas Jefferson",
+      "Abraham Lincoln",
+      "John Adams"
+    ]
+  },
+  {
+    "id": "global-history-19",
+    "scope": "global",
+    "tags": [
+      "historical"
+    ],
+    "prompt": "Which Revolutionary War general led the Continental Army?",
+    "correctAnswer": "George Washington",
+    "wrongAnswers": [
+      "Alexander Hamilton",
+      "Andrew Jackson",
+      "Benjamin Franklin"
+    ]
+  },
+  {
+    "id": "global-history-20",
+    "scope": "global",
+    "tags": [
+      "historical"
+    ],
+    "prompt": "Which estate is strongly associated with George Washington?",
+    "correctAnswer": "Mount Vernon",
+    "wrongAnswers": [
+      "Monticello",
+      "Montpelier",
+      "Valley Forge"
+    ]
+  },
+  {
+    "id": "global-history-10",
+    "scope": "global",
+    "tags": [
+      "historical"
+    ],
+    "prompt": "Which ancient ruler is usually tied to a famous Egyptian tomb?",
+    "correctAnswer": "King Tut",
+    "wrongAnswers": [
+      "Napoleon Bonaparte",
+      "Benjamin Franklin",
+      "Blackbeard the Pirate"
+    ]
+  },
+  {
+    "id": "global-history-11",
+    "scope": "global",
+    "tags": [
+      "historical"
+    ],
+    "prompt": "Which Egyptian queen is one of history's most famous rulers?",
+    "correctAnswer": "Cleopatra",
+    "wrongAnswers": [
+      "Amelia Earhart",
+      "Mad Hatter",
+      "Little Red Riding Hood"
+    ]
+  },
+  {
+    "id": "global-history-12",
+    "scope": "global",
+    "tags": [
+      "historical"
+    ],
+    "prompt": "Which French leader became a powerful emperor after rising through the military?",
+    "correctAnswer": "Napoleon Bonaparte",
+    "wrongAnswers": [
+      "George Washington",
+      "Christopher Columbus",
+      "Sasquatch"
+    ]
+  },
+  {
+    "id": "global-history-13",
+    "scope": "global",
+    "tags": [
+      "historical"
+    ],
+    "prompt": "Which explorer is most associated with a westward Atlantic voyage in 1492?",
+    "correctAnswer": "Christopher Columbus",
+    "wrongAnswers": [
+      "Thomas Edison",
+      "Billy the Kid",
+      "Queen of Hearts"
+    ]
+  },
+  {
+    "id": "global-history-15",
+    "scope": "global",
+    "tags": [
+      "historical"
+    ],
+    "prompt": "In what year did Christopher Columbus first cross the Atlantic?",
+    "correctAnswer": "1492",
+    "wrongAnswers": [
+      "1451",
+      "1504",
+      "1519"
+    ]
+  },
+  {
+    "id": "global-history-16",
+    "scope": "global",
+    "tags": [
+      "historical"
+    ],
+    "prompt": "What holiday is observed in the United States in Columbus's honor on the second Monday in October?",
+    "correctAnswer": "Columbus Day",
+    "wrongAnswers": [
+      "Founders Day",
+      "Discovery Day",
+      "Explorers Day"
+    ]
+  },
+  {
+    "id": "global-history-17",
+    "scope": "global",
+    "tags": [
+      "historical"
+    ],
+    "prompt": "Which city was Christopher Columbus born in?",
+    "correctAnswer": "Genoa",
+    "wrongAnswers": [
+      "Rome",
+      "Madrid",
+      "Marseille"
+    ]
+  },
+  {
+    "id": "global-egypt-7",
+    "scope": "global",
+    "tags": [
+      "historical"
+    ],
+    "customerIds": [
+      "king-tut",
+      "cleopatra"
+    ],
+    "prompt": "Which ancient Egyptian tomb was discovered in 1922 by Howard Carter?",
+    "correctAnswer": "Tutankhamun's tomb",
+    "wrongAnswers": [
+      "The Great Pyramid",
+      "The Temple of Karnak",
+      "The Sphinx Chamber"
+    ]
+  },
+  {
+    "id": "global-egypt-8",
+    "scope": "global",
+    "tags": [
+      "historical"
+    ],
+    "customerIds": [
+      "king-tut",
+      "cleopatra"
+    ],
+    "prompt": "Which ruler was known as the boy king of ancient Egypt?",
+    "correctAnswer": "King Tutankhamun",
+    "wrongAnswers": [
+      "Cleopatra",
+      "Ramses the Great",
+      "Akhenaten"
+    ]
+  },
+  {
+    "id": "global-egypt-9",
+    "scope": "global",
+    "tags": [
+      "historical"
+    ],
+    "customerIds": [
+      "king-tut",
+      "cleopatra"
+    ],
+    "prompt": "What famous gold funerary mask is associated with which ruler?",
+    "correctAnswer": "King Tutankhamun",
+    "wrongAnswers": [
+      "Cleopatra",
+      "Amenhotep III",
+      "Hatshepsut"
+    ]
+  },
+  {
+    "id": "global-egypt-10",
+    "scope": "global",
+    "tags": [
+      "historical"
+    ],
+    "customerIds": [
+      "king-tut",
+      "cleopatra"
+    ],
+    "prompt": "Which river gave Egypt fertile land and transportation?",
+    "correctAnswer": "The Nile River",
+    "wrongAnswers": [
+      "The Tiber",
+      "The Euphrates",
+      "The Danube"
+    ]
+  },
+  {
+    "id": "global-history-14",
+    "scope": "global",
+    "tags": [
+      "historical"
+    ],
+    "prompt": "Which feared pirate is remembered for his dramatic black beard?",
+    "correctAnswer": "Blackbeard the Pirate",
+    "wrongAnswers": [
+      "Big Bad Wolf",
+      "Humpty Dumpty",
+      "Alice in Wonderland"
+    ]
+  },
+  {
+    "id": "global-cryptid-1",
+    "scope": "global",
+    "tags": [
+      "cryptid"
+    ],
+    "prompt": "What is Sasquatch also commonly called?",
+    "correctAnswer": "Bigfoot",
+    "wrongAnswers": [
+      "Sea Serpent",
+      "Kraken",
+      "Thunderbird"
+    ]
+  },
+  {
+    "id": "global-cryptid-2",
+    "scope": "global",
+    "tags": [
+      "cryptid"
+    ],
+    "prompt": "Which clue is most associated with Sasquatch sightings?",
+    "correctAnswer": "Huge footprints in the woods",
+    "wrongAnswers": [
+      "A tiny crown in a tea cup",
+      "A light bulb in a workshop",
+      "A red hood in a basket"
+    ]
+  },
+  {
+    "id": "trivia-ukraine-sea",
+    "scope": "global",
+    "tags": [
+      "geography"
+    ],
+    "prompt": "What is the name of the sea directly to the south of Ukraine?",
+    "correctAnswer": "Black Sea",
+    "wrongAnswers": [
+      "Baltic Sea",
+      "Red Sea",
+      "Caspian Sea"
+    ]
+  },
+  {
+    "id": "trivia-triple-crown",
+    "scope": "global",
+    "tags": [
+      "sports"
+    ],
+    "prompt": "The Triple Crown award is given to a horse that wins which three races?",
+    "correctAnswer": "Kentucky Derby, Preakness Stakes, and Belmont Stakes",
+    "wrongAnswers": [
+      "Kentucky Derby, Belmont Stakes, and Breeders' Cup",
+      "Preakness Stakes, Kentucky Oaks, and Belmont Stakes",
+      "Belmont Stakes, Derby City, and Preakness Stakes"
+    ]
+  },
+  {
+    "id": "trivia-state-letter",
+    "scope": "global",
+    "tags": [
+      "language"
+    ],
+    "prompt": "What is the only letter that does not appear in any U.S. state name?",
+    "correctAnswer": "Q",
+    "wrongAnswers": [
+      "X",
+      "Z",
+      "J"
+    ]
+  },
+  {
+    "id": "trivia-oldest-college",
+    "scope": "global",
+    "tags": [
+      "history"
+    ],
+    "prompt": "What is the oldest college in the U.S.?",
+    "correctAnswer": "Harvard",
+    "wrongAnswers": [
+      "Yale",
+      "Princeton",
+      "Columbia"
+    ]
+  },
+  {
+    "id": "trivia-interracial-kiss",
+    "scope": "global",
+    "tags": [
+      "tv"
+    ],
+    "prompt": "Which TV show featured the first interracial kiss ever aired?",
+    "correctAnswer": "Star Trek",
+    "wrongAnswers": [
+      "I Love Lucy",
+      "The Jeffersons",
+      "All in the Family"
+    ]
+  },
+  {
+    "id": "trivia-pythagorean",
+    "scope": "global",
+    "tags": [
+      "math"
+    ],
+    "prompt": "What is the Pythagorean Theorem?",
+    "correctAnswer": "a^2 + b^2 = c^2",
+    "wrongAnswers": [
+      "a + b = c",
+      "a^2 - b^2 = c^2",
+      "2a + 2b = c"
+    ]
+  },
+  {
+    "id": "trivia-glee-school",
+    "scope": "global",
+    "tags": [
+      "tv"
+    ],
+    "prompt": "What president is the fictional high school in Glee named after?",
+    "correctAnswer": "William H. McKinley",
+    "wrongAnswers": [
+      "Abraham Lincoln",
+      "Theodore Roosevelt",
+      "John F. Kennedy"
+    ]
+  },
+  {
+    "id": "trivia-largest-island",
+    "scope": "global",
+    "tags": [
+      "geography"
+    ],
+    "prompt": "What is the largest island in the world?",
+    "correctAnswer": "Greenland",
+    "wrongAnswers": [
+      "Australia",
+      "Madagascar",
+      "Borneo"
+    ]
+  },
+  {
+    "id": "trivia-pt-symbol",
+    "scope": "global",
+    "tags": [
+      "science"
+    ],
+    "prompt": "Which chemical element has the symbol \"Pt\" on the periodic table?",
+    "correctAnswer": "Platinum",
+    "wrongAnswers": [
+      "Palladium",
+      "Polonium",
+      "Plutonium"
+    ]
+  },
+  {
+    "id": "trivia-hufflepuff-mascot",
+    "scope": "global",
+    "tags": [
+      "books"
+    ],
+    "prompt": "Which animal is the mascot for Hufflepuff house in the Harry Potter books?",
+    "correctAnswer": "Badger",
+    "wrongAnswers": [
+      "Lion",
+      "Eagle",
+      "Snake"
+    ]
+  },
+  {
+    "id": "trivia-nori",
+    "scope": "global",
+    "tags": [
+      "food"
+    ],
+    "prompt": "Nori, the popular sushi ingredient, is a type of what?",
+    "correctAnswer": "Seaweed",
+    "wrongAnswers": [
+      "Rice",
+      "Fish",
+      "Vinegar"
+    ]
+  },
+  {
+    "id": "trivia-gdp",
+    "scope": "global",
+    "tags": [
+      "economics"
+    ],
+    "prompt": "What does \"GDP\" stand for?",
+    "correctAnswer": "Gross Domestic Product",
+    "wrongAnswers": [
+      "General Domestic Profit",
+      "Global Demand Product",
+      "Gross Demand Product"
+    ]
+  },
+  {
+    "id": "trivia-switzerland-currency",
+    "scope": "global",
+    "tags": [
+      "economics"
+    ],
+    "prompt": "What currency does Switzerland use?",
+    "correctAnswer": "Swiss Franc",
+    "wrongAnswers": [
+      "Euro",
+      "Dollar",
+      "Krona"
+    ]
+  },
+  {
+    "id": "trivia-stairway-lyrics",
+    "scope": "global",
+    "tags": [
+      "music"
+    ],
+    "prompt": "What song are these lyrics from: \"There are two paths you can go by, but in the long run, there's still time to change the road you're on.\"",
+    "correctAnswer": "Stairway to Heaven",
+    "wrongAnswers": [
+      "Hotel California",
+      "Free Bird",
+      "Dream On"
+    ]
+  },
+  {
+    "id": "trivia-piano-man-lyrics",
+    "scope": "global",
+    "tags": [
+      "music"
+    ],
+    "prompt": "What song are these lyrics from: \"Son, can you play me a memory?\"",
+    "correctAnswer": "Piano Man",
+    "wrongAnswers": [
+      "Tiny Dancer",
+      "Rocket Man",
+      "Take It Easy"
+    ]
+  },
+  {
+    "id": "trivia-hotel-california-lyrics",
+    "scope": "global",
+    "tags": [
+      "music"
+    ],
+    "prompt": "What song are these lyrics from: \"Such a lovely place, such a lovely face.\"",
+    "correctAnswer": "Hotel California",
+    "wrongAnswers": [
+      "Desperado",
+      "Take It Easy",
+      "Life in the Fast Lane"
+    ]
+  },
+  {
+    "id": "trivia-hotline-bling-lyrics",
+    "scope": "global",
+    "tags": [
+      "music"
+    ],
+    "prompt": "What song are these lyrics from: \"You used to call me on my cell phone.\"",
+    "correctAnswer": "Hotline Bling",
+    "wrongAnswers": [
+      "Sorry",
+      "One Dance",
+      "Work"
+    ]
+  },
+  {
+    "id": "trivia-napoleon-emperor",
+    "scope": "global",
+    "tags": [
+      "history"
+    ],
+    "prompt": "In what year was Napoleon Bonaparte proclaimed Emperor of France?",
+    "correctAnswer": "1804",
+    "wrongAnswers": [
+      "1799",
+      "1812",
+      "1815"
+    ]
+  },
+  {
+    "id": "trivia-tina-fey-birth",
+    "scope": "global",
+    "tags": [
+      "entertainment"
+    ],
+    "prompt": "Tina Fey was born in what year?",
+    "correctAnswer": "1970",
+    "wrongAnswers": [
+      "1964",
+      "1978",
+      "1982"
+    ]
+  },
+  {
+    "id": "trivia-baby-yoda",
+    "scope": "global",
+    "tags": [
+      "tv"
+    ],
+    "prompt": "What is Baby Yoda's real name?",
+    "correctAnswer": "Grogu",
+    "wrongAnswers": [
+      "Yoda Jr.",
+      "Groku",
+      "Minchi"
+    ]
+  },
+  {
+    "id": "trivia-simple-life",
+    "scope": "global",
+    "tags": [
+      "tv"
+    ],
+    "prompt": "Which reality TV show featured Paris Hilton and Nicole Richie trying out various odd jobs?",
+    "correctAnswer": "The Simple Life",
+    "wrongAnswers": [
+      "The Hills",
+      "Laguna Beach",
+      "Rich Girls"
+    ]
+  },
+  {
+    "id": "trivia-monopoly-after-go",
+    "scope": "global",
+    "tags": [
+      "games"
+    ],
+    "prompt": "What is the property directly after GO on the Monopoly board?",
+    "correctAnswer": "Mediterranean Avenue",
+    "wrongAnswers": [
+      "Baltic Avenue",
+      "Boardwalk",
+      "Park Place"
+    ]
+  },
+  {
+    "id": "trivia-swift-first-grammy",
+    "scope": "global",
+    "tags": [
+      "music"
+    ],
+    "prompt": "Taylor Swift won her first Grammy for what song?",
+    "correctAnswer": "White Horse",
+    "wrongAnswers": [
+      "Love Story",
+      "Shake It Off",
+      "Fearless"
+    ]
+  },
+  {
+    "id": "trivia-rock-football",
+    "scope": "global",
+    "tags": [
+      "sports"
+    ],
+    "prompt": "Where did Dwayne Johnson, aka The Rock, play football?",
+    "correctAnswer": "University of Miami",
+    "wrongAnswers": [
+      "Ohio State University",
+      "Florida State University",
+      "University of Texas"
+    ]
+  },
+  {
+    "id": "trivia-first-disney-princess",
+    "scope": "global",
+    "tags": [
+      "movies"
+    ],
+    "prompt": "Who was the first Disney Princess?",
+    "correctAnswer": "Snow White",
+    "wrongAnswers": [
+      "Cinderella",
+      "Belle",
+      "Aurora"
+    ]
+  },
+  {
+    "id": "trivia-fruit-loops-flavors",
+    "scope": "global",
+    "tags": [
+      "food"
+    ],
+    "prompt": "How many flavors are in a box of Fruit Loops?",
+    "correctAnswer": "1",
+    "wrongAnswers": [
+      "3",
+      "4",
+      "2"
+    ]
+  },
+  {
+    "id": "trivia-moses-commandments",
+    "scope": "global",
+    "tags": [
+      "religion"
+    ],
+    "prompt": "Where did God give Moses the Ten Commandments?",
+    "correctAnswer": "Mt. Sinai",
+    "wrongAnswers": [
+      "Mount Carmel",
+      "Mount Ararat",
+      "Mount Zion"
+    ]
+  },
+  {
+    "id": "trivia-marathon-distance",
+    "scope": "global",
+    "tags": [
+      "sports"
+    ],
+    "prompt": "How long is a marathon?",
+    "correctAnswer": "26.2 miles",
+    "wrongAnswers": [
+      "13.1 miles",
+      "20 miles",
+      "30 miles"
+    ]
+  },
+  {
+    "id": "trivia-worlds-best-boss",
+    "scope": "global",
+    "tags": [
+      "tv"
+    ],
+    "prompt": "On The Office, who gave Michael the \"World's Best Boss\" mug?",
+    "correctAnswer": "He bought it himself",
+    "wrongAnswers": [
+      "Dwight",
+      "Jim",
+      "Pam"
+    ]
+  },
+  {
+    "id": "trivia-lunar-larry",
+    "scope": "global",
+    "tags": [
+      "movies"
+    ],
+    "prompt": "What animated character was originally going to be called Lunar Larry?",
+    "correctAnswer": "Buzz Lightyear",
+    "wrongAnswers": [
+      "Astro Boy",
+      "Space Ranger Sam",
+      "Rocket Ron"
+    ]
+  },
+  {
+    "id": "trivia-home-alone-paris",
+    "scope": "global",
+    "tags": [
+      "movies"
+    ],
+    "prompt": "In Home Alone, where are the McCallisters going when they leave Kevin behind?",
+    "correctAnswer": "Paris, France",
+    "wrongAnswers": [
+      "London, England",
+      "Rome, Italy",
+      "Madrid, Spain"
+    ]
+  },
+  {
+    "id": "trivia-iran-border",
+    "scope": "global",
+    "tags": [
+      "geography"
+    ],
+    "prompt": "Which of these countries does not share a border with Iran?",
+    "correctAnswer": "Yemen",
+    "wrongAnswers": [
+      "Iraq",
+      "Turkey",
+      "Afghanistan"
+    ]
+  },
+  {
+    "id": "trivia-fenway",
+    "scope": "global",
+    "tags": [
+      "sports"
+    ],
+    "prompt": "Baseball's oldest stadium opened in 1912. What is its name?",
+    "correctAnswer": "Fenway Park",
+    "wrongAnswers": [
+      "Wrigley Field",
+      "Yankee Stadium",
+      "Polo Grounds"
+    ]
+  },
+  {
+    "id": "trivia-prince-lyrics",
+    "scope": "global",
+    "tags": [
+      "music"
+    ],
+    "prompt": "Which artist has a song with these lyrics: Dream if you can a courtyard, An ocean of violets in bloom",
+    "correctAnswer": "Prince",
+    "wrongAnswers": [
+      "Michael Jackson",
+      "Stevie Wonder",
+      "Lionel Richie"
+    ]
+  },
+  {
+    "id": "trivia-first-vice-president",
+    "scope": "global",
+    "tags": [
+      "history"
+    ],
+    "prompt": "Who was America's first Vice President?",
+    "correctAnswer": "John Adams",
+    "wrongAnswers": [
+      "Thomas Jefferson",
+      "Aaron Burr",
+      "James Madison"
+    ]
+  },
+  {
+    "id": "trivia-american-idol-judges",
+    "scope": "global",
+    "tags": [
+      "tv"
+    ],
+    "prompt": "Who were the three original American Idol judges?",
+    "correctAnswer": "Simon Cowell, Randy Jackson, Paula Abdul",
+    "wrongAnswers": [
+      "Simon Cowell, Mariah Carey, Ryan Seacrest",
+      "Paula Abdul, Lionel Richie, Katy Perry",
+      "Simon Cowell, Randy Jackson, Katy Perry"
+    ]
+  },
+  {
+    "id": "trivia-monica-towels",
+    "scope": "global",
+    "tags": [
+      "tv"
+    ],
+    "prompt": "In one episode of Friends, we learn that Monica has eleven sets of what?",
+    "correctAnswer": "Towels",
+    "wrongAnswers": [
+      "Sheets",
+      "Plates",
+      "Mugs"
+    ]
+  },
+  {
+    "id": "trivia-pocahontas-tattoo",
+    "scope": "global",
+    "tags": [
+      "movies"
+    ],
+    "prompt": "Who was the first Disney princess to have a tattoo?",
+    "correctAnswer": "Pocahontas",
+    "wrongAnswers": [
+      "Ariel",
+      "Belle",
+      "Mulan"
+    ]
+  },
+  {
+    "id": "trivia-american-eagle-2025",
+    "scope": "global",
+    "tags": [
+      "pop-culture"
+    ],
+    "prompt": "Which \"American\" clothing brand faced backlash for a denim campaign starring actress Sydney Sweeney in 2025?",
+    "correctAnswer": "American Eagle",
+    "wrongAnswers": [
+      "American Outfitters",
+      "American Threads",
+      "Eagle Denim"
+    ]
+  },
+  {
+    "id": "trivia-scoops-ahoy",
+    "scope": "global",
+    "tags": [
+      "tv"
+    ],
+    "prompt": "What's the name of the ice cream shop that Steve and Robin work at in Stranger Things?",
+    "correctAnswer": "Scoops Ahoy",
+    "wrongAnswers": [
+      "Dairy Dream",
+      "The Sweet Spot",
+      "Sugar Shack"
+    ]
+  },
+  {
+    "id": "trivia-scrappy-doo",
+    "scope": "global",
+    "tags": [
+      "tv"
+    ],
+    "prompt": "What is Scrappy-Doo's relationship to Scooby-Doo?",
+    "correctAnswer": "Nephew",
+    "wrongAnswers": [
+      "Brother",
+      "Cousin",
+      "Son"
+    ]
+  },
+  {
+    "id": "trivia-hologram-2014",
+    "scope": "global",
+    "tags": [
+      "music"
+    ],
+    "prompt": "Which musician appeared as a hologram at the 2014 Billboard Music Awards?",
+    "correctAnswer": "Michael Jackson",
+    "wrongAnswers": [
+      "Elvis Presley",
+      "Tupac Shakur",
+      "Prince"
+    ]
+  },
+  {
+    "id": "trivia-scientologists",
+    "scope": "global",
+    "tags": [
+      "pop-culture"
+    ],
+    "prompt": "What do Tom Cruise, John Travolta, and Elisabeth Moss have in common?",
+    "correctAnswer": "They are all Scientologists",
+    "wrongAnswers": [
+      "They all won Oscars",
+      "They all hosted SNL",
+      "They all starred in Star Wars"
+    ]
+  },
+  {
+    "id": "trivia-three-strikes",
+    "scope": "global",
+    "tags": [
+      "sports"
+    ],
+    "prompt": "What is the term for getting three strikes in a row?",
+    "correctAnswer": "Turkey",
+    "wrongAnswers": [
+      "Hat trick",
+      "Triple play",
+      "Perfect game"
+    ]
+  },
+  {
+    "id": "trivia-basketball-rim",
+    "scope": "global",
+    "tags": [
+      "sports"
+    ],
+    "prompt": "A basketball is approximately 9.5 inches in diameter. How many inches in diameter is a basketball rim?",
+    "correctAnswer": "18",
+    "wrongAnswers": [
+      "12",
+      "16",
+      "20"
+    ]
+  },
+  {
+    "id": "trivia-van-gogh-ear",
+    "scope": "global",
+    "tags": [
+      "art"
+    ],
+    "prompt": "Which artist cut off his left ear?",
+    "correctAnswer": "Vincent van Gogh",
+    "wrongAnswers": [
+      "Pablo Picasso",
+      "Claude Monet",
+      "Salvador Dalí"
+    ]
+  },
+  {
+    "id": "trivia-only-flying-mammal",
+    "scope": "global",
+    "tags": [
+      "science"
+    ],
+    "prompt": "What is the only mammal that can fly?",
+    "correctAnswer": "Bat",
+    "wrongAnswers": [
+      "Flying squirrel",
+      "Sugar glider",
+      "Koala"
+    ]
+  },
+  {
+    "id": "trivia-castle-rock",
+    "scope": "global",
+    "tags": [
+      "books"
+    ],
+    "prompt": "The fictional city of Castle Rock, which appears in various Stephen King books, is located in which state?",
+    "correctAnswer": "Maine",
+    "wrongAnswers": [
+      "Vermont",
+      "Massachusetts",
+      "New Hampshire"
+    ]
+  },
+  {
+    "id": "trivia-karate-belt",
+    "scope": "global",
+    "tags": [
+      "sports"
+    ],
+    "prompt": "What color is the first belt that a karate student receives?",
+    "correctAnswer": "White",
+    "wrongAnswers": [
+      "Yellow",
+      "Blue",
+      "Black"
+    ]
+  },
+  {
+    "id": "trivia-fortnight",
+    "scope": "global",
+    "tags": [
+      "language"
+    ],
+    "prompt": "How long is a fortnight?",
+    "correctAnswer": "2 weeks",
+    "wrongAnswers": [
+      "7 days",
+      "10 days",
+      "1 month"
+    ]
+  },
+  {
+    "id": "trivia-piano-keys",
+    "scope": "global",
+    "tags": [
+      "music"
+    ],
+    "prompt": "How many keys does a piano have?",
+    "correctAnswer": "88",
+    "wrongAnswers": [
+      "76",
+      "61",
+      "100"
+    ]
+  },
+  {
+    "id": "trivia-first-moon-walker",
+    "scope": "global",
+    "tags": [
+      "history"
+    ],
+    "prompt": "Who was the first person to walk on the moon?",
+    "correctAnswer": "Neil Armstrong",
+    "wrongAnswers": [
+      "Buzz Aldrin",
+      "Michael Collins",
+      "Yuri Gagarin"
+    ]
+  },
+  {
+    "id": "trivia-achilles",
+    "scope": "global",
+    "tags": [
+      "mythology"
+    ],
+    "prompt": "According to Greek mythology, what famed warrior died because he took an arrow to the heel?",
+    "correctAnswer": "Achilles",
+    "wrongAnswers": [
+      "Hector",
+      "Odysseus",
+      "Perseus"
+    ]
+  },
+  {
+    "id": "trivia-call-me-ishmael",
+    "scope": "global",
+    "tags": [
+      "books"
+    ],
+    "prompt": "Which novel begins with the line, \"Call me Ishmael\"?",
+    "correctAnswer": "Moby Dick",
+    "wrongAnswers": [
+      "The Old Man and the Sea",
+      "Treasure Island",
+      "The Great Gatsby"
+    ]
+  },
+  {
+    "id": "trivia-to-be-or-not-to-be",
+    "scope": "global",
+    "tags": [
+      "books"
+    ],
+    "prompt": "\"To be or not to be\" comes from which Shakespeare play?",
+    "correctAnswer": "Hamlet",
+    "wrongAnswers": [
+      "Macbeth",
+      "Othello",
+      "King Lear"
+    ]
+  },
+  {
+    "id": "trivia-elizabeth-taylor-marriages",
+    "scope": "global",
+    "tags": [
+      "entertainment"
+    ],
+    "prompt": "How many times was Elizabeth Taylor married?",
+    "correctAnswer": "8",
+    "wrongAnswers": [
+      "5",
+      "6",
+      "7"
+    ]
+  },
+  {
+    "id": "trivia-disney-logo-i",
+    "scope": "global",
+    "tags": [
+      "movies"
+    ],
+    "prompt": "Which lowercase letter appears in the word \"Disney\" in the Walt Disney logo?",
+    "correctAnswer": "i",
+    "wrongAnswers": [
+      "d",
+      "e",
+      "y"
+    ]
+  },
+  {
+    "id": "trivia-brazil-flag-colors",
+    "scope": "global",
+    "tags": [
+      "geography"
+    ],
+    "prompt": "What four colors make up the flag of Brazil?",
+    "correctAnswer": "Green, yellow, blue, white",
+    "wrongAnswers": [
+      "Green, blue, white, red",
+      "Yellow, red, black, green",
+      "Green, yellow, blue, black"
+    ]
+  },
+  {
+    "id": "trivia-titanic-sank",
+    "scope": "global",
+    "tags": [
+      "history"
+    ],
+    "prompt": "In what year did the Titanic sink?",
+    "correctAnswer": "1912",
+    "wrongAnswers": [
+      "1908",
+      "1915",
+      "1918"
+    ]
+  },
+  {
+    "id": "trivia-ikea-origin",
+    "scope": "global",
+    "tags": [
+      "business"
+    ],
+    "prompt": "Which country did Ikea originate in?",
+    "correctAnswer": "Sweden",
+    "wrongAnswers": [
+      "Norway",
+      "Denmark",
+      "Finland"
+    ]
+  },
+  {
+    "id": "trivia-finland-capital",
+    "scope": "global",
+    "tags": [
+      "geography"
+    ],
+    "prompt": "What is the capital of Finland?",
+    "correctAnswer": "Helsinki",
+    "wrongAnswers": [
+      "Oslo",
+      "Stockholm",
+      "Copenhagen"
+    ]
+  },
+  {
+    "id": "trivia-one-row-state",
+    "scope": "global",
+    "tags": [
+      "language"
+    ],
+    "prompt": "What is the only state that can be typed using only one row of letters on a standard keyboard?",
+    "correctAnswer": "Alaska",
+    "wrongAnswers": [
+      "Maine",
+      "Texas",
+      "Hawaii"
+    ]
+  },
+  {
+    "id": "trivia-hallux",
+    "scope": "global",
+    "tags": [
+      "science"
+    ],
+    "prompt": "On what part of the body is the hallux located?",
+    "correctAnswer": "Big toe",
+    "wrongAnswers": [
+      "Wrist",
+      "Elbow",
+      "Heel"
+    ]
+  },
+  {
+    "id": "trivia-alamo-besieged",
+    "scope": "global",
+    "tags": [
+      "history"
+    ],
+    "prompt": "In what year was the Alamo besieged by the Mexican Army?",
+    "correctAnswer": "1836",
+    "wrongAnswers": [
+      "1821",
+      "1845",
+      "1861"
+    ]
+  },
+  {
+    "id": "trivia-polio-vaccine",
+    "scope": "global",
+    "tags": [
+      "science"
+    ],
+    "prompt": "Who developed the polio vaccine in 1954?",
+    "correctAnswer": "Jonas Salk",
+    "wrongAnswers": [
+      "Louis Pasteur",
+      "Robert Koch",
+      "Alexander Fleming"
+    ]
+  },
+  {
+    "id": "trivia-guantanamo-base",
+    "scope": "global",
+    "tags": [
+      "history"
+    ],
+    "prompt": "In 1903 the U.S. and Cuba signed an agreement releasing this Cuban for which U.S. naval base?",
+    "correctAnswer": "Guantanamo Bay",
+    "wrongAnswers": [
+      "Santiago",
+      "Havana",
+      "Key West"
+    ]
+  },
+  {
+    "id": "trivia-fascist-party",
+    "scope": "global",
+    "tags": [
+      "history"
+    ],
+    "prompt": "In 1919, the Fascist Party was formed by which Italian leader?",
+    "correctAnswer": "Benito Mussolini",
+    "wrongAnswers": [
+      "Victor Emmanuel III",
+      "Giuseppe Garibaldi",
+      "Julius Caesar"
+    ]
+  },
+  {
+    "id": "trivia-pinocchio-release",
+    "scope": "global",
+    "tags": [
+      "movies"
+    ],
+    "prompt": "In what year was Pinocchio released?",
+    "correctAnswer": "1940",
+    "wrongAnswers": [
+      "1937",
+      "1945",
+      "1950"
+    ]
+  },
+  {
+    "id": "trivia-dow-4000",
+    "scope": "global",
+    "tags": [
+      "business"
+    ],
+    "prompt": "In what year did the Dow Jones Industrial Average close above 4,000 for the first time?",
+    "correctAnswer": "1995",
+    "wrongAnswers": [
+      "1987",
+      "1991",
+      "2001"
+    ]
+  },
+  {
+    "id": "trivia-slim-shady-lp",
+    "scope": "global",
+    "tags": [
+      "music"
+    ],
+    "prompt": "What hip hop artist released The Slim Shady LP?",
+    "correctAnswer": "Eminem",
+    "wrongAnswers": [
+      "Dr. Dre",
+      "Jay-Z",
+      "Snoop Dogg"
+    ]
+  },
+  {
+    "id": "trivia-victor-fleming",
+    "scope": "global",
+    "tags": [
+      "movies"
+    ],
+    "prompt": "Name one of Victor Fleming's films.",
+    "correctAnswer": "The Wizard of Oz",
+    "wrongAnswers": [
+      "Casablanca",
+      "Psycho",
+      "The Godfather"
+    ]
+  },
+  {
+    "id": "trivia-darth-vader-mufasa",
+    "scope": "global",
+    "tags": [
+      "movies"
+    ],
+    "prompt": "Which actor voiced Darth Vader and Mufasa?",
+    "correctAnswer": "James Earl Jones",
+    "wrongAnswers": [
+      "Morgan Freeman",
+      "Samuel L. Jackson",
+      "Denzel Washington"
+    ]
+  },
+  {
+    "id": "trivia-star-wars-day",
+    "scope": "global",
+    "tags": [
+      "pop-culture"
+    ],
+    "prompt": "What date is Star Wars Day?",
+    "correctAnswer": "May 4",
+    "wrongAnswers": [
+      "May 1",
+      "June 4",
+      "July 4"
+    ]
+  },
+  {
+    "id": "trivia-kramer-first-name",
+    "scope": "global",
+    "tags": [
+      "tv"
+    ],
+    "prompt": "What is Kramer's first name in Seinfeld?",
+    "correctAnswer": "Cosmo",
+    "wrongAnswers": [
+      "Morty",
+      "Larry",
+      "Frank"
+    ]
+  },
+  {
+    "id": "trivia-oldest-kardashian",
+    "scope": "global",
+    "tags": [
+      "pop-culture"
+    ],
+    "prompt": "Who is the oldest Kardashian sister?",
+    "correctAnswer": "Kourtney",
+    "wrongAnswers": [
+      "Kim",
+      "Khloé",
+      "Kendall"
+    ]
+  },
+  {
+    "id": "trivia-magnolia-brand",
+    "scope": "global",
+    "tags": [
+      "business"
+    ],
+    "prompt": "What is the name of Chip and Joanna Gaines' lifestyle brand?",
+    "correctAnswer": "Magnolia",
+    "wrongAnswers": [
+      "Hearth & Hand",
+      "Shiplap",
+      "Barnwood"
+    ]
+  },
+  {
+    "id": "trivia-gimli",
+    "scope": "global",
+    "tags": [
+      "movies"
+    ],
+    "prompt": "What's the name of the dwarf that accompanies Frodo on his quest in The Lord of the Rings films?",
+    "correctAnswer": "Gimli",
+    "wrongAnswers": [
+      "Pippin",
+      "Sam",
+      "Boromir"
+    ]
+  },
+  {
+    "id": "trivia-rock-first-lead",
+    "scope": "global",
+    "tags": [
+      "movies"
+    ],
+    "prompt": "What was Dwayne \"The Rock\" Johnson's first movie in a lead role?",
+    "correctAnswer": "The Scorpion King",
+    "wrongAnswers": [
+      "Walking Tall",
+      "Fast Five",
+      "Jumanji"
+    ]
+  },
+  {
+    "id": "trivia-miracle-on-ice",
+    "scope": "global",
+    "tags": [
+      "sports"
+    ],
+    "prompt": "What was the film Miracle on Ice about?",
+    "correctAnswer": "The 1980 hockey game between the U.S. and USSR",
+    "wrongAnswers": [
+      "A baseball championship in 1976",
+      "A basketball final in 1992",
+      "A soccer upset in 2004"
+    ]
+  },
+  {
+    "id": "trivia-first-survivor-winner",
+    "scope": "global",
+    "tags": [
+      "tv"
+    ],
+    "prompt": "Who was the first person to win on Survivor?",
+    "correctAnswer": "Richard Hatch",
+    "wrongAnswers": [
+      "Rudy Boesch",
+      "Kelly Wiglesworth",
+      "Colby Donaldson"
+    ]
+  },
+  {
+    "id": "trivia-empire-strikes-back",
+    "scope": "global",
+    "tags": [
+      "movies"
+    ],
+    "prompt": "In Star Wars Episode V, what does Darth Vader reveal to Luke Skywalker?",
+    "correctAnswer": "That he is Luke's father",
+    "wrongAnswers": [
+      "That Leia is his sister",
+      "That the Death Star is rebuilt",
+      "That the Emperor is alive"
+    ]
+  },
+  {
+    "id": "trivia-delorean-speed",
+    "scope": "global",
+    "tags": [
+      "movies"
+    ],
+    "prompt": "In Back to the Future, what speed does the DeLorean need to reach to travel through time?",
+    "correctAnswer": "88 miles per hour",
+    "wrongAnswers": [
+      "70 miles per hour",
+      "77 miles per hour",
+      "100 miles per hour"
+    ]
+  },
+  {
+    "id": "trivia-adele-scars",
+    "scope": "global",
+    "tags": [
+      "music"
+    ],
+    "prompt": "Which artist has these lyrics: \"The scars of your love remind me of us\"?",
+    "correctAnswer": "Adele",
+    "wrongAnswers": [
+      "Beyonce",
+      "Rihanna",
+      "Taylor Swift"
+    ]
+  },
+  {
+    "id": "trivia-celine-dion-lyrics",
+    "scope": "global",
+    "tags": [
+      "music"
+    ],
+    "prompt": "Which artist has these lyrics: \"You have come to show you go on\"?",
+    "correctAnswer": "Celine Dion",
+    "wrongAnswers": [
+      "Whitney Houston",
+      "Mariah Carey",
+      "Adele"
+    ]
+  },
+  {
+    "id": "trivia-nirvana-lyrics",
+    "scope": "global",
+    "tags": [
+      "music"
+    ],
+    "prompt": "Which artist has these lyrics: \"Hello, hello, hello, how low\"?",
+    "correctAnswer": "Nirvana",
+    "wrongAnswers": [
+      "Pearl Jam",
+      "Soundgarden",
+      "Green Day"
+    ]
+  },
+  {
+    "id": "trivia-michael-jackson-floor",
+    "scope": "global",
+    "tags": [
+      "music"
+    ],
+    "prompt": "Which artist has these lyrics: \"I am the one who will dance on the floor\"?",
+    "correctAnswer": "Michael Jackson",
+    "wrongAnswers": [
+      "Usher",
+      "Prince",
+      "Bruno Mars"
+    ]
+  },
+  {
+    "id": "trivia-eureka",
+    "scope": "global",
+    "tags": [
+      "history"
+    ],
+    "prompt": "What Greek word, meaning \"I have found it,\" was supposedly shouted by Archimedes?",
+    "correctAnswer": "Eureka",
+    "wrongAnswers": [
+      "Logos",
+      "Agora",
+      "Mythos"
+    ]
+  },
+  {
+    "id": "trivia-123",
+    "scope": "global",
+    "tags": [
+      "math"
+    ],
+    "prompt": "What set of three positive integers gives the same result whether you add them all or multiply them all together?",
+    "correctAnswer": "1, 2, and 3",
+    "wrongAnswers": [
+      "1, 3, and 5",
+      "2, 2, and 2",
+      "2, 3, and 4"
+    ]
+  }
+]

@@ -44,7 +44,20 @@ db.exec(`
 
   CREATE INDEX IF NOT EXISTS idx_sessions_profile_id ON sessions(profile_id);
   CREATE INDEX IF NOT EXISTS idx_sessions_completed_at ON sessions(completed_at);
+
+  CREATE TABLE IF NOT EXISTS questions (
+    id TEXT PRIMARY KEY,
+    active INTEGER NOT NULL DEFAULT 1,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    payload_json TEXT NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_questions_active_sort ON questions(active, sort_order, updated_at);
 `);
+
+const questionSeedPath = resolve(websiteRoot, "shared/restaurant-question-bank.json");
 
 const emptyStats = () => ({
   gamesPlayed: 0,
@@ -180,6 +193,83 @@ function saveSession(session) {
 
   return safeSession;
 }
+
+function questionFromRow(row) {
+  if (!row) {
+    return null;
+  }
+
+  return {
+    ...safeJsonParse(row.payload_json, {}),
+    id: row.id,
+    active: Boolean(row.active),
+    sortOrder: Number(row.sort_order) || 0,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function loadQuestionSeed() {
+  try {
+    const raw = readFileSync(questionSeedPath, "utf8");
+    const parsed = safeJsonParse(raw, []);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function seedQuestionsIfNeeded() {
+  const counts = db.prepare("SELECT COUNT(*) AS count FROM questions").get();
+  if (Number(counts?.count) > 0) {
+    return;
+  }
+
+  const seed = loadQuestionSeed();
+  if (!seed.length) {
+    return;
+  }
+
+  const insert = db.prepare(`
+    INSERT OR REPLACE INTO questions (
+      id,
+      active,
+      sort_order,
+      created_at,
+      updated_at,
+      payload_json
+    )
+    VALUES (?, ?, ?, ?, ?, ?)
+  `);
+
+  const timestamp = nowIso();
+  const transaction = db.transaction((items) => {
+    items.forEach((question, index) => {
+      const normalized = typeof question === "object" && question ? structuredClone(question) : {};
+      const payload = JSON.stringify(normalized);
+      insert.run(
+        String(normalized.id || `question-${index}`),
+        normalized.active === false ? 0 : 1,
+        Number.isFinite(Number(normalized.sortOrder)) ? Number(normalized.sortOrder) : index,
+        String(normalized.createdAt || timestamp),
+        String(normalized.updatedAt || timestamp),
+        payload
+      );
+    });
+  });
+
+  transaction(seed);
+}
+
+function getQuestions() {
+  const rows = db
+    .prepare("SELECT * FROM questions WHERE active = 1 ORDER BY sort_order ASC, updated_at ASC")
+    .all();
+
+  return rows.map(questionFromRow).filter(Boolean);
+}
+
+seedQuestionsIfNeeded();
 
 function buildStats(profile, restaurantSlug = "") {
   const base = restaurantSlug
@@ -431,6 +521,11 @@ async function handleApi(request, response, url) {
       200,
       rows.map((row) => safeJsonParse(row.payload_json, {}))
     );
+    return;
+  }
+
+  if (request.method === "GET" && pathname === "/api/questions") {
+    sendJson(response, 200, getQuestions());
     return;
   }
 

@@ -22,3 +22,14 @@ create table if not exists sessions (
 
 create index if not exists idx_sessions_profile_id on sessions (profile_id);
 create index if not exists idx_sessions_completed_at on sessions (completed_at desc);
+
+create table if not exists questions (
+  id text primary key,
+  active boolean not null default true,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  payload_json jsonb not null
+);
+
+create index if not exists idx_questions_active_sort on questions (active, sort_order, updated_at desc);

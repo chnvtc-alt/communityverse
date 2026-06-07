@@ -87,6 +87,62 @@ export function sessionFromRecord(record) {
   };
 }
 
+export function normalizeQuestion(question) {
+  const safeQuestion = typeof question === "object" && question ? structuredClone(question) : {};
+  safeQuestion.id = String(safeQuestion.id || "").trim();
+  safeQuestion.scope = String(safeQuestion.scope || "").trim();
+  safeQuestion.restaurantSlug = String(safeQuestion.restaurantSlug || "").trim();
+  safeQuestion.areaSlug = String(safeQuestion.areaSlug || "").trim();
+  safeQuestion.prompt = String(safeQuestion.prompt || "").trim();
+  safeQuestion.correctAnswer = String(safeQuestion.correctAnswer || "").trim();
+  safeQuestion.wrongAnswers = Array.isArray(safeQuestion.wrongAnswers)
+    ? safeQuestion.wrongAnswers.map((answer) => String(answer || "").trim()).filter(Boolean)
+    : [];
+  safeQuestion.tags = Array.isArray(safeQuestion.tags)
+    ? safeQuestion.tags.map((tag) => String(tag || "").trim()).filter(Boolean)
+    : [];
+  safeQuestion.customerIds = Array.isArray(safeQuestion.customerIds)
+    ? safeQuestion.customerIds.map((customerId) => String(customerId || "").trim()).filter(Boolean)
+    : [];
+  safeQuestion.difficulty = String(safeQuestion.difficulty || "medium").trim() || "medium";
+  safeQuestion.image = String(safeQuestion.image || "").trim();
+  safeQuestion.imageAlt = String(safeQuestion.imageAlt || "").trim();
+  safeQuestion.imagePrompt = String(safeQuestion.imagePrompt || "").trim();
+  safeQuestion.active = safeQuestion.active !== false;
+  safeQuestion.sortOrder = Number(safeQuestion.sortOrder) || 0;
+  return safeQuestion;
+}
+
+export function questionFromRecord(record) {
+  if (!record) {
+    return null;
+  }
+
+  const payload = toJsonObject(record.payload_json, {});
+  return normalizeQuestion({
+    ...payload,
+    id: record.id ?? payload.id,
+    active: record.active ?? payload.active,
+    sortOrder: record.sort_order ?? payload.sortOrder,
+    createdAt: record.created_at ?? payload.createdAt,
+    updatedAt: record.updated_at ?? payload.updatedAt,
+  });
+}
+
+export function questionToRecord(question, sortOrder = 0) {
+  const normalized = normalizeQuestion(question);
+  const timestamp = new Date().toISOString();
+
+  return {
+    id: normalized.id,
+    active: normalized.active,
+    sort_order: Number.isFinite(Number(sortOrder)) ? Number(sortOrder) : normalized.sortOrder || 0,
+    created_at: normalized.createdAt || timestamp,
+    updated_at: timestamp,
+    payload_json: normalized,
+  };
+}
+
 function restaurantStatsFor(profile, restaurantSlug) {
   const safeProfile = normalizeProfile(profile);
   if (!restaurantSlug) {
