@@ -1,8 +1,11 @@
 const API_URL = "/api/admin/questions";
 const GENERATOR_API_URL = "/api/admin/question-generator";
+const CUSTOMER_API_URL = "/api/admin/customers";
+const CUSTOMER_PHOTO_API_URL = "/api/admin/customer-photo";
 const KEY_STORAGE = "communityverseQuestionsAdminKey";
 
 const elements = {
+  tabs: [...document.querySelectorAll(".workshop-tab")],
   connectionStatus: document.querySelector("#connection-status"),
   lockButton: document.querySelector("#lock-button"),
   newButton: document.querySelector("#new-question-button"),
@@ -18,6 +21,36 @@ const elements = {
   deleteButton: document.querySelector("#delete-button"),
   form: document.querySelector("#question-form"),
   formErrors: document.querySelector("#form-errors"),
+  customersPanel: document.querySelector("#customers-panel"),
+  questionsPanel: document.querySelector("#questions-panel"),
+  newCustomerButton: document.querySelector("#new-customer-button"),
+  refreshCustomersButton: document.querySelector("#refresh-customers-button"),
+  clearCustomerFiltersButton: document.querySelector("#clear-customer-filters-button"),
+  customerCount: document.querySelector("#customer-count"),
+  customerList: document.querySelector("#customer-list"),
+  customerMessage: document.querySelector("#customer-message"),
+  customerDialog: document.querySelector("#customer-dialog"),
+  customerEditorTitle: document.querySelector("#customer-editor-title"),
+  closeCustomerEditorButton: document.querySelector("#close-customer-editor-button"),
+  cancelCustomerButton: document.querySelector("#cancel-customer-button"),
+  deleteCustomerButton: document.querySelector("#delete-customer-button"),
+  customerForm: document.querySelector("#customer-form"),
+  customerFormErrors: document.querySelector("#customer-form-errors"),
+  customerId: document.querySelector("#customer-id"),
+  customerName: document.querySelector("#customer-name"),
+  customerGroup: document.querySelector("#customer-group"),
+  customerRarity: document.querySelector("#customer-rarity"),
+  customerRegularValue: document.querySelector("#customer-regular-value"),
+  customerOccasionalValue: document.querySelector("#customer-occasional-value"),
+  customerFocusTag: document.querySelector("#customer-focus-tag"),
+  customerSortOrder: document.querySelector("#customer-sort-order"),
+  customerActive: document.querySelector("#customer-active"),
+  customerBio: document.querySelector("#customer-bio"),
+  customerQuestionPlace: document.querySelector("#customer-question-place"),
+  customerQuestionFact: document.querySelector("#customer-question-fact"),
+  customerImage: document.querySelector("#customer-image"),
+  customerPhotoFile: document.querySelector("#customer-photo-file"),
+  customerPhotoPreview: document.querySelector("#customer-photo-preview"),
   login: document.querySelector("#login-dialog"),
   loginForm: document.querySelector("#login-form"),
   loginError: document.querySelector("#login-error"),
@@ -31,6 +64,11 @@ const elements = {
   aiResults: document.querySelector("#ai-results"),
   generateQuestionsButton: document.querySelector("#generate-questions-button"),
   suggestWrongAnswersButton: document.querySelector("#suggest-wrong-answers-button"),
+  customerFilterQuery: document.querySelector("#customer-filter-query"),
+  customerFilterStatus: document.querySelector("#customer-filter-status"),
+  customerFilterGroup: document.querySelector("#customer-filter-group"),
+  customerFilterFocusTag: document.querySelector("#customer-filter-focus-tag"),
+  customerFilterRarity: document.querySelector("#customer-filter-rarity"),
 };
 
 const filterIds = [
@@ -46,9 +84,13 @@ const filterIds = [
 
 let adminKey = sessionStorage.getItem(KEY_STORAGE) || "";
 let questions = [];
+let customers = [];
 let filterTimer = 0;
+let customerFilterTimer = 0;
 let aiDrafts = [];
 let selectedAiDraftIndex = -1;
+let selectedCustomerPhotoFile = null;
+let selectedCustomerPhotoPreviewUrl = "";
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -112,6 +154,50 @@ async function generatorRequest(body) {
   return data.questions || [];
 }
 
+async function customerApiRequest(path = "", options = {}) {
+  const response = await fetch(`${CUSTOMER_API_URL}${path}`, {
+    ...options,
+    headers: {
+      ...(options.body ? { "Content-Type": "application/json" } : {}),
+      Authorization: `Bearer ${adminKey}`,
+      ...(options.headers || {}),
+    },
+  });
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const error = new Error(data.error || data.errors?.join(" ") || `Request failed (${response.status}).`);
+    error.status = response.status;
+    error.details = data.errors;
+    throw error;
+  }
+
+  return data;
+}
+
+async function uploadCustomerPhoto(customerId, file) {
+  const formData = new FormData();
+  formData.set("id", customerId);
+  formData.set("photo", file);
+
+  const response = await fetch(CUSTOMER_PHOTO_API_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${adminKey}`,
+    },
+    body: formData,
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.error || `Photo upload failed (${response.status}).`);
+    error.status = response.status;
+    throw error;
+  }
+
+  return data;
+}
+
 function filterParams() {
   const mapping = {
     "filter-query": "q",
@@ -138,11 +224,83 @@ function setConnected(connected) {
   elements.connectionStatus.classList.toggle("connected", connected);
 }
 
+function setActiveTab(tabName) {
+  elements.tabs.forEach((button) => {
+    const isActive = button.dataset.tab === tabName;
+    button.classList.toggle("is-active", isActive);
+  });
+  elements.questionsPanel.hidden = tabName !== "questions";
+  elements.customersPanel.hidden = tabName !== "customers";
+}
+
 function populateDatalist(id, values) {
   document.querySelector(`#${id}`).innerHTML = [...new Set(values.filter(Boolean))]
     .sort()
     .map((value) => `<option value="${escapeHtml(value)}"></option>`)
     .join("");
+}
+
+function displayImageUrl(image) {
+  const source = String(image || "").trim();
+  if (!source) {
+    return "/assets/restaurant-challenge/customers/customer-placeholder.svg";
+  }
+
+  if (/^https?:\/\//i.test(source) || source.startsWith("/")) {
+    return source;
+  }
+
+  if (source.startsWith("../assets/")) {
+    return `/${source.replace(/^\.\.\/assets\//, "assets/")}`;
+  }
+
+  return source;
+}
+
+function showCustomerMessage(text, isError = false) {
+  elements.customerMessage.textContent = text;
+  elements.customerMessage.classList.toggle("message-error", isError);
+  elements.customerMessage.hidden = !text;
+}
+
+function showCustomerFormErrors(errors) {
+  const messages = Array.isArray(errors) ? errors : [errors];
+  elements.customerFormErrors.innerHTML = messages.map((message) => `<div>${escapeHtml(message)}</div>`).join("");
+  elements.customerFormErrors.hidden = !messages.filter(Boolean).length;
+}
+
+function createCustomerId(name) {
+  const slug = String(name || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 48);
+  return `${slug || "customer"}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function normalizeCustomer(customer) {
+  const safeCustomer = typeof customer === "object" && customer ? structuredClone(customer) : {};
+  safeCustomer.id = String(safeCustomer.id || "").trim();
+  safeCustomer.name = String(safeCustomer.name || "").trim();
+  safeCustomer.group = String(safeCustomer.group || safeCustomer.groupName || "").trim();
+  safeCustomer.rarity = String(safeCustomer.rarity || "").trim();
+  safeCustomer.regularValue = Number(safeCustomer.regularValue) || 0;
+  safeCustomer.occasionalValue = Number(safeCustomer.occasionalValue) || 0;
+  safeCustomer.focusTag = String(safeCustomer.focusTag || "").trim();
+  safeCustomer.image = String(safeCustomer.image || "").trim();
+  safeCustomer.bio = String(safeCustomer.bio || "").trim();
+  safeCustomer.questionPlace = String(safeCustomer.questionPlace || "").trim();
+  safeCustomer.questionFact = String(safeCustomer.questionFact || "").trim();
+  safeCustomer.groupName = String(safeCustomer.groupName || safeCustomer.group || "").trim();
+  safeCustomer.active = safeCustomer.active !== false;
+  safeCustomer.sortOrder = Number(safeCustomer.sortOrder) || 0;
+  return safeCustomer;
+}
+
+function populateCustomerSuggestions() {
+  populateDatalist("customer-group-options", customers.map((customer) => customer.group));
+  populateDatalist("customer-focus-options", customers.map((customer) => customer.focusTag));
+  populateDatalist("customer-rarity-options", customers.map((customer) => customer.rarity));
 }
 
 function updateSuggestions() {
@@ -195,7 +353,9 @@ function renderQuestions() {
 
 async function loadQuestions({ quiet = false } = {}) {
   if (!adminKey) {
-    elements.login.showModal();
+    if (!elements.login.open) {
+      elements.login.showModal();
+    }
     return;
   }
 
@@ -219,6 +379,242 @@ async function loadQuestions({ quiet = false } = {}) {
       return;
     }
     showMessage(error.message, true);
+  }
+}
+
+function customerFilterParams() {
+  const mapping = {
+    "customer-filter-query": "q",
+    "customer-filter-status": "status",
+    "customer-filter-group": "group",
+    "customer-filter-focus-tag": "focusTag",
+    "customer-filter-rarity": "rarity",
+  };
+  const params = new URLSearchParams();
+
+  Object.entries(mapping).forEach(([id, parameter]) => {
+    const value = document.querySelector(`#${id}`).value.trim();
+    if (value) params.set(parameter, value);
+  });
+
+  return params;
+}
+
+function renderCustomers() {
+  elements.customerCount.textContent = `${customers.length} customer${customers.length === 1 ? "" : "s"}`;
+  populateCustomerSuggestions();
+
+  if (!customers.length) {
+    elements.customerList.innerHTML = '<div class="empty-state">No customers match these filters.</div>';
+    return;
+  }
+
+  elements.customerList.innerHTML = customers
+    .map((customer) => {
+      const chips = [
+        customer.group,
+        customer.focusTag ? `#${customer.focusTag}` : "",
+        customer.rarity,
+        customer.active ? "" : "inactive",
+      ].filter(Boolean);
+
+      return `
+        <article class="question-card ${customer.active ? "" : "inactive"}" data-id="${escapeHtml(customer.id)}">
+          <div class="customer-card-layout">
+              <img class="customer-card-photo" src="${escapeHtml(displayImageUrl(customer.image))}" alt="${escapeHtml(customer.name)}" />
+            <div>
+              <p class="question-prompt">${escapeHtml(customer.name)}</p>
+              <p class="question-answer">Regular ${escapeHtml(customer.regularValue)} | Occasional ${escapeHtml(customer.occasionalValue)}</p>
+              <p class="subtle" style="margin-top: 6px;">${escapeHtml(customer.bio || customer.questionFact || customer.questionPlace || "")}</p>
+              <div class="question-meta">
+                ${chips.map((chip) => `<span class="meta-chip">${escapeHtml(chip)}</span>`).join("")}
+              </div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <button class="button button-secondary edit-customer-button" type="button">Edit</button>
+            <button class="button button-quiet toggle-customer-button" type="button">
+              ${customer.active ? "Deactivate" : "Activate"}
+            </button>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+async function loadCustomers({ quiet = false } = {}) {
+  if (!adminKey) {
+    if (!elements.login.open) {
+      elements.login.showModal();
+    }
+    return;
+  }
+
+  if (!quiet) showCustomerMessage("Loading customers...");
+
+  try {
+    const data = await customerApiRequest(`?${customerFilterParams().toString()}`);
+    customers = (data.customers || []).map(normalizeCustomer);
+    renderCustomers();
+    showCustomerMessage("");
+    if (elements.login.open) elements.login.close();
+  } catch (error) {
+    if (error.status === 401) {
+      adminKey = "";
+      sessionStorage.removeItem(KEY_STORAGE);
+      elements.loginError.textContent = "That admin key was not accepted.";
+      elements.loginError.hidden = false;
+      if (!elements.login.open) elements.login.showModal();
+      return;
+    }
+    showCustomerMessage(error.message, true);
+  }
+}
+
+function updateCustomerPhotoPreview(source) {
+  const raw = String(source || "").trim();
+  if (!raw) {
+    elements.customerPhotoPreview.removeAttribute("src");
+    elements.customerPhotoPreview.alt = "";
+    elements.customerPhotoPreview.hidden = true;
+    return;
+  }
+
+  const image = displayImageUrl(raw);
+  if (image) {
+    elements.customerPhotoPreview.src = image;
+    elements.customerPhotoPreview.alt = "";
+    elements.customerPhotoPreview.hidden = false;
+    return;
+  }
+}
+
+function resetCustomerEditor(customer = null) {
+  elements.customerForm.reset();
+  showCustomerFormErrors([]);
+  if (selectedCustomerPhotoPreviewUrl) {
+    URL.revokeObjectURL(selectedCustomerPhotoPreviewUrl);
+    selectedCustomerPhotoPreviewUrl = "";
+  }
+  selectedCustomerPhotoFile = null;
+  elements.customerPhotoFile.value = "";
+  elements.customerId.value = customer?.id || "";
+  elements.customerName.value = customer?.name || "";
+  elements.customerGroup.value = customer?.group || "";
+  elements.customerRarity.value = customer?.rarity || "";
+  elements.customerRegularValue.value = customer?.regularValue || 0;
+  elements.customerOccasionalValue.value = customer?.occasionalValue || 0;
+  elements.customerFocusTag.value = customer?.focusTag || "";
+  elements.customerSortOrder.value = customer?.sortOrder || 0;
+  elements.customerActive.checked = customer?.active !== false;
+  elements.customerBio.value = customer?.bio || "";
+  elements.customerQuestionPlace.value = customer?.questionPlace || "";
+  elements.customerQuestionFact.value = customer?.questionFact || "";
+  elements.customerImage.value = customer?.image || "";
+  updateCustomerPhotoPreview(customer?.image || "");
+  elements.customerEditorTitle.textContent = customer ? "Edit customer" : "New customer";
+  elements.deleteCustomerButton.hidden = !customer;
+}
+
+function customerFromForm() {
+  return {
+    id: elements.customerId.value.trim(),
+    name: elements.customerName.value.trim(),
+    group: elements.customerGroup.value.trim(),
+    rarity: elements.customerRarity.value.trim(),
+    regularValue: Number(elements.customerRegularValue.value) || 0,
+    occasionalValue: Number(elements.customerOccasionalValue.value) || 0,
+    focusTag: elements.customerFocusTag.value.trim(),
+    sortOrder: Number(elements.customerSortOrder.value) || 0,
+    active: elements.customerActive.checked,
+    bio: elements.customerBio.value.trim(),
+    questionPlace: elements.customerQuestionPlace.value.trim(),
+    questionFact: elements.customerQuestionFact.value.trim(),
+    image: elements.customerImage.value.trim(),
+  };
+}
+
+async function validatePhotoDimensions(file) {
+  const imageUrl = URL.createObjectURL(file);
+  try {
+    const dimensions = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+      img.onerror = () => reject(new Error("That photo could not be read."));
+      img.src = imageUrl;
+    });
+
+    if (dimensions.width !== 512 || dimensions.height !== 512) {
+      throw new Error("Please use a 512 x 512 photo.");
+    }
+
+    return true;
+  } finally {
+    URL.revokeObjectURL(imageUrl);
+  }
+}
+
+async function saveCustomerEditor(event) {
+  event.preventDefault();
+  showCustomerFormErrors([]);
+
+  let customer = customerFromForm();
+  if (!customer.id) {
+    customer.id = createCustomerId(customer.name);
+    elements.customerId.value = customer.id;
+  }
+
+  if (!customer.name) {
+    showCustomerFormErrors("Customer name is required.");
+    return;
+  }
+
+  try {
+    if (selectedCustomerPhotoFile) {
+      await validatePhotoDimensions(selectedCustomerPhotoFile);
+      const upload = await uploadCustomerPhoto(customer.id, selectedCustomerPhotoFile);
+      customer.image = upload.image;
+      elements.customerImage.value = upload.image;
+    }
+
+    const isEditing = Boolean(customer.id && customers.some((entry) => entry.id === customer.id));
+    await customerApiRequest(isEditing ? `/${encodeURIComponent(customer.id)}` : "", {
+      method: isEditing ? "PUT" : "POST",
+      body: JSON.stringify(customer),
+    });
+
+    elements.customerDialog.close();
+    showCustomerMessage(isEditing ? "Customer updated." : "Customer added.");
+    await loadCustomers({ quiet: true });
+  } catch (error) {
+    showCustomerFormErrors(error.details || error.message);
+  }
+}
+
+async function toggleCustomer(customer) {
+  try {
+    await customerApiRequest(`/${encodeURIComponent(customer.id)}`, {
+      method: "PUT",
+      body: JSON.stringify({ ...customer, active: !customer.active }),
+    });
+    await loadCustomers({ quiet: true });
+  } catch (error) {
+    showCustomerMessage(error.message, true);
+  }
+}
+
+async function deleteCurrentCustomer() {
+  const id = elements.customerId.value;
+  if (!id || !window.confirm("Permanently delete this customer? Deactivating is usually safer.")) return;
+
+  try {
+    await customerApiRequest(`/${encodeURIComponent(id)}`, { method: "DELETE" });
+    elements.customerDialog.close();
+    showCustomerMessage("Customer deleted.");
+    await loadCustomers({ quiet: true });
+  } catch (error) {
+    showCustomerFormErrors(error.message);
   }
 }
 
@@ -468,6 +864,7 @@ elements.loginForm.addEventListener("submit", async (event) => {
   sessionStorage.setItem(KEY_STORAGE, adminKey);
   elements.loginError.hidden = true;
   await loadQuestions();
+  await loadCustomers();
 });
 
 elements.lockButton.addEventListener("click", () => {
@@ -485,7 +882,13 @@ elements.newButton.addEventListener("click", () => {
   elements.editor.showModal();
 });
 
+elements.newCustomerButton.addEventListener("click", () => {
+  resetCustomerEditor();
+  elements.customerDialog.showModal();
+});
+
 elements.refreshButton.addEventListener("click", () => loadQuestions());
+elements.refreshCustomersButton.addEventListener("click", () => loadCustomers());
 elements.clearFiltersButton.addEventListener("click", () => {
   filterIds.forEach((id) => {
     const input = document.querySelector(`#${id}`);
@@ -494,10 +897,41 @@ elements.clearFiltersButton.addEventListener("click", () => {
   loadQuestions();
 });
 
+elements.clearCustomerFiltersButton.addEventListener("click", () => {
+  [
+    elements.customerFilterQuery,
+    elements.customerFilterGroup,
+    elements.customerFilterFocusTag,
+    elements.customerFilterRarity,
+  ].forEach((input) => {
+    input.value = "";
+  });
+  elements.customerFilterStatus.value = "all";
+  loadCustomers();
+});
+
 filterIds.forEach((id) => {
-  document.querySelector(`#${id}`).addEventListener("input", () => {
-    window.clearTimeout(filterTimer);
-    filterTimer = window.setTimeout(() => loadQuestions({ quiet: true }), 250);
+  const input = document.querySelector(`#${id}`);
+  ["input", "change"].forEach((eventName) => {
+    input.addEventListener(eventName, () => {
+      window.clearTimeout(filterTimer);
+      filterTimer = window.setTimeout(() => loadQuestions({ quiet: true }), 250);
+    });
+  });
+});
+
+[
+  elements.customerFilterQuery,
+  elements.customerFilterGroup,
+  elements.customerFilterFocusTag,
+  elements.customerFilterRarity,
+  elements.customerFilterStatus,
+].forEach((input) => {
+  ["input", "change"].forEach((eventName) => {
+    input.addEventListener(eventName, () => {
+      window.clearTimeout(customerFilterTimer);
+      customerFilterTimer = window.setTimeout(() => loadCustomers({ quiet: true }), 250);
+    });
   });
 });
 
@@ -514,6 +948,19 @@ elements.list.addEventListener("click", (event) => {
   if (event.target.closest(".toggle-button")) toggleQuestion(question);
 });
 
+elements.customerList.addEventListener("click", (event) => {
+  const card = event.target.closest(".question-card");
+  if (!card) return;
+  const customer = customers.find((item) => item.id === card.dataset.id);
+  if (!customer) return;
+
+  if (event.target.closest(".edit-customer-button")) {
+    resetCustomerEditor(customer);
+    elements.customerDialog.showModal();
+  }
+  if (event.target.closest(".toggle-customer-button")) toggleCustomer(customer);
+});
+
 elements.scope.addEventListener("change", updateScopeFields);
 elements.generateQuestionsButton.addEventListener("click", generateQuestionDrafts);
 elements.suggestWrongAnswersButton.addEventListener("click", suggestWrongAnswers);
@@ -528,6 +975,42 @@ elements.form.addEventListener("submit", saveEditor);
 elements.deleteButton.addEventListener("click", deleteCurrentQuestion);
 elements.closeEditorButton.addEventListener("click", () => elements.editor.close());
 elements.cancelButton.addEventListener("click", () => elements.editor.close());
+elements.customerForm.addEventListener("submit", saveCustomerEditor);
+elements.deleteCustomerButton.addEventListener("click", deleteCurrentCustomer);
+elements.closeCustomerEditorButton.addEventListener("click", () => elements.customerDialog.close());
+elements.cancelCustomerButton.addEventListener("click", () => elements.customerDialog.close());
+elements.customerPhotoFile.addEventListener("change", async () => {
+  const file = elements.customerPhotoFile.files && elements.customerPhotoFile.files[0];
+  selectedCustomerPhotoFile = file || null;
+  if (selectedCustomerPhotoPreviewUrl) {
+    URL.revokeObjectURL(selectedCustomerPhotoPreviewUrl);
+    selectedCustomerPhotoPreviewUrl = "";
+  }
+  if (!file) {
+    updateCustomerPhotoPreview(elements.customerImage.value);
+    return;
+  }
+
+  selectedCustomerPhotoPreviewUrl = URL.createObjectURL(file);
+  updateCustomerPhotoPreview(selectedCustomerPhotoPreviewUrl);
+});
+elements.customerImage.addEventListener("input", () => {
+  if (!selectedCustomerPhotoFile) {
+    updateCustomerPhotoPreview(elements.customerImage.value);
+  }
+});
+
+elements.tabs.forEach((button) => {
+  button.addEventListener("click", () => {
+    setActiveTab(button.dataset.tab);
+    if (button.dataset.tab === "customers") {
+      loadCustomers({ quiet: true });
+    }
+  });
+});
 
 renderQuestions();
+renderCustomers();
+setActiveTab("questions");
 loadQuestions();
+loadCustomers();

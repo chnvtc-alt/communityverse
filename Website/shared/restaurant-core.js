@@ -73,7 +73,7 @@
     },
   ];
 
-  const customers = [
+  const seedCustomers = [
     {
       id: "joyce-pepper",
       name: "Mayor Joyce Pepper",
@@ -851,6 +851,90 @@
     },
   ];
 
+  let customers = [];
+
+  function normalizeCustomer(customer) {
+    const safeCustomer = typeof customer === "object" && customer ? structuredClone(customer) : {};
+    safeCustomer.id = String(safeCustomer.id || "").trim();
+    safeCustomer.name = String(safeCustomer.name || "").trim();
+    safeCustomer.group = String(safeCustomer.group || safeCustomer.groupName || "").trim();
+    safeCustomer.rarity = String(safeCustomer.rarity || "").trim();
+    safeCustomer.regularValue = Number(safeCustomer.regularValue) || 0;
+    safeCustomer.occasionalValue = Number(safeCustomer.occasionalValue) || 0;
+    safeCustomer.focusTag = String(safeCustomer.focusTag || "").trim();
+    safeCustomer.image = String(safeCustomer.image || "").trim();
+    safeCustomer.bio = String(safeCustomer.bio || "").trim();
+    safeCustomer.questionPlace = String(safeCustomer.questionPlace || "").trim();
+    safeCustomer.questionFact = String(safeCustomer.questionFact || "").trim();
+    safeCustomer.groupName = String(safeCustomer.groupName || safeCustomer.group || "").trim();
+    safeCustomer.active = safeCustomer.active !== false;
+    safeCustomer.sortOrder = Number(safeCustomer.sortOrder) || 0;
+    safeCustomer.customQuestions = Array.isArray(safeCustomer.customQuestions)
+      ? safeCustomer.customQuestions.map((question) => ({
+          id: String(question?.id || "").trim(),
+          prompt: String(question?.prompt || "").trim(),
+          correctAnswer: String(question?.correctAnswer || "").trim(),
+          wrongAnswers: Array.isArray(question?.wrongAnswers)
+            ? question.wrongAnswers.map((answer) => String(answer || "").trim()).filter(Boolean)
+            : [],
+          difficulty: String(question?.difficulty || "medium").trim() || "medium",
+        })).filter((question) => question.id || question.prompt)
+      : [];
+    return safeCustomer;
+  }
+
+  function normalizeCustomerBank(entries) {
+    return (Array.isArray(entries) ? entries : [])
+      .map(normalizeCustomer)
+      .filter((customer) => customer.id && customer.name);
+  }
+
+  function setCustomerBank(entries, source = "local") {
+    customers.splice(0, customers.length, ...normalizeCustomerBank(entries));
+    if (baseQuestions.length || questions.length) {
+      questions.splice(0, questions.length, ...baseQuestions, ...buildCustomerQuestions());
+    }
+  }
+
+  async function fetchCustomerBankFallback() {
+    const response = await window.fetch("/shared/customer-bank.json", { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error("Customer bank fallback request failed with status " + response.status);
+    }
+
+    const data = await response.json();
+    return normalizeCustomerBank(data);
+  }
+
+  async function refreshCustomerBankFromServer() {
+    if (!USE_REMOTE_SYNC) {
+      return;
+    }
+
+    try {
+      const remoteCustomers = await requestJson("/customers", { method: "GET" });
+      if (Array.isArray(remoteCustomers) && remoteCustomers.length) {
+        setCustomerBank(remoteCustomers, "remote");
+        return;
+      }
+    } catch {
+      // Fall back to the seed file below.
+    }
+
+    try {
+      const fallbackCustomers = await fetchCustomerBankFallback();
+      if (fallbackCustomers.length) {
+        setCustomerBank(fallbackCustomers, "fallback");
+      } else {
+        setCustomerBank([], "local");
+      }
+    } catch {
+      setCustomerBank([], "local");
+    }
+  }
+
+  setCustomerBank(seedCustomers, "local");
+
   const QUESTION_BANK_FALLBACK_URL = "/shared/restaurant-question-bank.json";
   let baseQuestions = [];
   const questions = [];
@@ -1584,7 +1668,11 @@
     }
   }
 
-  void Promise.allSettled([refreshProfilesFromServer(), refreshQuestionBankFromServer()]).then(() => {
+  void Promise.allSettled([
+    refreshProfilesFromServer(),
+    refreshQuestionBankFromServer(),
+    refreshCustomerBankFromServer(),
+  ]).then(() => {
     readyResolve();
   });
 

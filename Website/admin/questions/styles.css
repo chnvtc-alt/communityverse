@@ -57,6 +57,30 @@ button {
   backdrop-filter: blur(16px);
 }
 
+.workshop-tabs {
+  display: flex;
+  gap: 10px;
+  padding: 14px clamp(20px, 4vw, 64px) 0;
+}
+
+.workshop-tab {
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: 12px 12px 0 0;
+  padding: 10px 16px;
+  color: var(--muted);
+  background: rgba(255, 250, 240, 0.72);
+}
+
+.workshop-tab.is-active {
+  color: var(--green);
+  background: rgba(255, 250, 240, 0.98);
+}
+
+.admin-panel[hidden] {
+  display: none;
+}
+
 h1,
 h2 {
   margin: 0;
@@ -298,6 +322,22 @@ textarea {
   box-shadow: 0 7px 20px rgba(53, 43, 27, 0.06);
 }
 
+.customer-card-layout {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.customer-card-photo {
+  width: 112px;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid rgba(30, 41, 37, 0.14);
+  background: #fff;
+}
+
 .question-card::before {
   position: absolute;
   inset: 0 auto 0 0;
@@ -422,6 +462,21 @@ dialog::backdrop {
   align-items: center;
   gap: 10px;
   padding-top: 26px;
+}
+
+.photo-preview-wrap {
+  min-height: 140px;
+}
+
+.photo-preview {
+  display: block;
+  width: 100%;
+  max-width: 240px;
+  aspect-ratio: 1 / 1;
+  border-radius: 16px;
+  object-fit: cover;
+  border: 1px solid rgba(30, 41, 37, 0.14);
+  background: #fff;
 }
 
 .checkbox-label input {

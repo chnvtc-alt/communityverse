@@ -26,7 +26,12 @@
       </div>
     </header>
 
-    <main class="layout">
+    <nav class="workshop-tabs" aria-label="Admin sections">
+      <button class="workshop-tab is-active" type="button" data-tab="questions">Questions</button>
+      <button class="workshop-tab" type="button" data-tab="customers">Customers</button>
+    </nav>
+
+    <main id="questions-panel" class="layout admin-panel">
       <aside class="sidebar">
         <button id="new-question-button" class="button button-primary button-wide" type="button">
           + New question
@@ -112,6 +117,68 @@
         <div id="question-list" class="question-list" aria-live="polite"></div>
       </section>
     </main>
+
+    <section id="customers-panel" class="layout admin-panel" hidden>
+      <aside class="sidebar">
+        <button id="new-customer-button" class="button button-primary button-wide" type="button">
+          + New customer
+        </button>
+
+        <section class="filter-card" aria-labelledby="customer-filter-title">
+          <div class="section-heading">
+            <h2 id="customer-filter-title">Find customers</h2>
+            <button id="clear-customer-filters-button" class="text-button" type="button">Clear</button>
+          </div>
+
+          <label>
+            Search
+            <input id="customer-filter-query" type="search" placeholder="Name, bio, tag..." />
+          </label>
+
+          <div class="filter-grid">
+            <label>
+              Status
+              <select id="customer-filter-status">
+                <option value="all">All</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </label>
+            <label>
+              Group
+              <input id="customer-filter-group" list="customer-group-options" placeholder="historical" />
+            </label>
+            <label>
+              Focus tag
+              <input id="customer-filter-focus-tag" list="customer-focus-options" placeholder="communityverse" />
+            </label>
+            <label>
+              Rarity
+              <input id="customer-filter-rarity" list="customer-rarity-options" placeholder="Rare" />
+            </label>
+          </div>
+        </section>
+
+        <section class="help-card">
+          <h2>Customer photos</h2>
+          <p>Upload JPGs at 512 x 512. The filename and current image path will be saved in Supabase.</p>
+          <p>Use the editor to change names, bios, values, and the photo whenever you need to.</p>
+        </section>
+      </aside>
+
+      <section class="content">
+        <div class="list-heading">
+          <div>
+            <p id="customer-count" class="count">0 customers</p>
+            <p class="subtle">Customers now live in Supabase and still fall back to the repo seed file.</p>
+          </div>
+          <button id="refresh-customers-button" class="button button-secondary" type="button">Refresh</button>
+        </div>
+
+        <div id="customer-message" class="message" role="status" hidden></div>
+        <div id="customer-list" class="question-list" aria-live="polite"></div>
+      </section>
+    </section>
 
     <dialog id="editor-dialog" class="editor-dialog">
       <form id="question-form" method="dialog">
@@ -265,6 +332,89 @@
     <datalist id="area-options"></datalist>
     <datalist id="customer-options"></datalist>
     <datalist id="tag-options"></datalist>
+    <datalist id="customer-group-options"></datalist>
+    <datalist id="customer-focus-options"></datalist>
+    <datalist id="customer-rarity-options"></datalist>
+    <dialog id="customer-dialog" class="editor-dialog">
+      <form id="customer-form" method="dialog">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow">Customer record</p>
+            <h2 id="customer-editor-title">New customer</h2>
+          </div>
+          <button id="close-customer-editor-button" class="icon-button" type="button" aria-label="Close">×</button>
+        </div>
+
+        <input id="customer-id" type="hidden" />
+        <div id="customer-form-errors" class="message message-error" hidden></div>
+
+        <div class="form-grid">
+          <label class="form-span">
+            Customer name
+            <input id="customer-name" required />
+          </label>
+          <label>
+            Group
+            <input id="customer-group" list="customer-group-options" placeholder="historical" />
+          </label>
+          <label>
+            Rarity
+            <input id="customer-rarity" list="customer-rarity-options" placeholder="Rare" />
+          </label>
+          <label>
+            Regular value
+            <input id="customer-regular-value" type="number" value="0" />
+          </label>
+          <label>
+            Occasional value
+            <input id="customer-occasional-value" type="number" value="0" />
+          </label>
+          <label>
+            Focus tag
+            <input id="customer-focus-tag" list="customer-focus-options" placeholder="historical" />
+          </label>
+          <label>
+            Sort order
+            <input id="customer-sort-order" type="number" value="0" />
+          </label>
+          <label class="checkbox-label">
+            <input id="customer-active" type="checkbox" checked />
+            Active in the game
+          </label>
+          <label class="form-span">
+            Bio
+            <textarea id="customer-bio" rows="3"></textarea>
+          </label>
+          <label class="form-span">
+            Question place
+            <input id="customer-question-place" />
+          </label>
+          <label class="form-span">
+            Question fact
+            <input id="customer-question-fact" />
+          </label>
+          <label class="form-span">
+            Photo URL / path
+            <input id="customer-image" placeholder="../assets/... or Supabase photo URL" />
+          </label>
+          <label class="form-span">
+            Replace photo
+            <input id="customer-photo-file" type="file" accept="image/jpeg" />
+            <span class="optional">JPG only, 512 x 512</span>
+          </label>
+          <div class="photo-preview-wrap form-span">
+            <img id="customer-photo-preview" class="photo-preview" alt="" />
+          </div>
+        </div>
+
+        <div class="dialog-actions">
+          <button id="delete-customer-button" class="button button-danger" type="button" hidden>Delete permanently</button>
+          <span class="action-spacer"></span>
+          <button id="cancel-customer-button" class="button button-quiet" type="button">Cancel</button>
+          <button class="button button-primary" type="submit">Save customer</button>
+        </div>
+      </form>
+    </dialog>
     <script type="module" src="/admin/questions/admin.js"></script>
   </body>
 </html>

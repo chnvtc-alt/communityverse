@@ -19,6 +19,8 @@ The admin lets you:
 - Filter by restaurant, area, global/customer scope, customer, tag, difficulty, and status
 - Search prompts, answers, IDs, tags, and targets
 
+The same page also has a `Customers` tab for editing customer records and swapping photos.
+
 Deactivating is safer than deleting. An inactive question remains in Supabase but is not sent to the game.
 
 ## One-Time Supabase Setup
@@ -41,6 +43,8 @@ In the Vercel project settings, add:
 Make `QUESTIONS_ADMIN_KEY` a long private password. It is only used to unlock the question admin and must not be placed in frontend code or committed to Git.
 
 `OPENAI_API_KEY` powers the optional question-writing helper. The key stays inside the server and is never sent to the browser. The helper uses `gpt-5.4-mini` by default; you can optionally override it with `OPENAI_QUESTION_MODEL`.
+
+Customer photos should be uploaded as JPGs at exactly `512 x 512`. The customer editor shows that label next to the upload field.
 
 After adding or changing an environment variable, redeploy the Vercel project.
 

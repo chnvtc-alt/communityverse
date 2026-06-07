@@ -1,0 +1,969 @@
+[
+  {
+    "id": "joyce-pepper",
+    "name": "Mayor Joyce Pepper",
+    "group": "communityverse",
+    "rarity": "Rare",
+    "regularValue": 250,
+    "occasionalValue": 75,
+    "focusTag": "communityverse",
+    "image": "../assets/restaurant-challenge/customers/customer-placeholder.svg"
+  },
+  {
+    "id": "hank-hatley",
+    "name": "Fire Chief Hank Hatley",
+    "group": "communityverse",
+    "rarity": "Rare",
+    "regularValue": 250,
+    "occasionalValue": 75,
+    "focusTag": "communityverse",
+    "image": "../assets/restaurant-challenge/customers/customer-placeholder.svg"
+  },
+  {
+    "id": "savannah-pierce",
+    "name": "Savannah Pierce",
+    "group": "communityverse",
+    "rarity": "Uncommon",
+    "regularValue": 180,
+    "occasionalValue": 50,
+    "focusTag": "communityverse",
+    "image": "../assets/restaurant-challenge/customers/savannah-pierce.jpg"
+  },
+  {
+    "id": "curtis-coolwater",
+    "name": "Curtis Coolwater",
+    "group": "communityverse",
+    "rarity": "Uncommon",
+    "regularValue": 180,
+    "occasionalValue": 50,
+    "focusTag": "communityverse",
+    "image": "../assets/restaurant-challenge/customers/curtis-coolwater.jpg"
+  },
+  {
+    "id": "pastor-caleb-brooks",
+    "name": "Pastor Caleb Brooks",
+    "group": "communityverse",
+    "rarity": "Uncommon",
+    "regularValue": 170,
+    "occasionalValue": 45,
+    "focusTag": "communityverse",
+    "image": "../assets/restaurant-challenge/customers/pastor-caleb-brooks.jpg"
+  },
+  {
+    "id": "ming-wu",
+    "name": "Ming Wu",
+    "group": "communityverse",
+    "rarity": "Rare",
+    "regularValue": 220,
+    "occasionalValue": 60,
+    "focusTag": "communityverse",
+    "image": "../assets/restaurant-challenge/customers/ming-wu.jpg",
+    "bio": "Ming Wu is a talented artist and entrepreneur who owns the popular Rent-A-Elf service in Noel. Known for her creativity and cheerful personality, she also works at the Pepperville Zoo's Panda Exhibit, where she creates custom portraits of children alongside the zoo's famous pandas. The daughter of Dr. Chen Wu, Ming has become one of Chattawa County's most recognizable artists, especially during the Christmas season."
+  },
+  {
+    "id": "wicked-jim-devito",
+    "name": "Wicked Jim DeVito",
+    "group": "communityverse",
+    "rarity": "Rare",
+    "regularValue": 225,
+    "occasionalValue": 70,
+    "focusTag": "communityverse",
+    "image": "../assets/restaurant-challenge/customers/customer-placeholder.svg"
+  },
+  {
+    "id": "miss-pearl",
+    "name": "Miss Pearl",
+    "group": "communityverse",
+    "rarity": "Uncommon",
+    "regularValue": 175,
+    "occasionalValue": 45,
+    "focusTag": "communityverse",
+    "image": "../assets/restaurant-challenge/customers/customer-placeholder.svg"
+  },
+  {
+    "id": "captain-zoogle",
+    "name": "Captain Zoogle",
+    "group": "communityverse",
+    "rarity": "Rare",
+    "regularValue": 500,
+    "occasionalValue": 150,
+    "focusTag": "communityverse",
+    "image": "../assets/restaurant-challenge/customers/customer-placeholder.svg"
+  },
+  {
+    "id": "americana-waitress",
+    "name": "Americana Diner Waitress",
+    "group": "exclusive",
+    "rarity": "Common",
+    "regularValue": 100,
+    "occasionalValue": 25,
+    "focusTag": "americana",
+    "image": "../assets/restaurant-challenge/customers/customer-placeholder.svg"
+  },
+  {
+    "id": "route-66-tourist",
+    "name": "Route 66 Tourist",
+    "group": "exclusive",
+    "rarity": "Uncommon",
+    "regularValue": 150,
+    "occasionalValue": 45,
+    "focusTag": "americana",
+    "image": "../assets/restaurant-challenge/customers/customer-placeholder.svg"
+  },
+  {
+    "id": "retired-veteran",
+    "name": "Retired Veteran",
+    "group": "exclusive",
+    "rarity": "Uncommon",
+    "regularValue": 140,
+    "occasionalValue": 40,
+    "focusTag": "americana",
+    "image": "../assets/restaurant-challenge/customers/customer-placeholder.svg"
+  },
+  {
+    "id": "pie-contest-judge",
+    "name": "Pie Contest Judge",
+    "group": "exclusive",
+    "rarity": "Rare",
+    "regularValue": 225,
+    "occasionalValue": 70,
+    "focusTag": "americana",
+    "image": "../assets/restaurant-challenge/customers/customer-placeholder.svg"
+  },
+  {
+    "id": "breakfast-regular",
+    "name": "Breakfast Regular",
+    "group": "exclusive",
+    "rarity": "Common",
+    "regularValue": 110,
+    "occasionalValue": 30,
+    "focusTag": "americana",
+    "image": "../assets/restaurant-challenge/customers/customer-placeholder.svg"
+  },
+  {
+    "id": "abraham-lincoln",
+    "name": "Abraham Lincoln",
+    "group": "historical",
+    "rarity": "Rare",
+    "regularValue": 500,
+    "occasionalValue": 150,
+    "focusTag": "historical",
+    "image": "../assets/restaurant-challenge/customers/abraham-lincoln.jpg",
+    "questionPlace": "the Civil War era",
+    "questionFact": "leading the United States through one of its most important moments",
+    "customQuestions": [
+      {
+        "id": "national-audience",
+        "prompt": "Abraham Lincoln reached a national audience in the 1858 Senate campaign debates against who?",
+        "correctAnswer": "Stephen A. Douglas",
+        "wrongAnswers": [
+          "William H. Seward",
+          "Salmon P. Chase",
+          "John C. Fremont"
+        ]
+      },
+      {
+        "id": "assassinated-by",
+        "prompt": "Abraham Lincoln was fatally shot by who?",
+        "correctAnswer": "John Wilkes Booth",
+        "wrongAnswers": [
+          "David Herold",
+          "George Atzerodt",
+          "Lewis Powell"
+        ]
+      },
+      {
+        "id": "assassination-site",
+        "prompt": "Where was Abraham Lincoln assassinated?",
+        "correctAnswer": "Ford's Theatre",
+        "wrongAnswers": [
+          "Petersen House",
+          "The White House",
+          "The Capitol"
+        ]
+      },
+      {
+        "id": "vice-president",
+        "prompt": "Who was Abraham Lincoln's Vice President?",
+        "correctAnswer": "Andrew Johnson",
+        "wrongAnswers": [
+          "Hannibal Hamlin",
+          "Salmon P. Chase",
+          "Schuyler Colfax"
+        ]
+      },
+      {
+        "id": "parents",
+        "prompt": "What were Abraham Lincoln's parents' names?",
+        "correctAnswer": "Thomas Lincoln and Nancy Hanks Lincoln",
+        "wrongAnswers": [
+          "George and Martha Washington",
+          "John and Abigail Adams",
+          "Robert and Mary Lincoln"
+        ]
+      },
+      {
+        "id": "wife-name",
+        "prompt": "What was Abraham Lincoln's wife's name?",
+        "correctAnswer": "Mary",
+        "wrongAnswers": [
+          "Sarah",
+          "Eleanor",
+          "Julia"
+        ]
+      },
+      {
+        "id": "party",
+        "prompt": "Which political party was Abraham Lincoln the first president of?",
+        "correctAnswer": "Republican Party",
+        "wrongAnswers": [
+          "Democratic Party",
+          "Whig Party",
+          "Free Soil Party"
+        ]
+      },
+      {
+        "id": "quote",
+        "prompt": "Complete Abraham Lincoln's quote: \"A house divided against itself cannot _______.\"",
+        "correctAnswer": "Stand",
+        "wrongAnswers": [
+          "Endure",
+          "Survive",
+          "Prevail"
+        ]
+      },
+      {
+        "id": "rail-candidate",
+        "prompt": "What nickname did Lincoln supporters promote him with because of his frontier rail-splitting legend?",
+        "correctAnswer": "The Rail Candidate",
+        "wrongAnswers": [
+          "The Rail Splitter",
+          "The Log Cabin Candidate",
+          "The Prairie Lawyer"
+        ]
+      },
+      {
+        "id": "first-republican-president",
+        "prompt": "Abraham Lincoln was elected as the first what?",
+        "correctAnswer": "Republican president",
+        "wrongAnswers": [
+          "Democratic president",
+          "Whig president",
+          "Independent president"
+        ]
+      },
+      {
+        "id": "gettysburg-address-year",
+        "prompt": "In what year did Abraham Lincoln deliver the Gettysburg Address?",
+        "correctAnswer": "1863",
+        "wrongAnswers": [
+          "1861",
+          "1862",
+          "1864"
+        ]
+      },
+      {
+        "id": "land-of-lincoln",
+        "prompt": "Which state uses \"Land of Lincoln\" to recognize Lincoln's contributions and legacy?",
+        "correctAnswer": "Illinois",
+        "wrongAnswers": [
+          "Indiana",
+          "Kentucky",
+          "Missouri"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "alice-in-wonderland",
+    "name": "Alice in Wonderland",
+    "group": "storybook",
+    "rarity": "Rare",
+    "regularValue": 160,
+    "occasionalValue": 50,
+    "focusTag": "storybook",
+    "image": "../assets/restaurant-challenge/customers/alice-in-wonderland.jpg",
+    "questionPlace": "Wonderland",
+    "questionFact": "following the White Rabbit down the rabbit hole",
+    "customQuestions": [
+      {
+        "id": "alt-title",
+        "prompt": "What is Alice's Adventures in Wonderland also known as?",
+        "correctAnswer": "Alice in Wonderland",
+        "wrongAnswers": [
+          "Through the Looking-Glass",
+          "The Hunting of the Snark",
+          "Sylvie and Bruno"
+        ]
+      },
+      {
+        "id": "author",
+        "prompt": "Who wrote Alice's Adventures in Wonderland?",
+        "correctAnswer": "Lewis Carroll",
+        "wrongAnswers": [
+          "John Tenniel",
+          "George MacDonald",
+          "J. M. Barrie"
+        ]
+      },
+      {
+        "id": "publication-year",
+        "prompt": "In what year was Alice's Adventures in Wonderland published?",
+        "correctAnswer": "1865",
+        "wrongAnswers": [
+          "1861",
+          "1867",
+          "1871"
+        ]
+      },
+      {
+        "id": "genre",
+        "prompt": "Alice's Adventures in Wonderland is seen as an example of what literary genre?",
+        "correctAnswer": "Literary nonsense",
+        "wrongAnswers": [
+          "Children's fantasy",
+          "Adventure fiction",
+          "Victorian realism"
+        ]
+      },
+      {
+        "id": "illustrations",
+        "prompt": "How many wood-engraved illustrations did John Tenniel provide for the original edition?",
+        "correctAnswer": "42",
+        "wrongAnswers": [
+          "36",
+          "48",
+          "60"
+        ]
+      },
+      {
+        "id": "languages",
+        "prompt": "Into how many languages has Alice's Adventures in Wonderland been translated?",
+        "correctAnswer": "174",
+        "wrongAnswers": [
+          "124",
+          "154",
+          "204"
+        ]
+      },
+      {
+        "id": "sequel",
+        "prompt": "What sequel did Lewis Carroll publish in 1871?",
+        "correctAnswer": "Through the Looking-Glass",
+        "wrongAnswers": [
+          "The Hunting of the Snark",
+          "Sylvie and Bruno",
+          "Alice's Adventures Under Ground"
+        ]
+      },
+      {
+        "id": "nursery-alice",
+        "prompt": "What shortened version for young children did Lewis Carroll publish in 1890?",
+        "correctAnswer": "The Nursery \"Alice\"",
+        "wrongAnswers": [
+          "Alice's Adventures Under Ground",
+          "Through the Looking-Glass",
+          "The Hunting of the Snark"
+        ]
+      },
+      {
+        "id": "manuscript-illustrator",
+        "prompt": "Who illustrated the manuscript of Alice's Adventures in Wonderland?",
+        "correctAnswer": "Lewis Carroll",
+        "wrongAnswers": [
+          "John Tenniel",
+          "Walt Disney",
+          "J. M. Barrie"
+        ]
+      },
+      {
+        "id": "disney-quote",
+        "prompt": "Who said, \"No story in English literature has intrigued me more than Lewis Carroll's Alice in Wonderland. It fascinated me the first time I read it as a schoolboy.\"?",
+        "correctAnswer": "Walt Disney",
+        "wrongAnswers": [
+          "Lewis Carroll",
+          "John Tenniel",
+          "J. M. Barrie"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "amelia-earhart",
+    "name": "Amelia Earhart",
+    "group": "historical",
+    "rarity": "Rare",
+    "regularValue": 235,
+    "occasionalValue": 70,
+    "focusTag": "historical",
+    "image": "../assets/restaurant-challenge/customers/amelia-earhart.jpg",
+    "questionPlace": "early aviation",
+    "questionFact": "breaking flying records and pushing aviation forward"
+  },
+  {
+    "id": "benjamin-franklin",
+    "name": "Benjamin Franklin",
+    "group": "historical",
+    "rarity": "Rare",
+    "regularValue": 285,
+    "occasionalValue": 85,
+    "focusTag": "historical",
+    "image": "../assets/restaurant-challenge/customers/benjamin-franklin.jpg",
+    "questionPlace": "colonial Philadelphia",
+    "questionFact": "experimenting with electricity and the lightning kite"
+  },
+  {
+    "id": "big-bad-wolf",
+    "name": "Big Bad Wolf",
+    "group": "storybook",
+    "rarity": "Rare",
+    "regularValue": 260,
+    "occasionalValue": 80,
+    "focusTag": "storybook",
+    "image": "../assets/restaurant-challenge/customers/big-bad-wolf.jpg",
+    "questionPlace": "storybook forests",
+    "questionFact": "huffing and puffing and chasing fairy tale heroes"
+  },
+  {
+    "id": "billy-the-kid",
+    "name": "Billy the Kid",
+    "group": "historical",
+    "rarity": "Uncommon",
+    "regularValue": 185,
+    "occasionalValue": 55,
+    "focusTag": "historical",
+    "image": "../assets/restaurant-challenge/customers/billy-the-kid.jpg",
+    "questionPlace": "the American frontier",
+    "questionFact": "becoming a notorious outlaw of the Old West"
+  },
+  {
+    "id": "blackbeard-the-pirate",
+    "name": "Blackbeard the Pirate",
+    "group": "historical",
+    "rarity": "Rare",
+    "regularValue": 250,
+    "occasionalValue": 75,
+    "focusTag": "historical",
+    "image": "../assets/restaurant-challenge/customers/blackbeard-the-pirate.jpg",
+    "questionPlace": "the high seas",
+    "questionFact": "becoming one of history's most feared pirates"
+  },
+  {
+    "id": "cheshire-cat",
+    "name": "Cheshire Cat",
+    "group": "storybook",
+    "rarity": "Rare",
+    "regularValue": 175,
+    "occasionalValue": 55,
+    "focusTag": "storybook",
+    "image": "../assets/restaurant-challenge/customers/cheshire-cat.jpg",
+    "questionPlace": "Wonderland",
+    "questionFact": "the disappearing grin and mysterious advice"
+  },
+  {
+    "id": "christopher-columbus",
+    "name": "Christopher Columbus",
+    "group": "historical",
+    "rarity": "Rare",
+    "regularValue": 220,
+    "occasionalValue": 65,
+    "focusTag": "historical",
+    "image": "../assets/restaurant-challenge/customers/christopher-columbus.jpg",
+    "questionPlace": "the Atlantic crossing",
+    "questionFact": "sailing west across the Atlantic in 1492",
+    "customQuestions": [
+      {
+        "id": "birthplace",
+        "prompt": "Where was Christopher Columbus born?",
+        "correctAnswer": "Genoa, Italy",
+        "wrongAnswers": [
+          "Seville, Spain",
+          "Lisbon, Portugal",
+          "Venice, Italy"
+        ]
+      },
+      {
+        "id": "goal",
+        "prompt": "What was Christopher Columbus trying to find by sailing west?",
+        "correctAnswer": "A faster route to Asia",
+        "wrongAnswers": [
+          "The North Pole",
+          "The source of the Nile",
+          "A passage to Australia"
+        ]
+      },
+      {
+        "id": "first-voyage-ships",
+        "prompt": "Which three ships sailed on Columbus's first voyage?",
+        "correctAnswer": "The Niña, Pinta, and Santa Maria",
+        "wrongAnswers": [
+          "The Mayflower, Endeavour, and Beagle",
+          "The Nina, Nina, and Nina",
+          "The Victory, Constitution, and Enterprise"
+        ]
+      },
+      {
+        "id": "first-landfall",
+        "prompt": "Where did Columbus first land in 1492?",
+        "correctAnswer": "San Salvador in the Bahamas",
+        "wrongAnswers": [
+          "Hispaniola",
+          "Jamaica",
+          "Cuba"
+        ]
+      },
+      {
+        "id": "death",
+        "prompt": "In what year did Christopher Columbus die?",
+        "correctAnswer": "1506",
+        "wrongAnswers": [
+          "1498",
+          "1512",
+          "1520"
+        ]
+      },
+      {
+        "id": "cuba-thought-asia",
+        "prompt": "What did Columbus think he had reached when he landed in the Bahamas?",
+        "correctAnswer": "Asia",
+        "wrongAnswers": [
+          "Africa",
+          "Europe",
+          "Australia"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cleopatra",
+    "name": "Cleopatra",
+    "group": "historical",
+    "rarity": "Rare",
+    "regularValue": 320,
+    "occasionalValue": 100,
+    "focusTag": "historical",
+    "image": "../assets/restaurant-challenge/customers/cleopatra.jpg",
+    "questionPlace": "ancient Egypt",
+    "questionFact": "ruling Egypt as a famous queen",
+    "customQuestions": [
+      {
+        "id": "last-active-ruler",
+        "prompt": "Cleopatra was the last active ruler of which kingdom?",
+        "correctAnswer": "The Ptolemaic Kingdom of Egypt",
+        "wrongAnswers": [
+          "The Roman Empire",
+          "The Byzantine Empire",
+          "The Macedonian Empire"
+        ]
+      },
+      {
+        "id": "birthplace",
+        "prompt": "In what city was Cleopatra born?",
+        "correctAnswer": "Alexandria, Egypt",
+        "wrongAnswers": [
+          "Thebes, Egypt",
+          "Memphis, Egypt",
+          "Athens, Greece"
+        ]
+      },
+      {
+        "id": "queen-age",
+        "prompt": "At what age did Cleopatra become queen?",
+        "correctAnswer": "18",
+        "wrongAnswers": [
+          "14",
+          "21",
+          "25"
+        ]
+      },
+      {
+        "id": "alliances",
+        "prompt": "Which two Roman leaders was Cleopatra allied with?",
+        "correctAnswer": "Julius Caesar and Mark Antony",
+        "wrongAnswers": [
+          "Pompey and Crassus",
+          "Brutus and Cassius",
+          "Nero and Caligula"
+        ]
+      },
+      {
+        "id": "death-year",
+        "prompt": "In what year did Cleopatra die?",
+        "correctAnswer": "30 BC",
+        "wrongAnswers": [
+          "44 BC",
+          "12 BC",
+          "1 AD"
+        ]
+      },
+      {
+        "id": "film",
+        "prompt": "Who starred as Cleopatra in the famous 1963 film Cleopatra?",
+        "correctAnswer": "Elizabeth Taylor",
+        "wrongAnswers": [
+          "Vivien Leigh",
+          "Audrey Hepburn",
+          "Sophia Loren"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "george-washington",
+    "name": "George Washington",
+    "group": "historical",
+    "rarity": "Rare",
+    "regularValue": 295,
+    "occasionalValue": 90,
+    "focusTag": "historical",
+    "image": "../assets/restaurant-challenge/customers/george-washington.jpg",
+    "questionPlace": "the Revolutionary era",
+    "questionFact": "leading the Continental Army and becoming the first U.S. president",
+    "customQuestions": [
+      {
+        "id": "born-where",
+        "prompt": "Where was George Washington born?",
+        "correctAnswer": "Westmoreland County, Virginia",
+        "wrongAnswers": [
+          "Boston, Massachusetts",
+          "Philadelphia, Pennsylvania",
+          "Annapolis, Maryland"
+        ]
+      },
+      {
+        "id": "born-when",
+        "prompt": "When was George Washington born?",
+        "correctAnswer": "February 22, 1732",
+        "wrongAnswers": [
+          "July 4, 1776",
+          "March 15, 1765",
+          "December 14, 1799"
+        ]
+      },
+      {
+        "id": "parents",
+        "prompt": "What were George Washington's parents' names?",
+        "correctAnswer": "Augustine and Mary Ball Washington",
+        "wrongAnswers": [
+          "Thomas and Nancy Washington",
+          "John and Abigail Washington",
+          "George and Martha Washington"
+        ]
+      },
+      {
+        "id": "first-president",
+        "prompt": "What important office did George Washington hold after the Revolution?",
+        "correctAnswer": "The first President of the United States",
+        "wrongAnswers": [
+          "The first Vice President of the United States",
+          "Commander of the Royal Navy",
+          "Chief Justice of the Supreme Court"
+        ]
+      },
+      {
+        "id": "wife",
+        "prompt": "What was George Washington's wife's name?",
+        "correctAnswer": "Martha Custis",
+        "wrongAnswers": [
+          "Mary Ball",
+          "Dolley Madison",
+          "Abigail Adams"
+        ]
+      },
+      {
+        "id": "death",
+        "prompt": "Where did George Washington die?",
+        "correctAnswer": "Mount Vernon, Virginia",
+        "wrongAnswers": [
+          "Valley Forge, Pennsylvania",
+          "Yorktown, Virginia",
+          "West Point, New York"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "humpty-dumpty",
+    "name": "Humpty Dumpty",
+    "group": "storybook",
+    "rarity": "Common",
+    "regularValue": 120,
+    "occasionalValue": 30,
+    "focusTag": "storybook",
+    "image": "../assets/restaurant-challenge/customers/humpty-dumpty.jpg",
+    "questionPlace": "a wall in nursery rhymes",
+    "questionFact": "having a great fall that could not be put back together",
+    "customQuestions": [
+      {
+        "id": "egg",
+        "prompt": "What is Humpty Dumpty traditionally depicted as?",
+        "correctAnswer": "An anthropomorphic egg",
+        "wrongAnswers": [
+          "A tin soldier",
+          "A toy monkey",
+          "A talking hat"
+        ]
+      },
+      {
+        "id": "wall-fall",
+        "prompt": "What happened to Humpty Dumpty in the rhyme?",
+        "correctAnswer": "He had a great fall from a wall",
+        "wrongAnswers": [
+          "He sailed across the sea",
+          "He disappeared into a forest",
+          "He climbed a mountain and won"
+        ]
+      },
+      {
+        "id": "original-riddle",
+        "prompt": "What was the nursery rhyme originally likely meant to be?",
+        "correctAnswer": "A riddle about something that could sit on a wall and not be put back together",
+        "wrongAnswers": [
+          "A song about a pirate ship",
+          "A poem about a royal wedding",
+          "A joke about a circus clown"
+        ]
+      },
+      {
+        "id": "looking-glass",
+        "prompt": "In which Lewis Carroll book did Humpty Dumpty become widely recognized as an egg?",
+        "correctAnswer": "Through the Looking-Glass",
+        "wrongAnswers": [
+          "Alice's Adventures in Wonderland",
+          "The Hunting of the Snark",
+          "Sylvie and Bruno"
+        ]
+      },
+      {
+        "id": "first-recorded-year",
+        "prompt": "In what year did the earliest recorded version of the Humpty Dumpty rhyme appear?",
+        "correctAnswer": "1797",
+        "wrongAnswers": [
+          "1687",
+          "1812",
+          "1870"
+        ]
+      },
+      {
+        "id": "symbol",
+        "prompt": "What does Humpty Dumpty often symbolize?",
+        "correctAnswer": "Fragility and irreversibility",
+        "wrongAnswers": [
+          "Speed and adventure",
+          "Wisdom and patience",
+          "Luck and fortune"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "king-tut",
+    "name": "King Tut",
+    "group": "historical",
+    "rarity": "Rare",
+    "regularValue": 315,
+    "occasionalValue": 95,
+    "focusTag": "historical",
+    "image": "../assets/restaurant-challenge/customers/king-tut.jpg",
+    "questionPlace": "ancient Egypt",
+    "questionFact": "being the boy pharaoh of a famous tomb",
+    "customQuestions": [
+      {
+        "id": "full-name",
+        "prompt": "What was King Tut's full name?",
+        "correctAnswer": "Tutankhamun",
+        "wrongAnswers": [
+          "Tutankhaten",
+          "Ramses II",
+          "Amenhotep III"
+        ]
+      },
+      {
+        "id": "birth-name",
+        "prompt": "What was King Tut originally named before his religious reforms?",
+        "correctAnswer": "Tutankhaten",
+        "wrongAnswers": [
+          "Tutmosis",
+          "Akhenaten",
+          "Khafre"
+        ]
+      },
+      {
+        "id": "age-at-pharaoh",
+        "prompt": "About how old was King Tut when he became pharaoh?",
+        "correctAnswer": "Eight or nine",
+        "wrongAnswers": [
+          "Five or six",
+          "Twelve or thirteen",
+          "Sixteen or seventeen"
+        ]
+      },
+      {
+        "id": "religion",
+        "prompt": "What did King Tut restore during his reign?",
+        "correctAnswer": "Egypt's polytheistic religion and the cult of Amun-Ra",
+        "wrongAnswers": [
+          "A Roman republic",
+          "Greek democracy",
+          "A monotheistic solar cult"
+        ]
+      },
+      {
+        "id": "death-age",
+        "prompt": "About how old was King Tut when he died?",
+        "correctAnswer": "17 or 18",
+        "wrongAnswers": [
+          "12 or 13",
+          "25 or 26",
+          "30 or 31"
+        ]
+      },
+      {
+        "id": "valley-of-kings",
+        "prompt": "Where are the tombs of pharaohs, including Tutankhamun, located?",
+        "correctAnswer": "The Valley of the Kings",
+        "wrongAnswers": [
+          "The Giza Plateau",
+          "The Nile Delta",
+          "The Sinai Peninsula"
+        ]
+      },
+      {
+        "id": "cairo-museum",
+        "prompt": "Which city is home to the Egyptian Museum that houses treasures from Tutankhamun's tomb?",
+        "correctAnswer": "Cairo",
+        "wrongAnswers": [
+          "Alexandria",
+          "Luxor",
+          "Aswan"
+        ]
+      },
+      {
+        "id": "pyramid-khufu",
+        "prompt": "Which pyramid at Giza is the largest?",
+        "correctAnswer": "The Pyramid of Khufu",
+        "wrongAnswers": [
+          "The Pyramid of Menkaure",
+          "The Pyramid of Djoser",
+          "The Bent Pyramid"
+        ]
+      },
+      {
+        "id": "mummification",
+        "prompt": "What process did ancient Egyptians use to preserve bodies for the afterlife?",
+        "correctAnswer": "Mummification",
+        "wrongAnswers": [
+          "Embroidery",
+          "Carpentry",
+          "Calligraphy"
+        ]
+      },
+      {
+        "id": "discovery-year",
+        "prompt": "In what year was Tutankhamun's tomb discovered by Howard Carter?",
+        "correctAnswer": "1922",
+        "wrongAnswers": [
+          "1905",
+          "1918",
+          "1931"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "little-red-riding-hood",
+    "name": "Little Red Riding Hood",
+    "group": "storybook",
+    "rarity": "Common",
+    "regularValue": 130,
+    "occasionalValue": 35,
+    "focusTag": "storybook",
+    "image": "../assets/restaurant-challenge/customers/little-red-riding-hood.jpg",
+    "questionPlace": "the woods",
+    "questionFact": "wearing a red hood while visiting her grandmother"
+  },
+  {
+    "id": "mad-hatter",
+    "name": "Mad Hatter",
+    "group": "storybook",
+    "rarity": "Uncommon",
+    "regularValue": 160,
+    "occasionalValue": 50,
+    "focusTag": "storybook",
+    "image": "../assets/restaurant-challenge/customers/mad-hatter.jpg",
+    "questionPlace": "the Wonderland tea party",
+    "questionFact": "throwing a very strange tea party"
+  },
+  {
+    "id": "napoleon-bonaparte",
+    "name": "Napoleon Bonaparte",
+    "group": "historical",
+    "rarity": "Rare",
+    "regularValue": 240,
+    "occasionalValue": 70,
+    "focusTag": "historical",
+    "image": "../assets/restaurant-challenge/customers/napoleon-bonaparte.jpg",
+    "questionPlace": "France",
+    "questionFact": "becoming a powerful French emperor and military leader"
+  },
+  {
+    "id": "queen-of-hearts",
+    "name": "Queen of Hearts",
+    "group": "storybook",
+    "rarity": "Rare",
+    "regularValue": 190,
+    "occasionalValue": 60,
+    "focusTag": "storybook",
+    "image": "../assets/restaurant-challenge/customers/queen-of-hearts.jpg",
+    "questionPlace": "Wonderland",
+    "questionFact": "ordering everyone around with 'Off with their heads!'"
+  },
+  {
+    "id": "sasquatch",
+    "name": "Sasquatch",
+    "group": "cryptid",
+    "rarity": "Rare",
+    "regularValue": 210,
+    "occasionalValue": 65,
+    "focusTag": "cryptid",
+    "image": "../assets/restaurant-challenge/customers/sasquatch.jpg",
+    "questionPlace": "the deep woods",
+    "questionFact": "being the giant mystery creature known as Bigfoot"
+  },
+  {
+    "id": "the-tooth-fairy",
+    "name": "The Tooth Fairy",
+    "group": "storybook",
+    "rarity": "Uncommon",
+    "regularValue": 105,
+    "occasionalValue": 30,
+    "focusTag": "storybook",
+    "image": "../assets/restaurant-challenge/customers/the-tooth-fairy.jpg",
+    "questionPlace": "under children's pillows",
+    "questionFact": "swapping lost teeth for a little money"
+  },
+  {
+    "id": "thomas-edison",
+    "name": "Thomas Edison",
+    "group": "historical",
+    "rarity": "Rare",
+    "regularValue": 245,
+    "occasionalValue": 75,
+    "focusTag": "historical",
+    "image": "../assets/restaurant-challenge/customers/thomas-edison.jpg",
+    "questionPlace": "the invention lab",
+    "questionFact": "perfecting the practical electric light bulb"
+  },
+  {
+    "id": "lady-liberty",
+    "name": "Lady Liberty",
+    "group": "historical",
+    "rarity": "Rare",
+    "regularValue": 350,
+    "occasionalValue": 110,
+    "focusTag": "historical",
+    "image": "../assets/restaurant-challenge/customers/lady-liberty.jpg",
+    "questionPlace": "New York Harbor",
+    "questionFact": "standing as a symbol of freedom and welcome"
+  }
+]

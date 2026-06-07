@@ -49,6 +49,32 @@ export async function supabaseRequest(path, options = {}) {
   return data;
 }
 
+export async function supabaseStorageRequest(path, options = {}) {
+  const { url, serviceRoleKey } = getSupabaseConfig();
+  const headers = new Headers(options.headers || {});
+  headers.set("apikey", serviceRoleKey);
+  headers.set("Authorization", `Bearer ${serviceRoleKey}`);
+
+  const response = await fetch(`${url}/storage/v1/${path.replace(/^\/+/, "")}`, {
+    ...options,
+    headers,
+  });
+
+  const text = await response.text();
+  const data = text ? JSON.parse(text) : null;
+  if (!response.ok) {
+    const message = data && typeof data === "object" ? JSON.stringify(data) : text || response.statusText;
+    throw new Error(message);
+  }
+
+  return data;
+}
+
+export function supabasePublicStorageUrl(path) {
+  const { url } = getSupabaseConfig();
+  return `${url}/storage/v1/object/public/${String(path || "").replace(/^\/+/, "")}`;
+}
+
 export function jsonResponse(payload, status = 200) {
   return new Response(JSON.stringify(payload), {
     status,
