@@ -47,6 +47,8 @@ const filterIds = [
 let adminKey = sessionStorage.getItem(KEY_STORAGE) || "";
 let questions = [];
 let filterTimer = 0;
+let aiDrafts = [];
+let selectedAiDraftIndex = -1;
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -242,7 +244,8 @@ function setGeneratorBusy(button, busy, busyText) {
   button.textContent = busy ? busyText : button.dataset.label;
 }
 
-function fillQuestionDraft(question) {
+function fillQuestionDraft(question, index) {
+  selectedAiDraftIndex = index;
   document.querySelector("#question-prompt").value = question.prompt || "";
   document.querySelector("#correct-answer").value = question.correctAnswer || "";
   document.querySelectorAll(".wrong-answer").forEach((input, index) => {
@@ -254,7 +257,7 @@ function fillQuestionDraft(question) {
 }
 
 function renderAiResults(drafts) {
-  elements.aiResults._drafts = drafts;
+  aiDrafts = drafts;
   elements.aiResults.innerHTML = drafts
     .map(
       (draft, index) => `
@@ -273,13 +276,29 @@ function renderAiResults(drafts) {
   elements.aiResults.hidden = !drafts.length;
 }
 
+function clearQuestionFields() {
+  document.querySelector("#question-id").value = "";
+  document.querySelector("#question-prompt").value = "";
+  document.querySelector("#correct-answer").value = "";
+  document.querySelectorAll(".wrong-answer").forEach((input) => {
+    input.value = "";
+  });
+  document.querySelector("#question-tags").value = "";
+  document.querySelector("#sort-order").value = 0;
+  document.querySelector("#question-active").checked = true;
+  document.querySelector("#question-image").value = "";
+  document.querySelector("#question-image-alt").value = "";
+  selectedAiDraftIndex = -1;
+}
+
 function resetEditor(question = null) {
   elements.form.reset();
   showFormErrors([]);
   showAiStatus("");
   elements.aiResults.hidden = true;
   elements.aiResults.innerHTML = "";
-  elements.aiResults._drafts = [];
+  aiDrafts = [];
+  selectedAiDraftIndex = -1;
   document.querySelector("#question-id").value = question?.id || "";
   document.querySelector("#question-prompt").value = question?.prompt || "";
   document.querySelector("#correct-answer").value = question?.correctAnswer || "";
@@ -392,7 +411,24 @@ async function saveEditor(event) {
       method: isEditing ? "PUT" : "POST",
       body: JSON.stringify(question),
     });
-    elements.editor.close();
+
+    const savedAiDraft = !isEditing && selectedAiDraftIndex >= 0;
+    if (savedAiDraft) {
+      aiDrafts.splice(selectedAiDraftIndex, 1);
+      clearQuestionFields();
+      renderAiResults(aiDrafts);
+
+      if (aiDrafts.length) {
+        showAiStatus(
+          `Question saved. ${aiDrafts.length} draft${aiDrafts.length === 1 ? "" : "s"} remaining.`
+        );
+      } else {
+        elements.editor.close();
+      }
+    } else {
+      elements.editor.close();
+    }
+
     showMessage(isEditing ? "Question updated." : "Question added.");
     await loadQuestions({ quiet: true });
   } catch (error) {
@@ -485,15 +521,8 @@ elements.aiResults.addEventListener("click", (event) => {
   const button = event.target.closest(".use-ai-draft");
   if (!button) return;
   const index = Number(button.dataset.index);
-  const cards = [...elements.aiResults.querySelectorAll(".use-ai-draft")];
-  const draftButton = cards.find((candidate) => Number(candidate.dataset.index) === index);
-  if (!draftButton) return;
-
-  const source = draftButton.closest(".ai-result");
-  const prompt = source?.querySelector("strong")?.textContent || "";
-  const answer = source?.querySelector("span")?.textContent?.replace(/^Answer:\s*/, "") || "";
-  const storedDrafts = elements.aiResults._drafts || [];
-  fillQuestionDraft(storedDrafts[index] || { prompt, correctAnswer: answer });
+  if (!aiDrafts[index]) return;
+  fillQuestionDraft(aiDrafts[index], index);
 });
 elements.form.addEventListener("submit", saveEditor);
 elements.deleteButton.addEventListener("click", deleteCurrentQuestion);
