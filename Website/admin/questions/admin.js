@@ -1,4 +1,5 @@
 const API_URL = "/api/admin/questions";
+const GENERATOR_API_URL = "/api/admin/question-generator";
 const KEY_STORAGE = "communityverseQuestionsAdminKey";
 
 const elements = {
@@ -24,6 +25,12 @@ const elements = {
   scope: document.querySelector("#question-scope"),
   restaurantField: document.querySelector("#restaurant-field"),
   areaField: document.querySelector("#area-field"),
+  aiSource: document.querySelector("#ai-source"),
+  aiQuestionCount: document.querySelector("#ai-question-count"),
+  aiStatus: document.querySelector("#ai-status"),
+  aiResults: document.querySelector("#ai-results"),
+  generateQuestionsButton: document.querySelector("#generate-questions-button"),
+  suggestWrongAnswersButton: document.querySelector("#suggest-wrong-answers-button"),
 };
 
 const filterIds = [
@@ -81,6 +88,26 @@ async function apiRequest(path = "", options = {}) {
   }
 
   return data;
+}
+
+async function generatorRequest(body) {
+  const response = await fetch(GENERATOR_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${adminKey}`,
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const error = new Error(data.error || `AI request failed (${response.status}).`);
+    error.status = response.status;
+    throw error;
+  }
+
+  return data.questions || [];
 }
 
 function filterParams() {
@@ -203,9 +230,56 @@ function updateScopeFields() {
   elements.areaField.hidden = scope !== "area";
 }
 
+function showAiStatus(text, isError = false) {
+  elements.aiStatus.textContent = text;
+  elements.aiStatus.classList.toggle("error", isError);
+  elements.aiStatus.hidden = !text;
+}
+
+function setGeneratorBusy(button, busy, busyText) {
+  if (!button.dataset.label) button.dataset.label = button.textContent.trim();
+  button.disabled = busy;
+  button.textContent = busy ? busyText : button.dataset.label;
+}
+
+function fillQuestionDraft(question) {
+  document.querySelector("#question-prompt").value = question.prompt || "";
+  document.querySelector("#correct-answer").value = question.correctAnswer || "";
+  document.querySelectorAll(".wrong-answer").forEach((input, index) => {
+    input.value = question.wrongAnswers?.[index] || "";
+  });
+  document.querySelector("#question-difficulty").value = question.difficulty || "medium";
+  document.querySelector("#question-tags").value = (question.tags || []).join(", ");
+  showAiStatus("Draft placed in the form. Review it, then save when you are happy.");
+}
+
+function renderAiResults(drafts) {
+  elements.aiResults._drafts = drafts;
+  elements.aiResults.innerHTML = drafts
+    .map(
+      (draft, index) => `
+        <article class="ai-result">
+          <div>
+            <strong>${escapeHtml(draft.prompt)}</strong>
+            <span>Answer: ${escapeHtml(draft.correctAnswer)}</span>
+          </div>
+          <button class="button button-secondary use-ai-draft" type="button" data-index="${index}">
+            Use this question
+          </button>
+        </article>
+      `
+    )
+    .join("");
+  elements.aiResults.hidden = !drafts.length;
+}
+
 function resetEditor(question = null) {
   elements.form.reset();
   showFormErrors([]);
+  showAiStatus("");
+  elements.aiResults.hidden = true;
+  elements.aiResults.innerHTML = "";
+  elements.aiResults._drafts = [];
   document.querySelector("#question-id").value = question?.id || "";
   document.querySelector("#question-prompt").value = question?.prompt || "";
   document.querySelector("#correct-answer").value = question?.correctAnswer || "";
@@ -229,6 +303,63 @@ function resetEditor(question = null) {
   elements.editorTitle.textContent = question ? "Edit question" : "New question";
   elements.deleteButton.hidden = !question;
   updateScopeFields();
+}
+
+async function generateQuestionDrafts() {
+  const source = elements.aiSource.value.trim();
+  if (!source) {
+    showAiStatus("Enter a topic or some information first.", true);
+    return;
+  }
+
+  setGeneratorBusy(elements.generateQuestionsButton, true, "Creating drafts...");
+  showAiStatus("Creating draft questions. This may take a few seconds.");
+  elements.aiResults.hidden = true;
+
+  try {
+    const drafts = await generatorRequest({
+      mode: "questions",
+      source,
+      count: Number(elements.aiQuestionCount.value) || 3,
+      difficulty: document.querySelector("#question-difficulty").value,
+    });
+    renderAiResults(drafts);
+    showAiStatus("Choose a draft below. You can edit every word before saving.");
+  } catch (error) {
+    showAiStatus(error.message, true);
+  } finally {
+    setGeneratorBusy(elements.generateQuestionsButton, false);
+  }
+}
+
+async function suggestWrongAnswers() {
+  const prompt = document.querySelector("#question-prompt").value.trim();
+  const correctAnswer = document.querySelector("#correct-answer").value.trim();
+  if (!prompt || !correctAnswer) {
+    showFormErrors("Enter the question and correct answer first.");
+    return;
+  }
+
+  showFormErrors([]);
+  setGeneratorBusy(elements.suggestWrongAnswersButton, true, "Thinking...");
+
+  try {
+    const drafts = await generatorRequest({
+      mode: "wrongAnswers",
+      prompt,
+      correctAnswer,
+      difficulty: document.querySelector("#question-difficulty").value,
+    });
+    const wrongAnswers = drafts[0]?.wrongAnswers || [];
+    document.querySelectorAll(".wrong-answer").forEach((input, index) => {
+      input.value = wrongAnswers[index] || "";
+    });
+    showAiStatus("Three wrong answers were added. Review them before saving.");
+  } catch (error) {
+    showFormErrors(error.message);
+  } finally {
+    setGeneratorBusy(elements.suggestWrongAnswersButton, false);
+  }
 }
 
 function questionFromForm() {
@@ -348,6 +479,22 @@ elements.list.addEventListener("click", (event) => {
 });
 
 elements.scope.addEventListener("change", updateScopeFields);
+elements.generateQuestionsButton.addEventListener("click", generateQuestionDrafts);
+elements.suggestWrongAnswersButton.addEventListener("click", suggestWrongAnswers);
+elements.aiResults.addEventListener("click", (event) => {
+  const button = event.target.closest(".use-ai-draft");
+  if (!button) return;
+  const index = Number(button.dataset.index);
+  const cards = [...elements.aiResults.querySelectorAll(".use-ai-draft")];
+  const draftButton = cards.find((candidate) => Number(candidate.dataset.index) === index);
+  if (!draftButton) return;
+
+  const source = draftButton.closest(".ai-result");
+  const prompt = source?.querySelector("strong")?.textContent || "";
+  const answer = source?.querySelector("span")?.textContent?.replace(/^Answer:\s*/, "") || "";
+  const storedDrafts = elements.aiResults._drafts || [];
+  fillQuestionDraft(storedDrafts[index] || { prompt, correctAnswer: answer });
+});
 elements.form.addEventListener("submit", saveEditor);
 elements.deleteButton.addEventListener("click", deleteCurrentQuestion);
 elements.closeEditorButton.addEventListener("click", () => elements.editor.close());

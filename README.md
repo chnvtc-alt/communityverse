@@ -36,8 +36,11 @@ In the Vercel project settings, add:
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `QUESTIONS_ADMIN_KEY`
+- `OPENAI_API_KEY`
 
 Make `QUESTIONS_ADMIN_KEY` a long private password. It is only used to unlock the question admin and must not be placed in frontend code or committed to Git.
+
+`OPENAI_API_KEY` powers the optional question-writing helper. The key stays inside the server and is never sent to the browser. The helper uses `gpt-5.4-mini` by default; you can optionally override it with `OPENAI_QUESTION_MODEL`.
 
 After adding or changing an environment variable, redeploy the Vercel project.
 

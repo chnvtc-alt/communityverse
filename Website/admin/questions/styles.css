@@ -64,6 +64,12 @@ h2 {
   line-height: 1;
 }
 
+h3 {
+  margin: 0;
+  font-family: "Fraunces", serif;
+  font-size: 1.35rem;
+}
+
 h1 {
   font-size: clamp(2rem, 4vw, 3.7rem);
 }
@@ -212,6 +218,12 @@ textarea {
   border-color: var(--red);
   color: var(--red);
   background: transparent;
+}
+
+.button-ai {
+  color: #3b2a17;
+  background: #f2bd67;
+  box-shadow: 4px 4px 0 #b86a32;
 }
 
 .button-wide {
@@ -422,6 +434,96 @@ dialog::backdrop {
   text-transform: none;
 }
 
+.ai-helper {
+  padding: 20px;
+  border: 1px solid #dfb778;
+  border-radius: 4px 18px 4px 4px;
+  background:
+    linear-gradient(135deg, rgba(255, 246, 216, 0.94), rgba(250, 224, 184, 0.68)),
+    var(--cream);
+}
+
+.ai-helper-heading,
+.ai-helper-actions {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.ai-helper > label {
+  margin-top: 18px;
+}
+
+.ai-helper-actions {
+  margin-top: 12px;
+}
+
+.ai-helper-actions label {
+  width: 110px;
+}
+
+.ai-helper-actions .button {
+  flex: 1;
+}
+
+.ai-badge {
+  border: 1px solid #d59b4c;
+  border-radius: 999px;
+  padding: 6px 9px;
+  color: #8a4b23;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+}
+
+.ai-status {
+  margin-top: 14px;
+  color: #7c5428;
+  font-size: 0.72rem;
+}
+
+.ai-status.error {
+  color: var(--red);
+}
+
+.ai-results {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.ai-result {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 13px;
+  border: 1px solid rgba(139, 91, 42, 0.24);
+  background: rgba(255, 250, 240, 0.82);
+}
+
+.ai-result strong {
+  display: block;
+  font-family: "Fraunces", serif;
+  line-height: 1.25;
+}
+
+.ai-result span {
+  display: block;
+  margin-top: 5px;
+  color: var(--green);
+  font-size: 0.68rem;
+}
+
+.wrong-answer-helper {
+  display: flex;
+  align-items: end;
+}
+
+.wrong-answer-helper .button {
+  width: 100%;
+}
+
 .login-dialog {
   width: min(430px, calc(100vw - 28px));
   padding: 30px;
@@ -487,5 +589,19 @@ dialog::backdrop {
 
   .action-spacer {
     display: none;
+  }
+
+  .ai-helper-heading,
+  .ai-helper-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .ai-helper-actions label {
+    width: 100%;
+  }
+
+  .ai-result {
+    grid-template-columns: 1fr;
   }
 }

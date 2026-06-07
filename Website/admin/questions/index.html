@@ -127,6 +127,39 @@
         <div id="form-errors" class="message message-error" hidden></div>
 
         <div class="form-grid">
+          <section class="ai-helper form-span" aria-labelledby="ai-helper-title">
+            <div class="ai-helper-heading">
+              <div>
+                <p class="eyebrow">Optional time-saver</p>
+                <h3 id="ai-helper-title">AI question helper</h3>
+              </div>
+              <span class="ai-badge">Review before saving</span>
+            </div>
+            <label>
+              Topic or information
+              <textarea
+                id="ai-source"
+                rows="3"
+                placeholder="Example: Paste facts about Georgia history, or type a topic like classic American movies."
+              ></textarea>
+            </label>
+            <div class="ai-helper-actions">
+              <label>
+                Drafts
+                <select id="ai-question-count">
+                  <option value="1">1</option>
+                  <option value="3" selected>3</option>
+                  <option value="5">5</option>
+                </select>
+              </label>
+              <button id="generate-questions-button" class="button button-ai" type="button">
+                Generate draft questions
+              </button>
+            </div>
+            <div id="ai-status" class="ai-status" role="status" hidden></div>
+            <div id="ai-results" class="ai-results" hidden></div>
+          </section>
+
           <label class="form-span">
             Question prompt
             <textarea id="question-prompt" rows="3" required></textarea>
@@ -147,6 +180,11 @@
             Wrong answer 3
             <input class="wrong-answer" required />
           </label>
+          <div class="wrong-answer-helper">
+            <button id="suggest-wrong-answers-button" class="button button-secondary" type="button">
+              Suggest 3 wrong answers
+            </button>
+          </div>
 
           <label>
             Scope
