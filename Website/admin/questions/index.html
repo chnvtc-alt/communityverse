@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Question Workshop | CommunityVerse</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600;9..144,750&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">CommunityVerse control room</p>
+        <h1>Question Workshop</h1>
+      </div>
+      <div class="header-actions">
+        <span id="connection-status" class="status-pill">Not connected</span>
+        <button id="lock-button" class="button button-quiet" type="button">Lock</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <button id="new-question-button" class="button button-primary button-wide" type="button">
+          + New question
+        </button>
+
+        <section class="filter-card" aria-labelledby="filter-title">
+          <div class="section-heading">
+            <h2 id="filter-title">Find questions</h2>
+            <button id="clear-filters-button" class="text-button" type="button">Clear</button>
+          </div>
+
+          <label>
+            Search
+            <input id="filter-query" type="search" placeholder="Prompt, answer, tag..." />
+          </label>
+
+          <div class="filter-grid">
+            <label>
+              Status
+              <select id="filter-status">
+                <option value="all">All</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </label>
+            <label>
+              Scope
+              <select id="filter-scope">
+                <option value="">Any</option>
+                <option value="restaurant">Restaurant</option>
+                <option value="area">Area</option>
+                <option value="global">Global</option>
+                <option value="customer">Customer</option>
+              </select>
+            </label>
+            <label>
+              Difficulty
+              <select id="filter-difficulty">
+                <option value="">Any</option>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </label>
+            <label>
+              Restaurant
+              <input id="filter-restaurant" list="restaurant-options" placeholder="americana" />
+            </label>
+            <label>
+              Area
+              <input id="filter-area" list="area-options" placeholder="georgia" />
+            </label>
+            <label>
+              Customer
+              <input id="filter-customer" list="customer-options" placeholder="cleopatra" />
+            </label>
+            <label class="filter-span">
+              Tag
+              <input id="filter-tag" list="tag-options" placeholder="history" />
+            </label>
+          </div>
+        </section>
+
+        <section class="help-card">
+          <h2>How scope works</h2>
+          <p><strong>Restaurant</strong> targets one restaurant.</p>
+          <p><strong>Area</strong> targets restaurants in one area.</p>
+          <p><strong>Global</strong> can appear anywhere.</p>
+          <p><strong>Customer</strong> targets selected customers.</p>
+        </section>
+      </aside>
+
+      <section class="content">
+        <div class="list-heading">
+          <div>
+            <p id="question-count" class="count">0 questions</p>
+            <p class="subtle">Inactive questions stay saved but never enter the game.</p>
+          </div>
+          <button id="refresh-button" class="button button-secondary" type="button">Refresh</button>
+        </div>
+
+        <div id="message" class="message" role="status" hidden></div>
+        <div id="question-list" class="question-list" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <dialog id="editor-dialog" class="editor-dialog">
+      <form id="question-form" method="dialog">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow">Question record</p>
+            <h2 id="editor-title">New question</h2>
+          </div>
+          <button id="close-editor-button" class="icon-button" type="button" aria-label="Close">×</button>
+        </div>
+
+        <input id="question-id" type="hidden" />
+        <div id="form-errors" class="message message-error" hidden></div>
+
+        <div class="form-grid">
+          <label class="form-span">
+            Question prompt
+            <textarea id="question-prompt" rows="3" required></textarea>
+          </label>
+          <label class="form-span">
+            Correct answer
+            <input id="correct-answer" required />
+          </label>
+          <label>
+            Wrong answer 1
+            <input class="wrong-answer" required />
+          </label>
+          <label>
+            Wrong answer 2
+            <input class="wrong-answer" required />
+          </label>
+          <label>
+            Wrong answer 3
+            <input class="wrong-answer" required />
+          </label>
+          <label>
+            Wrong answer 4 <span class="optional">(optional)</span>
+            <input class="wrong-answer" />
+          </label>
+
+          <label>
+            Scope
+            <select id="question-scope">
+              <option value="global">Global</option>
+              <option value="restaurant">Restaurant</option>
+              <option value="area">Area</option>
+              <option value="customer">Customer</option>
+            </select>
+          </label>
+          <label>
+            Difficulty
+            <select id="question-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </label>
+          <label id="restaurant-field">
+            Restaurant slug
+            <input id="restaurant-slug" list="restaurant-options" placeholder="americana" />
+          </label>
+          <label id="area-field">
+            Area slug
+            <input id="area-slug" list="area-options" placeholder="georgia" />
+          </label>
+          <label class="form-span">
+            Customer IDs <span class="optional">(comma separated)</span>
+            <input id="customer-ids" placeholder="cleopatra, king-tut" />
+          </label>
+          <label class="form-span">
+            Tags <span class="optional">(comma separated)</span>
+            <input id="question-tags" placeholder="history, georgia" />
+          </label>
+          <label>
+            Sort order
+            <input id="sort-order" type="number" value="0" />
+          </label>
+          <label class="checkbox-label">
+            <input id="question-active" type="checkbox" checked />
+            Active in the game
+          </label>
+
+          <label class="form-span">
+            Image path <span class="optional">(optional)</span>
+            <input id="question-image" placeholder="../assets/..." />
+          </label>
+          <label class="form-span">
+            Image description <span class="optional">(for accessibility)</span>
+            <input id="question-image-alt" />
+          </label>
+        </div>
+
+        <div class="dialog-actions">
+          <button id="delete-button" class="button button-danger" type="button" hidden>Delete permanently</button>
+          <span class="action-spacer"></span>
+          <button id="cancel-button" class="button button-quiet" type="button">Cancel</button>
+          <button class="button button-primary" type="submit">Save question</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="login-dialog" class="login-dialog">
+      <form id="login-form">
+        <p class="eyebrow">Private admin</p>
+        <h2>Unlock the workshop</h2>
+        <p>Enter the admin key stored in Vercel as <code>QUESTIONS_ADMIN_KEY</code>.</p>
+        <label>
+          Admin key
+          <input id="admin-key" type="password" autocomplete="current-password" required />
+        </label>
+        <div id="login-error" class="message message-error" hidden></div>
+        <button class="button button-primary button-wide" type="submit">Unlock</button>
+      </form>
+    </dialog>
+
+    <datalist id="restaurant-options"></datalist>
+    <datalist id="area-options"></datalist>
+    <datalist id="customer-options"></datalist>
+    <datalist id="tag-options"></datalist>
+    <script type="module" src="./admin.js"></script>
+  </body>
+</html>

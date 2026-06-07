@@ -243,8 +243,9 @@ function seedQuestionsIfNeeded() {
   `);
 
   const timestamp = nowIso();
-  const transaction = db.transaction((items) => {
-    items.forEach((question, index) => {
+  db.exec("BEGIN");
+  try {
+    seed.forEach((question, index) => {
       const normalized = typeof question === "object" && question ? structuredClone(question) : {};
       const payload = JSON.stringify(normalized);
       insert.run(
@@ -256,9 +257,11 @@ function seedQuestionsIfNeeded() {
         payload
       );
     });
-  });
-
-  transaction(seed);
+    db.exec("COMMIT");
+  } catch (error) {
+    db.exec("ROLLBACK");
+    throw error;
+  }
 }
 
 function getQuestions() {

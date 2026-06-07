@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/admin/questions",
+      "destination": "/admin/questions/index.html"
+    },
+    {
+      "source": "/admin/questions/",
+      "destination": "/admin/questions/index.html"
+    },
+    {
       "source": "/zoo",
       "destination": "/zoo/index.html"
     },

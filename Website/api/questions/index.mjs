@@ -1,8 +1,8 @@
 import { readFile } from "node:fs/promises";
 import {
   questionFromRecord,
-  questionToRecord,
 } from "../_lib/restaurant-data.mjs";
+import { questionRecord } from "../_lib/question-admin.mjs";
 import { hasSupabaseConfig, jsonResponse, supabaseRequest } from "../_lib/supabase.mjs";
 
 const QUESTION_BANK_URL = new URL("../../shared/restaurant-question-bank.json", import.meta.url);
@@ -25,7 +25,7 @@ async function seedQuestionsToSupabase(seedQuestions) {
   const seed = Array.isArray(seedQuestions) ? seedQuestions : [];
   for (let index = 0; index < seed.length; index += QUESTION_BATCH_SIZE) {
     const batch = seed.slice(index, index + QUESTION_BATCH_SIZE).map((question, offset) =>
-      questionToRecord(question, index + offset)
+      questionRecord({ ...question, sortOrder: index + offset })
     );
 
     if (!batch.length) {
