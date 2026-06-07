@@ -21,6 +21,7 @@ The admin lets you:
 
 The same page also has a `Customers` tab for editing customer records and swapping photos.
 In the customer editor, `Restaurant` means either `shared` or a specific restaurant like `americana`, and `Character type` describes what kind of customer they are.
+Question records also support image uploads now, so you can add things like flags, signs, or screenshots when a visual clue helps the question.
 
 Deactivating is safer than deleting. An inactive question remains in Supabase but is not sent to the game.
 

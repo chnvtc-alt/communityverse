@@ -2,6 +2,7 @@ const API_URL = "/api/admin/questions";
 const GENERATOR_API_URL = "/api/admin/question-generator";
 const CUSTOMER_API_URL = "/api/admin/customers";
 const CUSTOMER_PHOTO_API_URL = "/api/admin/customer-photo";
+const QUESTION_IMAGE_API_URL = "/api/admin/questions";
 const KEY_STORAGE = "communityverseQuestionsAdminKey";
 
 const elements = {
@@ -64,6 +65,8 @@ const elements = {
   aiResults: document.querySelector("#ai-results"),
   generateQuestionsButton: document.querySelector("#generate-questions-button"),
   suggestWrongAnswersButton: document.querySelector("#suggest-wrong-answers-button"),
+  questionImageFile: document.querySelector("#question-image-file"),
+  questionImagePreview: document.querySelector("#question-image-preview"),
   customerFilterQuery: document.querySelector("#customer-filter-query"),
   customerFilterStatus: document.querySelector("#customer-filter-status"),
   customerFilterGroup: document.querySelector("#customer-filter-group"),
@@ -89,6 +92,8 @@ let filterTimer = 0;
 let customerFilterTimer = 0;
 let aiDrafts = [];
 let selectedAiDraftIndex = -1;
+let selectedQuestionImageFile = null;
+let selectedQuestionImagePreviewUrl = "";
 let selectedCustomerPhotoFile = null;
 let selectedCustomerPhotoPreviewUrl = "";
 
@@ -169,6 +174,29 @@ async function customerApiRequest(path = "", options = {}) {
     const error = new Error(data.error || data.errors?.join(" ") || `Request failed (${response.status}).`);
     error.status = response.status;
     error.details = data.errors;
+    throw error;
+  }
+
+  return data;
+}
+
+async function uploadQuestionImage(questionId, file) {
+  const formData = new FormData();
+  formData.set("id", questionId);
+  formData.set("image", file);
+
+  const response = await fetch(`${QUESTION_IMAGE_API_URL}/${encodeURIComponent(questionId)}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${adminKey}`,
+    },
+    body: formData,
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.error || `Image upload failed (${response.status}).`);
+    error.status = response.status;
     throw error;
   }
 
@@ -331,6 +359,15 @@ function createCustomerId(name) {
     .replace(/^-+|-+$/g, "")
     .slice(0, 48);
   return `${slug || "customer"}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function createQuestionId(prompt) {
+  const slug = String(prompt || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 48);
+  return `${slug || "question"}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
 function normalizeCustomer(customer) {
@@ -747,6 +784,15 @@ function clearQuestionFields() {
   document.querySelector("#question-active").checked = true;
   document.querySelector("#question-image").value = "";
   document.querySelector("#question-image-alt").value = "";
+  elements.questionImageFile.value = "";
+  selectedQuestionImageFile = null;
+  if (selectedQuestionImagePreviewUrl) {
+    URL.revokeObjectURL(selectedQuestionImagePreviewUrl);
+    selectedQuestionImagePreviewUrl = "";
+  }
+  elements.questionImagePreview.removeAttribute("src");
+  elements.questionImagePreview.alt = "";
+  elements.questionImagePreview.hidden = true;
   selectedAiDraftIndex = -1;
 }
 
@@ -758,6 +804,12 @@ function resetEditor(question = null) {
   elements.aiResults.innerHTML = "";
   aiDrafts = [];
   selectedAiDraftIndex = -1;
+  elements.questionImageFile.value = "";
+  selectedQuestionImageFile = null;
+  if (selectedQuestionImagePreviewUrl) {
+    URL.revokeObjectURL(selectedQuestionImagePreviewUrl);
+    selectedQuestionImagePreviewUrl = "";
+  }
   document.querySelector("#question-id").value = question?.id || "";
   document.querySelector("#question-prompt").value = question?.prompt || "";
   document.querySelector("#correct-answer").value = question?.correctAnswer || "";
@@ -777,10 +829,28 @@ function resetEditor(question = null) {
   document.querySelector("#question-active").checked = question?.active !== false;
   document.querySelector("#question-image").value = question?.image || "";
   document.querySelector("#question-image-alt").value = question?.imageAlt || "";
+  updateQuestionImagePreview(question?.image || "");
 
   elements.editorTitle.textContent = question ? "Edit question" : "New question";
   elements.deleteButton.hidden = !question;
   updateScopeFields();
+}
+
+function updateQuestionImagePreview(source) {
+  const raw = String(source || "").trim();
+  if (!raw) {
+    elements.questionImagePreview.removeAttribute("src");
+    elements.questionImagePreview.alt = "";
+    elements.questionImagePreview.hidden = true;
+    return;
+  }
+
+  const image = displayImageUrl(raw);
+  if (image) {
+    elements.questionImagePreview.src = image;
+    elements.questionImagePreview.alt = "";
+    elements.questionImagePreview.hidden = false;
+  }
 }
 
 async function generateQuestionDrafts() {
@@ -864,8 +934,19 @@ async function saveEditor(event) {
   showFormErrors([]);
   const question = questionFromForm();
   const isEditing = Boolean(question.id);
+  if (!question.id) {
+    question.id = createQuestionId(question.prompt);
+    document.querySelector("#question-id").value = question.id;
+  }
 
   try {
+    if (selectedQuestionImageFile) {
+      const upload = await uploadQuestionImage(question.id, selectedQuestionImageFile);
+      question.image = upload.image;
+      document.querySelector("#question-image").value = upload.image;
+      updateQuestionImagePreview(upload.image);
+    }
+
     await apiRequest(isEditing ? `/${encodeURIComponent(question.id)}` : "", {
       method: isEditing ? "PUT" : "POST",
       body: JSON.stringify(question),
@@ -1061,6 +1142,35 @@ elements.customerImage.addEventListener("input", () => {
   if (!selectedCustomerPhotoFile) {
     updateCustomerPhotoPreview(elements.customerImage.value);
   }
+});
+elements.questionImageFile.addEventListener("change", async () => {
+  const file = elements.questionImageFile.files && elements.questionImageFile.files[0];
+  selectedQuestionImageFile = file || null;
+  if (selectedQuestionImagePreviewUrl) {
+    URL.revokeObjectURL(selectedQuestionImagePreviewUrl);
+    selectedQuestionImagePreviewUrl = "";
+  }
+  if (!file) {
+    updateQuestionImagePreview(document.querySelector("#question-image").value);
+    return;
+  }
+
+  selectedQuestionImagePreviewUrl = URL.createObjectURL(file);
+  updateQuestionImagePreview(selectedQuestionImagePreviewUrl);
+});
+document.querySelector("#question-image").addEventListener("input", () => {
+  if (!selectedQuestionImageFile) {
+    updateQuestionImagePreview(document.querySelector("#question-image").value);
+    return;
+  }
+
+  selectedQuestionImageFile = null;
+  elements.questionImageFile.value = "";
+  if (selectedQuestionImagePreviewUrl) {
+    URL.revokeObjectURL(selectedQuestionImagePreviewUrl);
+    selectedQuestionImagePreviewUrl = "";
+  }
+  updateQuestionImagePreview(document.querySelector("#question-image").value);
 });
 
 elements.tabs.forEach((button) => {

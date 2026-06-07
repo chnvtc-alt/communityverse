@@ -123,3 +123,7 @@ create index if not exists idx_customers_focus_tag on customers (focus_tag);
 insert into storage.buckets (id, name, public)
 values ('customer-photos', 'customer-photos', true)
 on conflict (id) do update set public = excluded.public;
+
+insert into storage.buckets (id, name, public)
+values ('question-images', 'question-images', true)
+on conflict (id) do update set public = excluded.public;
