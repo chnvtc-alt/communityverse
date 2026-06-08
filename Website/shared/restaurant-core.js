@@ -11,6 +11,9 @@
     source: "local",
     profiles: [],
   };
+  const activeSessionState = {
+    session: null,
+  };
   let readyResolve = () => {};
   const ready = new Promise((resolve) => {
     readyResolve = resolve;
@@ -2556,16 +2559,32 @@
       workingProfile = updateProfile(nextProfile) || nextProfile;
     }
 
+    activeSessionState.session = clone(session);
     writeJson(STORAGE_KEYS.activeSession, session);
     return clone(session);
   }
 
   function getActiveSession() {
-    return readJson(STORAGE_KEYS.activeSession, null);
+    if (activeSessionState.session) {
+      return clone(activeSessionState.session);
+    }
+
+    const storedSession = readJson(STORAGE_KEYS.activeSession, null);
+    if (storedSession) {
+      activeSessionState.session = storedSession;
+      return clone(activeSessionState.session);
+    }
+
+    return null;
   }
 
   function clearActiveSession() {
-    window.localStorage.removeItem(STORAGE_KEYS.activeSession);
+    activeSessionState.session = null;
+    try {
+      window.localStorage?.removeItem(STORAGE_KEYS.activeSession);
+    } catch (error) {
+      // Ignore storage blocks and rely on the in-memory cache.
+    }
   }
 
   function completeSession(session) {
@@ -2667,6 +2686,7 @@
     });
 
     saveProfiles(profiles);
+    activeSessionState.session = clone(session);
     writeJson(STORAGE_KEYS.activeSession, session);
     void syncSessionToServer(session);
   }
@@ -2725,6 +2745,7 @@
             : "lost customer";
       completeSession(session);
     } else {
+      activeSessionState.session = clone(session);
       writeJson(STORAGE_KEYS.activeSession, session);
     }
 
