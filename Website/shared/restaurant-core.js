@@ -11,6 +11,10 @@
     source: "local",
     profiles: [],
   };
+  const activeProfileState = {
+    profileId: "",
+    profile: null,
+  };
   const activeSessionState = {
     session: null,
   };
@@ -1787,6 +1791,21 @@
     return getProfilesCache();
   }
 
+  function getLatestRealProfile() {
+    return getProfiles()
+      .filter(
+        (profile) =>
+          profile &&
+          !profile.isGuest &&
+          !String(profile.id || "").startsWith("demo-")
+      )
+      .sort((left, right) => {
+        const leftStamp = String(left.updatedAt || left.lastPlayedAt || left.createdAt || "");
+        const rightStamp = String(right.updatedAt || right.lastPlayedAt || right.createdAt || "");
+        return rightStamp.localeCompare(leftStamp);
+      })[0] || null;
+  }
+
   function saveProfiles(profiles) {
     const normalized = normalizeProfiles(profiles);
     setProfilesCache(normalized, profilesCacheState.source);
@@ -1800,21 +1819,24 @@
 
   function getActiveProfileId() {
     try {
-      return window.localStorage?.getItem(STORAGE_KEYS.activeProfileId) || "";
+      return activeProfileState.profileId || window.localStorage?.getItem(STORAGE_KEYS.activeProfileId) || "";
     } catch (error) {
-      return "";
+      return activeProfileState.profileId || "";
     }
   }
 
   function setActiveProfileId(profileId) {
+    activeProfileState.profileId = String(profileId || "");
     try {
-      window.localStorage?.setItem(STORAGE_KEYS.activeProfileId, profileId);
+      window.localStorage?.setItem(STORAGE_KEYS.activeProfileId, activeProfileState.profileId);
     } catch (error) {
       // Ignore storage blocks and continue using the active profile cache.
     }
   }
 
   function clearActiveProfileId() {
+    activeProfileState.profileId = "";
+    activeProfileState.profile = null;
     try {
       window.localStorage?.removeItem(STORAGE_KEYS.activeProfileId);
     } catch (error) {
@@ -1824,11 +1846,31 @@
 
   function getActiveProfile() {
     const profileId = getActiveProfileId();
-    if (!profileId) {
-      return null;
+    if (profileId) {
+      const profile = getProfiles().find((entry) => entry.id === profileId) || null;
+      if (profile) {
+        activeProfileState.profile = profile;
+        return profile;
+      }
     }
 
-    return getProfiles().find((profile) => profile.id === profileId) || null;
+    if (activeProfileState.profile && !activeProfileState.profile.isGuest) {
+      return activeProfileState.profile;
+    }
+
+    const latestRealProfile = getLatestRealProfile();
+    if (latestRealProfile) {
+      activeProfileState.profile = latestRealProfile;
+      activeProfileState.profileId = latestRealProfile.id;
+      try {
+        window.localStorage?.setItem(STORAGE_KEYS.activeProfileId, latestRealProfile.id);
+      } catch (error) {
+        // Ignore storage blocks and continue using the in-memory profile cache.
+      }
+      return latestRealProfile;
+    }
+
+    return null;
   }
 
   function buildEmptyStats() {
@@ -1963,6 +2005,7 @@
     profiles.push(profile);
     saveProfiles(profiles);
     setActiveProfileId(profile.id);
+    activeProfileState.profile = ensureProfileShape(profile);
     return ensureProfileShape(profile);
   }
 
@@ -1986,6 +2029,7 @@
     profiles.push(profile);
     saveProfiles(profiles);
     setActiveProfileId(profile.id);
+    activeProfileState.profile = ensureProfileShape(profile);
     return ensureProfileShape(profile);
   }
 
@@ -2000,7 +2044,11 @@
       profile.id === updatedProfile.id ? ensureProfileShape(updatedProfile) : profile
     );
     saveProfiles(profiles);
-    return profiles.find((profile) => profile.id === updatedProfile.id) || null;
+    const savedProfile = profiles.find((profile) => profile.id === updatedProfile.id) || null;
+    if (savedProfile) {
+      activeProfileState.profile = savedProfile;
+    }
+    return savedProfile;
   }
 
   function getRestaurantQuestionMemory(profile, restaurantSlug) {
