@@ -525,6 +525,24 @@
                     <span class="chip hero-stat-chip hero-stat-chip-compact">Regular Customers ${safeSummary.stats.regularCustomers}</span>
                     <span class="chip hero-stat-chip hero-stat-chip-compact">Occasional Customers ${safeSummary.stats.occasionalCustomers}</span>
                   </div>
+                  ${
+                    editMode
+                      ? `
+                        <form class="hero-profile-edit-form" id="hero-profile-edit-form">
+                          <div class="field" style="gap: 6px;">
+                            <label class="field-label" for="hero-restaurant-name">Restaurant name</label>
+                            <div class="hero-profile-edit-row">
+                              <input class="input hero-profile-input" id="hero-restaurant-name" name="restaurantName" type="text" value="${escapeHtml(profile.restaurantName)}" />
+                              <button class="button button-primary button-sm" type="submit">Save Changes</button>
+                              <a class="button button-muted button-sm" href="${withHubMode("./")}">Cancel</a>
+                            </div>
+                          </div>
+                          <p class="helper" style="margin: 8px 0 0;">Your player name stays the same. Only the restaurant name changes here.</p>
+                          <p class="error hidden" id="hero-profile-error" aria-live="polite" style="margin-top: 8px;"></p>
+                        </form>
+                      `
+                      : ``
+                  }
                 </div>
                 `
                 : profileState === "guest"
@@ -622,7 +640,7 @@
           restaurantName,
           restaurantSlug: core.slugify(restaurantName),
         });
-        window.location.href = "./";
+        window.location.href = withHubMode("./");
       });
     }
 
