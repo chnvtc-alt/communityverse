@@ -25,6 +25,7 @@
     activeMobileTab: "overview",
     showSignIn: query.get("signin") === "1" || authCallbackMode,
     showConnectEmail: query.get("connect") === "1",
+    connectInfoExpanded: false,
     authMessage: authCallbackMode ? "Verifying your secure sign-in link..." : "",
     authError: "",
     connectMessage: "",
@@ -456,6 +457,23 @@
     `;
   }
 
+  function renderConnectInfoMarkup(profile) {
+    if (!profile) {
+      return "";
+    }
+
+    return `
+      <div class="hub-email-info">
+        <button class="text-button" type="button" data-toggle-connect-info>
+          ${state.connectInfoExpanded ? "Hide email note" : "Why save with email?"}
+        </button>
+        <p class="helper ${state.connectInfoExpanded ? "" : "hidden"}" style="margin: 4px 0 0;">
+          Email lets you restore ${escapeHtml(profile.restaurantName)} after clearing cache or switching devices. You can keep playing without it.
+        </p>
+      </div>
+    `;
+  }
+
   function renderHero() {
     const compactMobile = isMobileHub();
     const profile = core.getActiveProfile();
@@ -523,6 +541,7 @@
                           <a class="button button-muted button-sm" href="${withHubMode("./?edit=1")}">Edit My Profile</a>
                         </div>
                     </div>
+                    ${!editMode ? renderConnectInfoMarkup(profile) : ``}
                     <div class="hero-profile-meta hero-profile-meta-compact">
                       <span class="chip hero-stat-chip">${overallRank ? `Overall #${overallRank}` : "No overall rank"}</span>
                       <span class="chip hero-stat-chip">Sales ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
@@ -577,6 +596,7 @@
                       <a class="button button-muted button-sm" href="${withHubMode("./?edit=1")}">Edit My Profile</a>
                     </div>
                   </div>
+                  ${!editMode ? renderConnectInfoMarkup(profile) : ``}
                   <div class="hero-profile-meta">
                     <span class="chip hero-stat-chip">${overallRank ? `Overall #${overallRank}` : "No overall rank"}</span>
                     <span class="chip hero-stat-chip">Sales ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
@@ -721,6 +741,13 @@
         state.showConnectEmail = true;
         state.connectMessage = "";
         state.connectError = "";
+        renderHero();
+      });
+    });
+
+    elements.hero.querySelectorAll("[data-toggle-connect-info]").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.connectInfoExpanded = !state.connectInfoExpanded;
         renderHero();
       });
     });

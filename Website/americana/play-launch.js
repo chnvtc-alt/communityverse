@@ -26,6 +26,7 @@
     answerTimer: null,
     showProfileForm: false,
     registrationMessage: "",
+    emailInfoExpanded: false,
     resultBioExpanded: false,
     showGame: false,
   };
@@ -672,7 +673,7 @@
               <div class="hero-card result-followup-card result-followup-card-guest" style="margin-top: 0; padding: 16px;">
                 <p class="kicker" style="margin: 0 0 6px;">Save progress</p>
                 <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">Save your progress and choose a restaurant name for the leaderboard.</h3>
-                <p class="copy" style="margin: 0 0 12px;">Registering keeps your stats, customers, and leaderboard spot available on any device.</p>
+                <p class="copy" style="margin: 0 0 12px;">Save your restaurant now. You can add email recovery later from your restaurant page.</p>
                 <div class="button-row">
                   <button class="button button-hot" id="register-now-button" type="button">Register Now</button>
                   <button class="button button-muted" id="guest-continue-button" type="button">Keep Playing as Guest</button>
@@ -694,14 +695,15 @@
                       <input class="input" id="restaurant-name" name="restaurantName" type="text" placeholder="Tim's Roadhouse" value="${escapeHtml(profile ? profile.restaurantName : "")}" />
                     </div>
                     <div class="field">
-                      <label class="field-label" for="profile-email">Email address</label>
-                      <input class="input" id="profile-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
+                      <label class="field-label" for="profile-email">Email address <span style="font-weight: 500;">(optional)</span></label>
+                      <input class="input" id="profile-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" />
                     </div>
-                    <p class="helper" style="margin: 0;">We will email you a secure link. Use the same email later to restore this restaurant on another device.</p>
+                    <button class="text-button" id="email-info-toggle" type="button">${state.emailInfoExpanded ? "Hide email note" : "Why save with email?"}</button>
+                    <p class="helper ${state.emailInfoExpanded ? "" : "hidden"}" style="margin: 0;">Email is only used to send a secure recovery link. Without it, your restaurant is saved in this browser, but it cannot be restored after clearing cache or changing devices.</p>
                     <p class="error hidden" id="profile-error" aria-live="polite"></p>
                     <p class="helper ${state.registrationMessage ? "" : "hidden"}" id="profile-success" aria-live="polite">${escapeHtml(state.registrationMessage)}</p>
                     <div class="form-actions">
-                      <button class="button button-hot" id="profile-submit-button" type="submit">Email My Sign-In Link</button>
+                      <button class="button button-hot" id="profile-submit-button" type="submit">Save Restaurant</button>
                       <button class="button button-muted" id="cancel-register-button" type="button">Maybe Later</button>
                     </div>
                   </form>
@@ -743,9 +745,15 @@
       const form = document.getElementById("profile-form");
       const error = document.getElementById("profile-error");
       const cancel = document.getElementById("cancel-register-button");
+      const emailInfoToggle = document.getElementById("email-info-toggle");
 
       cancel.addEventListener("click", () => {
         state.showProfileForm = false;
+        renderAll();
+      });
+
+      emailInfoToggle.addEventListener("click", () => {
+        state.emailInfoExpanded = !state.emailInfoExpanded;
         renderAll();
       });
 
@@ -763,15 +771,15 @@
           return;
         }
 
-        if (!email || !email.includes("@")) {
-          error.textContent = "Enter a valid email address.";
+        if (email && !email.includes("@")) {
+          error.textContent = "Enter a valid email address, or leave email blank for now.";
           error.classList.remove("hidden");
           return;
         }
 
         error.classList.add("hidden");
         submitButton.disabled = true;
-        submitButton.textContent = "Sending...";
+        submitButton.textContent = email ? "Sending..." : "Saving...";
         const activeProfile = getProfile();
         if (activeProfile) {
           core.updateProfile({
@@ -779,13 +787,21 @@
             playerName,
             restaurantName,
             restaurantSlug: core.slugify(restaurantName),
+            isGuest: false,
           });
           core.setActiveProfileId(activeProfile.id);
         } else {
           error.textContent = "Your guest restaurant could not be found. Please play again.";
           error.classList.remove("hidden");
           submitButton.disabled = false;
-          submitButton.textContent = "Email My Sign-In Link";
+          submitButton.textContent = "Save Restaurant";
+          return;
+        }
+
+        if (!email) {
+          state.showProfileForm = false;
+          state.registrationMessage = "";
+          renderAll();
           return;
         }
 
@@ -797,7 +813,7 @@
           error.textContent = sendError instanceof Error ? sendError.message : "Unable to send the email link.";
           error.classList.remove("hidden");
           submitButton.disabled = false;
-          submitButton.textContent = "Email My Sign-In Link";
+          submitButton.textContent = "Save Restaurant";
         }
       });
     } else {
