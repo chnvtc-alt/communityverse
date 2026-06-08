@@ -4,6 +4,7 @@
   const query = new URLSearchParams(window.location.search);
   const demoMode = query.has("demo");
   const freshMode = query.has("fresh");
+  const autoPlayMode = query.get("play") === "1";
   const replayCustomerId = String(query.get("customerId") || "").trim();
   const replayCustomer = replayCustomerId ? core.getCustomerById(replayCustomerId) : null;
   const RESULT_VISIBLE_SESSION_KEY = "americana_result_visible_session_v1";
@@ -194,7 +195,7 @@
   }
 
   async function initializeAmericanaPage() {
-    await core.whenReady();
+    void core.whenReady().catch(() => {});
 
     if (freshMode) {
       core.clearActiveSession();
@@ -212,6 +213,12 @@
     }
 
     renderAll();
+
+    if (autoPlayMode) {
+      window.requestAnimationFrame(() => {
+        void startGame();
+      });
+    }
   }
 
   function renderHero(visible) {
@@ -290,7 +297,7 @@
         <p class="opening-title-small opening-title-small-bottom">Can You Earn A New Regular Customer?</p>
 
         <div class="button-row opening-start-actions opening-start-actions-bottom">
-          <button class="button button-hot" id="start-game-button" type="button">${replayCustomer ? "INVITE BACK" : "START THE GAME"}</button>
+          <a class="button button-hot" id="start-game-button" href="./?play=1">${replayCustomer ? "INVITE BACK" : "START THE GAME"}</a>
           ${
             replayCustomer
               ? `
@@ -368,14 +375,15 @@
         <p class="opening-title-small opening-title-small-bottom">Can You Earn A New Regular Customer?</p>
 
         <div class="button-row opening-start-actions opening-start-actions-bottom">
-          <button class="button button-hot" id="start-game-button" type="button">START THE GAME</button>
+          <a class="button button-hot" id="start-game-button" href="./?play=1">START THE GAME</a>
           <a class="button button-muted" href="../restaurant/?hub=1">Back to Hub</a>
         </div>
       </div>`;
 
     const startButton = document.getElementById("start-game-button");
     if (startButton) {
-      startButton.addEventListener("click", () => {
+      startButton.addEventListener("click", (event) => {
+        event.preventDefault();
         if (!getProfile()) {
           core.createGuestProfile();
         }
@@ -412,8 +420,6 @@
   }
 
   async function startGame() {
-    await core.whenReady();
-
     const profile = ensurePlayableProfile();
     if (profile) {
       core.setActiveProfileId(profile.id);
