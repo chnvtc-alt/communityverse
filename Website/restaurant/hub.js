@@ -182,7 +182,7 @@
     elements.splashPlayButton.setAttribute("aria-disabled", selectedRestaurant?.available ? "false" : "true");
     elements.splashPlayButton.classList.toggle("is-disabled", !selectedRestaurant?.available);
     elements.splashPlayButton.href = selectedRestaurant?.available && selectedRestaurant.href ? selectedRestaurant.href : "#splash-chooser";
-    elements.splashPlayButton.textContent = selectedRestaurant?.available ? "Play Selected Restaurant" : "Coming Soon";
+    elements.splashPlayButton.textContent = selectedRestaurant?.available ? "Start Playing" : "Coming Soon";
     if (elements.splashMyRestaurantButton) {
       elements.splashMyRestaurantButton.href = "/restaurant/?hub=1#hero-panel";
     }

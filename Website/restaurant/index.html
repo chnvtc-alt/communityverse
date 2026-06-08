@@ -41,14 +41,14 @@
         <div class="challenge-splash-grid">
           <div class="challenge-splash-copy">
             <p class="kicker">Restaurant Challenge</p>
-            <h1 class="page-title challenge-splash-title">Choose a restaurant to play.</h1>
+            <h1 class="page-title challenge-splash-title">Build Your Five-Star Restaurant</h1>
             <p class="challenge-splash-lead">
-              Pick a restaurant, answer fast trivia rounds, win your first customer, and keep your progress moving from device to device.
+              Visit local restaurants, answer quick trivia questions, collect customers, improve your rating, and climb the leaderboard.
             </p>
             <div class="challenge-splash-picker" id="splash-chooser">
               <label class="field challenge-splash-field" for="splash-restaurant-select">
-                <span class="field-label">Choose a restaurant to play</span>
-                <select class="select" id="splash-restaurant-select" aria-label="Choose a restaurant to play">
+                <span class="field-label">Choose where to play</span>
+                <select class="select" id="splash-restaurant-select" aria-label="Choose where to play">
                   <option value="americana">Americana Diner</option>
                   <option value="placeholder-1" disabled>Placeholder 1</option>
                   <option value="placeholder-2" disabled>Placeholder 2</option>
@@ -56,9 +56,14 @@
               </label>
             </div>
             <div class="challenge-splash-actions">
-              <a class="button button-primary" id="splash-play-button" href="/americana/">Play Selected Restaurant</a>
-              <a class="button" id="splash-my-restaurant-button" href="/restaurant/?hub=1#hero-panel">View My Restaurant</a>
-              <a class="button button-muted" id="splash-leaderboard-button" href="/restaurant/?hub=1#leaderboard-panel">See The Leaderboard</a>
+              <a class="button button-primary challenge-splash-primary" id="splash-play-button" href="/americana/">Start Playing</a>
+              <a class="button button-muted challenge-splash-secondary" id="splash-my-restaurant-button" href="/restaurant/?hub=1#hero-panel">My Restaurant</a>
+              <a class="button button-muted challenge-splash-secondary" id="splash-leaderboard-button" href="/restaurant/?hub=1#leaderboard-panel">Leaderboard</a>
+            </div>
+            <div class="challenge-progress-strip" aria-label="New player progress preview">
+              <span class="challenge-progress-item">⭐ Rating: New</span>
+              <span class="challenge-progress-item">👥 Customers: 0</span>
+              <span class="challenge-progress-item">🏆 Rank: Not Ranked</span>
             </div>
           </div>
         </div>

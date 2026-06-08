@@ -201,7 +201,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 .challenge-splash-title {
   margin: 0;
   font-size: clamp(2.3rem, 4.6vw, 4.3rem);
-  max-width: 12ch;
+  max-width: 13ch;
 }
 
 .challenge-splash-lead,
@@ -239,6 +239,42 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   gap: 12px;
   margin-top: 6px;
   justify-content: center;
+}
+
+.challenge-splash-primary {
+  min-width: 210px;
+  background: var(--gold);
+  color: #fff;
+  border-color: rgba(171, 102, 19, 0.35);
+  box-shadow: 0 14px 30px rgba(213, 138, 43, 0.24);
+}
+
+.challenge-splash-secondary {
+  min-width: 150px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.challenge-progress-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 4px;
+  font-family: Arial, sans-serif;
+}
+
+.challenge-progress-item {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 8px 13px;
+  border: 1px solid rgba(93, 116, 105, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 800;
+  box-shadow: 0 8px 20px rgba(34, 47, 42, 0.06);
 }
 
 .challenge-splash-pills {
@@ -2093,8 +2129,13 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     max-width: none;
   }
 
+  .challenge-splash-field .select,
+  .challenge-splash-primary {
+    width: 100%;
+  }
+
   .challenge-splash-title {
-    max-width: 15ch;
+    max-width: 16ch;
     font-size: clamp(2rem, 9vw, 2.8rem);
   }
 
@@ -2104,6 +2145,16 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
   .challenge-splash-actions .button {
     width: 100%;
+  }
+
+  .challenge-progress-strip {
+    display: grid;
+    width: 100%;
+    grid-template-columns: 1fr;
+  }
+
+  .challenge-progress-item {
+    justify-content: center;
   }
 
   .page-title {
