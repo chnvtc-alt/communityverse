@@ -47,6 +47,18 @@ async function findProfileForOwner(ownerUserId) {
   return profiles.find((profile) => profile.ownerUserId === ownerUserId) || null;
 }
 
+async function findPendingProfileForEmail(email) {
+  const normalized = normalizedEmail(email);
+  if (!normalized) {
+    return null;
+  }
+  const rows = await supabaseRequest(
+    "profiles?select=id,player_name,restaurant_name,restaurant_slug,is_guest,created_at,updated_at,payload_json&order=updated_at.desc"
+  );
+  const profiles = Array.isArray(rows) ? rows.map(profileFromRecord).filter(Boolean) : [];
+  return profiles.find((profile) => normalizedEmail(profile.pendingOwnerEmail) === normalized) || null;
+}
+
 async function sendMagicLink(request, body) {
   const email = normalizedEmail(body.email);
   if (!email || !email.includes("@")) {
@@ -65,6 +77,14 @@ async function sendMagicLink(request, body) {
       return jsonResponse({ ok: false, error: "This restaurant is already registered." }, 409);
     }
     claimState = createClaimState(profileId);
+    await storeProfile(profile, {
+      profileAccessTokenHash: profile.profileAccessTokenHash,
+      ownerUserId: profile.ownerUserId,
+      ownerEmail: profile.ownerEmail,
+      ownershipUpdatedAt: profile.ownershipUpdatedAt,
+      pendingOwnerEmail: email,
+      pendingOwnershipUpdatedAt: new Date().toISOString(),
+    });
   }
 
   const redirectUrl = new URL("/restaurant/", redirectOrigin(request));
@@ -111,6 +131,10 @@ async function completeMagicLink(body) {
     ? await fetchProfile(claim.profileId)
     : await findProfileForOwner(user.id);
 
+  if (!profile && !claim) {
+    profile = await findPendingProfileForEmail(user.email);
+  }
+
   if (!profile) {
     return jsonResponse(
       {
@@ -138,6 +162,8 @@ async function completeMagicLink(body) {
       ownerUserId: user.id,
       ownerEmail: normalizedEmail(user.email),
       ownershipUpdatedAt: new Date().toISOString(),
+      pendingOwnerEmail: "",
+      pendingOwnershipUpdatedAt: "",
     }
   );
 

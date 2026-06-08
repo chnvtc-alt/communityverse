@@ -7,6 +7,8 @@ const PRIVATE_PROFILE_FIELDS = [
   "ownerUserId",
   "ownerEmail",
   "ownershipUpdatedAt",
+  "pendingOwnerEmail",
+  "pendingOwnershipUpdatedAt",
 ];
 
 export function generateProfileAccessToken() {

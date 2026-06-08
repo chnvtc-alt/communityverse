@@ -1904,7 +1904,8 @@
     const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
     const accessToken = String(hash.get("access_token") || "");
     const query = new URLSearchParams(window.location.search);
-    if (query.get("auth") !== "callback") {
+    const isAuthCallback = query.get("auth") === "callback" || Boolean(accessToken || hash.get("error"));
+    if (!isAuthCallback) {
       return null;
     }
     const authError = String(hash.get("error_description") || hash.get("error") || "");
