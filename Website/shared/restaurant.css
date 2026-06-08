@@ -342,6 +342,22 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   background: rgba(47, 111, 82, 0.08);
 }
 
+.hub-sign-in-toggle {
+  margin-top: 10px;
+}
+
+.hub-sign-in-form {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  max-width: 620px;
+}
+
+.hub-sign-in-form .helper,
+.hub-sign-in-form .error {
+  margin: 0;
+}
+
 .hero-profile-name {
   margin: 0;
   font-size: 1.25rem;

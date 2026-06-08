@@ -1,4 +1,9 @@
 import { sessionFromRecord } from "../_lib/restaurant-data.mjs";
+import {
+  fetchProfile,
+  getProfileAccessToken,
+  profileTokenMatches,
+} from "../_lib/profile-security.mjs";
 import { hasSupabaseConfig, jsonResponse, readJsonBody, supabaseRequest } from "../_lib/supabase.mjs";
 
 async function fetchSessions(profileId = "") {
@@ -70,6 +75,12 @@ export async function POST(request) {
   }
 
   try {
+    const profileId = String(body.profileId || "").trim();
+    const profile = profileId ? await fetchProfile(profileId) : null;
+    const token = getProfileAccessToken(request);
+    if (!profile || !token || !profileTokenMatches(profile, token)) {
+      return jsonResponse({ ok: false, error: "Unable to verify this restaurant." }, 403);
+    }
     return jsonResponse(await upsertSession(body), 201);
   } catch (error) {
     return jsonResponse(

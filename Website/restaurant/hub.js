@@ -3,6 +3,7 @@
   const query = new URLSearchParams(window.location.search);
   const editMode = query.has("edit");
   const hubMode = query.get("hub") === "1" || query.get("view") === "hub";
+  const authCallbackMode = query.get("auth") === "callback";
 
   const metricOptions = [
     { value: "estimatedSales", label: "Sales" },
@@ -22,6 +23,9 @@
     selectedCustomerId: "",
     selectedCustomerBioExpanded: false,
     activeMobileTab: "overview",
+    showSignIn: query.get("signin") === "1" || authCallbackMode,
+    authMessage: authCallbackMode ? "Verifying your secure sign-in link..." : "",
+    authError: "",
   };
 
   const mobileHubQuery = "(max-width: 960px)";
@@ -403,6 +407,30 @@
     return profile.isGuest ? "guest" : "registered";
   }
 
+  function renderSignInMarkup() {
+    if (!state.showSignIn) {
+      return `
+        <button class="text-button hub-sign-in-toggle" type="button" data-show-sign-in>
+          Already registered? Sign in
+        </button>
+      `;
+    }
+
+    return `
+      <form class="hub-sign-in-form" id="hub-sign-in-form">
+        <div class="field">
+          <label class="field-label" for="hub-sign-in-email">Email address</label>
+          <div class="hero-profile-edit-row">
+            <input class="input hero-profile-input" id="hub-sign-in-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
+            <button class="button button-primary button-sm" id="hub-sign-in-submit" type="submit">Email Sign-In Link</button>
+          </div>
+        </div>
+        <p class="helper ${state.authMessage ? "" : "hidden"}" id="hub-auth-message" aria-live="polite">${escapeHtml(state.authMessage)}</p>
+        <p class="error ${state.authError ? "" : "hidden"}" id="hub-auth-error" aria-live="polite">${escapeHtml(state.authError)}</p>
+      </form>
+    `;
+  }
+
   function renderHero() {
     const compactMobile = isMobileHub();
     const profile = core.getActiveProfile();
@@ -552,6 +580,7 @@
                         <p class="kicker" style="margin: 0 0 4px;">Guest Progress</p>
                         <h2 class="hero-profile-name">Play first, then register to save your restaurant.</h2>
                         <p class="copy compact-copy" style="margin: 4px 0 0;">You can keep playing as a guest, but registering after your next game keeps your customers and leaderboard progress with you.</p>
+                        ${renderSignInMarkup()}
                       </div>
                       <a class="button button-primary button-sm" href="${playAgainTarget.href}">Play ${escapeHtml(playAgainTarget.name)}</a>
                     </div>
@@ -562,6 +591,7 @@
                         <p class="kicker" style="margin: 0 0 4px;">Welcome</p>
                         <h2 class="hero-profile-name">Choose a restaurant, play your first game, then register after you win a customer.</h2>
                         <p class="copy compact-copy" style="margin: 4px 0 0;">New players should pick a restaurant from the host list below. After the first game, we’ll ask you to save your restaurant name so progress can follow you.</p>
+                        ${renderSignInMarkup()}
                       </div>
                       <a class="button button-primary button-sm" href="#directory-card">Choose A Restaurant</a>
                     </div>
@@ -641,6 +671,38 @@
           restaurantSlug: core.slugify(restaurantName),
         });
         window.location.href = withHubMode("./");
+      });
+    }
+
+    elements.hero.querySelectorAll("[data-show-sign-in]").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.showSignIn = true;
+        state.authMessage = "";
+        state.authError = "";
+        renderHero();
+      });
+    });
+
+    const signInForm = document.getElementById("hub-sign-in-form");
+    if (signInForm) {
+      signInForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const email = document.getElementById("hub-sign-in-email").value.trim();
+        const submitButton = document.getElementById("hub-sign-in-submit");
+        state.authError = "";
+        state.authMessage = "";
+        submitButton.disabled = true;
+        submitButton.textContent = "Sending...";
+        try {
+          await core.sendEmailSignInLink(email);
+          state.authMessage = "Check your email and tap the secure link to restore your restaurant.";
+          renderHero();
+        } catch (error) {
+          state.authError = error instanceof Error ? error.message : "Unable to send the email link.";
+          submitButton.disabled = false;
+          submitButton.textContent = "Email Sign-In Link";
+          renderHero();
+        }
       });
     }
 
@@ -1007,7 +1069,21 @@
 
   renderAll();
   if (core.whenReady) {
-    core.whenReady().then(() => {
+    core.whenReady().then(async () => {
+      if (authCallbackMode) {
+        try {
+          const recoveredProfile = await core.completeEmailSignInFromUrl();
+          state.authMessage = recoveredProfile
+            ? `Welcome back to ${recoveredProfile.restaurantName}.`
+            : "";
+          state.authError = "";
+          state.showSignIn = false;
+        } catch (error) {
+          state.authMessage = "";
+          state.authError = error instanceof Error ? error.message : "Unable to complete sign-in.";
+          state.showSignIn = true;
+        }
+      }
       renderAll();
     });
   }

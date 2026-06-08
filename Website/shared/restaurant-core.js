@@ -3,6 +3,7 @@
     profiles: "restaurant_challenge_profiles_v1",
     activeProfileId: "restaurant_challenge_active_profile_v1",
     activeSession: "restaurant_challenge_active_session_v1",
+    profileAccessTokens: "restaurant_challenge_profile_access_tokens_v1",
   };
   const API_BASE = "/api";
   const USE_REMOTE_SYNC = typeof window.fetch === "function";
@@ -1675,15 +1676,53 @@
       ...options,
     });
 
-    if (!response.ok) {
-      throw new Error(`Request failed with status ${response.status}`);
-    }
-
     if (response.status === 204) {
       return null;
     }
 
-    return response.json();
+    const data = await response.json().catch(() => null);
+    if (!response.ok) {
+      throw new Error(data?.error || `Request failed with status ${response.status}`);
+    }
+
+    return data;
+  }
+
+  function generateProfileAccessToken() {
+    const bytes = new Uint8Array(32);
+    if (window.crypto?.getRandomValues) {
+      window.crypto.getRandomValues(bytes);
+      return Array.from(bytes, (value) => value.toString(16).padStart(2, "0")).join("");
+    }
+    return `${makeId("token")}-${Math.random().toString(36).slice(2)}`;
+  }
+
+  function getProfileAccessToken(profileId) {
+    const tokens = readJson(STORAGE_KEYS.profileAccessTokens, {});
+    return String(tokens?.[profileId] || "");
+  }
+
+  function setProfileAccessToken(profileId, token) {
+    const safeProfileId = String(profileId || "");
+    const safeToken = String(token || "");
+    if (!safeProfileId || !safeToken) {
+      return;
+    }
+    const tokens = readJson(STORAGE_KEYS.profileAccessTokens, {});
+    writeJson(STORAGE_KEYS.profileAccessTokens, {
+      ...(tokens && typeof tokens === "object" ? tokens : {}),
+      [safeProfileId]: safeToken,
+    });
+  }
+
+  function ensureProfileAccessToken(profileId) {
+    const existing = getProfileAccessToken(profileId);
+    if (existing) {
+      return existing;
+    }
+    const token = generateProfileAccessToken();
+    setProfileAccessToken(profileId, token);
+    return token;
   }
 
   async function syncProfilesToServer(profiles) {
@@ -1691,19 +1730,22 @@
       return;
     }
 
-    const realProfiles = normalizeProfiles(profiles).filter((profile) => !isDemoProfile(profile));
-    if (!realProfiles.length) {
+    const activeProfileId = getActiveProfileId();
+    const activeProfile = normalizeProfiles(profiles).find(
+      (profile) => profile.id === activeProfileId && !isDemoProfile(profile)
+    );
+    if (!activeProfile) {
       return;
     }
 
-    await Promise.all(
-      realProfiles.map((profile) =>
-        requestJson(`/profiles/${encodeURIComponent(profile.id)}`, {
-          method: "PUT",
-          body: JSON.stringify(profile),
-        }).catch(() => null)
-      )
-    );
+    const token = ensureProfileAccessToken(activeProfile.id);
+    await requestJson(`/profiles/${encodeURIComponent(activeProfile.id)}`, {
+      method: "PUT",
+      headers: {
+        "X-Profile-Token": token,
+      },
+      body: JSON.stringify(activeProfile),
+    });
   }
 
   async function syncSessionToServer(session) {
@@ -1711,8 +1753,16 @@
       return;
     }
 
+    await syncActiveProfile();
+    const token = getProfileAccessToken(session.profileId);
+    if (!token) {
+      return;
+    }
     await requestJson("/sessions", {
       method: "POST",
+      headers: {
+        "X-Profile-Token": token,
+      },
       body: JSON.stringify(session),
     }).catch(() => null);
   }
@@ -1804,7 +1854,83 @@
     } catch (error) {
       // Keep the updated profiles in memory even if browser storage is unavailable.
     }
-    void syncProfilesToServer(normalized);
+    void syncProfilesToServer(normalized).catch(() => null);
+  }
+
+  async function syncActiveProfile() {
+    await syncProfilesToServer(getProfiles());
+    return getActiveProfile();
+  }
+
+  async function sendEmailSignInLink(email, options = {}) {
+    const profileId = String(options.profileId || "");
+    const headers = {};
+    if (profileId) {
+      await syncActiveProfile();
+      headers["X-Profile-Token"] = ensureProfileAccessToken(profileId);
+    }
+
+    return requestJson("/auth", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        action: "send",
+        email: String(email || "").trim(),
+        profileId,
+      }),
+    });
+  }
+
+  function mergeRecoveredProfile(profile, profileAccessToken) {
+    if (!profile?.id) {
+      return null;
+    }
+    const safeProfile = ensureProfileShape(profile);
+    const profiles = getProfiles();
+    const index = profiles.findIndex((entry) => entry.id === safeProfile.id);
+    if (index >= 0) {
+      profiles[index] = safeProfile;
+    } else {
+      profiles.push(safeProfile);
+    }
+    setProfileAccessToken(safeProfile.id, profileAccessToken);
+    setActiveProfileId(safeProfile.id);
+    activeProfileState.profile = safeProfile;
+    saveProfiles(profiles);
+    return safeProfile;
+  }
+
+  async function completeEmailSignInFromUrl() {
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const accessToken = String(hash.get("access_token") || "");
+    const query = new URLSearchParams(window.location.search);
+    if (query.get("auth") !== "callback") {
+      return null;
+    }
+    const authError = String(hash.get("error_description") || hash.get("error") || "");
+    if (authError) {
+      throw new Error(authError.replace(/\+/g, " "));
+    }
+    if (!accessToken) {
+      throw new Error("This sign-in link is incomplete or has expired. Please request another.");
+    }
+
+    const result = await requestJson("/auth", {
+      method: "POST",
+      body: JSON.stringify({
+        action: "complete",
+        accessToken,
+        claimState: query.get("claim_state") || "",
+      }),
+    });
+
+    const profile = mergeRecoveredProfile(result?.profile, result?.profileAccessToken);
+    const cleanUrl = new URL(window.location.href);
+    cleanUrl.hash = "";
+    cleanUrl.searchParams.delete("auth");
+    cleanUrl.searchParams.delete("claim_state");
+    window.history.replaceState({}, "", `${cleanUrl.pathname}${cleanUrl.search}`);
+    return profile;
   }
 
   function getActiveProfileId() {
@@ -1985,8 +2111,9 @@
 
     const profiles = getProfiles();
     profiles.push(profile);
-    saveProfiles(profiles);
     setActiveProfileId(profile.id);
+    ensureProfileAccessToken(profile.id);
+    saveProfiles(profiles);
     activeProfileState.profile = ensureProfileShape(profile);
     return ensureProfileShape(profile);
   }
@@ -2009,8 +2136,9 @@
 
     const profiles = getProfiles();
     profiles.push(profile);
-    saveProfiles(profiles);
     setActiveProfileId(profile.id);
+    ensureProfileAccessToken(profile.id);
+    saveProfiles(profiles);
     activeProfileState.profile = ensureProfileShape(profile);
     return ensureProfileShape(profile);
   }
@@ -2887,6 +3015,8 @@
     createGuestProfile,
     generateGuestRestaurantName,
     updateProfile,
+    sendEmailSignInLink,
+    completeEmailSignInFromUrl,
     getRestaurantBySlug,
     getCustomerById,
     getCustomerBio,

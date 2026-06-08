@@ -1,36 +1,19 @@
-import { normalizeProfile, profileFromRecord } from "../_lib/restaurant-data.mjs";
+import { profileFromRecord } from "../_lib/restaurant-data.mjs";
+import {
+  fetchProfile,
+  getProfileAccessToken,
+  hashProfileAccessToken,
+  profileTokenMatches,
+  sanitizeProfile,
+  storeProfile,
+} from "../_lib/profile-security.mjs";
 import { hasSupabaseConfig, jsonResponse, readJsonBody, supabaseRequest } from "../_lib/supabase.mjs";
 
 async function fetchProfiles() {
   const rows = await supabaseRequest("profiles?select=id,player_name,restaurant_name,restaurant_slug,is_guest,created_at,updated_at,payload_json&order=updated_at.desc");
-  return Array.isArray(rows) ? rows.map(profileFromRecord).filter(Boolean) : [];
-}
-
-async function upsertProfile(profile) {
-  const normalized = normalizeProfile(profile);
-  const payload = {
-    id: normalized.id,
-    player_name: normalized.playerName || "Player",
-    restaurant_name: normalized.restaurantName || "Restaurant",
-    restaurant_slug: normalized.restaurantSlug || "restaurant",
-    is_guest: normalized.isGuest,
-    created_at: normalized.createdAt || new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    payload_json: normalized,
-  };
-
-  await supabaseRequest("profiles?on_conflict=id", {
-    method: "POST",
-    headers: {
-      Prefer: "resolution=merge-duplicates,return=representation",
-    },
-    body: JSON.stringify([payload]),
-  });
-
-  return {
-    ...normalized,
-    updatedAt: payload.updated_at,
-  };
+  return Array.isArray(rows)
+    ? rows.map(profileFromRecord).filter(Boolean).map(sanitizeProfile)
+    : [];
 }
 
 export async function GET() {
@@ -63,7 +46,27 @@ export async function POST(request) {
   }
 
   try {
-    return jsonResponse(await upsertProfile(body), 201);
+    const token = getProfileAccessToken(request);
+    if (!token) {
+      return jsonResponse({ ok: false, error: "Profile access token is required." }, 401);
+    }
+
+    const existing = await fetchProfile(body.id);
+    if (existing && !profileTokenMatches(existing, token)) {
+      return jsonResponse({ ok: false, error: "This restaurant belongs to another player." }, 403);
+    }
+
+    const privateFields = existing
+      ? {
+          profileAccessTokenHash: existing.profileAccessTokenHash,
+          ownerUserId: existing.ownerUserId,
+          ownerEmail: existing.ownerEmail,
+          ownershipUpdatedAt: existing.ownershipUpdatedAt,
+        }
+      : {
+          profileAccessTokenHash: hashProfileAccessToken(token),
+        };
+    return jsonResponse(await storeProfile(body, privateFields), existing ? 200 : 201);
   } catch (error) {
     return jsonResponse(
       { ok: false, error: error instanceof Error ? error.message : String(error) },

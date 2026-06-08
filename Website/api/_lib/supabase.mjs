@@ -42,8 +42,44 @@ export async function supabaseRequest(path, options = {}) {
   const text = await response.text();
   const data = text ? JSON.parse(text) : null;
   if (!response.ok) {
-    const message = data && typeof data === "object" ? JSON.stringify(data) : text || response.statusText;
+    const message =
+      data && typeof data === "object"
+        ? data.msg || data.message || data.error_description || data.error || JSON.stringify(data)
+        : text || response.statusText;
     throw new Error(message);
+  }
+
+  return data;
+}
+
+export async function supabaseAuthRequest(path, options = {}, accessToken = "") {
+  const { url, serviceRoleKey } = getSupabaseConfig();
+  const headers = new Headers(options.headers || {});
+  headers.set("apikey", serviceRoleKey);
+  headers.set("Authorization", `Bearer ${accessToken || serviceRoleKey}`);
+  headers.set("Accept", "application/json");
+
+  if (options.body && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  const response = await fetch(`${url}/auth/v1/${path.replace(/^\/+/, "")}`, {
+    ...options,
+    headers,
+  });
+  const text = await response.text();
+  let data = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = text;
+  }
+
+  if (!response.ok) {
+    const message = data && typeof data === "object" ? JSON.stringify(data) : text || response.statusText;
+    const error = new Error(message);
+    error.status = response.status;
+    throw error;
   }
 
   return data;
