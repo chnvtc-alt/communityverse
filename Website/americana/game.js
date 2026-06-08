@@ -306,7 +306,7 @@
             replayCustomer
               ? `
                 <a class="button button-muted" href="/americana/?home=1">Cancel Invite Back</a>
-                <a class="button button-muted" href="/restaurant/?hub=1">Back to Hub</a>
+                <a class="button button-muted" href="/restaurant/?hub=1">View My Restaurant</a>
               `
               : profile && !profile.isGuest
                 ? `
@@ -379,7 +379,7 @@
 
         <div class="button-row opening-start-actions opening-start-actions-bottom">
           <a class="button button-hot" id="start-game-button" href="${startHref}">START THE GAME</a>
-          <a class="button button-muted" href="/restaurant/?hub=1">Back to Hub</a>
+          <a class="button button-muted" href="/restaurant/?hub=1">View My Restaurant</a>
         </div>
       </div>`;
 
