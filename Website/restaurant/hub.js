@@ -304,7 +304,7 @@
           slug: restaurant.slug,
           name: restaurant.name,
           image: restaurant.logoSquare || restaurant.squareImage || restaurant.logoHorizontal || restaurant.heroImage,
-          href: `/${restaurant.slug}/?fresh=1`,
+          href: `/${restaurant.slug}/`,
           available: true,
         })),
         ...placeholderRestaurants,
@@ -316,7 +316,7 @@
         slug: "americana",
         name: "Americana Diner",
         image: "../assets/restaurant-challenge/restaurants/americana/americana-diner-logo.jpg",
-        href: "/americana/?fresh=1",
+        href: "/americana/",
         available: true,
       },
       ...placeholderRestaurants,
@@ -352,7 +352,7 @@
       return {
         slug: recentSlug,
         name: restaurantName,
-        href: `/${recentSlug}/?fresh=1`,
+        href: `/${recentSlug}/`,
       };
     }
 
@@ -360,7 +360,7 @@
     return {
       slug: fallbackRestaurant?.slug || "americana",
       name: fallbackRestaurant?.name || "Americana Diner",
-      href: fallbackRestaurant?.slug ? `/${fallbackRestaurant.slug}/?fresh=1` : "/americana/?fresh=1",
+      href: fallbackRestaurant?.slug ? `/${fallbackRestaurant.slug}/` : "/americana/",
     };
   }
 
@@ -860,7 +860,7 @@
                   <div class="collection-selected-mobile-actions">
                     <span class="collection-selected-value">${core.formatCurrency(selectedCustomer.status === "regular" ? selectedCustomer.regularValue : selectedCustomer.occasionalValue)}</span>
                     <span class="chip collection-selected-rarity-chip">${selectedCustomer.rarity}</span>
-                    <a class="button button-primary" id="selected-invite-back-button" href="/americana/?home=1&customerId=${encodeURIComponent(selectedCustomer.customerId)}">Invite Back</a>
+                    <a class="button button-primary" id="selected-invite-back-button" href="/americana/?customerId=${encodeURIComponent(selectedCustomer.customerId)}">Invite Back</a>
                   </div>
                 </div>
               </div>
@@ -888,7 +888,7 @@
                   <span class="chip">${core.formatCurrency(selectedCustomer.status === "regular" ? selectedCustomer.regularValue : selectedCustomer.occasionalValue)}</span>
                 </div>
                 <div class="button-row" style="margin-top: 10px;">
-                  <a class="button button-primary" id="selected-invite-back-button" href="/americana/?home=1&customerId=${encodeURIComponent(selectedCustomer.customerId)}">Invite Back</a>
+                  <a class="button button-primary" id="selected-invite-back-button" href="/americana/?customerId=${encodeURIComponent(selectedCustomer.customerId)}">Invite Back</a>
                 </div>
               </div>
             `

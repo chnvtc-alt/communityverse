@@ -4,6 +4,7 @@
   const query = new URLSearchParams(window.location.search);
   const demoMode = query.has("demo");
   const freshMode = query.has("fresh");
+  const playMode = window.location.pathname.includes("/americana/play");
   const autoPlayMode = query.get("play") === "1";
   const replayCustomerId = String(query.get("customerId") || "").trim();
   const replayCustomer = replayCustomerId ? core.getCustomerById(replayCustomerId) : null;
@@ -214,7 +215,7 @@
 
     renderAll();
 
-    if (autoPlayMode) {
+    if (playMode || autoPlayMode) {
       window.requestAnimationFrame(() => {
         void startGame();
       });
@@ -812,6 +813,31 @@
   function renderAll() {
     try {
       renderHero(false);
+      if (playMode) {
+        const session = getSession();
+        if (session && session.completed) {
+          state.showGame = false;
+          elements.start.classList.add("hidden");
+          elements.game.classList.add("hidden");
+          elements.result.classList.remove("hidden");
+          renderResultPanel(session);
+          return;
+        }
+
+        if (session && state.showGame) {
+          elements.start.classList.add("hidden");
+          elements.game.classList.remove("hidden");
+          elements.result.classList.add("hidden");
+          renderGamePanel();
+          return;
+        }
+
+        elements.start.classList.remove("hidden");
+        elements.game.classList.add("hidden");
+        elements.result.classList.add("hidden");
+        state.showGame = false;
+        return;
+      }
       renderSetup();
       renderStartPanel();
     } catch (error) {
