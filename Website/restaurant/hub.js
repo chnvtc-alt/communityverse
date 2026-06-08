@@ -642,11 +642,11 @@
                     <div class="hero-profile-strip hero-profile-strip-guest">
                       <div>
                         <p class="kicker" style="margin: 0 0 4px;">Welcome</p>
-                        <h2 class="hero-profile-name">Choose a restaurant, play your first game, then register after you win a customer.</h2>
-                        <p class="copy compact-copy" style="margin: 4px 0 0;">New players should pick a restaurant from the host list below. After the first game, we’ll ask you to save your restaurant name so progress can follow you.</p>
+                        <h2 class="hero-profile-name">Play your first game, then save your restaurant.</h2>
+                        <p class="copy compact-copy" style="margin: 4px 0 0;">Start with a quick trivia round. After you win your first customer, visit My Restaurant to name and save your restaurant so progress can follow you.</p>
                         ${renderSignInMarkup()}
                       </div>
-                      <a class="button button-primary button-sm" href="#directory-card">Choose A Restaurant</a>
+                      <a class="button button-primary button-sm" href="${playAgainTarget.href}">Play First Game</a>
                     </div>
                   `
           }
@@ -987,7 +987,7 @@
     if (!profile) {
       elements.collection.innerHTML = `
         <h2 class="section-title">Customer Collection</h2>
-        <p class="copy">Play your first game to start collecting customers. After that, we’ll ask you to register your restaurant so your progress can follow you to the next device.</p>
+        <p class="copy">Play your first game to start collecting customers. After that, visit My Restaurant to name your restaurant and add email recovery when you are ready.</p>
       `;
       return;
     }
