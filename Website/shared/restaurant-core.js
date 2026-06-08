@@ -72,10 +72,10 @@
       primaryColor: "#b84c38",
       secondaryColor: "#1f4e44",
       accentColor: "#f2c06b",
-      heroImage: "../assets/restaurant-challenge/restaurants/americana/americana-diner-hero.jpg",
-      logoSquare: "../assets/restaurant-challenge/restaurants/americana/americana-diner-logo.jpg",
-      logoHorizontal: "../assets/restaurant-challenge/restaurants/americana/americana-diner-logo.jpg",
-      squareImage: "../assets/restaurant-challenge/restaurants/americana/americana-diner-logo.jpg",
+      heroImage: "/assets/restaurant-challenge/restaurants/americana/americana-diner-hero.jpg",
+      logoSquare: "/assets/restaurant-challenge/restaurants/americana/americana-diner-logo.jpg",
+      logoHorizontal: "/assets/restaurant-challenge/restaurants/americana/americana-diner-logo.jpg",
+      squareImage: "/assets/restaurant-challenge/restaurants/americana/americana-diner-logo.jpg",
       active: true,
     },
   ];
@@ -89,7 +89,7 @@
       regularValue: 250,
       occasionalValue: 75,
       focusTag: "communityverse",
-      image: "../assets/restaurant-challenge/customers/customer-placeholder.svg",
+      image: "/assets/cm-pepperville/people/mayor-joyce-pepper.jpg",
     },
     {
       id: "hank-hatley",
@@ -160,7 +160,7 @@
       regularValue: 175,
       occasionalValue: 45,
       focusTag: "communityverse",
-      image: "../assets/restaurant-challenge/customers/customer-placeholder.svg",
+      image: "/assets/restaurant-challenge/customers/miss-pearl.jpg",
     },
     {
       id: "captain-zoogle",
@@ -170,7 +170,7 @@
       regularValue: 500,
       occasionalValue: 150,
       focusTag: "communityverse",
-      image: "../assets/restaurant-challenge/customers/customer-placeholder.svg",
+      image: "/assets/restaurant-challenge/customers/captain-zoogle.jpg",
     },
     {
       id: "americana-waitress",
@@ -180,7 +180,7 @@
       regularValue: 100,
       occasionalValue: 25,
       focusTag: "americana",
-      image: "../assets/restaurant-challenge/customers/customer-placeholder.svg",
+      image: "/assets/restaurant-challenge/customers/americana-diner-waitress.jpg",
     },
     {
       id: "route-66-tourist",
@@ -190,7 +190,7 @@
       regularValue: 150,
       occasionalValue: 45,
       focusTag: "americana",
-      image: "../assets/restaurant-challenge/customers/customer-placeholder.svg",
+      image: "/assets/restaurant-challenge/customers/route-66-tourist.jpg",
     },
     {
       id: "retired-veteran",
@@ -200,7 +200,7 @@
       regularValue: 140,
       occasionalValue: 40,
       focusTag: "americana",
-      image: "../assets/restaurant-challenge/customers/customer-placeholder.svg",
+      image: "/assets/restaurant-challenge/customers/retired-veteran.jpg",
     },
     {
       id: "pie-contest-judge",
@@ -210,7 +210,7 @@
       regularValue: 225,
       occasionalValue: 70,
       focusTag: "americana",
-      image: "../assets/restaurant-challenge/customers/customer-placeholder.svg",
+      image: "/assets/restaurant-challenge/customers/pie-contest-judge.jpg",
     },
     {
       id: "breakfast-regular",
@@ -220,7 +220,7 @@
       regularValue: 110,
       occasionalValue: 30,
       focusTag: "americana",
-      image: "../assets/restaurant-challenge/customers/customer-placeholder.svg",
+      image: "/assets/restaurant-challenge/customers/breakfast-regular.jpg",
     },
     {
       id: "abraham-lincoln",
@@ -898,6 +898,11 @@
       .join(" ");
   }
 
+  function normalizeAssetPath(value) {
+    const path = String(value || "").trim();
+    return path.replace(/^(?:\.\.\/)+assets\//, "/assets/").replace(/^\.\/assets\//, "/assets/");
+  }
+
   function normalizeCustomer(customer) {
     const safeCustomer = typeof customer === "object" && customer ? structuredClone(customer) : {};
     safeCustomer.id = String(safeCustomer.id || "").trim();
@@ -914,7 +919,7 @@
       safeCustomer.restaurant || safeCustomer.focusTag || safeCustomer.focus_tag || ""
     );
     safeCustomer.focusTag = safeCustomer.restaurant;
-    safeCustomer.image = String(safeCustomer.image || "").trim();
+    safeCustomer.image = normalizeAssetPath(safeCustomer.image);
     safeCustomer.bio = String(safeCustomer.bio || "").trim();
     safeCustomer.questionPlace = String(safeCustomer.questionPlace || "").trim();
     safeCustomer.questionFact = String(safeCustomer.questionFact || "").trim();
@@ -1008,7 +1013,7 @@
       ? safeQuestion.customerIds.map((customerId) => String(customerId || "").trim()).filter(Boolean)
       : [];
     safeQuestion.difficulty = String(safeQuestion.difficulty || "medium").trim() || "medium";
-    safeQuestion.image = String(safeQuestion.image || "").trim();
+    safeQuestion.image = normalizeAssetPath(safeQuestion.image);
     safeQuestion.imageAlt = String(safeQuestion.imageAlt || "").trim();
     safeQuestion.imagePrompt = String(safeQuestion.imagePrompt || "").trim();
     safeQuestion.active = safeQuestion.active !== false;

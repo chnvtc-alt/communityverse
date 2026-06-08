@@ -37,15 +37,15 @@
   const openingMenuItems = [
     {
       name: "Route 66 Burger",
-      image: "../assets/restaurant-challenge/restaurants/americana/route-66-burger.jpg",
+      image: "/assets/restaurant-challenge/restaurants/americana/route-66-burger.jpg",
     },
     {
       name: "All-Day Breakfast Platter",
-      image: "../assets/restaurant-challenge/restaurants/americana/all-day-breakfast-platter.jpg",
+      image: "/assets/restaurant-challenge/restaurants/americana/all-day-breakfast-platter.jpg",
     },
     {
       name: "Americana Mile-High Cherry Pie",
-      image: "../assets/restaurant-challenge/restaurants/americana/americana-mile-high-cherry-pie.jpg",
+      image: "/assets/restaurant-challenge/restaurants/americana/americana-mile-high-cherry-pie.jpg",
     },
   ];
 
@@ -728,7 +728,7 @@
               : `
                 <div class="button-row result-followup-actions">
                   <button class="button button-hot" id="play-again-button" type="button">Play Again</button>
-                  <a class="button button-muted" href="../restaurant/?hub=1">View My Restaurant</a>
+                  <a class="button button-muted" href="/restaurant/?hub=1">View My Restaurant</a>
                 </div>
               `
         }

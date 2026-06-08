@@ -7,7 +7,7 @@
     "regularValue": 250,
     "occasionalValue": 75,
     "focusTag": "communityverse",
-    "image": "../assets/restaurant-challenge/customers/customer-placeholder.svg"
+    "image": "/assets/cm-pepperville/people/mayor-joyce-pepper.jpg"
   },
   {
     "id": "hank-hatley",
@@ -78,7 +78,7 @@
     "regularValue": 175,
     "occasionalValue": 45,
     "focusTag": "communityverse",
-    "image": "../assets/restaurant-challenge/customers/customer-placeholder.svg"
+    "image": "/assets/restaurant-challenge/customers/miss-pearl.jpg"
   },
   {
     "id": "captain-zoogle",
@@ -88,7 +88,7 @@
     "regularValue": 500,
     "occasionalValue": 150,
     "focusTag": "communityverse",
-    "image": "../assets/restaurant-challenge/customers/customer-placeholder.svg"
+    "image": "/assets/restaurant-challenge/customers/captain-zoogle.jpg"
   },
   {
     "id": "americana-waitress",
@@ -98,7 +98,7 @@
     "regularValue": 100,
     "occasionalValue": 25,
     "focusTag": "americana",
-    "image": "../assets/restaurant-challenge/customers/customer-placeholder.svg"
+    "image": "/assets/restaurant-challenge/customers/americana-diner-waitress.jpg"
   },
   {
     "id": "route-66-tourist",
@@ -108,7 +108,7 @@
     "regularValue": 150,
     "occasionalValue": 45,
     "focusTag": "americana",
-    "image": "../assets/restaurant-challenge/customers/customer-placeholder.svg"
+    "image": "/assets/restaurant-challenge/customers/route-66-tourist.jpg"
   },
   {
     "id": "retired-veteran",
@@ -118,7 +118,7 @@
     "regularValue": 140,
     "occasionalValue": 40,
     "focusTag": "americana",
-    "image": "../assets/restaurant-challenge/customers/customer-placeholder.svg"
+    "image": "/assets/restaurant-challenge/customers/retired-veteran.jpg"
   },
   {
     "id": "pie-contest-judge",
@@ -128,7 +128,7 @@
     "regularValue": 225,
     "occasionalValue": 70,
     "focusTag": "americana",
-    "image": "../assets/restaurant-challenge/customers/customer-placeholder.svg"
+    "image": "/assets/restaurant-challenge/customers/pie-contest-judge.jpg"
   },
   {
     "id": "breakfast-regular",
@@ -138,7 +138,7 @@
     "regularValue": 110,
     "occasionalValue": 30,
     "focusTag": "americana",
-    "image": "../assets/restaurant-challenge/customers/customer-placeholder.svg"
+    "image": "/assets/restaurant-challenge/customers/breakfast-regular.jpg"
   },
   {
     "id": "abraham-lincoln",
