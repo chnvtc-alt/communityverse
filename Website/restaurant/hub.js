@@ -24,8 +24,11 @@
     selectedCustomerBioExpanded: false,
     activeMobileTab: "overview",
     showSignIn: query.get("signin") === "1" || authCallbackMode,
+    showConnectEmail: query.get("connect") === "1",
     authMessage: authCallbackMode ? "Verifying your secure sign-in link..." : "",
     authError: "",
+    connectMessage: "",
+    connectError: "",
   };
 
   const mobileHubQuery = "(max-width: 960px)";
@@ -431,6 +434,28 @@
     `;
   }
 
+  function renderConnectEmailMarkup(profile) {
+    if (!profile || !state.showConnectEmail) {
+      return "";
+    }
+
+    return `
+      <form class="hub-sign-in-form" id="hub-connect-email-form">
+        <div class="field">
+          <label class="field-label" for="hub-connect-email">Email address</label>
+          <div class="hero-profile-edit-row">
+            <input class="input hero-profile-input" id="hub-connect-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
+            <button class="button button-primary button-sm" id="hub-connect-email-submit" type="submit">Email Save Link</button>
+            <button class="button button-muted button-sm" id="hub-connect-email-cancel" type="button">Cancel</button>
+          </div>
+        </div>
+        <p class="helper" style="margin: 0;">This sends a secure link that connects ${escapeHtml(profile.restaurantName)} to your email.</p>
+        <p class="helper ${state.connectMessage ? "" : "hidden"}" id="hub-connect-message" aria-live="polite">${escapeHtml(state.connectMessage)}</p>
+        <p class="error ${state.connectError ? "" : "hidden"}" id="hub-connect-error" aria-live="polite">${escapeHtml(state.connectError)}</p>
+      </form>
+    `;
+  }
+
   function renderHero() {
     const compactMobile = isMobileHub();
     const profile = core.getActiveProfile();
@@ -494,6 +519,7 @@
                         }
                       </div>
                         <div class="hero-profile-actions hero-profile-actions-top">
+                          <button class="button button-primary button-sm" type="button" data-show-connect-email>Save With Email</button>
                           <a class="button button-muted button-sm" href="${withHubMode("./?edit=1")}">Edit My Profile</a>
                         </div>
                     </div>
@@ -503,6 +529,9 @@
                       <span class="chip hero-stat-chip hero-stat-chip-compact">Regular Customers ${safeSummary.stats.regularCustomers}</span>
                       <span class="chip hero-stat-chip hero-stat-chip-compact">Occasional Customers ${safeSummary.stats.occasionalCustomers}</span>
                     </div>
+                    ${
+                      !editMode ? renderConnectEmailMarkup(profile) : ``
+                    }
                     ${
                       editMode
                         ? `
@@ -544,6 +573,7 @@
                       }
                     </div>
                     <div class="hero-profile-actions hero-profile-actions-top">
+                      <button class="button button-primary button-sm" type="button" data-show-connect-email>Save With Email</button>
                       <a class="button button-muted button-sm" href="${withHubMode("./?edit=1")}">Edit My Profile</a>
                     </div>
                   </div>
@@ -553,6 +583,9 @@
                     <span class="chip hero-stat-chip hero-stat-chip-compact">Regular Customers ${safeSummary.stats.regularCustomers}</span>
                     <span class="chip hero-stat-chip hero-stat-chip-compact">Occasional Customers ${safeSummary.stats.occasionalCustomers}</span>
                   </div>
+                  ${
+                    !editMode ? renderConnectEmailMarkup(profile) : ``
+                  }
                   ${
                     editMode
                       ? `
@@ -682,6 +715,48 @@
         renderHero();
       });
     });
+
+    elements.hero.querySelectorAll("[data-show-connect-email]").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.showConnectEmail = true;
+        state.connectMessage = "";
+        state.connectError = "";
+        renderHero();
+      });
+    });
+
+    const connectEmailCancel = document.getElementById("hub-connect-email-cancel");
+    if (connectEmailCancel) {
+      connectEmailCancel.addEventListener("click", () => {
+        state.showConnectEmail = false;
+        state.connectMessage = "";
+        state.connectError = "";
+        renderHero();
+      });
+    }
+
+    const connectEmailForm = document.getElementById("hub-connect-email-form");
+    if (connectEmailForm && profile) {
+      connectEmailForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const email = document.getElementById("hub-connect-email").value.trim();
+        const submitButton = document.getElementById("hub-connect-email-submit");
+        state.connectError = "";
+        state.connectMessage = "";
+        submitButton.disabled = true;
+        submitButton.textContent = "Sending...";
+        try {
+          await core.sendEmailSignInLink(email, { profileId: profile.id });
+          state.connectMessage = "Check your email and tap the secure link to connect this restaurant.";
+          renderHero();
+        } catch (error) {
+          state.connectError = error instanceof Error ? error.message : "Unable to send the email link.";
+          submitButton.disabled = false;
+          submitButton.textContent = "Email Save Link";
+          renderHero();
+        }
+      });
+    }
 
     const signInForm = document.getElementById("hub-sign-in-form");
     if (signInForm) {
