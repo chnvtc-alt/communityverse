@@ -1870,7 +1870,7 @@
       headers["X-Profile-Token"] = ensureProfileAccessToken(profileId);
     }
 
-    return requestJson("/auth", {
+    return requestJson("/profiles", {
       method: "POST",
       headers,
       body: JSON.stringify({
@@ -1915,7 +1915,7 @@
       throw new Error("This sign-in link is incomplete or has expired. Please request another.");
     }
 
-    const result = await requestJson("/auth", {
+    const result = await requestJson("/profiles", {
       method: "POST",
       body: JSON.stringify({
         action: "complete",
