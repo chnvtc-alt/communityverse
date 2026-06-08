@@ -408,6 +408,18 @@
     const profile = core.getActiveProfile();
     const profileState = getProfileState(profile);
     const summary = profileState === "registered" ? core.getProfileSummary(profile, "americana") : null;
+    const safeSummary =
+      summary && summary.stats
+        ? summary
+        : {
+            rating: 0,
+            stats: {
+              gamesPlayed: 0,
+              estimatedSales: 0,
+              regularCustomers: 0,
+              occasionalCustomers: 0,
+            },
+          };
     const overallRank = profile ? core.getPlayerRank(profile.id, "estimatedSales") : null;
     const selectedDirectoryRestaurant = getSelectedDirectoryRestaurant(profile);
     const lastPlayedSlug = getDefaultDirectorySlug(profile);
@@ -440,12 +452,12 @@
                         <p class="kicker" style="margin: 0 0 4px;">Your Restaurant</p>
                         <h2 class="hero-profile-name">${escapeHtml(profile.restaurantName)}</h2>
                         <p class="hero-profile-subline hero-profile-subline-compact">
-                          <span class="rating-display" aria-label="Guest rating ${(summary.rating || 0).toFixed(1)} out of 5">
-                            <span class="rating-stars" aria-hidden="true">${"★".repeat(Math.max(0, Math.min(5, Math.round(summary.rating || 0)))) + "☆".repeat(5 - Math.max(0, Math.min(5, Math.round(summary.rating || 0))))}</span>
-                            <span class="rating-number">${(summary.rating || 0).toFixed(1)}</span>
+                          <span class="rating-display" aria-label="Guest rating ${(safeSummary.rating || 0).toFixed(1)} out of 5">
+                            <span class="rating-stars" aria-hidden="true">${"★".repeat(Math.max(0, Math.min(5, Math.round(safeSummary.rating || 0)))) + "☆".repeat(5 - Math.max(0, Math.min(5, Math.round(safeSummary.rating || 0))))}</span>
+                            <span class="rating-number">${(safeSummary.rating || 0).toFixed(1)}</span>
                           </span>
                           <span class="hero-profile-subline-sep">·</span>
-                          <span>${summary.stats.gamesPlayed} plays</span>
+                          <span>${safeSummary.stats.gamesPlayed} plays</span>
                         </p>
                         ${
                           latestCustomerName
@@ -459,9 +471,9 @@
                     </div>
                     <div class="hero-profile-meta hero-profile-meta-compact">
                       <span class="chip hero-stat-chip">${overallRank ? `Overall #${overallRank}` : "No overall rank"}</span>
-                      <span class="chip hero-stat-chip">Sales ${core.formatCurrency(summary.stats.estimatedSales)}</span>
-                      <span class="chip hero-stat-chip hero-stat-chip-compact">Regular Customers ${summary.stats.regularCustomers}</span>
-                      <span class="chip hero-stat-chip hero-stat-chip-compact">Occasional Customers ${summary.stats.occasionalCustomers}</span>
+                      <span class="chip hero-stat-chip">Sales ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
+                      <span class="chip hero-stat-chip hero-stat-chip-compact">Regular Customers ${safeSummary.stats.regularCustomers}</span>
+                      <span class="chip hero-stat-chip hero-stat-chip-compact">Occasional Customers ${safeSummary.stats.occasionalCustomers}</span>
                     </div>
                     ${
                       editMode
@@ -490,12 +502,12 @@
                       <p class="kicker" style="margin: 0 0 4px;">Your Restaurant</p>
                       <h2 class="hero-profile-name">${escapeHtml(profile.restaurantName)}</h2>
                       <p class="hero-profile-subline">
-                        <span class="rating-display" aria-label="Guest rating ${(summary.rating || 0).toFixed(1)} out of 5">
-                          <span class="rating-stars" aria-hidden="true">${"★".repeat(Math.max(0, Math.min(5, Math.round(summary.rating || 0)))) + "☆".repeat(5 - Math.max(0, Math.min(5, Math.round(summary.rating || 0))))}</span>
-                          <span class="rating-number">${(summary.rating || 0).toFixed(1)}</span>
+                        <span class="rating-display" aria-label="Guest rating ${(safeSummary.rating || 0).toFixed(1)} out of 5">
+                          <span class="rating-stars" aria-hidden="true">${"★".repeat(Math.max(0, Math.min(5, Math.round(safeSummary.rating || 0)))) + "☆".repeat(5 - Math.max(0, Math.min(5, Math.round(safeSummary.rating || 0))))}</span>
+                          <span class="rating-number">${(safeSummary.rating || 0).toFixed(1)}</span>
                         </span>
                         <span class="hero-profile-subline-sep">·</span>
-                        <span>${summary.stats.gamesPlayed} plays</span>
+                        <span>${safeSummary.stats.gamesPlayed} plays</span>
                       </p>
                       ${
                         latestCustomerName && !compactMobile
@@ -509,9 +521,9 @@
                   </div>
                   <div class="hero-profile-meta">
                     <span class="chip hero-stat-chip">${overallRank ? `Overall #${overallRank}` : "No overall rank"}</span>
-                    <span class="chip hero-stat-chip">Sales ${core.formatCurrency(summary.stats.estimatedSales)}</span>
-                    <span class="chip hero-stat-chip hero-stat-chip-compact">Regular Customers ${summary.stats.regularCustomers}</span>
-                    <span class="chip hero-stat-chip hero-stat-chip-compact">Occasional Customers ${summary.stats.occasionalCustomers}</span>
+                    <span class="chip hero-stat-chip">Sales ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
+                    <span class="chip hero-stat-chip hero-stat-chip-compact">Regular Customers ${safeSummary.stats.regularCustomers}</span>
+                    <span class="chip hero-stat-chip hero-stat-chip-compact">Occasional Customers ${safeSummary.stats.occasionalCustomers}</span>
                   </div>
                 </div>
                 `

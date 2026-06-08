@@ -7,6 +7,9 @@
   const replayCustomerId = String(query.get("customerId") || "").trim();
   const replayCustomer = replayCustomerId ? core.getCustomerById(replayCustomerId) : null;
   const RESULT_VISIBLE_SESSION_KEY = "americana_result_visible_session_v1";
+  const resultVisibleSessionState = {
+    sessionId: "",
+  };
 
   const elements = {
     hero: document.getElementById("hero-panel"),
@@ -129,6 +132,40 @@
     return session;
   }
 
+  function getSessionStorage() {
+    try {
+      return window.sessionStorage || null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function getResultVisibleSessionId() {
+    try {
+      return resultVisibleSessionState.sessionId || getSessionStorage()?.getItem(RESULT_VISIBLE_SESSION_KEY) || "";
+    } catch (error) {
+      return resultVisibleSessionState.sessionId || "";
+    }
+  }
+
+  function setResultVisibleSessionId(sessionId) {
+    resultVisibleSessionState.sessionId = String(sessionId || "");
+    try {
+      getSessionStorage()?.setItem(RESULT_VISIBLE_SESSION_KEY, resultVisibleSessionState.sessionId);
+    } catch (error) {
+      // Keep the value in memory if persistent storage is blocked.
+    }
+  }
+
+  function clearResultVisibleSessionId() {
+    resultVisibleSessionState.sessionId = "";
+    try {
+      getSessionStorage()?.removeItem(RESULT_VISIBLE_SESSION_KEY);
+    } catch (error) {
+      // Keep going even if session storage is blocked.
+    }
+  }
+
   function ensurePlayableProfile() {
     const existingProfile = getProfile();
     if (existingProfile) {
@@ -161,10 +198,10 @@
 
     if (freshMode) {
       core.clearActiveSession();
-      window.sessionStorage.removeItem(RESULT_VISIBLE_SESSION_KEY);
+      clearResultVisibleSessionId();
     } else {
       const existingSession = getSession();
-      const visibleSessionId = window.sessionStorage.getItem(RESULT_VISIBLE_SESSION_KEY);
+      const visibleSessionId = getResultVisibleSessionId();
       if (existingSession && existingSession.completed && visibleSessionId !== existingSession.id) {
         core.clearActiveSession();
       }
@@ -388,7 +425,7 @@
       window.alert("No available guests are ready for Americana right now. Please try again.");
       return;
     }
-    window.sessionStorage.removeItem(RESULT_VISIBLE_SESSION_KEY);
+    clearResultVisibleSessionId();
     state.feedback = null;
     state.isLocked = false;
     state.resultBioExpanded = false;
@@ -523,7 +560,7 @@
     renderGamePanel();
 
     if (outcome.completed && outcome.session && outcome.session.id) {
-      window.sessionStorage.setItem(RESULT_VISIBLE_SESSION_KEY, outcome.session.id);
+      setResultVisibleSessionId(outcome.session.id);
     }
 
     state.answerTimer = window.setTimeout(() => {
@@ -764,7 +801,7 @@
     } else {
       document.getElementById("play-again-button").addEventListener("click", () => {
         core.clearActiveSession();
-        window.sessionStorage.removeItem(RESULT_VISIBLE_SESSION_KEY);
+        clearResultVisibleSessionId();
         state.feedback = null;
         state.isLocked = false;
         state.showProfileForm = false;
