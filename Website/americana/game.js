@@ -75,32 +75,7 @@
   }
 
   function getProfile() {
-    const activeProfile = core.getActiveProfile();
-    if (activeProfile && !activeProfile.isGuest) {
-      return activeProfile;
-    }
-
-    const realProfiles = core
-      .getProfiles()
-      .filter(
-        (profile) =>
-          profile &&
-          !profile.isGuest &&
-          !String(profile.id || "").startsWith("demo-")
-      )
-      .sort((left, right) => {
-        const leftStamp = String(left.updatedAt || left.lastPlayedAt || left.createdAt || "");
-        const rightStamp = String(right.updatedAt || right.lastPlayedAt || right.createdAt || "");
-        return rightStamp.localeCompare(leftStamp);
-      });
-
-    if (realProfiles.length) {
-      const preferredProfile = realProfiles[0];
-      core.setActiveProfileId(preferredProfile.id);
-      return preferredProfile;
-    }
-
-    return activeProfile;
+    return core.getActiveProfile();
   }
 
   function getOpeningCustomers() {

@@ -1796,21 +1796,6 @@
     return getProfilesCache();
   }
 
-  function getLatestRealProfile() {
-    return getProfiles()
-      .filter(
-        (profile) =>
-          profile &&
-          !profile.isGuest &&
-          !String(profile.id || "").startsWith("demo-")
-      )
-      .sort((left, right) => {
-        const leftStamp = String(left.updatedAt || left.lastPlayedAt || left.createdAt || "");
-        const rightStamp = String(right.updatedAt || right.lastPlayedAt || right.createdAt || "");
-        return rightStamp.localeCompare(leftStamp);
-      })[0] || null;
-  }
-
   function saveProfiles(profiles) {
     const normalized = normalizeProfiles(profiles);
     setProfilesCache(normalized, profilesCacheState.source);
@@ -1859,20 +1844,12 @@
       }
     }
 
-    if (activeProfileState.profile && !activeProfileState.profile.isGuest) {
+    if (
+      activeProfileState.profile &&
+      activeProfileState.profile.id &&
+      activeProfileState.profile.id === activeProfileState.profileId
+    ) {
       return activeProfileState.profile;
-    }
-
-    const latestRealProfile = getLatestRealProfile();
-    if (latestRealProfile) {
-      activeProfileState.profile = latestRealProfile;
-      activeProfileState.profileId = latestRealProfile.id;
-      try {
-        window.localStorage?.setItem(STORAGE_KEYS.activeProfileId, latestRealProfile.id);
-      } catch (error) {
-        // Ignore storage blocks and continue using the in-memory profile cache.
-      }
-      return latestRealProfile;
     }
 
     return null;
