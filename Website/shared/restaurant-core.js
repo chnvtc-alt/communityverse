@@ -984,11 +984,11 @@
     }
   }
 
-  setCustomerBank(seedCustomers, "local");
-
   const QUESTION_BANK_FALLBACK_URL = "/shared/restaurant-question-bank.json";
   let baseQuestions = [];
   const questions = [];
+
+  setCustomerBank(seedCustomers, "local");
 
   function normalizeQuestion(question) {
     const safeQuestion = typeof question === "object" && question ? structuredClone(question) : {};
