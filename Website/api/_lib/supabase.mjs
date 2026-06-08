@@ -76,7 +76,15 @@ export async function supabaseAuthRequest(path, options = {}, accessToken = "") 
   }
 
   if (!response.ok) {
-    const message = data && typeof data === "object" ? JSON.stringify(data) : text || response.statusText;
+    const errorCode = data && typeof data === "object" ? String(data.error_code || data.code || "") : "";
+    const rawMessage =
+      data && typeof data === "object"
+        ? data.msg || data.message || data.error_description || data.error || JSON.stringify(data)
+        : text || response.statusText;
+    const message =
+      response.status === 429 || errorCode === "over_email_send_rate_limit"
+        ? "Too many email links were sent. Please wait a few minutes and try again."
+        : rawMessage;
     const error = new Error(message);
     error.status = response.status;
     throw error;
