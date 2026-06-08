@@ -411,8 +411,6 @@
   }
 
   async function startGame() {
-    await core.whenReady();
-
     const profile = ensurePlayableProfile();
     if (profile) {
       core.setActiveProfileId(profile.id);
