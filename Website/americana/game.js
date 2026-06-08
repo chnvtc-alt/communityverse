@@ -243,6 +243,9 @@
     const session = getSession();
     const openingCustomers = getDisplayedOpeningCustomers();
     const safeOpeningCustomers = Array.isArray(openingCustomers) ? openingCustomers : [];
+    const startHref = replayCustomer
+      ? `/americana/?play=1&customerId=${encodeURIComponent(replayCustomer.id)}`
+      : "/americana/?play=1";
     const introCopy = replayCustomer
       ? `This is an invite-back visit for ${replayCustomer.name}. If you do better, they move up. If you do worse, the newer result replaces the old one.`
       : openerCopy;
@@ -297,16 +300,16 @@
         <p class="opening-title-small opening-title-small-bottom">Can You Earn A New Regular Customer?</p>
 
         <div class="button-row opening-start-actions opening-start-actions-bottom">
-          <a class="button button-hot" id="start-game-button" href="./?play=1">${replayCustomer ? "INVITE BACK" : "START THE GAME"}</a>
+          <a class="button button-hot" id="start-game-button" href="${startHref}">${replayCustomer ? "INVITE BACK" : "START THE GAME"}</a>
           ${
             replayCustomer
               ? `
-                <a class="button button-muted" href="./?home=1">Cancel Invite Back</a>
-                <a class="button button-muted" href="../restaurant/?hub=1">Back to Hub</a>
+                <a class="button button-muted" href="/americana/?home=1">Cancel Invite Back</a>
+                <a class="button button-muted" href="/restaurant/?hub=1">Back to Hub</a>
               `
               : profile && !profile.isGuest
                 ? `
-                  <a class="button button-muted" href="../restaurant/?hub=1">View My Restaurant</a>
+                  <a class="button button-muted" href="/restaurant/?hub=1">View My Restaurant</a>
                 `
               : ""
           }
@@ -320,10 +323,6 @@
         </div>
       </div>`;
 
-    document.getElementById("start-game-button").addEventListener("click", () => {
-      void startGame();
-    });
-
     const resumeButton = document.getElementById("resume-game-button");
     if (resumeButton) {
       resumeButton.addEventListener("click", () => {
@@ -334,6 +333,9 @@
   }
 
   function renderSetupFallback() {
+    const startHref = replayCustomer
+      ? `/americana/?play=1&customerId=${encodeURIComponent(replayCustomer.id)}`
+      : "/americana/?play=1";
     elements.start.innerHTML = `
       <div class="opening-start-shell">
         <div class="opening-start-heading">
@@ -375,22 +377,10 @@
         <p class="opening-title-small opening-title-small-bottom">Can You Earn A New Regular Customer?</p>
 
         <div class="button-row opening-start-actions opening-start-actions-bottom">
-          <a class="button button-hot" id="start-game-button" href="./?play=1">START THE GAME</a>
-          <a class="button button-muted" href="../restaurant/?hub=1">Back to Hub</a>
+          <a class="button button-hot" id="start-game-button" href="${startHref}">START THE GAME</a>
+          <a class="button button-muted" href="/restaurant/?hub=1">Back to Hub</a>
         </div>
       </div>`;
-
-    const startButton = document.getElementById("start-game-button");
-    if (startButton) {
-      startButton.addEventListener("click", (event) => {
-        event.preventDefault();
-        if (!getProfile()) {
-          core.createGuestProfile();
-        }
-
-        startGame();
-      });
-    }
 
   }
 
@@ -420,6 +410,8 @@
   }
 
   async function startGame() {
+    await core.whenReady();
+
     const profile = ensurePlayableProfile();
     if (profile) {
       core.setActiveProfileId(profile.id);
