@@ -79,6 +79,9 @@ async function sendMagicLink(request, body) {
     body: JSON.stringify({
       email,
       create_user: true,
+      options: {
+        email_redirect_to: redirectUrl.toString(),
+      },
     }),
   });
 
