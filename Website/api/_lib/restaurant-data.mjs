@@ -202,7 +202,7 @@ export function buildLeaderboard(profiles, metric = "estimatedSales", restaurant
         value,
       };
     })
-    .filter((entry) => (restaurantSlug ? entry.stats.gamesPlayed > 0 : true))
+    .filter((entry) => entry.stats.gamesPlayed > 0)
     .sort((left, right) => {
       if (right.value !== left.value) {
         return right.value - left.value;

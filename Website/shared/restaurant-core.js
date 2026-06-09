@@ -46,6 +46,26 @@
       "Sunset",
       "Maple",
       "Hearth",
+      "Silver",
+      "Pepper",
+      "Juniper",
+      "Riverbend",
+      "Copper",
+      "Crimson",
+      "Honey",
+      "Neon",
+      "Prairie",
+      "Willow",
+      "Velvet",
+      "Merry",
+      "Rusty",
+      "Starlight",
+      "Main Street",
+      "Moonlit",
+      "Wildflower",
+      "Hickory",
+      "Sunnyside",
+      "Cozy",
     ],
     nouns: [
       "Spoon",
@@ -58,6 +78,31 @@
       "Diner",
       "Grill",
       "Bistro",
+      "Skillet",
+      "Kettle",
+      "Pantry",
+      "Counter",
+      "Supper Club",
+      "Roadhouse",
+      "Smokehouse",
+      "Wagon",
+      "Plate",
+      "Booth",
+      "Garden",
+      "Parlor",
+      "Station",
+      "Market",
+      "Nook",
+      "Hearthstone",
+      "Sizzle",
+      "Hideaway",
+      "Pickle",
+      "Pie Shop",
+      "Tea Room",
+      "Burger Stand",
+      "Noodle Bar",
+      "Taco Stop",
+      "Waffle Cart",
     ],
   };
 
@@ -3093,7 +3138,7 @@
     });
 
     return profiles
-      .filter((entry) => entry.stats.gamesPlayed > 0 || !restaurantSlug)
+      .filter((entry) => entry.stats.gamesPlayed > 0)
       .sort((left, right) => {
         if (right.value !== left.value) {
           return right.value - left.value;
