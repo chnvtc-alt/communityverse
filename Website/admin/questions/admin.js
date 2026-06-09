@@ -2,6 +2,7 @@ const API_URL = "/api/admin/questions";
 const GENERATOR_API_URL = "/api/admin/question-generator";
 const CUSTOMER_API_URL = "/api/admin/customers";
 const RESTAURANT_API_URL = "/api/admin/restaurants";
+const RESTAURANT_IMAGE_API_URL = "/api/admin/restaurant-image";
 const CUSTOMER_PHOTO_API_URL = "/api/admin/customer-photo";
 const QUESTION_IMAGE_API_URL = "/api/admin/questions";
 const KEY_STORAGE = "communityverseQuestionsAdminKey";
@@ -76,8 +77,11 @@ const elements = {
   restaurantDescription: document.querySelector("#restaurant-description"),
   restaurantOpeningCopy: document.querySelector("#restaurant-opening-copy"),
   restaurantHeroImage: document.querySelector("#restaurant-hero-image"),
+  restaurantHeroFile: document.querySelector("#restaurant-hero-file"),
   restaurantLogoSquare: document.querySelector("#restaurant-logo-square"),
   restaurantHeroPreview: document.querySelector("#restaurant-hero-preview"),
+  restaurantLogoFile: document.querySelector("#restaurant-logo-file"),
+  restaurantLogoPreview: document.querySelector("#restaurant-logo-preview"),
   restaurantPrimaryColor: document.querySelector("#restaurant-primary-color"),
   restaurantSecondaryColor: document.querySelector("#restaurant-secondary-color"),
   restaurantAccentColor: document.querySelector("#restaurant-accent-color"),
@@ -134,6 +138,10 @@ let selectedQuestionImageFile = null;
 let selectedQuestionImagePreviewUrl = "";
 let selectedCustomerPhotoFile = null;
 let selectedCustomerPhotoPreviewUrl = "";
+let selectedRestaurantHeroFile = null;
+let selectedRestaurantHeroPreviewUrl = "";
+let selectedRestaurantLogoFile = null;
+let selectedRestaurantLogoPreviewUrl = "";
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -285,6 +293,31 @@ async function uploadCustomerPhoto(customerId, file) {
 
   return data;
 }
+
+async function uploadRestaurantImage(restaurantSlug, kind, file) {
+  const formData = new FormData();
+  formData.set("slug", restaurantSlug);
+  formData.set("kind", kind);
+  formData.set("image", file);
+
+  const response = await fetch(RESTAURANT_IMAGE_API_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${adminKey}`,
+    },
+    body: formData,
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.error || `Restaurant image upload failed (${response.status}).`);
+    error.status = response.status;
+    throw error;
+  }
+
+  return data;
+}
+
 
 function filterParams() {
   const mapping = {
@@ -821,9 +854,38 @@ function updateRestaurantHeroPreview(source) {
   }
 }
 
+function updateRestaurantLogoPreview(source) {
+  const raw = String(source || "").trim();
+  if (!raw) {
+    elements.restaurantLogoPreview.removeAttribute("src");
+    elements.restaurantLogoPreview.alt = "";
+    elements.restaurantLogoPreview.hidden = true;
+    return;
+  }
+
+  const image = displayImageUrl(raw);
+  if (image) {
+    elements.restaurantLogoPreview.src = image;
+    elements.restaurantLogoPreview.alt = "";
+    elements.restaurantLogoPreview.hidden = false;
+  }
+}
+
 function resetRestaurantEditor(restaurant = null) {
   elements.restaurantForm.reset();
   showRestaurantFormErrors([]);
+  if (selectedRestaurantHeroPreviewUrl) {
+    URL.revokeObjectURL(selectedRestaurantHeroPreviewUrl);
+    selectedRestaurantHeroPreviewUrl = "";
+  }
+  if (selectedRestaurantLogoPreviewUrl) {
+    URL.revokeObjectURL(selectedRestaurantLogoPreviewUrl);
+    selectedRestaurantLogoPreviewUrl = "";
+  }
+  selectedRestaurantHeroFile = null;
+  selectedRestaurantLogoFile = null;
+  elements.restaurantHeroFile.value = "";
+  elements.restaurantLogoFile.value = "";
   elements.restaurantId.value = restaurant?.id || "";
   elements.restaurantName.value = restaurant?.name || "";
   elements.restaurantPageSlug.value = restaurant?.slug || "";
@@ -842,6 +904,7 @@ function resetRestaurantEditor(restaurant = null) {
   elements.restaurantVisibleInList.checked = restaurant?.visibleInList !== false;
   elements.restaurantActive.checked = restaurant?.active !== false;
   updateRestaurantHeroPreview(restaurant?.heroImage || restaurant?.logoSquare || "");
+  updateRestaurantLogoPreview(restaurant?.logoSquare || "");
   elements.restaurantEditorTitle.textContent = restaurant ? "Edit restaurant" : "New restaurant";
   elements.deleteRestaurantButton.hidden = !restaurant;
 }
@@ -885,6 +948,24 @@ async function saveRestaurantEditor(event) {
   }
 
   try {
+    if (selectedRestaurantHeroFile) {
+      const upload = await uploadRestaurantImage(restaurant.slug, "hero", selectedRestaurantHeroFile);
+      restaurant.heroImage = upload.image;
+      elements.restaurantHeroImage.value = upload.image;
+      updateRestaurantHeroPreview(upload.image);
+    }
+
+    if (selectedRestaurantLogoFile) {
+      const upload = await uploadRestaurantImage(restaurant.slug, "logo", selectedRestaurantLogoFile);
+      restaurant.logoSquare = upload.image;
+      restaurant.logoHorizontal = upload.image;
+      elements.restaurantLogoSquare.value = upload.image;
+      updateRestaurantLogoPreview(upload.image);
+      if (!restaurant.heroImage) {
+        updateRestaurantHeroPreview(upload.image);
+      }
+    }
+
     await restaurantApiRequest(isEditing ? `/${encodeURIComponent(restaurant.id)}` : "", {
       method: isEditing ? "PUT" : "POST",
       body: JSON.stringify(restaurant),
@@ -1558,12 +1639,59 @@ elements.restaurantName.addEventListener("input", () => {
   }
 });
 elements.restaurantHeroImage.addEventListener("input", () => {
+  if (selectedRestaurantHeroFile) {
+    selectedRestaurantHeroFile = null;
+    elements.restaurantHeroFile.value = "";
+    if (selectedRestaurantHeroPreviewUrl) {
+      URL.revokeObjectURL(selectedRestaurantHeroPreviewUrl);
+      selectedRestaurantHeroPreviewUrl = "";
+    }
+  }
   updateRestaurantHeroPreview(elements.restaurantHeroImage.value || elements.restaurantLogoSquare.value);
 });
 elements.restaurantLogoSquare.addEventListener("input", () => {
+  if (selectedRestaurantLogoFile) {
+    selectedRestaurantLogoFile = null;
+    elements.restaurantLogoFile.value = "";
+    if (selectedRestaurantLogoPreviewUrl) {
+      URL.revokeObjectURL(selectedRestaurantLogoPreviewUrl);
+      selectedRestaurantLogoPreviewUrl = "";
+    }
+  }
+  updateRestaurantLogoPreview(elements.restaurantLogoSquare.value);
   if (!elements.restaurantHeroImage.value.trim()) {
     updateRestaurantHeroPreview(elements.restaurantLogoSquare.value);
   }
+});
+elements.restaurantHeroFile.addEventListener("change", () => {
+  const file = elements.restaurantHeroFile.files && elements.restaurantHeroFile.files[0];
+  selectedRestaurantHeroFile = file || null;
+  if (selectedRestaurantHeroPreviewUrl) {
+    URL.revokeObjectURL(selectedRestaurantHeroPreviewUrl);
+    selectedRestaurantHeroPreviewUrl = "";
+  }
+  if (!file) {
+    updateRestaurantHeroPreview(elements.restaurantHeroImage.value || elements.restaurantLogoSquare.value);
+    return;
+  }
+
+  selectedRestaurantHeroPreviewUrl = URL.createObjectURL(file);
+  updateRestaurantHeroPreview(selectedRestaurantHeroPreviewUrl);
+});
+elements.restaurantLogoFile.addEventListener("change", () => {
+  const file = elements.restaurantLogoFile.files && elements.restaurantLogoFile.files[0];
+  selectedRestaurantLogoFile = file || null;
+  if (selectedRestaurantLogoPreviewUrl) {
+    URL.revokeObjectURL(selectedRestaurantLogoPreviewUrl);
+    selectedRestaurantLogoPreviewUrl = "";
+  }
+  if (!file) {
+    updateRestaurantLogoPreview(elements.restaurantLogoSquare.value);
+    return;
+  }
+
+  selectedRestaurantLogoPreviewUrl = URL.createObjectURL(file);
+  updateRestaurantLogoPreview(selectedRestaurantLogoPreviewUrl);
 });
 elements.customerPhotoFile.addEventListener("change", async () => {
   const file = elements.customerPhotoFile.files && elements.customerPhotoFile.files[0];

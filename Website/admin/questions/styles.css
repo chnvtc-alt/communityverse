@@ -504,6 +504,13 @@ dialog::backdrop {
   min-height: 140px;
 }
 
+.restaurant-preview-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(120px, 220px);
+  gap: 16px;
+  align-items: start;
+}
+
 .photo-preview {
   display: block;
   width: 100%;
@@ -636,6 +643,10 @@ dialog::backdrop {
 
 @media (max-width: 900px) {
   .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .restaurant-preview-grid {
     grid-template-columns: 1fr;
   }
 

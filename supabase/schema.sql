@@ -258,3 +258,7 @@ on conflict (id) do update set public = excluded.public;
 insert into storage.buckets (id, name, public)
 values ('question-images', 'question-images', true)
 on conflict (id) do update set public = excluded.public;
+
+insert into storage.buckets (id, name, public)
+values ('restaurant-images', 'restaurant-images', true)
+on conflict (id) do update set public = excluded.public;
