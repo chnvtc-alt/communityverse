@@ -40,6 +40,7 @@
   const mobileGuestQuery = "(max-width: 960px)";
   const mobileVisibleGuestCount = 2;
   const desktopVisibleGuestCount = 3;
+  const answerFeedbackDelayMs = 1500;
   const fallbackOpeningGuestIds = ["curtis-coolwater", "pastor-caleb-brooks", "ming-wu"];
 
   const openingMenuItems = [
@@ -686,7 +687,7 @@
       }
 
       renderGamePanel();
-    }, 750);
+    }, answerFeedbackDelayMs);
   }
 
   function resultMessage(session) {
