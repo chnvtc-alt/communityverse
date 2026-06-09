@@ -2379,9 +2379,9 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .hero-profile-head-compact {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
     gap: 10px;
   }
 
@@ -2435,6 +2435,21 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     min-height: 28px;
     padding: 0 8px;
     font-size: 0.66rem;
+  }
+
+  .hero-profile-actions-top {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .hero-profile-actions-top .button {
+    width: 100%;
+    min-height: 38px;
+    padding-inline: 10px;
+    white-space: normal;
+    text-align: center;
   }
 
   .hero-stat-chip-compact {
