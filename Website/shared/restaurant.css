@@ -539,7 +539,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 }
 
 .hero-card-strong {
-  background: linear-gradient(180deg, rgba(31, 78, 68, 0.96), rgba(24, 50, 42, 0.96));
+  background: linear-gradient(180deg, rgba(31, 27, 22, 0.97), rgba(24, 21, 18, 0.97));
   color: #fffdf8;
 }
 
@@ -573,10 +573,10 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 }
 
 .hero-directory-picker .kicker {
-  color: #e8f4ee;
+  color: rgba(255, 253, 248, 0.92);
   font-size: 0.96rem;
   letter-spacing: 0.16em;
-  text-shadow: 0 1px 2px rgba(12, 31, 27, 0.32);
+  text-shadow: 0 1px 2px rgba(10, 8, 6, 0.4);
 }
 
 .hero-directory-select {
