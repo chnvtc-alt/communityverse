@@ -2549,7 +2549,7 @@
     const chosen = Array(10).fill(null);
     const usedIds = new Set();
     const isAmericanaDemo = restaurant.slug === "americana";
-    const restaurantSlots = isAmericanaDemo ? [3] : [0, 3, 5, 8];
+    const restaurantSlots = isAmericanaDemo ? [3] : [0, 5];
     const openerSlots = [0];
 
     const restaurantQuestions = shuffle(pools.restaurantQuestions);
@@ -2570,7 +2570,8 @@
       restaurantQuestions.filter(
         (question) =>
           !usedIds.has(question.id) &&
-          (!restaurantImageQuestion || question.id !== restaurantImageQuestion.id)
+          (!restaurantImageQuestion || question.id !== restaurantImageQuestion.id) &&
+          !(question.image || question.imagePrompt)
       ),
       restaurantSlots.length - restaurantSelection.length
     ).forEach((question) => {
