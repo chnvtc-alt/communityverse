@@ -2483,9 +2483,11 @@
 
   function getQuestionPoolForSession(restaurant, customer) {
     const restaurantQuestions = questions.filter(
-      (question) => question.scope === "restaurant" && question.restaurantSlug === restaurant.slug
+      (question) => question.restaurantSlug === restaurant.slug || question.scope === "restaurant" && question.restaurantSlug === restaurant.slug
     );
-    const globalQuestions = questions.filter((question) => question.scope === "global");
+    const globalQuestions = questions.filter(
+      (question) => question.scope === "global" && !question.restaurantSlug
+    );
     const areaQuestions = questions.filter(
       (question) => question.scope === "area" && question.areaSlug === restaurant.areaSlug
     );

@@ -1286,14 +1286,16 @@ async function suggestWrongAnswers() {
 }
 
 function questionFromForm() {
+  const scope = elements.scope.value;
+  const restaurantSlug = document.querySelector("#restaurant-slug").value.trim();
   return {
     id: document.querySelector("#question-id").value.trim(),
     prompt: document.querySelector("#question-prompt").value.trim(),
     correctAnswer: document.querySelector("#correct-answer").value.trim(),
     wrongAnswers: [...document.querySelectorAll(".wrong-answer")].map((input) => input.value.trim()).filter(Boolean),
-    scope: elements.scope.value,
+    scope: scope === "global" && restaurantSlug ? "restaurant" : scope,
     difficulty: document.querySelector("#question-difficulty").value,
-    restaurantSlug: document.querySelector("#restaurant-slug").value.trim(),
+    restaurantSlug,
     areaSlug: document.querySelector("#area-slug").value.trim(),
     customerIds: splitCommaList(document.querySelector("#customer-ids").value),
     tags: splitCommaList(document.querySelector("#question-tags").value),
