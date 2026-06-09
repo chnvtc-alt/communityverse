@@ -234,6 +234,7 @@ values (
     'publicGameName', 'The Americana Diner Game',
     'location', 'Pepperville',
     'areaSlug', 'pepperville',
+    'includeAreaQuestions', false,
     'description', 'Classic comfort food in Pepperville. Answer 10 questions to win a customer for your own restaurant.',
     'heroImage', '/assets/restaurant-challenge/restaurants/americana/americana-diner-hero.jpg',
     'logoSquare', '/assets/restaurant-challenge/restaurants/americana/americana-diner-logo.jpg',

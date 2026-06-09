@@ -56,6 +56,11 @@ export function normalizeRestaurant(restaurant) {
   safeRestaurant.playable = safeRestaurant.playable !== false;
   safeRestaurant.visibleInList = safeRestaurant.visibleInList ?? safeRestaurant.visible_in_list;
   safeRestaurant.visibleInList = safeRestaurant.visibleInList !== false;
+  safeRestaurant.includeAreaQuestions =
+    safeRestaurant.includeAreaQuestions ??
+    safeRestaurant.include_area_questions ??
+    !["americana", "wafflemaster"].includes(safeRestaurant.slug);
+  safeRestaurant.includeAreaQuestions = safeRestaurant.includeAreaQuestions !== false;
   safeRestaurant.sortOrder = Number(safeRestaurant.sortOrder) || 0;
 
   return safeRestaurant;

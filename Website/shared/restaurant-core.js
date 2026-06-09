@@ -972,6 +972,11 @@
     safeRestaurant.active = safeRestaurant.active !== false;
     safeRestaurant.playable = safeRestaurant.playable !== false;
     safeRestaurant.visibleInList = safeRestaurant.visibleInList !== false;
+    safeRestaurant.includeAreaQuestions =
+      safeRestaurant.includeAreaQuestions ??
+      safeRestaurant.include_area_questions ??
+      !["americana", "wafflemaster"].includes(safeRestaurant.slug);
+    safeRestaurant.includeAreaQuestions = safeRestaurant.includeAreaQuestions !== false;
     safeRestaurant.sortOrder = Number(safeRestaurant.sortOrder) || 0;
     return safeRestaurant;
   }
@@ -2613,12 +2618,15 @@
     const globalQuestions = questions.filter(
       (question) => question.scope === "global" && isSharedQuestion(question)
     );
-    const areaQuestions = questions.filter(
-      (question) =>
-        question.scope === "area" &&
-        question.areaSlug === restaurant.areaSlug &&
-        isSharedQuestion(question)
-    );
+    const areaQuestions =
+      restaurant.includeAreaQuestions === false
+        ? []
+        : questions.filter(
+            (question) =>
+              question.scope === "area" &&
+              question.areaSlug === restaurant.areaSlug &&
+              isSharedQuestion(question)
+          );
     const customerQuestions = questions.filter((question) => {
       const targetedCustomerIds = Array.isArray(question.customerIds) ? question.customerIds : [];
       const isCustomerScoped = question.scope === "customer";
