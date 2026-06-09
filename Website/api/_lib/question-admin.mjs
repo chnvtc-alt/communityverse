@@ -59,7 +59,7 @@ export function questionRecord(question) {
 
 export async function fetchAdminQuestions() {
   const rows = await supabaseRequest(
-    "questions?select=id,active,sort_order,created_at,updated_at,payload_json&order=updated_at.desc"
+    "questions?select=id,active,scope,restaurant_slug,area_slug,difficulty,tags,customer_ids,sort_order,created_at,updated_at,payload_json&order=updated_at.desc"
   );
   return Array.isArray(rows) ? rows.map(questionFromRecord).filter(Boolean) : [];
 }

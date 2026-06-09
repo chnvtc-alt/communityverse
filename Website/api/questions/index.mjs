@@ -16,7 +16,7 @@ async function readSeedQuestions() {
 
 async function fetchQuestionsFromSupabase() {
   const rows = await supabaseRequest(
-    "questions?select=id,active,sort_order,updated_at,payload_json&active=eq.true&order=sort_order.asc,updated_at.asc"
+    "questions?select=id,active,scope,restaurant_slug,area_slug,difficulty,tags,customer_ids,sort_order,updated_at,payload_json&active=eq.true&order=sort_order.asc,updated_at.asc"
   );
   return Array.isArray(rows) ? rows.map(questionFromRecord).filter(Boolean) : [];
 }

@@ -2509,22 +2509,81 @@
     };
   }
 
+  function compactRestaurantText(value) {
+    return normalizeText(value).replace(/[^a-z0-9]+/g, "");
+  }
+
+  function getRestaurantQuestionSlug(question) {
+    if (question.restaurantSlug) {
+      return question.restaurantSlug;
+    }
+
+    const searchable = [
+      question.prompt,
+      question.correctAnswer,
+      question.imageAlt,
+      question.imagePrompt,
+      ...(question.tags || []),
+    ]
+      .map(normalizeText)
+      .filter(Boolean)
+      .join(" ");
+    const compactSearchable = compactRestaurantText(searchable);
+
+    const matchingRestaurants = restaurants.filter((candidate) => {
+      const aliases = [
+        candidate.slug,
+        candidate.name,
+        candidate.publicGameName,
+      ]
+        .map((alias) => String(alias || "").trim())
+        .filter(Boolean);
+
+      return aliases.some((alias) => {
+        const normalizedAlias = normalizeText(alias);
+        const compactAlias = compactRestaurantText(alias);
+        return (
+          (normalizedAlias && searchable.includes(normalizedAlias)) ||
+          (compactAlias && compactSearchable.includes(compactAlias))
+        );
+      });
+    });
+
+    return matchingRestaurants.length === 1 ? matchingRestaurants[0].slug : "";
+  }
+
+  function isQuestionAllowedForRestaurant(question, restaurant) {
+    const questionRestaurantSlug = getRestaurantQuestionSlug(question);
+    return !questionRestaurantSlug || questionRestaurantSlug === restaurant.slug;
+  }
+
+  function isSharedQuestion(question) {
+    return !getRestaurantQuestionSlug(question);
+  }
+
   function getQuestionPoolForSession(restaurant, customer) {
     const restaurantQuestions = questions.filter(
-      (question) => question.restaurantSlug === restaurant.slug || question.scope === "restaurant" && question.restaurantSlug === restaurant.slug
+      (question) => getRestaurantQuestionSlug(question) === restaurant.slug
     );
     const globalQuestions = questions.filter(
-      (question) => question.scope === "global" && !question.restaurantSlug
+      (question) => question.scope === "global" && isSharedQuestion(question)
     );
     const areaQuestions = questions.filter(
-      (question) => question.scope === "area" && question.areaSlug === restaurant.areaSlug
+      (question) =>
+        question.scope === "area" &&
+        question.areaSlug === restaurant.areaSlug &&
+        isSharedQuestion(question)
     );
     const customerQuestions = questions.filter((question) => {
       const targetedCustomerIds = Array.isArray(question.customerIds) ? question.customerIds : [];
       const isCustomerScoped = question.scope === "customer";
       const isTargetedGlobal = question.scope === "global" && targetedCustomerIds.includes(customer.id);
 
-      return (isCustomerScoped || isTargetedGlobal) && targetedCustomerIds.includes(customer.id);
+      return (
+        (isCustomerScoped || isTargetedGlobal) &&
+        targetedCustomerIds.includes(customer.id) &&
+        isQuestionAllowedForRestaurant(question, restaurant)
+      );
     });
     const customerTags = new Set(
       [customer.characterType, customer.group, customer.restaurant !== "shared" ? customer.restaurant : ""].filter(Boolean)
@@ -2532,7 +2591,8 @@
     const focusedQuestions = questions.filter(
       (question) =>
         question.tags.some((tag) => customerTags.has(tag)) &&
-        !(question.customerIds || []).includes(customer.id)
+        !(question.customerIds || []).includes(customer.id) &&
+        isSharedQuestion(question)
     );
 
     return {
