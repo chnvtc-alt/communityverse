@@ -1336,13 +1336,13 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   text-align: center;
   font-size: clamp(1.95rem, 4.2vw, 2.7rem);
   line-height: 1;
-  color: #9d2218;
+  color: var(--accent);
 }
 
 .opening-title-small {
   margin: 0;
   text-align: center;
-  color: #163f2d;
+  color: var(--teal);
   font-size: 1rem;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -1433,7 +1433,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   grid-template-columns: 152px minmax(0, 1fr);
   border-radius: 18px;
   overflow: hidden;
-  background: rgba(191, 30, 23, 0.96);
+  background: linear-gradient(135deg, var(--accent), var(--gold-deep));
   box-shadow: 0 10px 22px rgba(39, 55, 44, 0.08);
 }
 
