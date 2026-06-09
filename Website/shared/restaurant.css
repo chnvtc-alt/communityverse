@@ -195,7 +195,8 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   align-content: start;
   justify-items: center;
   text-align: center;
-  max-width: 860px;
+  width: min(100%, 980px);
+  max-width: 980px;
 }
 
 .challenge-splash-title {
@@ -224,7 +225,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 .challenge-splash-picker {
   display: grid;
   gap: 8px;
-  max-width: 420px;
+  max-width: 560px;
   margin-top: 2px;
   width: 100%;
 }
@@ -254,12 +255,55 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   background: rgba(255, 255, 255, 0.92);
 }
 
+.challenge-progress-card {
+  display: grid;
+  gap: 10px;
+  width: min(100%, 680px);
+  margin-top: 6px;
+  padding: 14px;
+  border: 1px solid rgba(93, 116, 105, 0.14);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.56);
+  box-shadow: 0 10px 24px rgba(34, 47, 42, 0.06);
+}
+
+.challenge-progress-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 240px);
+  gap: 14px;
+  align-items: center;
+  text-align: left;
+}
+
+.challenge-progress-heading strong {
+  display: block;
+  color: var(--ink);
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 1.25rem;
+  line-height: 1.05;
+}
+
+.challenge-progress-label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--green);
+  font-family: "DM Mono", monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.challenge-progress-scope {
+  display: grid;
+  gap: 5px;
+}
+
 .challenge-progress-strip {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  justify-content: center;
-  margin-top: 4px;
+  justify-content: flex-start;
   font-family: Arial, sans-serif;
 }
 
@@ -2235,6 +2279,25 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   .challenge-splash-field .select,
   .challenge-splash-primary {
     width: 100%;
+  }
+
+  .challenge-progress-card {
+    width: 100%;
+    padding: 12px;
+  }
+
+  .challenge-progress-heading {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .challenge-progress-strip {
+    justify-content: center;
+  }
+
+  .challenge-progress-heading strong {
+    font-size: 1.1rem;
   }
 
   .challenge-splash-title {

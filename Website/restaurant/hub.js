@@ -18,6 +18,7 @@
     leaderboardScope: "overall",
     leaderboardRestaurantSlug: "americana",
     selectedDirectorySlug: "",
+    splashStatsScope: "overall",
     collectionFilter: "all",
     inviteBackCustomerId: "",
     selectedCustomerId: "",
@@ -56,6 +57,8 @@
     splashPlayButton: document.getElementById("splash-play-button"),
     splashMyRestaurantButton: document.getElementById("splash-my-restaurant-button"),
     splashLeaderboardButton: document.getElementById("splash-leaderboard-button"),
+    splashPlayerRestaurantName: document.getElementById("splash-player-restaurant-name"),
+    splashStatsScope: document.getElementById("splash-stats-scope"),
     splashRatingBadge: document.getElementById("splash-rating-badge"),
     splashCustomersBadge: document.getElementById("splash-customers-badge"),
     splashRankBadge: document.getElementById("splash-rank-badge"),
@@ -177,32 +180,87 @@
     if (elements.splashLeaderboardButton) {
       elements.splashLeaderboardButton.href = "/restaurant/?hub=1#leaderboard-panel";
     }
-    renderSplashProgress(profile);
+    renderSplashProgress(profile, selectedRestaurant?.slug || "");
+    if (elements.splashStatsScope) {
+      elements.splashStatsScope.onchange = (event) => {
+        state.splashStatsScope = event.currentTarget.value;
+        renderSplashProgress(core.getActiveProfile(), selectedRestaurant?.slug || "");
+      };
+    }
     elements.splashRestaurantSelect.onchange = (event) => {
       state.selectedDirectorySlug = event.currentTarget.value;
       renderSplashChooser();
     };
   }
 
-  function renderSplashProgress(profile) {
+  function getSplashStatsOptions(profile, selectedRestaurantSlug) {
+    const options = [{ value: "overall", label: "Overall" }];
+    const slugs = new Set();
+    if (selectedRestaurantSlug) {
+      slugs.add(selectedRestaurantSlug);
+    }
+
+    if (profile?.restaurantStats && typeof profile.restaurantStats === "object") {
+      Object.entries(profile.restaurantStats).forEach(([slug, stats]) => {
+        if (stats && (stats.gamesPlayed || stats.regularCustomers || stats.occasionalCustomers || stats.estimatedSales)) {
+          slugs.add(slug);
+        }
+      });
+    }
+
+    slugs.forEach((slug) => {
+      const restaurant = core.getRestaurantBySlug(slug);
+      options.push({
+        value: slug,
+        label: restaurant?.name || slug,
+      });
+    });
+
+    return options;
+  }
+
+  function renderSplashProgress(profile, selectedRestaurantSlug) {
     if (!elements.splashRatingBadge || !elements.splashCustomersBadge || !elements.splashRankBadge) {
       return;
     }
 
-    const summary = profile ? core.getProfileSummary(profile) : null;
+    if (elements.splashPlayerRestaurantName) {
+      elements.splashPlayerRestaurantName.textContent = profile?.restaurantName || "Guest Restaurant";
+    }
+
+    const statsOptions = getSplashStatsOptions(profile, selectedRestaurantSlug);
+    if (!statsOptions.some((option) => option.value === state.splashStatsScope)) {
+      state.splashStatsScope = "overall";
+    }
+    if (elements.splashStatsScope) {
+      elements.splashStatsScope.innerHTML = statsOptions
+        .map(
+          (option) => `
+            <option value="${escapeHtml(option.value)}" ${option.value === state.splashStatsScope ? "selected" : ""}>
+              ${escapeHtml(option.label)}
+            </option>
+          `
+        )
+        .join("");
+      elements.splashStatsScope.value = state.splashStatsScope;
+    }
+
+    const restaurantSlug = state.splashStatsScope === "overall" ? "" : state.splashStatsScope;
+    const summary = profile ? core.getProfileSummary(profile, restaurantSlug) : null;
     const stats = summary?.stats || null;
     const collected = stats ? stats.regularCustomers + stats.occasionalCustomers : 0;
+    const hasGames = Boolean(stats?.gamesPlayed);
     const rank = profile && !profile.isGuest
-      ? core.getPlayerRank(profile.id, "estimatedSales")
+      ? core.getPlayerRank(profile.id, "estimatedSales", restaurantSlug)
       : null;
 
-    elements.splashRatingBadge.textContent = stats && stats.gamesPlayed
+    elements.splashRatingBadge.textContent = hasGames
       ? `⭐ Rating: ${core.formatRating(summary.rating)}`
       : "⭐ Rating: New";
     elements.splashCustomersBadge.textContent = `👥 Customers: ${collected}`;
     elements.splashRankBadge.textContent = rank
       ? `🏆 Rank: #${rank}`
-      : profile?.isGuest && stats?.gamesPlayed
+      : profile?.isGuest && hasGames
         ? "🏆 Rank: Save to Rank"
         : "🏆 Rank: Not Ranked";
   }
