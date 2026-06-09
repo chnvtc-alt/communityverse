@@ -22,6 +22,11 @@
       description: "Regular customers only. These are the strongest customer wins.",
     },
     {
+      value: "favoriteCustomers",
+      label: "Favorites",
+      description: "Favorite customers earned after repeated successful visits with a regular customer.",
+    },
+    {
       value: "gamesPlayed",
       label: "Games",
       description: "Total completed games played by each restaurant.",
@@ -353,6 +358,10 @@
       return stats.regularCustomers;
     }
 
+    if (metric === "favoriteCustomers") {
+      return stats.favoriteCustomers || 0;
+    }
+
     if (metric === "collected") {
       return stats.regularCustomers + stats.occasionalCustomers;
     }
@@ -577,12 +586,14 @@
               gamesPlayed: 0,
               estimatedSales: 0,
               regularCustomers: 0,
+              favoriteCustomers: 0,
               occasionalCustomers: 0,
             },
           };
     const overallRank = profile ? core.getPlayerRank(profile.id, "estimatedSales") : null;
     const collectedCustomers =
       (safeSummary.stats.regularCustomers || 0) + (safeSummary.stats.occasionalCustomers || 0);
+    const favoriteCustomers = safeSummary.stats.favoriteCustomers || 0;
     const bestRankLabel = overallRank ? `🏆 Best Rank #${overallRank}` : "🏆 Best Rank --";
     const selectedDirectoryRestaurant = getSelectedDirectoryRestaurant(profile);
     const lastPlayedSlug = getDefaultDirectorySlug(profile);
@@ -638,6 +649,7 @@
                       <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
                       <span class="chip hero-stat-chip">👥 Customers ${collectedCustomers}</span>
                       <span class="chip hero-stat-chip">💰 Sales ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
+                      <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
                       <span class="chip hero-stat-chip">${bestRankLabel}</span>
                     </div>
                     ${
@@ -693,6 +705,7 @@
                     <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
                     <span class="chip hero-stat-chip">👥 Customers ${collectedCustomers}</span>
                     <span class="chip hero-stat-chip">💰 Sales ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
+                    <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
                     <span class="chip hero-stat-chip">${bestRankLabel}</span>
                   </div>
                   ${

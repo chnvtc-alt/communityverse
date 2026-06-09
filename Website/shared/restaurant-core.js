@@ -2100,6 +2100,7 @@
       gamesPlayed: 0,
       totalCorrectAnswers: 0,
       regularCustomers: 0,
+      favoriteCustomers: 0,
       occasionalCustomers: 0,
       lostCustomers: 0,
       totalCustomerValue: 0,
@@ -2254,6 +2255,9 @@
 
       if (entry.status === "regular" || entry.status === "favorite") {
         stats.regularCustomers += 1;
+        if (entry.status === "favorite") {
+          stats.favoriteCustomers += 1;
+        }
       } else if (entry.status === "occasional") {
         stats.occasionalCustomers += 1;
       } else if (entry.status === "lost") {
@@ -2512,6 +2516,9 @@
 
     if (previousStatus === "regular" || previousStatus === "favorite") {
       stats.regularCustomers = Math.max(0, stats.regularCustomers - 1);
+      if (previousStatus === "favorite") {
+        stats.favoriteCustomers = Math.max(0, (stats.favoriteCustomers || 0) - 1);
+      }
     } else if (previousStatus === "occasional") {
       stats.occasionalCustomers = Math.max(0, stats.occasionalCustomers - 1);
     } else if (previousStatus === "lost") {
@@ -2520,6 +2527,9 @@
 
     if (nextStatus === "regular" || nextStatus === "favorite") {
       stats.regularCustomers += 1;
+      if (nextStatus === "favorite") {
+        stats.favoriteCustomers = (stats.favoriteCustomers || 0) + 1;
+      }
     } else if (nextStatus === "occasional") {
       stats.occasionalCustomers += 1;
     } else if (nextStatus === "lost") {
@@ -3120,6 +3130,7 @@
       overallStats.gamesPlayed += 1;
       overallStats.totalCorrectAnswers += session.score;
       overallStats.regularCustomers = 0;
+      overallStats.favoriteCustomers = 0;
       overallStats.occasionalCustomers = 0;
       overallStats.lostCustomers = 0;
       overallStats.totalCustomerValue = 0;
@@ -3133,6 +3144,7 @@
       restaurantStats.gamesPlayed += 1;
       restaurantStats.totalCorrectAnswers += session.score;
       restaurantStats.regularCustomers = 0;
+      restaurantStats.favoriteCustomers = 0;
       restaurantStats.occasionalCustomers = 0;
       restaurantStats.lostCustomers = 0;
       restaurantStats.totalCustomerValue = 0;
@@ -3349,9 +3361,11 @@
               ? stats.gamesPlayed
               : metric === "regularCustomers"
                 ? stats.regularCustomers
-                : metric === "collected"
-                  ? stats.regularCustomers + stats.occasionalCustomers
-                  : stats.estimatedSales,
+                : metric === "favoriteCustomers"
+                  ? stats.favoriteCustomers || 0
+                  : metric === "collected"
+                    ? stats.regularCustomers + stats.occasionalCustomers
+                    : stats.estimatedSales,
       };
     });
 
