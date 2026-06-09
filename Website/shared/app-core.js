@@ -2291,6 +2291,34 @@
     return 0;
   }
 
+  function getCustomerWinThresholds(customer) {
+    const rarity = String(customer?.rarity || "").toLowerCase();
+
+    if (rarity === "common") {
+      return { regular: 6, occasional: 3 };
+    }
+
+    if (rarity === "uncommon") {
+      return { regular: 7, occasional: 4 };
+    }
+
+    return { regular: 8, occasional: 5 };
+  }
+
+  function getCustomerResultForScore(customer, score) {
+    const thresholds = getCustomerWinThresholds(customer);
+
+    if (score >= thresholds.regular) {
+      return "regular";
+    }
+
+    if (score >= thresholds.occasional) {
+      return "occasional";
+    }
+
+    return "lost";
+  }
+
   function applyCollectionDelta(stats, previousStatus, nextStatus, previousCustomer, nextCustomer) {
     const previousValue = getCollectionValueForStatus(previousCustomer, previousStatus);
     const nextValue = getCollectionValueForStatus(nextCustomer, nextStatus);
@@ -2947,12 +2975,7 @@
     if (!hasMoreQuestions) {
       session.completed = true;
       session.completedAt = nowIso();
-      session.result =
-        session.score >= 8
-          ? "regular"
-          : session.score >= 5
-            ? "occasional"
-            : "lost";
+      session.result = getCustomerResultForScore(session.customer, session.score);
       session.outcomeText =
         session.result === "regular"
           ? "regular customer"
@@ -3108,6 +3131,7 @@
     getRestaurantBySlug,
     getCustomerById,
     getCustomerBio,
+    getCustomerWinThresholds,
     getCustomersForRestaurant,
     getPhotoReadyCustomersForRestaurant,
     getFeaturedGuestLineup,

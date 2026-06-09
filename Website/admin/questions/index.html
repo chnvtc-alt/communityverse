@@ -419,9 +419,9 @@
           <div class="field-guide-grid">
             <p><strong>Customer name:</strong> The name players will see after winning this customer.</p>
             <p><strong>Character type:</strong> A simple category for organizing customers, like local, historical, story, celebrity, or staff.</p>
-            <p><strong>Rarity:</strong> How special the customer feels. Common, Rare, Epic, and Legendary all work well.</p>
-            <p><strong>Regular value:</strong> Use this for the full customer win. Most normal customers can be $50-$150. Special customers can be $200 or more.</p>
-            <p><strong>Occasional value:</strong> Use this for a smaller visit. A good rule is about half of the regular value.</p>
+            <p><strong>Rarity / difficulty:</strong> Common appears most often and is easiest to win. Uncommon is in the middle. Rare appears less often and needs a better score.</p>
+            <p><strong>Regular value:</strong> Use ranges so customers still feel individual. Common $75-$125, Uncommon $125-$200, Rare $200-$350.</p>
+            <p><strong>Occasional value:</strong> Use a smaller amount for partial wins. Common $20-$40, Uncommon $40-$70, Rare $70-$125.</p>
             <p><strong>Restaurant:</strong> Choose Shared for every restaurant, or choose one restaurant so the customer only appears there.</p>
             <p><strong>Sort order:</strong> Lower numbers show first in the control room. It does not need to be perfect.</p>
             <p><strong>Bio:</strong> Short player-facing description of the customer.</p>
@@ -442,8 +442,13 @@
             <input id="customer-group" list="customer-group-options" placeholder="historical" />
           </label>
           <label>
-            Rarity
-            <input id="customer-rarity" list="customer-rarity-options" placeholder="Rare" />
+            Rarity / difficulty
+            <select id="customer-rarity">
+              <option value="Common">Common - easier</option>
+              <option value="Uncommon">Uncommon - medium</option>
+              <option value="Rare">Rare - harder</option>
+            </select>
+            <span class="optional">Common: 6+ regular, 3+ occasional. Uncommon: 7+ regular, 4+ occasional. Rare: 8+ regular, 5+ occasional.</span>
           </label>
           <label>
             Regular value

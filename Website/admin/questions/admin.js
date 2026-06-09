@@ -1100,7 +1100,7 @@ function resetCustomerEditor(customer = null) {
   elements.customerId.value = customer?.id || "";
   elements.customerName.value = customer?.name || "";
   elements.customerGroup.value = customer?.characterType || customer?.group || "";
-  elements.customerRarity.value = customer?.rarity || "";
+  elements.customerRarity.value = customer?.rarity || "Common";
   elements.customerRegularValue.value = customer?.regularValue || 0;
   elements.customerOccasionalValue.value = customer?.occasionalValue || 0;
   renderCustomerRestaurantChoices(customer?.restaurant || customer?.focusTag || "shared");

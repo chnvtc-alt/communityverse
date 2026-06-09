@@ -498,6 +498,7 @@
       ? ((session.currentIndex - 1) / session.questions.length) * 100
       : (session.currentIndex / session.questions.length) * 100;
     const customerBio = core.getCustomerBio(session.customer);
+    const customerThresholds = core.getCustomerWinThresholds(session.customer);
 
     elements.game.classList.remove("hidden");
     elements.start.classList.add("hidden");
@@ -521,6 +522,9 @@
               <p class="customer-name">${escapeHtml(session.customer.name)}</p>
               <p class="customer-bio">${escapeHtml(customerBio)}</p>
               <div class="chip-row" style="margin-top: 10px;">
+                <span class="chip">${escapeHtml(session.customer.rarity || "Rare")} customer</span>
+                <span class="chip">Regular needs ${customerThresholds.regular}/10</span>
+                <span class="chip">Occasional needs ${customerThresholds.occasional}/10</span>
                 <span class="chip">Regular value ${core.formatCurrency(session.customer.regularValue)}</span>
                 <span class="chip">Occasional value ${core.formatCurrency(session.customer.occasionalValue)}</span>
               </div>
