@@ -581,6 +581,9 @@
             },
           };
     const overallRank = profile ? core.getPlayerRank(profile.id, "estimatedSales") : null;
+    const collectedCustomers =
+      (safeSummary.stats.regularCustomers || 0) + (safeSummary.stats.occasionalCustomers || 0);
+    const bestRankLabel = overallRank ? `🏆 Best Rank #${overallRank}` : "🏆 Best Rank --";
     const selectedDirectoryRestaurant = getSelectedDirectoryRestaurant(profile);
     const lastPlayedSlug = getDefaultDirectorySlug(profile);
     const playAgainTarget = getPlayAgainTarget(profile);
@@ -632,10 +635,10 @@
                     </div>
                     ${!editMode ? renderConnectInfoMarkup(profile) : ``}
                     <div class="hero-profile-meta hero-profile-meta-compact">
-                      <span class="chip hero-stat-chip">${overallRank ? `Overall #${overallRank}` : "No overall rank"}</span>
-                      <span class="chip hero-stat-chip">Sales ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
-                      <span class="chip hero-stat-chip hero-stat-chip-compact">Regular Customers ${safeSummary.stats.regularCustomers}</span>
-                      <span class="chip hero-stat-chip hero-stat-chip-compact">Occasional Customers ${safeSummary.stats.occasionalCustomers}</span>
+                      <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
+                      <span class="chip hero-stat-chip">👥 Customers ${collectedCustomers}</span>
+                      <span class="chip hero-stat-chip">💰 Sales ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
+                      <span class="chip hero-stat-chip">${bestRankLabel}</span>
                     </div>
                     ${
                       !editMode ? renderConnectEmailMarkup(profile) : ``
@@ -687,10 +690,10 @@
                   </div>
                   ${!editMode ? renderConnectInfoMarkup(profile) : ``}
                   <div class="hero-profile-meta">
-                    <span class="chip hero-stat-chip">${overallRank ? `Overall #${overallRank}` : "No overall rank"}</span>
-                    <span class="chip hero-stat-chip">Sales ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
-                    <span class="chip hero-stat-chip hero-stat-chip-compact">Regular Customers ${safeSummary.stats.regularCustomers}</span>
-                    <span class="chip hero-stat-chip hero-stat-chip-compact">Occasional Customers ${safeSummary.stats.occasionalCustomers}</span>
+                    <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
+                    <span class="chip hero-stat-chip">👥 Customers ${collectedCustomers}</span>
+                    <span class="chip hero-stat-chip">💰 Sales ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
+                    <span class="chip hero-stat-chip">${bestRankLabel}</span>
                   </div>
                   ${
                     !editMode ? renderConnectEmailMarkup(profile) : ``
