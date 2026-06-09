@@ -1672,6 +1672,106 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   gap: 16px;
 }
 
+.customer-reveal-shell {
+  display: grid;
+  gap: 22px;
+  max-width: 980px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.customer-reveal-copy {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+}
+
+.customer-reveal-card {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.2fr);
+  gap: 24px;
+  align-items: center;
+  padding: 24px;
+  border-radius: 28px;
+  border: 1px solid rgba(93, 116, 105, 0.14);
+  background:
+    linear-gradient(180deg, rgba(255, 251, 243, 0.96), rgba(246, 238, 219, 0.9)),
+    rgba(255, 251, 243, 0.92);
+  box-shadow: 0 18px 42px rgba(39, 55, 44, 0.12);
+  text-align: left;
+}
+
+.customer-reveal-photo {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 24px;
+  border: 1px solid rgba(93, 116, 105, 0.16);
+  background: #fff;
+  box-shadow: 0 14px 28px rgba(39, 55, 44, 0.12);
+}
+
+.customer-reveal-details {
+  display: grid;
+  gap: 18px;
+}
+
+.customer-reveal-rarity {
+  margin: 0 0 4px;
+  color: var(--accent);
+  font-family: Arial, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.customer-reveal-name {
+  margin: 0;
+  color: var(--ink);
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  line-height: 0.95;
+}
+
+.customer-reveal-goals,
+.customer-reveal-values {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.customer-reveal-goal,
+.customer-reveal-value {
+  display: grid;
+  gap: 4px;
+  min-height: 82px;
+  align-content: center;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(93, 116, 105, 0.14);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.customer-reveal-goal strong,
+.customer-reveal-value strong {
+  color: var(--ink);
+  font-size: 1.35rem;
+}
+
+.customer-reveal-label {
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.customer-reveal-actions {
+  justify-content: flex-start;
+}
+
 .question-main-layout {
   display: grid;
   grid-template-columns: minmax(240px, 0.78fr) minmax(0, 1.22fr);
@@ -2293,6 +2393,58 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   .hero-card-strong {
     gap: 12px;
     padding: 14px;
+  }
+
+  .customer-reveal-shell {
+    gap: 14px;
+    text-align: center;
+  }
+
+  .customer-reveal-card {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 12px;
+    border-radius: 20px;
+    text-align: center;
+  }
+
+  .customer-reveal-photo {
+    max-width: 260px;
+    margin: 0 auto;
+    border-radius: 18px;
+  }
+
+  .customer-reveal-details {
+    gap: 12px;
+  }
+
+  .customer-reveal-name {
+    font-size: 2rem;
+  }
+
+  .customer-reveal-goals,
+  .customer-reveal-values {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .customer-reveal-goal,
+  .customer-reveal-value {
+    min-height: 64px;
+    padding: 10px;
+  }
+
+  .customer-reveal-goal strong,
+  .customer-reveal-value strong {
+    font-size: 1.15rem;
+  }
+
+  .customer-reveal-actions {
+    justify-content: center;
+  }
+
+  .customer-reveal-actions .button {
+    width: 100%;
   }
 
   .question-shell {

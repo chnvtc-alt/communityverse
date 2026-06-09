@@ -437,6 +437,14 @@
       return;
     }
 
+    if (session && !session.completed && !state.showGame) {
+      elements.start.classList.remove("hidden");
+      elements.game.classList.add("hidden");
+      elements.result.classList.add("hidden");
+      renderCustomerRevealPanel(session);
+      return;
+    }
+
     if (session && !session.completed && state.showGame) {
       elements.start.classList.add("hidden");
       elements.game.classList.remove("hidden");
@@ -449,6 +457,68 @@
     elements.game.classList.add("hidden");
     elements.result.classList.add("hidden");
     state.showGame = false;
+  }
+
+  function renderCustomerRevealPanel(session) {
+    const customer = session.customer;
+    const customerBio = core.getCustomerBio(customer);
+    const thresholds = core.getCustomerWinThresholds(customer);
+    const rarity = customer.rarity || "Rare";
+
+    elements.start.innerHTML = `
+      <div class="customer-reveal-shell">
+        <div class="customer-reveal-copy">
+          <p class="kicker">Customer Challenge</p>
+          <h2 class="opening-title">You're playing for ${escapeHtml(customer.name)}</h2>
+          <p class="copy opening-title-copy">${escapeHtml(customerBio)}</p>
+        </div>
+
+        <div class="customer-reveal-card">
+          <img class="customer-reveal-photo" src="${customer.image}" alt="${escapeHtml(customer.name)}" />
+          <div class="customer-reveal-details">
+            <div>
+              <p class="customer-reveal-rarity">${escapeHtml(rarity)} customer</p>
+              <h3 class="customer-reveal-name">${escapeHtml(customer.name)}</h3>
+            </div>
+            <div class="customer-reveal-goals">
+              <div class="customer-reveal-goal">
+                <span class="customer-reveal-label">Regular Customer</span>
+                <strong>${thresholds.regular}/10 correct</strong>
+              </div>
+              <div class="customer-reveal-goal">
+                <span class="customer-reveal-label">Occasional Customer</span>
+                <strong>${thresholds.occasional}/10 correct</strong>
+              </div>
+            </div>
+            <div class="customer-reveal-values">
+              <div class="customer-reveal-value">
+                <span class="customer-reveal-label">Regular Customer Value</span>
+                <strong>${core.formatCurrency(customer.regularValue)}</strong>
+              </div>
+              <div class="customer-reveal-value">
+                <span class="customer-reveal-label">Occasional Customer Value</span>
+                <strong>${core.formatCurrency(customer.occasionalValue)}</strong>
+              </div>
+            </div>
+            <div class="button-row customer-reveal-actions">
+              <button class="button button-hot" id="begin-questions-button" type="button">Begin Questions</button>
+              <a class="button button-muted" href="/restaurant/?hub=1">View My Restaurant</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById("begin-questions-button")?.addEventListener("click", () => {
+      state.showGame = true;
+      renderAll();
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+          const gameTop = Math.max(0, elements.game.getBoundingClientRect().top + window.scrollY - 12);
+          window.scrollTo({ top: gameTop, behavior: "smooth" });
+        });
+      });
+    });
   }
 
   async function startGame() {
@@ -467,13 +537,12 @@
     state.feedback = null;
     state.isLocked = false;
     state.resultBioExpanded = false;
-    state.showGame = true;
+    state.showGame = false;
     renderAll();
-    renderGamePanel();
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => {
-        const gameTop = Math.max(0, elements.game.getBoundingClientRect().top + window.scrollY - 12);
-        window.scrollTo({ top: gameTop, behavior: "smooth" });
+        const revealTop = Math.max(0, elements.start.getBoundingClientRect().top + window.scrollY - 12);
+        window.scrollTo({ top: revealTop, behavior: "smooth" });
       });
     });
   }
@@ -916,6 +985,14 @@
           elements.game.classList.remove("hidden");
           elements.result.classList.add("hidden");
           renderGamePanel();
+          return;
+        }
+
+        if (session && !state.showGame) {
+          elements.start.classList.remove("hidden");
+          elements.game.classList.add("hidden");
+          elements.result.classList.add("hidden");
+          renderCustomerRevealPanel(session);
           return;
         }
 
