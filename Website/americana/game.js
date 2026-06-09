@@ -188,9 +188,7 @@
     const profile = getProfile();
     const collection = Array.isArray(profile?.customerCollection) ? profile.customerCollection : [];
     return collection.find(
-      (entry) =>
-        entry.customerId === session?.customer?.id &&
-        entry.restaurantSlug === session?.restaurantSlug
+      (entry) => entry.customerId === session?.customer?.id
     ) || null;
   }
 

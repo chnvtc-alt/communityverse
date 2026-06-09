@@ -9,6 +9,12 @@
   const USE_REMOTE_SYNC = typeof window.fetch === "function";
   const FAVORITE_VISIT_GOAL = 10;
   const FAVORITE_VALUE_MULTIPLIER = 1.2;
+  const CUSTOMER_STATUS_RANK = {
+    lost: 0,
+    occasional: 1,
+    regular: 2,
+    favorite: 3,
+  };
   const profilesCacheState = {
     loaded: false,
     source: "local",
@@ -1886,6 +1892,7 @@
         } catch (error) {
           // Keep the remote profiles even if browser storage is unavailable.
         }
+        void syncProfilesToServer(profilesCacheState.profiles).catch(() => null);
       } else {
         setProfilesCache(getLocalProfileSeed(), "local");
         if (!readJson(STORAGE_KEYS.profiles, []).length && profilesCacheState.profiles.length) {
@@ -2124,7 +2131,9 @@
       ? safeProfile.recentSessions
       : [];
     safeProfile.isGuest = Boolean(safeProfile.isGuest);
-    safeProfile.customerCollection = safeProfile.customerCollection.map(normalizeCollectionEntry);
+    safeProfile.customerCollection = dedupeCustomerCollection(
+      safeProfile.customerCollection.map(normalizeCollectionEntry)
+    );
     return rebuildCollectionDerivedStats(safeProfile);
   }
 
@@ -2144,6 +2153,71 @@
     }
 
     return safeEntry;
+  }
+
+  function getCustomerStatusRank(status) {
+    return CUSTOMER_STATUS_RANK[status] ?? 0;
+  }
+
+  function getNewerCollectionEntry(left, right) {
+    const leftTime = Date.parse(left?.dateWon || "") || 0;
+    const rightTime = Date.parse(right?.dateWon || "") || 0;
+    return rightTime >= leftTime ? right : left;
+  }
+
+  function mergeCollectionEntries(existingEntry, incomingEntry) {
+    if (!existingEntry) {
+      return incomingEntry;
+    }
+
+    const existingRank = getCustomerStatusRank(existingEntry.status);
+    const incomingRank = getCustomerStatusRank(incomingEntry.status);
+    const strongerEntry =
+      incomingRank > existingRank
+        ? incomingEntry
+        : incomingRank < existingRank
+          ? existingEntry
+          : getNewerCollectionEntry(existingEntry, incomingEntry);
+    const newerEntry = getNewerCollectionEntry(existingEntry, incomingEntry);
+    const favoriteVisits = Math.max(
+      Number(existingEntry.favoriteVisits) || 0,
+      Number(incomingEntry.favoriteVisits) || 0
+    );
+    const status = strongerEntry.status === "favorite" || favoriteVisits >= FAVORITE_VISIT_GOAL
+      ? "favorite"
+      : strongerEntry.status;
+
+    return normalizeCollectionEntry({
+      ...existingEntry,
+      ...strongerEntry,
+      id: existingEntry.id || incomingEntry.id,
+      restaurantSlug: newerEntry.restaurantSlug || strongerEntry.restaurantSlug || existingEntry.restaurantSlug,
+      restaurantName: newerEntry.restaurantName || strongerEntry.restaurantName || existingEntry.restaurantName,
+      dateWon: newerEntry.dateWon || strongerEntry.dateWon || existingEntry.dateWon,
+      status,
+      favoriteVisits: status === "favorite" ? FAVORITE_VISIT_GOAL : favoriteVisits,
+    });
+  }
+
+  function dedupeCustomerCollection(collection) {
+    const mergedByCustomerId = new Map();
+    const entriesWithoutCustomerId = [];
+
+    collection.forEach((entry) => {
+      if (!entry?.customerId) {
+        entriesWithoutCustomerId.push(entry);
+        return;
+      }
+
+      mergedByCustomerId.set(
+        entry.customerId,
+        mergeCollectionEntries(mergedByCustomerId.get(entry.customerId), entry)
+      );
+    });
+
+    return [...mergedByCustomerId.values(), ...entriesWithoutCustomerId].sort((left, right) =>
+      String(right.dateWon || "").localeCompare(String(left.dateWon || ""))
+    );
   }
 
   function rebuildCollectionDerivedStats(profile) {
@@ -2314,26 +2388,24 @@
   }
 
   function getCustomerCollectionEntry(profile, customerId, restaurantSlug) {
-    if (!profile || !customerId || !restaurantSlug) {
+    if (!profile || !customerId) {
       return null;
     }
 
     return ensureProfileShape(profile).customerCollection.find(
-      (entry) =>
-        entry.customerId === customerId &&
-        entry.restaurantSlug === restaurantSlug
+      (entry) => entry.customerId === customerId
     ) || null;
   }
 
   function getOwnedCustomerIdsForRestaurant(profile, restaurantSlug) {
-    if (!profile || !restaurantSlug) {
+    if (!profile) {
       return new Set();
     }
 
     const safeProfile = ensureProfileShape(profile);
     return new Set(
       safeProfile.customerCollection
-        .filter((entry) => entry.restaurantSlug === restaurantSlug && entry.customerId)
+        .filter((entry) => entry.customerId)
         .map((entry) => entry.customerId)
     );
   }
@@ -2889,7 +2961,6 @@
       collection
         .filter(
           (entry) =>
-            entry.restaurantSlug === restaurant.slug &&
             entry.status === "regular" &&
             (Number(entry.favoriteVisits) || 0) < FAVORITE_VISIT_GOAL
         )
@@ -3085,9 +3156,7 @@
       ].slice(0, 12);
 
       const existingCustomerIndex = nextProfile.customerCollection.findIndex(
-        (entry) =>
-          entry.customerId === session.customer.id &&
-          entry.restaurantSlug === session.restaurantSlug
+        (entry) => entry.customerId === session.customer.id
       );
       const existingCustomer =
         existingCustomerIndex >= 0 ? nextProfile.customerCollection[existingCustomerIndex] : null;
@@ -3099,33 +3168,33 @@
           session.favoriteProgress && session.favoriteProgress.wasEligible
             ? session.favoriteProgress.visits
             : Number(existingCustomer.favoriteVisits) || 0;
-        const nextStatus = existingWasRegular
-          ? nextFavoriteVisits >= FAVORITE_VISIT_GOAL
-            ? "favorite"
-            : "regular"
-          : session.result;
+        const bestStatus =
+          existingWasRegular
+            ? nextFavoriteVisits >= FAVORITE_VISIT_GOAL
+              ? "favorite"
+              : "regular"
+            : getCustomerStatusRank(session.result) > getCustomerStatusRank(existingCustomer.status)
+              ? session.result
+              : existingCustomer.status;
+        const updatedEntry = {
+          ...existingCustomer,
+          customerName: session.customer.name,
+          status: bestStatus,
+          restaurantSlug: session.restaurantSlug,
+          restaurantName: session.restaurantName,
+          rarity: session.customer.rarity,
+          regularValue: session.customer.regularValue,
+          occasionalValue: session.customer.occasionalValue,
+          favoriteVisits: bestStatus === "favorite" ? FAVORITE_VISIT_GOAL : nextFavoriteVisits,
+          image: session.customer.image,
+          bio: getCustomerBio(session.customer),
+          dateWon: nowIso(),
+        };
 
-        if (!existingWasRegular && session.result === "lost") {
-          nextProfile.customerCollection.splice(existingCustomerIndex, 1);
-        } else {
-          const updatedEntry = {
-            ...existingCustomer,
-            customerName: session.customer.name,
-            status: nextStatus,
-            restaurantSlug: session.restaurantSlug,
-            restaurantName: session.restaurantName,
-            rarity: session.customer.rarity,
-            regularValue: session.customer.regularValue,
-            occasionalValue: session.customer.occasionalValue,
-            favoriteVisits: nextStatus === "favorite" ? FAVORITE_VISIT_GOAL : nextFavoriteVisits,
-            image: session.customer.image,
-            bio: getCustomerBio(session.customer),
-            dateWon: nowIso(),
-          };
-
-          nextProfile.customerCollection.splice(existingCustomerIndex, 1);
-          nextProfile.customerCollection.unshift(updatedEntry);
-        }
+        nextProfile.customerCollection = nextProfile.customerCollection.filter(
+          (entry) => entry.customerId !== session.customer.id
+        );
+        nextProfile.customerCollection.unshift(updatedEntry);
       } else {
         if (session.result !== "lost") {
           nextProfile.customerCollection.unshift({
