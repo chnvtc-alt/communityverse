@@ -63,6 +63,7 @@
         </div>
       </div>
     `;
+    panel.classList.remove("hidden");
     document.title = "Restaurant Unavailable | CommunityVerse Games";
     console.warn(`Restaurant Challenge restaurant is unavailable: ${slug}`);
   }
@@ -137,6 +138,7 @@
         </div>
       </div>
     `;
+    panel.classList.remove("hidden");
 
     const canonical = document.querySelector('link[rel="canonical"]');
     if (canonical) {
