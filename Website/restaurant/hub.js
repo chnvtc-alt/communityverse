@@ -56,6 +56,9 @@
     splashPlayButton: document.getElementById("splash-play-button"),
     splashMyRestaurantButton: document.getElementById("splash-my-restaurant-button"),
     splashLeaderboardButton: document.getElementById("splash-leaderboard-button"),
+    splashRatingBadge: document.getElementById("splash-rating-badge"),
+    splashCustomersBadge: document.getElementById("splash-customers-badge"),
+    splashRankBadge: document.getElementById("splash-rank-badge"),
     hero: document.getElementById("hero-panel"),
     collection: document.getElementById("collection-panel"),
     leaderboard: document.getElementById("leaderboard-panel"),
@@ -146,6 +149,7 @@
       return;
     }
 
+    const profile = core.getActiveProfile();
     const directoryRestaurants = getDirectoryRestaurants();
     const selectedSlug = state.selectedDirectorySlug || directoryRestaurants[0]?.slug || "americana";
     const selectedRestaurant =
@@ -173,10 +177,34 @@
     if (elements.splashLeaderboardButton) {
       elements.splashLeaderboardButton.href = "/restaurant/?hub=1#leaderboard-panel";
     }
+    renderSplashProgress(profile);
     elements.splashRestaurantSelect.onchange = (event) => {
       state.selectedDirectorySlug = event.currentTarget.value;
       renderSplashChooser();
     };
+  }
+
+  function renderSplashProgress(profile) {
+    if (!elements.splashRatingBadge || !elements.splashCustomersBadge || !elements.splashRankBadge) {
+      return;
+    }
+
+    const summary = profile ? core.getProfileSummary(profile) : null;
+    const stats = summary?.stats || null;
+    const collected = stats ? stats.regularCustomers + stats.occasionalCustomers : 0;
+    const rank = profile && !profile.isGuest
+      ? core.getPlayerRank(profile.id, "estimatedSales")
+      : null;
+
+    elements.splashRatingBadge.textContent = stats && stats.gamesPlayed
+      ? `⭐ Rating: ${core.formatRating(summary.rating)}`
+      : "⭐ Rating: New";
+    elements.splashCustomersBadge.textContent = `👥 Customers: ${collected}`;
+    elements.splashRankBadge.textContent = rank
+      ? `🏆 Rank: #${rank}`
+      : profile?.isGuest && stats?.gamesPlayed
+        ? "🏆 Rank: Save to Rank"
+        : "🏆 Rank: Not Ranked";
   }
 
   function scrollMobileSection(section, extraOffset = 0) {
