@@ -291,8 +291,13 @@
     return String(Math.round(value || 0));
   }
 
-  function getPlayableRestaurants() {
-    return core.restaurants.filter((restaurant) => restaurant.active !== false);
+  function getPlayableRestaurants({ publicOnly = false } = {}) {
+    return core.restaurants.filter(
+      (restaurant) =>
+        restaurant.active !== false &&
+        restaurant.playable !== false &&
+        (!publicOnly || restaurant.visibleInList !== false)
+    );
   }
 
   function getSelectedLeaderboardRestaurant() {
@@ -305,7 +310,7 @@
   }
 
   function getDirectoryRestaurants() {
-    const playableRestaurants = getPlayableRestaurants();
+    const playableRestaurants = getPlayableRestaurants({ publicOnly: true });
     if (playableRestaurants.length) {
       return [
         ...playableRestaurants.map((restaurant) => ({

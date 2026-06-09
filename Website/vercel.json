@@ -39,6 +39,22 @@
     {
       "source": "/cm-pepperville/",
       "destination": "/cm-pepperville/index.html"
+    },
+    {
+      "source": "/:restaurantSlug/play",
+      "destination": "/americana/play/index.html"
+    },
+    {
+      "source": "/:restaurantSlug/play/",
+      "destination": "/americana/play/index.html"
+    },
+    {
+      "source": "/:restaurantSlug",
+      "destination": "/americana/index.html"
+    },
+    {
+      "source": "/:restaurantSlug/",
+      "destination": "/americana/index.html"
     }
   ]
 }

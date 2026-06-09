@@ -18,30 +18,8 @@
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="stylesheet" href="/shared/restaurant.css" />
-    <script>
-      (() => {
-        const params = new URLSearchParams(window.location.search);
-        const customerId = String(params.get("customerId") || "").trim();
-
-        window.addEventListener("DOMContentLoaded", () => {
-          const startButton = document.getElementById("start-game-button");
-          const inviteCopy = document.getElementById("invite-copy");
-
-          if (startButton) {
-            startButton.href = customerId
-              ? `/americana/play/?fresh=1&customerId=${encodeURIComponent(customerId)}`
-              : "/americana/play/?fresh=1";
-            if (customerId) {
-              startButton.textContent = "INVITE BACK";
-            }
-          }
-
-          if (inviteCopy && customerId) {
-            inviteCopy.classList.remove("hidden");
-          }
-        });
-      })();
-    </script>
+    <script defer src="/shared/app-core.js?v=restaurant-template"></script>
+    <script defer src="/shared/restaurant-start.js?v=restaurant-template"></script>
   </head>
   <body data-page="americana-start" data-build="americana-start-1">
     <main class="app-shell">

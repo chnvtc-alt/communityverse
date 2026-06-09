@@ -563,6 +563,32 @@ const server = createServer(async (request, response) => {
       return;
     }
 
+    const routeParts = requestUrl.pathname.split("/").filter(Boolean);
+    const reservedTopLevelRoutes = new Set([
+      "admin",
+      "americana",
+      "api",
+      "assets",
+      "cm-pepperville",
+      "cm-pepperville-game.html",
+      "empty-suit",
+      "index.html",
+      "restaurant",
+      "shared",
+      "world-tour",
+      "world-tour-game.html",
+      "zoo",
+      "zoo-game.html",
+    ]);
+    if (routeParts.length === 2 && routeParts[1] === "play" && !reservedTopLevelRoutes.has(routeParts[0])) {
+      await serveStatic(request, response, "/americana/play/");
+      return;
+    }
+    if (routeParts.length === 1 && !reservedTopLevelRoutes.has(routeParts[0])) {
+      await serveStatic(request, response, "/americana/");
+      return;
+    }
+
     await serveStatic(request, response, requestUrl.pathname);
   } catch (error) {
     response.writeHead(500, { "Content-Type": "application/json; charset=utf-8" });

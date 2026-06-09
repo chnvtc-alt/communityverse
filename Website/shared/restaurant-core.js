@@ -78,6 +78,8 @@
       logoHorizontal: "/assets/restaurant-challenge/restaurants/americana/americana-diner-logo.jpg",
       squareImage: "/assets/restaurant-challenge/restaurants/americana/americana-diner-logo.jpg",
       active: true,
+      playable: true,
+      visibleInList: true,
     },
   ];
 
@@ -902,6 +904,57 @@
   function normalizeAssetPath(value) {
     const path = String(value || "").trim();
     return path.replace(/^(?:\.\.\/)+assets\//, "/assets/").replace(/^\.\/assets\//, "/assets/");
+  }
+
+  function normalizeRestaurantRecord(restaurant) {
+    const safeRestaurant = typeof restaurant === "object" && restaurant ? structuredClone(restaurant) : {};
+    const slug = slugify(safeRestaurant.slug || safeRestaurant.name);
+    safeRestaurant.id = String(safeRestaurant.id || slug).trim();
+    safeRestaurant.slug = slug;
+    safeRestaurant.name = String(safeRestaurant.name || "").trim();
+    safeRestaurant.publicGameName = String(safeRestaurant.publicGameName || "").trim();
+    safeRestaurant.description = String(safeRestaurant.description || "").trim();
+    safeRestaurant.location = String(safeRestaurant.location || "").trim();
+    safeRestaurant.areaSlug = slugify(safeRestaurant.areaSlug || "");
+    safeRestaurant.primaryColor = String(safeRestaurant.primaryColor || "").trim();
+    safeRestaurant.secondaryColor = String(safeRestaurant.secondaryColor || "").trim();
+    safeRestaurant.accentColor = String(safeRestaurant.accentColor || "").trim();
+    safeRestaurant.heroImage = normalizeAssetPath(safeRestaurant.heroImage);
+    safeRestaurant.logoSquare = normalizeAssetPath(safeRestaurant.logoSquare);
+    safeRestaurant.logoHorizontal = normalizeAssetPath(safeRestaurant.logoHorizontal || safeRestaurant.logoSquare);
+    safeRestaurant.squareImage = normalizeAssetPath(safeRestaurant.squareImage || safeRestaurant.logoSquare);
+    safeRestaurant.openingCopy = String(safeRestaurant.openingCopy || "").trim();
+    safeRestaurant.active = safeRestaurant.active !== false;
+    safeRestaurant.playable = safeRestaurant.playable !== false;
+    safeRestaurant.visibleInList = safeRestaurant.visibleInList !== false;
+    safeRestaurant.sortOrder = Number(safeRestaurant.sortOrder) || 0;
+    return safeRestaurant;
+  }
+
+  function setRestaurantBank(entries) {
+    const normalizedRestaurants = (Array.isArray(entries) ? entries : [])
+      .map(normalizeRestaurantRecord)
+      .filter((restaurant) => restaurant.slug && restaurant.name);
+    if (!normalizedRestaurants.length) {
+      return;
+    }
+
+    restaurants.splice(0, restaurants.length, ...normalizedRestaurants);
+  }
+
+  async function refreshRestaurantBankFromServer() {
+    if (!USE_REMOTE_SYNC) {
+      return;
+    }
+
+    try {
+      const remoteRestaurants = await requestJson("/restaurants", { method: "GET" });
+      if (Array.isArray(remoteRestaurants) && remoteRestaurants.length) {
+        setRestaurantBank(remoteRestaurants);
+      }
+    } catch {
+      // Keep the built-in Americana restaurant if the remote restaurant list is unavailable.
+    }
   }
 
   function normalizeCustomer(customer) {
@@ -1799,6 +1852,7 @@
   }
 
   void Promise.allSettled([
+    refreshRestaurantBankFromServer(),
     refreshProfilesFromServer(),
     refreshQuestionBankFromServer(),
     refreshCustomerBankFromServer(),

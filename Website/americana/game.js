@@ -1,14 +1,20 @@
 (() => {
   const core = window.RestaurantChallengeCore;
-  const restaurant = core.getRestaurantBySlug("americana");
+  function getRestaurantSlugFromPath() {
+    const parts = window.location.pathname.split("/").map((part) => part.trim()).filter(Boolean);
+    return parts[0] || "americana";
+  }
+
+  let restaurantSlug = getRestaurantSlugFromPath();
+  let restaurant = core.getRestaurantBySlug(restaurantSlug) || core.getRestaurantBySlug("americana");
   const query = new URLSearchParams(window.location.search);
   const demoMode = query.has("demo");
   const freshMode = query.has("fresh");
-  const playMode = window.location.pathname.includes("/americana/play");
+  const playMode = window.location.pathname.includes("/play");
   const autoPlayMode = query.get("play") === "1";
   const replayCustomerId = String(query.get("customerId") || "").trim();
   const replayCustomer = replayCustomerId ? core.getCustomerById(replayCustomerId) : null;
-  const RESULT_VISIBLE_SESSION_KEY = "americana_result_visible_session_v1";
+  const RESULT_VISIBLE_SESSION_KEY = `${restaurantSlug}_result_visible_session_v1`;
   const resultVisibleSessionState = {
     sessionId: "",
   };
@@ -34,7 +40,7 @@
   const mobileGuestQuery = "(max-width: 960px)";
   const mobileVisibleGuestCount = 2;
   const desktopVisibleGuestCount = 3;
-  const openingGuestIds = ["curtis-coolwater", "pastor-caleb-brooks", "ming-wu"];
+  const fallbackOpeningGuestIds = ["curtis-coolwater", "pastor-caleb-brooks", "ming-wu"];
 
   const openingMenuItems = [
     {
@@ -51,8 +57,33 @@
     },
   ];
 
-  const openerCopy =
-    "Play a quick game of trivia, win a customer, and progress on the leaderboard!";
+  function restaurantBasePath() {
+    return `/${restaurantSlug}/`;
+  }
+
+  function restaurantPlayPath() {
+    return `/${restaurantSlug}/play/`;
+  }
+
+  function getGameTitle() {
+    return restaurant?.publicGameName || `${restaurant?.name || "Restaurant"} Game`;
+  }
+
+  function getOpenerCopy() {
+    return restaurant?.openingCopy || "Play a quick game of trivia, win a customer, and progress on the leaderboard!";
+  }
+
+  function getHeroImage() {
+    return restaurant?.heroImage || restaurant?.logoSquare || "/assets/restaurant-challenge/restaurants/americana/americana-diner-hero.jpg";
+  }
+
+  function getHeroAlt() {
+    return `${restaurant?.name || "Restaurant"} hero artwork`;
+  }
+
+  function isRestaurantPlayable() {
+    return Boolean(restaurant && restaurant.active !== false && restaurant.playable !== false);
+  }
 
   function isMobileOpeningLayout() {
     return window.matchMedia(mobileGuestQuery).matches;
@@ -81,6 +112,13 @@
   }
 
   function getOpeningCustomers() {
+    const configuredGuestIds = Array.isArray(restaurant?.openingCustomerIds)
+      ? restaurant.openingCustomerIds
+      : [];
+    const openingGuestIds = configuredGuestIds.length || restaurantSlug !== "americana"
+      ? configuredGuestIds
+      : fallbackOpeningGuestIds;
+
     return openingGuestIds
       .map((customerId) => core.getCustomerById(customerId))
       .filter((customer) => Boolean(customer && customer.image));
@@ -98,14 +136,14 @@
       return featuredGuests.slice(0, getVisibleOpeningGuestCount());
     }
     return core
-      .getCustomersForRestaurant("americana")
+      .getCustomersForRestaurant(restaurantSlug)
       .filter((customer) => customer.image && !customer.image.includes("customer-placeholder"))
       .slice(0, getVisibleOpeningGuestCount());
   }
 
   function getSession() {
     const session = core.getActiveSession();
-    if (!session || session.restaurantSlug !== "americana") {
+    if (!session || session.restaurantSlug !== restaurantSlug) {
       return null;
     }
     return session;
@@ -172,10 +210,15 @@
     return core.createGuestProfile();
   }
 
-  async function initializeAmericanaPage() {
-    renderAll();
-
+  async function initializeRestaurantPage() {
     await core.whenReady();
+    restaurantSlug = getRestaurantSlugFromPath();
+    restaurant = core.getRestaurantBySlug(restaurantSlug);
+
+    if (!isRestaurantPlayable()) {
+      renderUnavailableRestaurant();
+      return;
+    }
 
     if (freshMode) {
       core.clearActiveSession();
@@ -199,6 +242,25 @@
     }
   }
 
+  function renderUnavailableRestaurant() {
+    renderHero(false);
+    elements.start.classList.remove("hidden");
+    elements.game.classList.add("hidden");
+    elements.result.classList.add("hidden");
+    elements.start.innerHTML = `
+      <div class="opening-start-shell">
+        <div class="opening-start-heading">
+          <p class="kicker" style="margin: 0 0 4px;">Restaurant Challenge</p>
+          <h2 class="opening-title">Restaurant unavailable</h2>
+          <p class="copy opening-title-copy">This restaurant is not available to play right now.</p>
+        </div>
+        <div class="button-row opening-start-actions opening-start-actions-bottom">
+          <a class="button button-muted" href="/restaurant/">Choose Another Restaurant</a>
+        </div>
+      </div>
+    `;
+  }
+
   function renderHero(visible) {
     if (!visible) {
       elements.hero.classList.add("hidden");
@@ -210,8 +272,8 @@
     elements.hero.innerHTML = `
       <img
         class="hero-banner-image"
-        src="${restaurant.heroImage}"
-        alt="Americana Diner hero artwork"
+        src="${getHeroImage()}"
+        alt="${escapeHtml(getHeroAlt())}"
       />
     `;
   }
@@ -222,18 +284,18 @@
     const openingCustomers = getDisplayedOpeningCustomers();
     const safeOpeningCustomers = Array.isArray(openingCustomers) ? openingCustomers : [];
     const startHref = replayCustomer
-      ? `/americana/?play=1&customerId=${encodeURIComponent(replayCustomer.id)}`
-      : "/americana/?play=1";
+      ? `${restaurantBasePath()}?play=1&customerId=${encodeURIComponent(replayCustomer.id)}`
+      : `${restaurantBasePath()}?play=1`;
     const introCopy = replayCustomer
       ? `This is an invite-back visit for ${replayCustomer.name}. If you do better, they move up. If you do worse, the newer result replaces the old one.`
-      : openerCopy;
+      : getOpenerCopy();
     const introCopyMarkup = introCopy
       ? `<p class="copy opening-title-copy">${escapeHtml(introCopy)}</p>`
       : "";
     elements.start.innerHTML = `
       <div class="opening-start-shell">
         <div class="opening-start-heading">
-          <h2 class="opening-title">The Americana Diner Game</h2>
+          <h2 class="opening-title">${escapeHtml(getGameTitle())}</h2>
           ${introCopyMarkup}
           ${
             replayCustomer
@@ -250,8 +312,8 @@
           <div class="opening-start-hero">
             <img
               class="hero-banner-image hero-banner-image-start"
-              src="${restaurant.heroImage}"
-              alt="Americana Diner hero artwork"
+              src="${getHeroImage()}"
+              alt="${escapeHtml(getHeroAlt())}"
             />
           </div>
 
@@ -282,7 +344,7 @@
           ${
             replayCustomer
               ? `
-                <a class="button button-muted" href="/americana/?home=1">Cancel Invite Back</a>
+                <a class="button button-muted" href="${restaurantBasePath()}?home=1">Cancel Invite Back</a>
                 <a class="button button-muted" href="/restaurant/?hub=1">View My Restaurant</a>
               `
               : profile && !profile.isGuest
@@ -312,14 +374,14 @@
 
   function renderSetupFallback() {
     const startHref = replayCustomer
-      ? `/americana/?play=1&customerId=${encodeURIComponent(replayCustomer.id)}`
-      : "/americana/?play=1";
+      ? `${restaurantBasePath()}?play=1&customerId=${encodeURIComponent(replayCustomer.id)}`
+      : `${restaurantBasePath()}?play=1`;
     elements.start.innerHTML = `
       <div class="opening-start-shell">
         <div class="opening-start-heading">
-          <h2 class="opening-title">The Americana Diner Game</h2>
+          <h2 class="opening-title">${escapeHtml(getGameTitle())}</h2>
           <p class="copy opening-title-copy">
-            ${openerCopy}
+            ${escapeHtml(getOpenerCopy())}
           </p>
         </div>
 
@@ -327,8 +389,8 @@
           <div class="opening-start-hero">
             <img
               class="hero-banner-image hero-banner-image-start"
-              src="${restaurant.heroImage}"
-              alt="Americana Diner hero artwork"
+              src="${getHeroImage()}"
+              alt="${escapeHtml(getHeroAlt())}"
             />
           </div>
 
@@ -394,9 +456,9 @@
     }
 
     const options = replayCustomer ? { customerId: replayCustomer.id } : {};
-    const session = core.startNewSession("americana", options);
+    const session = core.startNewSession(restaurantSlug, options);
     if (!session) {
-      window.alert("No available guests are ready for Americana right now. Please try again.");
+      window.alert(`No available guests are ready for ${restaurant?.name || "this restaurant"} right now. Please try again.`);
       return;
     }
     clearResultVisibleSessionId();
@@ -583,7 +645,7 @@
 
   function renderResultPanel(session) {
     const profile = getProfile();
-    const summary = profile ? core.getProfileSummary(profile, "americana") : null;
+    const summary = profile ? core.getProfileSummary(profile, restaurantSlug) : null;
     const isGuest = Boolean(profile && profile.isGuest);
     const resultLayoutMode = isGuest
       ? (state.showProfileForm ? "register-form" : "guest-prompt")
@@ -620,7 +682,7 @@
       <div class="result-screen result-screen-${resultLayoutMode}">
         <div class="result-top-layout">
           <div class="result-hero-panel">
-            <img class="result-hero-image" src="${restaurant.heroImage}" alt="Americana Diner hero artwork" />
+            <img class="result-hero-image" src="${getHeroImage()}" alt="${escapeHtml(getHeroAlt())}" />
           </div>
 
           <div class="result-banner">
@@ -860,7 +922,7 @@
       renderSetup();
       renderStartPanel();
     } catch (error) {
-      console.error("Americana render failed, falling back to a simplified start screen.", error);
+      console.error("Restaurant Challenge render failed, falling back to a simplified start screen.", error);
       renderHero(false);
       renderSetupFallback();
       elements.game.classList.add("hidden");
@@ -876,6 +938,5 @@
     }
   }
 
-  renderAll();
-  void initializeAmericanaPage();
+  void initializeRestaurantPage();
 })();
