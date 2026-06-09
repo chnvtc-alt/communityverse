@@ -746,16 +746,16 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 }
 
 .button-hot {
-  background: linear-gradient(135deg, #c73d2e, #9d2218);
-  border-color: rgba(157, 34, 24, 0.5);
+  background: linear-gradient(135deg, var(--accent), var(--gold-deep));
+  border-color: var(--gold-deep);
   color: #fffdf8;
-  box-shadow: 0 16px 34px rgba(157, 34, 24, 0.25);
+  box-shadow: 0 16px 34px rgba(53, 43, 27, 0.18);
 }
 
 .button-dark {
-  background: linear-gradient(135deg, var(--teal), #17362f);
+  background: linear-gradient(135deg, var(--teal), var(--panel-strong));
   color: #fffdf8;
-  border-color: rgba(24, 50, 42, 0.4);
+  border-color: var(--panel-strong);
 }
 
 .button-muted {
@@ -1816,8 +1816,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   padding: 26px;
   border-radius: 28px;
   color: #fffdf8;
-  background:
-    linear-gradient(135deg, rgba(31, 78, 68, 0.96), rgba(24, 50, 42, 0.96));
+  background: linear-gradient(135deg, var(--teal), var(--panel-strong));
 }
 
 .result-celebration {

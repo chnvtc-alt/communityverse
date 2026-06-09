@@ -153,6 +153,7 @@
       return;
     }
 
+    core.applyRestaurantTheme?.(restaurant);
     renderRestaurantStart(restaurant);
   }
 

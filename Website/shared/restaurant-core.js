@@ -3054,6 +3054,36 @@
     };
   }
 
+  function isHexColor(value) {
+    return /^#[0-9a-f]{6}$/i.test(String(value || "").trim());
+  }
+
+  function applyRestaurantTheme(restaurant) {
+    if (!restaurant || typeof document === "undefined" || !document.documentElement) {
+      return;
+    }
+
+    const mainColor = String(restaurant.primaryColor || "").trim();
+    const secondColor = String(restaurant.secondaryColor || "").trim();
+    const accentColor = String(restaurant.accentColor || "").trim();
+    const rootStyle = document.documentElement.style;
+
+    if (isHexColor(mainColor)) {
+      rootStyle.setProperty("--accent", mainColor);
+      rootStyle.setProperty("--gold-deep", mainColor);
+    }
+
+    if (isHexColor(secondColor)) {
+      rootStyle.setProperty("--green", secondColor);
+      rootStyle.setProperty("--teal", secondColor);
+      rootStyle.setProperty("--panel-strong", secondColor);
+    }
+
+    if (isHexColor(accentColor)) {
+      rootStyle.setProperty("--gold", accentColor);
+    }
+  }
+
   window.RestaurantChallengeCore = {
     restaurants,
     customers,
@@ -3090,6 +3120,7 @@
     getLeaderboard,
     getPlayerRank,
     getProfileSummary,
+    applyRestaurantTheme,
     getCurrentTimestamp: nowIso,
     whenReady: () => ready,
   };

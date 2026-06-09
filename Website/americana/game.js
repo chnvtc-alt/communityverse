@@ -220,6 +220,8 @@
       return;
     }
 
+    core.applyRestaurantTheme?.(restaurant);
+
     if (freshMode) {
       core.clearActiveSession();
       clearResultVisibleSessionId();
