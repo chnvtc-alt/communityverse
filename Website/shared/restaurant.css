@@ -1342,7 +1342,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 .opening-title-small {
   margin: 0;
   text-align: center;
-  color: var(--teal);
+  color: var(--ink);
   font-size: 1rem;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -1382,6 +1382,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   font-size: 1.3rem;
   font-weight: 700;
   line-height: 1.38;
+  color: var(--ink);
 }
 
 .opening-title-helper {
