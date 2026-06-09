@@ -120,6 +120,137 @@ create index if not exists idx_customers_name on customers (name);
 create index if not exists idx_customers_group_name on customers (group_name);
 create index if not exists idx_customers_focus_tag on customers (focus_tag);
 
+create table if not exists restaurants (
+  id text primary key,
+  active boolean not null default true,
+  playable boolean not null default true,
+  visible_in_list boolean not null default true,
+  sort_order integer not null default 0,
+  slug text not null unique,
+  name text not null,
+  public_game_name text not null default '',
+  location text not null default '',
+  area_slug text not null default '',
+  description text not null default '',
+  hero_image text not null default '',
+  logo_square text not null default '',
+  logo_horizontal text not null default '',
+  primary_color text not null default '',
+  secondary_color text not null default '',
+  accent_color text not null default '',
+  opening_copy text not null default '',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  payload_json jsonb not null
+);
+
+alter table restaurants add column if not exists active boolean not null default true;
+alter table restaurants add column if not exists playable boolean not null default true;
+alter table restaurants add column if not exists visible_in_list boolean not null default true;
+alter table restaurants add column if not exists sort_order integer not null default 0;
+alter table restaurants add column if not exists slug text not null default '';
+alter table restaurants add column if not exists name text not null default '';
+alter table restaurants add column if not exists public_game_name text not null default '';
+alter table restaurants add column if not exists location text not null default '';
+alter table restaurants add column if not exists area_slug text not null default '';
+alter table restaurants add column if not exists description text not null default '';
+alter table restaurants add column if not exists hero_image text not null default '';
+alter table restaurants add column if not exists logo_square text not null default '';
+alter table restaurants add column if not exists logo_horizontal text not null default '';
+alter table restaurants add column if not exists primary_color text not null default '';
+alter table restaurants add column if not exists secondary_color text not null default '';
+alter table restaurants add column if not exists accent_color text not null default '';
+alter table restaurants add column if not exists opening_copy text not null default '';
+
+update restaurants
+set
+  active = coalesce(payload_json->>'active', 'true')::boolean,
+  playable = coalesce(payload_json->>'playable', 'true')::boolean,
+  visible_in_list = coalesce(payload_json->>'visibleInList', 'true')::boolean,
+  sort_order = coalesce(nullif(payload_json->>'sortOrder', '')::integer, sort_order),
+  slug = coalesce(nullif(payload_json->>'slug', ''), slug),
+  name = coalesce(nullif(payload_json->>'name', ''), name),
+  public_game_name = coalesce(nullif(payload_json->>'publicGameName', ''), public_game_name),
+  location = coalesce(nullif(payload_json->>'location', ''), location),
+  area_slug = coalesce(nullif(payload_json->>'areaSlug', ''), area_slug),
+  description = coalesce(nullif(payload_json->>'description', ''), description),
+  hero_image = coalesce(nullif(payload_json->>'heroImage', ''), hero_image),
+  logo_square = coalesce(nullif(payload_json->>'logoSquare', ''), logo_square),
+  logo_horizontal = coalesce(nullif(payload_json->>'logoHorizontal', ''), logo_horizontal),
+  primary_color = coalesce(nullif(payload_json->>'primaryColor', ''), primary_color),
+  secondary_color = coalesce(nullif(payload_json->>'secondaryColor', ''), secondary_color),
+  accent_color = coalesce(nullif(payload_json->>'accentColor', ''), accent_color),
+  opening_copy = coalesce(nullif(payload_json->>'openingCopy', ''), opening_copy);
+
+create index if not exists idx_restaurants_active_sort on restaurants (active, sort_order, updated_at desc);
+create index if not exists idx_restaurants_playable on restaurants (playable);
+create index if not exists idx_restaurants_visible_in_list on restaurants (visible_in_list);
+create index if not exists idx_restaurants_area_slug on restaurants (area_slug);
+
+insert into restaurants (
+  id,
+  active,
+  playable,
+  visible_in_list,
+  sort_order,
+  slug,
+  name,
+  public_game_name,
+  location,
+  area_slug,
+  description,
+  hero_image,
+  logo_square,
+  logo_horizontal,
+  primary_color,
+  secondary_color,
+  accent_color,
+  opening_copy,
+  payload_json
+)
+values (
+  'americana',
+  true,
+  true,
+  true,
+  0,
+  'americana',
+  'Americana Diner',
+  'The Americana Diner Game',
+  'Pepperville',
+  'pepperville',
+  'Classic comfort food in Pepperville. Answer 10 questions to win a customer for your own restaurant.',
+  '/assets/restaurant-challenge/restaurants/americana/americana-diner-hero.jpg',
+  '/assets/restaurant-challenge/restaurants/americana/americana-diner-logo.jpg',
+  '/assets/restaurant-challenge/restaurants/americana/americana-diner-logo.jpg',
+  '#b84c38',
+  '#1f4e44',
+  '#f2c06b',
+  'Play a quick game of trivia, win a customer, and progress on the leaderboard!',
+  jsonb_build_object(
+    'id', 'americana',
+    'slug', 'americana',
+    'name', 'Americana Diner',
+    'publicGameName', 'The Americana Diner Game',
+    'location', 'Pepperville',
+    'areaSlug', 'pepperville',
+    'description', 'Classic comfort food in Pepperville. Answer 10 questions to win a customer for your own restaurant.',
+    'heroImage', '/assets/restaurant-challenge/restaurants/americana/americana-diner-hero.jpg',
+    'logoSquare', '/assets/restaurant-challenge/restaurants/americana/americana-diner-logo.jpg',
+    'logoHorizontal', '/assets/restaurant-challenge/restaurants/americana/americana-diner-logo.jpg',
+    'squareImage', '/assets/restaurant-challenge/restaurants/americana/americana-diner-logo.jpg',
+    'primaryColor', '#b84c38',
+    'secondaryColor', '#1f4e44',
+    'accentColor', '#f2c06b',
+    'openingCopy', 'Play a quick game of trivia, win a customer, and progress on the leaderboard!',
+    'active', true,
+    'playable', true,
+    'visibleInList', true,
+    'sortOrder', 0
+  )
+)
+on conflict (id) do nothing;
+
 insert into storage.buckets (id, name, public)
 values ('customer-photos', 'customer-photos', true)
 on conflict (id) do update set public = excluded.public;

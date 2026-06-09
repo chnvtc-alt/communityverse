@@ -29,6 +29,7 @@
     <nav class="workshop-tabs" aria-label="Admin sections">
       <button class="workshop-tab is-active" type="button" data-tab="questions">Questions</button>
       <button class="workshop-tab" type="button" data-tab="customers">Customers</button>
+      <button class="workshop-tab" type="button" data-tab="restaurants">Restaurants</button>
     </nav>
 
     <main id="questions-panel" class="layout admin-panel">
@@ -178,6 +179,62 @@
 
         <div id="customer-message" class="message" role="status" hidden></div>
         <div id="customer-list" class="question-list" aria-live="polite"></div>
+      </section>
+    </section>
+
+    <section id="restaurants-panel" class="layout admin-panel" hidden>
+      <aside class="sidebar">
+        <button id="new-restaurant-button" class="button button-primary button-wide" type="button">
+          + New restaurant
+        </button>
+
+        <section class="filter-card" aria-labelledby="restaurant-filter-title">
+          <div class="section-heading">
+            <h2 id="restaurant-filter-title">Find restaurants</h2>
+            <button id="clear-restaurant-filters-button" class="text-button" type="button">Clear</button>
+          </div>
+
+          <label>
+            Search
+            <input id="restaurant-filter-query" type="search" placeholder="Name, location, link..." />
+          </label>
+
+          <div class="filter-grid">
+            <label>
+              Status
+              <select id="restaurant-filter-status">
+                <option value="all">All</option>
+                <option value="public">Shown publicly</option>
+                <option value="private">Private link</option>
+                <option value="paused">Paused</option>
+              </select>
+            </label>
+            <label>
+              Area tag
+              <input id="restaurant-filter-area" list="area-options" placeholder="pepperville" />
+            </label>
+          </div>
+        </section>
+
+        <section class="help-card">
+          <h2>Sales demos</h2>
+          <p><strong>Can be played by link</strong> lets you send a private restaurant game link.</p>
+          <p><strong>Show in public restaurant list</strong> controls whether regular players can discover it.</p>
+          <p>For a prospect demo, turn play by link on and public list off.</p>
+        </section>
+      </aside>
+
+      <section class="content">
+        <div class="list-heading">
+          <div>
+            <p id="restaurant-count" class="count">0 restaurants</p>
+            <p class="subtle">Restaurants can be paused without deleting customers, questions, or history.</p>
+          </div>
+          <button id="refresh-restaurants-button" class="button button-secondary" type="button">Refresh</button>
+        </div>
+
+        <div id="restaurant-message" class="message" role="status" hidden></div>
+        <div id="restaurant-list" class="question-list" aria-live="polite"></div>
       </section>
     </section>
 
@@ -421,6 +478,97 @@
           <span class="action-spacer"></span>
           <button id="cancel-customer-button" class="button button-quiet" type="button">Cancel</button>
           <button class="button button-primary" type="submit">Save customer</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="restaurant-dialog" class="editor-dialog">
+      <form id="restaurant-form" method="dialog">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow">Restaurant record</p>
+            <h2 id="restaurant-editor-title">New restaurant</h2>
+          </div>
+          <button id="close-restaurant-editor-button" class="icon-button" type="button" aria-label="Close">×</button>
+        </div>
+
+        <input id="restaurant-id" type="hidden" />
+        <div id="restaurant-form-errors" class="message message-error" hidden></div>
+
+        <div class="form-grid">
+          <label class="form-span">
+            Restaurant name
+            <input id="restaurant-name" required />
+          </label>
+          <label>
+            Page link name
+            <input id="restaurant-page-slug" placeholder="community-cafe" required />
+          </label>
+          <label>
+            Area tag
+            <input id="restaurant-area-slug" list="area-options" placeholder="pepperville" required />
+          </label>
+          <label class="form-span">
+            Game title
+            <input id="restaurant-public-game-name" placeholder="The Community Cafe Game" />
+          </label>
+          <label class="form-span">
+            Location
+            <input id="restaurant-location" placeholder="Pepperville, Chattawa Valley" />
+          </label>
+          <label class="form-span">
+            Short description
+            <textarea id="restaurant-description" rows="3"></textarea>
+          </label>
+          <label class="form-span">
+            Opening text
+            <textarea id="restaurant-opening-copy" rows="2" placeholder="Play a quick game, win a customer, and climb the leaderboard."></textarea>
+          </label>
+          <label class="form-span">
+            Hero image path / URL
+            <input id="restaurant-hero-image" placeholder="/assets/restaurant-challenge/restaurants/example/hero.jpg" />
+          </label>
+          <label class="form-span">
+            Logo image path / URL
+            <input id="restaurant-logo-square" placeholder="/assets/restaurant-challenge/restaurants/example/logo.jpg" />
+          </label>
+          <div class="photo-preview-wrap form-span">
+            <img id="restaurant-hero-preview" class="photo-preview photo-preview-wide" alt="" />
+          </div>
+          <label>
+            Main color
+            <input id="restaurant-primary-color" placeholder="#b84c38" />
+          </label>
+          <label>
+            Second color
+            <input id="restaurant-secondary-color" placeholder="#1f4e44" />
+          </label>
+          <label>
+            Accent color
+            <input id="restaurant-accent-color" placeholder="#f2c06b" />
+          </label>
+          <label>
+            Sort order
+            <input id="restaurant-sort-order" type="number" value="0" />
+          </label>
+          <label class="checkbox-label">
+            <input id="restaurant-playable" type="checkbox" checked />
+            Can be played by link
+          </label>
+          <label class="checkbox-label">
+            <input id="restaurant-visible-in-list" type="checkbox" checked />
+            Show in public restaurant list
+          </label>
+          <label class="checkbox-label">
+            <input id="restaurant-active" type="checkbox" checked />
+            Restaurant is active
+          </label>
+        </div>
+
+        <div class="dialog-actions">
+          <button id="delete-restaurant-button" class="button button-danger" type="button" hidden>Delete permanently</button>
+          <span class="action-spacer"></span>
+          <button id="cancel-restaurant-button" class="button button-quiet" type="button">Cancel</button>
+          <button class="button button-primary" type="submit">Save restaurant</button>
         </div>
       </form>
     </dialog>

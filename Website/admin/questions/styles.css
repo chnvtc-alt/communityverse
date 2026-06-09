@@ -349,9 +349,25 @@ textarea {
   align-items: start;
 }
 
+.restaurant-card-layout {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
 .customer-card-photo {
   width: 112px;
   aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid rgba(30, 41, 37, 0.14);
+  background: #fff;
+}
+
+.restaurant-card-photo {
+  width: 150px;
+  aspect-ratio: 4 / 3;
   border-radius: 12px;
   object-fit: cover;
   border: 1px solid rgba(30, 41, 37, 0.14);
@@ -497,6 +513,11 @@ dialog::backdrop {
   object-fit: cover;
   border: 1px solid rgba(30, 41, 37, 0.14);
   background: #fff;
+}
+
+.photo-preview-wide {
+  max-width: 420px;
+  aspect-ratio: 16 / 9;
 }
 
 .checkbox-label input {
