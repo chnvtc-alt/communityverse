@@ -1713,11 +1713,13 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 }
 
 .result-hero-panel {
-  padding: 0;
+  padding: 10px;
   overflow: hidden;
   border-radius: 28px;
   border: 1px solid rgba(93, 116, 105, 0.14);
-  background: rgba(255, 251, 243, 0.9);
+  background:
+    linear-gradient(180deg, rgba(255, 251, 243, 0.94), rgba(246, 238, 219, 0.9)),
+    rgba(255, 251, 243, 0.9);
   box-shadow: 0 16px 34px rgba(39, 55, 44, 0.08);
 }
 
@@ -1725,8 +1727,9 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   width: 100%;
   height: auto;
   aspect-ratio: 16 / 10;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
+  border-radius: 20px;
   display: block;
 }
 
