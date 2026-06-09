@@ -33,22 +33,6 @@
   };
 
   const mobileHubQuery = "(max-width: 960px)";
-  const placeholderRestaurants = [
-    {
-      slug: "placeholder-1",
-      name: "Placeholder 1",
-      image: "../assets/restaurant-challenge/restaurants/americana/americana-diner-logo.jpg",
-      href: "",
-      available: false,
-    },
-    {
-      slug: "placeholder-2",
-      name: "Placeholder 2",
-      image: "../assets/restaurant-challenge/restaurants/americana/americana-diner-logo.jpg",
-      href: "",
-      available: false,
-    },
-  ];
 
   function withHubMode(url) {
     if (!hubMode) {
@@ -312,16 +296,13 @@
   function getDirectoryRestaurants() {
     const playableRestaurants = getPlayableRestaurants({ publicOnly: true });
     if (playableRestaurants.length) {
-      return [
-        ...playableRestaurants.map((restaurant) => ({
+      return playableRestaurants.map((restaurant) => ({
           slug: restaurant.slug,
           name: restaurant.name,
           image: restaurant.logoSquare || restaurant.squareImage || restaurant.logoHorizontal || restaurant.heroImage,
           href: `/${restaurant.slug}/`,
           available: true,
-        })),
-        ...placeholderRestaurants,
-      ];
+      }));
     }
 
     return [
@@ -332,7 +313,6 @@
         href: "/americana/",
         available: true,
       },
-      ...placeholderRestaurants,
     ];
   }
 
