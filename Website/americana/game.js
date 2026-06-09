@@ -252,7 +252,7 @@
     elements.start.innerHTML = `
       <div class="opening-start-shell">
         <div class="opening-start-heading">
-          <p class="kicker" style="margin: 0 0 4px;">Restaurant Challenge</p>
+          <p class="kicker" style="margin: 0 0 4px;">Restaurant Challenge Trivia</p>
           <h2 class="opening-title">Restaurant unavailable</h2>
           <p class="copy opening-title-copy">This restaurant is not available to play right now.</p>
         </div>
