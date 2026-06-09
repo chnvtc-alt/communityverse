@@ -281,11 +281,14 @@ async function downloadFullBackup() {
     const link = document.createElement("a");
     link.href = url;
     link.download = filename;
+    link.rel = "noopener";
     document.body.append(link);
     link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
-    showMessage("Backup downloaded. Keep that ZIP somewhere private and safe.");
+    window.setTimeout(() => {
+      link.remove();
+      URL.revokeObjectURL(url);
+    }, 30000);
+    showMessage(`Backup download started: ${filename}. Keep that ZIP somewhere private and safe.`);
   } catch (error) {
     showMessage(error.message, true);
   } finally {
