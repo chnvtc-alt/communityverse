@@ -42,19 +42,19 @@
     },
     {
       "source": "/:restaurantSlug/play",
-      "destination": "/americana/play/index.html"
+      "destination": "/api/restaurant-page?restaurantSlug=:restaurantSlug&page=play"
     },
     {
       "source": "/:restaurantSlug/play/",
-      "destination": "/americana/play/index.html"
+      "destination": "/api/restaurant-page?restaurantSlug=:restaurantSlug&page=play"
     },
     {
       "source": "/:restaurantSlug",
-      "destination": "/americana/index.html"
+      "destination": "/api/restaurant-page?restaurantSlug=:restaurantSlug&page=start"
     },
     {
       "source": "/:restaurantSlug/",
-      "destination": "/americana/index.html"
+      "destination": "/api/restaurant-page?restaurantSlug=:restaurantSlug&page=start"
     }
   ]
 }
