@@ -414,6 +414,24 @@
         <input id="customer-id" type="hidden" />
         <div id="customer-form-errors" class="message message-error" hidden></div>
 
+        <details class="field-guide">
+          <summary>Customer field guide</summary>
+          <div class="field-guide-grid">
+            <p><strong>Customer name:</strong> The name players will see after winning this customer.</p>
+            <p><strong>Character type:</strong> A simple category for organizing customers, like local, historical, story, celebrity, or staff.</p>
+            <p><strong>Rarity:</strong> How special the customer feels. Common, Rare, Epic, and Legendary all work well.</p>
+            <p><strong>Regular value:</strong> Use this for the full customer win. Most normal customers can be $50-$150. Special customers can be $200 or more.</p>
+            <p><strong>Occasional value:</strong> Use this for a smaller visit. A good rule is about half of the regular value.</p>
+            <p><strong>Restaurant:</strong> Choose Shared for every restaurant, or choose one restaurant so the customer only appears there.</p>
+            <p><strong>Sort order:</strong> Lower numbers show first in the control room. It does not need to be perfect.</p>
+            <p><strong>Bio:</strong> Short player-facing description of the customer.</p>
+            <p><strong>Question place:</strong> Where the customer is connected to, if you want the game to ask about it.</p>
+            <p><strong>Question fact:</strong> A short fact the game can use for customer-related trivia.</p>
+            <p><strong>Photo URL / path:</strong> You can leave this blank if you use Replace photo. The upload will fill it in when you save.</p>
+            <p><strong>Replace photo:</strong> Upload a 512 x 512 JPG square customer picture.</p>
+          </div>
+        </details>
+
         <div class="form-grid">
           <label class="form-span">
             Customer name
@@ -437,7 +455,8 @@
           </label>
           <label>
             Restaurant
-            <input id="customer-focus-tag" list="customer-focus-options" placeholder="shared" />
+            <select id="customer-focus-tag"></select>
+            <span class="optional">Shared means this customer can appear in every restaurant.</span>
           </label>
           <label>
             Sort order
@@ -462,6 +481,7 @@
           <label class="form-span">
             Photo URL / path
             <input id="customer-image" placeholder="../assets/... or Supabase photo URL" />
+            <span class="optional">Leave this blank when uploading a new photo below.</span>
           </label>
           <label class="form-span">
             Replace photo

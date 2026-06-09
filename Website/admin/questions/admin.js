@@ -540,8 +540,9 @@ function normalizeRestaurantRecord(restaurant) {
 
 function populateCustomerSuggestions() {
   populateDatalist("customer-group-options", customers.map((customer) => customer.characterType));
-  populateDatalist("customer-focus-options", customers.map((customer) => customer.restaurant));
+  populateDatalist("customer-focus-options", getCustomerRestaurantChoices().map((choice) => choice.value));
   populateDatalist("customer-rarity-options", customers.map((customer) => customer.rarity));
+  renderCustomerRestaurantChoices();
 }
 
 function updateSuggestions() {
@@ -555,6 +556,48 @@ function updateSuggestions() {
   ]);
   populateDatalist("customer-options", questions.flatMap((question) => question.customerIds || []));
   populateDatalist("tag-options", questions.flatMap((question) => question.tags || []));
+}
+
+function getCustomerRestaurantChoices(extraValue = "") {
+  const seen = new Set();
+  const choices = [{ value: "shared", label: "Shared - all restaurants" }];
+
+  restaurants.forEach((restaurant) => {
+    if (!restaurant.slug) return;
+    choices.push({ value: restaurant.slug, label: restaurant.name || restaurant.slug });
+  });
+
+  customers.forEach((customer) => {
+    const value = String(customer.restaurant || customer.focusTag || "").trim();
+    if (value && value !== "shared" && !restaurants.some((restaurant) => restaurant.slug === value)) {
+      choices.push({ value, label: value });
+    }
+  });
+
+  if (extraValue && !choices.some((choice) => choice.value === extraValue)) {
+    choices.push({ value: extraValue, label: extraValue });
+  }
+
+  return choices.filter((choice) => {
+    if (seen.has(choice.value)) return false;
+    seen.add(choice.value);
+    return true;
+  });
+}
+
+function renderCustomerRestaurantChoices(selectedValue = elements.customerFocusTag?.value || "shared") {
+  if (!elements.customerFocusTag) return;
+  const value = String(selectedValue || "shared").trim() || "shared";
+  elements.customerFocusTag.innerHTML = getCustomerRestaurantChoices(value)
+    .map(
+      (choice) => `
+        <option value="${escapeHtml(choice.value)}" ${choice.value === value ? "selected" : ""}>
+          ${escapeHtml(choice.label)}
+        </option>
+      `
+    )
+    .join("");
+  elements.customerFocusTag.value = value;
 }
 
 function renderQuestions() {
@@ -759,6 +802,7 @@ function getRestaurantStatus(restaurant) {
 function renderRestaurants() {
   elements.restaurantCount.textContent = `${restaurants.length} restaurant${restaurants.length === 1 ? "" : "s"}`;
   updateSuggestions();
+  populateCustomerSuggestions();
 
   if (!restaurants.length) {
     elements.restaurantList.innerHTML = '<div class="empty-state">No restaurants match these filters.</div>';
@@ -1059,7 +1103,7 @@ function resetCustomerEditor(customer = null) {
   elements.customerRarity.value = customer?.rarity || "";
   elements.customerRegularValue.value = customer?.regularValue || 0;
   elements.customerOccasionalValue.value = customer?.occasionalValue || 0;
-  elements.customerFocusTag.value = customer?.restaurant || customer?.focusTag || "";
+  renderCustomerRestaurantChoices(customer?.restaurant || customer?.focusTag || "shared");
   elements.customerSortOrder.value = customer?.sortOrder || 0;
   elements.customerActive.checked = customer?.active !== false;
   elements.customerBio.value = customer?.bio || "";
