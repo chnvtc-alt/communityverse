@@ -184,6 +184,16 @@
     }
   }
 
+  function getCollectionEntryForSession(session) {
+    const profile = getProfile();
+    const collection = Array.isArray(profile?.customerCollection) ? profile.customerCollection : [];
+    return collection.find(
+      (entry) =>
+        entry.customerId === session?.customer?.id &&
+        entry.restaurantSlug === session?.restaurantSlug
+    ) || null;
+  }
+
   function ensurePlayableProfile() {
     const existingProfile = getProfile();
     if (existingProfile) {
@@ -465,6 +475,28 @@
     const customerBio = core.getCustomerBio(customer);
     const thresholds = core.getCustomerWinThresholds(customer);
     const rarity = customer.rarity || "Rare";
+    const collectionEntry = getCollectionEntryForSession(session);
+    const favoriteGoal = core.getFavoriteVisitGoal();
+    const favoriteVisits = Math.max(0, Math.min(favoriteGoal, Number(collectionEntry?.favoriteVisits) || 0));
+    const isRegularReplay =
+      collectionEntry?.status === "regular" || collectionEntry?.status === "favorite";
+    const favoriteBonusMarkup =
+      isRegularReplay && collectionEntry.status !== "favorite"
+        ? `
+          <div class="favorite-progress-note">
+            <p class="kicker">Regular Customer Bonus</p>
+            <p class="copy">Score <strong>${thresholds.regular}/10 or better</strong> with this customer to build Favorite progress. After <strong>${favoriteGoal} successful visits</strong>, they become a Favorite Customer and their value increases from <strong>${core.formatCurrency(customer.regularValue)}</strong> to <strong>${core.formatCurrency(core.getFavoriteCustomerValue(customer))}</strong>.</p>
+            <p class="helper">Current Favorite progress: ${favoriteVisits}/${favoriteGoal}</p>
+          </div>
+        `
+        : collectionEntry?.status === "favorite"
+          ? `
+            <div class="favorite-progress-note favorite-progress-note-complete">
+              <p class="kicker">Favorite Customer</p>
+              <p class="copy">${escapeHtml(customer.name)} is already a Favorite Customer. Their value is <strong>${core.formatCurrency(core.getFavoriteCustomerValue(customer))}</strong>.</p>
+            </div>
+          `
+          : "";
 
     elements.start.innerHTML = `
       <div class="customer-reveal-shell">
@@ -501,6 +533,7 @@
                 <strong>${core.formatCurrency(customer.occasionalValue)}</strong>
               </div>
             </div>
+            ${favoriteBonusMarkup}
             <div class="button-row customer-reveal-actions">
               <button class="button button-hot" id="begin-questions-button" type="button">Begin Questions</button>
               <a class="button button-muted" href="/restaurant/?hub=1">View My Restaurant</a>
@@ -692,6 +725,24 @@
   }
 
   function resultMessage(session) {
+    const favoriteProgress = session.favoriteProgress;
+
+    if (favoriteProgress?.becameFavorite) {
+      return `${session.customer.name} is now a Favorite Customer. Their value increased from ${core.formatCurrency(favoriteProgress.regularValue)} to ${core.formatCurrency(favoriteProgress.favoriteValue)}.`;
+    }
+
+    if (favoriteProgress?.wasEligible && favoriteProgress.successful) {
+      return `${session.customer.name} is now ${favoriteProgress.visits}/${favoriteProgress.goal} successful visits toward becoming a Favorite Customer.`;
+    }
+
+    if (favoriteProgress?.wasEligible && !favoriteProgress.successful) {
+      return `Score ${favoriteProgress.threshold}/10 or better with ${session.customer.name} to build Favorite progress.`;
+    }
+
+    if (session.result === "favorite") {
+      return `${session.customer.name} is already a Favorite Customer.`;
+    }
+
     if (session.result === "regular") {
       return `${session.customer.name} is now a regular customer at your restaurant.`;
     }
@@ -728,13 +779,17 @@
       ? (state.showProfileForm ? "register-form" : "guest-prompt")
       : "return-actions";
     const label =
-      session.result === "regular"
+      session.result === "favorite"
+        ? "Favorite Customer"
+        : session.result === "regular"
         ? "Regular Customer"
         : session.result === "occasional"
         ? "Occasional Customer"
           : "Lost Customer";
     const resultSummaryLabel =
-      session.result === "regular"
+      session.result === "favorite"
+        ? "Favorite"
+        : session.result === "regular"
         ? "Regular"
         : session.result === "occasional"
           ? "Occasional"
@@ -742,18 +797,37 @@
     const customerBio = core.getCustomerBio(session.customer);
     const customerBioPreview = getBioPreview(customerBio);
     const showFullBio = state.resultBioExpanded || !customerBioPreview.isTruncated;
+    const favoriteProgress = session.favoriteProgress;
     const resultHeadline =
-      session.result === "regular"
+      favoriteProgress?.becameFavorite
+        ? "Favorite earned"
+        : favoriteProgress?.wasEligible && favoriteProgress.successful
+          ? "Bonus progress"
+          : session.result === "regular"
         ? "Congratulations"
         : session.result === "occasional"
           ? "Nice work"
           : "Better luck next time";
     const resultSubheadline =
-      session.result === "regular"
+      favoriteProgress?.becameFavorite
+        ? "New Favorite Customer"
+        : favoriteProgress?.wasEligible && favoriteProgress.successful
+          ? "Favorite Progress +1"
+          : favoriteProgress?.wasEligible
+            ? "Favorite Progress Missed"
+            : session.result === "regular"
         ? "New Regular Customer"
         : session.result === "occasional"
           ? "New Occasional Customer"
           : "Customer Not Kept";
+    const customerValue =
+      session.result === "favorite"
+        ? core.getFavoriteCustomerValue(session.customer)
+        : session.result === "regular"
+          ? session.customer.regularValue
+          : session.result === "occasional"
+            ? session.customer.occasionalValue
+            : 0;
 
     elements.result.innerHTML = `
       <div class="result-screen result-screen-${resultLayoutMode}">
@@ -794,7 +868,7 @@
               <div class="result-metric-row">
                 <div class="result-metric-card">
                   <span class="result-metric-label">Customer value:</span>
-                  <span class="result-metric-value">${core.formatCurrency(session.result === "regular" ? session.customer.regularValue : session.result === "occasional" ? session.customer.occasionalValue : 0)}</span>
+                  <span class="result-metric-value">${core.formatCurrency(customerValue)}</span>
                 </div>
                 <div class="result-metric-card">
                   <span class="result-metric-label">Player sales:</span>

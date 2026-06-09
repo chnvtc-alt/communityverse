@@ -1249,6 +1249,14 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(247, 244, 236, 0.96));
 }
 
+.customer-mini-card-favorite {
+  border-color: rgba(213, 138, 43, 0.46);
+  background:
+    linear-gradient(135deg, rgba(255, 247, 221, 0.94), rgba(255, 255, 255, 0.88)),
+    rgba(255, 255, 255, 0.9);
+  box-shadow: inset 0 0 0 1px rgba(213, 138, 43, 0.14);
+}
+
 .customer-mini-card-selected {
   border-color: rgba(213, 138, 43, 0.28);
   box-shadow: inset 0 0 0 1px rgba(213, 138, 43, 0.08);
@@ -1262,6 +1270,31 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   border: 1px solid rgba(93, 116, 105, 0.14);
   display: grid;
   gap: 14px;
+}
+
+.collection-selected-card-favorite {
+  border-color: rgba(213, 138, 43, 0.42);
+  background:
+    linear-gradient(135deg, rgba(255, 247, 221, 0.9), rgba(255, 255, 255, 0.82)),
+    rgba(255, 255, 255, 0.78);
+  box-shadow: inset 0 0 0 1px rgba(213, 138, 43, 0.1);
+}
+
+.customer-favorite-progress {
+  margin: 6px 0 0;
+  color: var(--gold-deep);
+  font-family: Arial, sans-serif;
+  font-size: 0.86rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.customer-favorite-progress-mini {
+  margin-top: 2px;
+  color: var(--gold-deep);
+  font-size: 0.72rem;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .collection-selected-top {
@@ -1823,6 +1856,25 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   font-weight: 900;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+.favorite-progress-note {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(213, 138, 43, 0.26);
+  background: rgba(255, 247, 221, 0.72);
+}
+
+.favorite-progress-note .copy,
+.favorite-progress-note .helper {
+  margin: 0;
+}
+
+.favorite-progress-note-complete {
+  border-color: rgba(213, 138, 43, 0.42);
+  background: rgba(255, 247, 221, 0.9);
 }
 
 .customer-reveal-actions {

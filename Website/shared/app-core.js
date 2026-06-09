@@ -7,6 +7,8 @@
   };
   const API_BASE = "/api";
   const USE_REMOTE_SYNC = typeof window.fetch === "function";
+  const FAVORITE_VISIT_GOAL = 10;
+  const FAVORITE_VALUE_MULTIPLIER = 1.2;
   const profilesCacheState = {
     loaded: false,
     source: "local",
@@ -2122,15 +2124,26 @@
       ? safeProfile.recentSessions
       : [];
     safeProfile.isGuest = Boolean(safeProfile.isGuest);
-    safeProfile.customerCollection = safeProfile.customerCollection.map((entry) =>
-      entry && entry.rarity === "Legendary"
-        ? {
-            ...entry,
-            rarity: "Rare",
-          }
-        : entry
-    );
+    safeProfile.customerCollection = safeProfile.customerCollection.map(normalizeCollectionEntry);
     return rebuildCollectionDerivedStats(safeProfile);
+  }
+
+  function normalizeCollectionEntry(entry) {
+    const safeEntry = entry && typeof entry === "object" ? { ...entry } : {};
+    if (safeEntry.rarity === "Legendary") {
+      safeEntry.rarity = "Rare";
+    }
+
+    if (!["regular", "occasional", "lost", "favorite"].includes(safeEntry.status)) {
+      safeEntry.status = safeEntry.status || "occasional";
+    }
+
+    safeEntry.favoriteVisits = Math.max(0, Math.min(FAVORITE_VISIT_GOAL, Number(safeEntry.favoriteVisits) || 0));
+    if (safeEntry.status === "favorite") {
+      safeEntry.favoriteVisits = FAVORITE_VISIT_GOAL;
+    }
+
+    return safeEntry;
   }
 
   function rebuildCollectionDerivedStats(profile) {
@@ -2165,7 +2178,7 @@
     const applyCollectionStats = (stats, entry, customer) => {
       const valueForStatus = getCollectionValueForStatus(customer, entry.status);
 
-      if (entry.status === "regular") {
+      if (entry.status === "regular" || entry.status === "favorite") {
         stats.regularCustomers += 1;
       } else if (entry.status === "occasional") {
         stats.occasionalCustomers += 1;
@@ -2330,6 +2343,10 @@
       return 0;
     }
 
+    if (status === "favorite") {
+      return getFavoriteCustomerValue(customer);
+    }
+
     if (status === "regular") {
       return Number(customer.regularValue) || 0;
     }
@@ -2339,6 +2356,54 @@
     }
 
     return 0;
+  }
+
+  function getFavoriteCustomerValue(customerOrValue) {
+    const baseValue =
+      typeof customerOrValue === "number"
+        ? customerOrValue
+        : Number(customerOrValue?.regularValue) || 0;
+    return Math.round(baseValue * FAVORITE_VALUE_MULTIPLIER);
+  }
+
+  function getCollectionEntryValue(entry) {
+    if (!entry) {
+      return 0;
+    }
+
+    if (entry.status === "favorite") {
+      return getFavoriteCustomerValue(Number(entry.regularValue) || 0);
+    }
+
+    if (entry.status === "regular") {
+      return Number(entry.regularValue) || 0;
+    }
+
+    if (entry.status === "occasional") {
+      return Number(entry.occasionalValue) || 0;
+    }
+
+    return 0;
+  }
+
+  function getCustomerStatusLabel(status) {
+    if (status === "favorite") {
+      return "Favorite Customer";
+    }
+
+    if (status === "regular") {
+      return "Regular Customer";
+    }
+
+    if (status === "occasional") {
+      return "Occasional Customer";
+    }
+
+    return "Lost Customer";
+  }
+
+  function getFavoriteVisitGoal() {
+    return FAVORITE_VISIT_GOAL;
   }
 
   function getCustomerWinThresholds(customer) {
@@ -2373,7 +2438,7 @@
     const previousValue = getCollectionValueForStatus(previousCustomer, previousStatus);
     const nextValue = getCollectionValueForStatus(nextCustomer, nextStatus);
 
-    if (previousStatus === "regular") {
+    if (previousStatus === "regular" || previousStatus === "favorite") {
       stats.regularCustomers = Math.max(0, stats.regularCustomers - 1);
     } else if (previousStatus === "occasional") {
       stats.occasionalCustomers = Math.max(0, stats.occasionalCustomers - 1);
@@ -2381,7 +2446,7 @@
       stats.lostCustomers = Math.max(0, stats.lostCustomers - 1);
     }
 
-    if (nextStatus === "regular") {
+    if (nextStatus === "regular" || nextStatus === "favorite") {
       stats.regularCustomers += 1;
     } else if (nextStatus === "occasional") {
       stats.occasionalCustomers += 1;
@@ -2819,6 +2884,29 @@
 
     const allCustomers = getCustomersForRestaurant(restaurant.slug);
     const ownedCustomerIds = getOwnedCustomerIdsForRestaurant(profile, restaurant.slug);
+    const collection = ensureProfileShape(profile).customerCollection;
+    const favoriteReplayIds = new Set(
+      collection
+        .filter(
+          (entry) =>
+            entry.restaurantSlug === restaurant.slug &&
+            entry.status === "regular" &&
+            (Number(entry.favoriteVisits) || 0) < FAVORITE_VISIT_GOAL
+        )
+        .map((entry) => entry.customerId)
+    );
+    const favoriteReplayCandidates = allCustomers.filter(
+      (customer) =>
+        favoriteReplayIds.has(customer.id) &&
+        !recentCustomerIds.includes(customer.id) &&
+        customer.image &&
+        !customer.image.includes("customer-placeholder")
+    );
+
+    if (favoriteReplayCandidates.length && Math.random() < 0.25) {
+      return weightedCustomerPick(favoriteReplayCandidates);
+    }
+
     const preferred = allCustomers.filter(
       (customer) =>
         !recentCustomerIds.includes(customer.id) && !ownedCustomerIds.has(customer.id)
@@ -2882,8 +2970,12 @@
       restaurantName: restaurant.name,
       customer,
       isRepeatCustomer: Boolean(existingCollectionEntry),
+      isRegularCustomerReplay: existingCollectionEntry
+        ? existingCollectionEntry.status === "regular" || existingCollectionEntry.status === "favorite"
+        : false,
       replayCustomerId: preferredCustomer ? preferredCustomer.id : "",
       previousCustomerStatus: existingCollectionEntry ? existingCollectionEntry.status : "",
+      previousFavoriteVisits: existingCollectionEntry ? Number(existingCollectionEntry.favoriteVisits) || 0 : 0,
       improvingExistingCustomer: Boolean(preferredCustomer),
       questions: buildSessionQuestions(restaurant, customer, profile),
       currentIndex: 0,
@@ -2894,6 +2986,7 @@
       completed: false,
       result: "",
       outcomeText: "",
+      favoriteProgress: null,
     };
 
     if (featuredGuests.length && !preferredCustomer) {
@@ -3000,18 +3093,31 @@
         existingCustomerIndex >= 0 ? nextProfile.customerCollection[existingCustomerIndex] : null;
 
       if (existingCustomer) {
-        if (session.result === "lost") {
+        const existingWasRegular =
+          existingCustomer.status === "regular" || existingCustomer.status === "favorite";
+        const nextFavoriteVisits =
+          session.favoriteProgress && session.favoriteProgress.wasEligible
+            ? session.favoriteProgress.visits
+            : Number(existingCustomer.favoriteVisits) || 0;
+        const nextStatus = existingWasRegular
+          ? nextFavoriteVisits >= FAVORITE_VISIT_GOAL
+            ? "favorite"
+            : "regular"
+          : session.result;
+
+        if (!existingWasRegular && session.result === "lost") {
           nextProfile.customerCollection.splice(existingCustomerIndex, 1);
         } else {
           const updatedEntry = {
             ...existingCustomer,
             customerName: session.customer.name,
-            status: session.result,
+            status: nextStatus,
             restaurantSlug: session.restaurantSlug,
             restaurantName: session.restaurantName,
             rarity: session.customer.rarity,
             regularValue: session.customer.regularValue,
             occasionalValue: session.customer.occasionalValue,
+            favoriteVisits: nextStatus === "favorite" ? FAVORITE_VISIT_GOAL : nextFavoriteVisits,
             image: session.customer.image,
             bio: getCustomerBio(session.customer),
             dateWon: nowIso(),
@@ -3032,6 +3138,7 @@
             rarity: session.customer.rarity,
             regularValue: session.customer.regularValue,
             occasionalValue: session.customer.occasionalValue,
+            favoriteVisits: 0,
             image: session.customer.image,
             bio: getCustomerBio(session.customer),
             dateWon: nowIso(),
@@ -3088,9 +3195,43 @@
     if (!hasMoreQuestions) {
       session.completed = true;
       session.completedAt = nowIso();
-      session.result = getCustomerResultForScore(session.customer, session.score);
+      const scoreResult = getCustomerResultForScore(session.customer, session.score);
+      const thresholds = getCustomerWinThresholds(session.customer);
+      const isRegularReplay =
+        session.previousCustomerStatus === "regular" || session.previousCustomerStatus === "favorite";
+      const favoriteWasAlreadyComplete = session.previousCustomerStatus === "favorite";
+      const successfulFavoriteVisit = isRegularReplay && session.score >= thresholds.regular;
+      const previousFavoriteVisits = Math.max(0, Math.min(FAVORITE_VISIT_GOAL, Number(session.previousFavoriteVisits) || 0));
+      const nextFavoriteVisits = favoriteWasAlreadyComplete
+        ? FAVORITE_VISIT_GOAL
+        : successfulFavoriteVisit
+          ? Math.min(FAVORITE_VISIT_GOAL, previousFavoriteVisits + 1)
+          : previousFavoriteVisits;
+      const becameFavorite =
+        !favoriteWasAlreadyComplete &&
+        previousFavoriteVisits < FAVORITE_VISIT_GOAL &&
+        nextFavoriteVisits >= FAVORITE_VISIT_GOAL;
+
+      session.favoriteProgress = isRegularReplay
+        ? {
+            wasEligible: true,
+            successful: successfulFavoriteVisit,
+            previousVisits: previousFavoriteVisits,
+            visits: nextFavoriteVisits,
+            goal: FAVORITE_VISIT_GOAL,
+            becameFavorite,
+            regularValue: Number(session.customer.regularValue) || 0,
+            favoriteValue: getFavoriteCustomerValue(session.customer),
+            threshold: thresholds.regular,
+          }
+        : null;
+      session.result = isRegularReplay
+        ? (becameFavorite || favoriteWasAlreadyComplete ? "favorite" : "regular")
+        : scoreResult;
       session.outcomeText =
-        session.result === "regular"
+        session.result === "favorite"
+          ? "favorite customer"
+          : session.result === "regular"
           ? "regular customer"
           : session.result === "occasional"
             ? "occasional customer"
@@ -3245,6 +3386,10 @@
     getCustomerById,
     getCustomerBio,
     getCustomerWinThresholds,
+    getFavoriteCustomerValue,
+    getFavoriteVisitGoal,
+    getCollectionEntryValue,
+    getCustomerStatusLabel,
     getCustomersForRestaurant,
     getPhotoReadyCustomersForRestaurant,
     getFeaturedGuestLineup,

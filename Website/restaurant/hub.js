@@ -1089,7 +1089,7 @@
     );
     const filteredCollection =
       state.collectionFilter === "regular"
-        ? collection.filter((entry) => entry.status === "regular")
+        ? collection.filter((entry) => entry.status === "regular" || entry.status === "favorite")
         : state.collectionFilter === "occasional"
           ? collection.filter((entry) => entry.status === "occasional")
           : collection;
@@ -1101,6 +1101,32 @@
     const selectedCustomerBio = selectedCustomer ? getCustomerBio(selectedCustomer) : "";
     const selectedCustomerBioPreview = getBioPreview(selectedCustomerBio);
     const showFullBio = state.selectedCustomerBioExpanded || !selectedCustomerBioPreview.isTruncated;
+    const favoriteGoal = core.getFavoriteVisitGoal ? core.getFavoriteVisitGoal() : 10;
+    const selectedStatusLabel = selectedCustomer
+      ? selectedCustomer.status === "favorite"
+        ? "⭐ Favorite Customer"
+        : core.getCustomerStatusLabel
+          ? core.getCustomerStatusLabel(selectedCustomer.status)
+          : selectedCustomer.status === "regular"
+            ? "Regular Customer"
+            : "Occasional Customer"
+      : "";
+    const selectedValue = selectedCustomer
+      ? core.getCollectionEntryValue
+        ? core.getCollectionEntryValue(selectedCustomer)
+        : selectedCustomer.status === "regular"
+          ? selectedCustomer.regularValue
+          : selectedCustomer.occasionalValue
+      : 0;
+    const selectedFavoriteVisits = selectedCustomer
+      ? Math.max(0, Math.min(favoriteGoal, Number(selectedCustomer.favoriteVisits) || 0))
+      : 0;
+    const selectedFavoriteProgress =
+      selectedCustomer?.status === "favorite"
+        ? `<p class="customer-favorite-progress">Favorite Customer. Value: ${core.formatCurrency(selectedValue)}</p>`
+        : selectedCustomer?.status === "regular"
+          ? `<p class="customer-favorite-progress">Favorite Progress: ${selectedFavoriteVisits} / ${favoriteGoal} successful visits</p>`
+          : "";
       elements.collection.innerHTML = `
       <h2 class="section-title">Customer Collection</h2>
       <p class="copy">Your collected customers are stored here. Tap a card to view it or bring that customer back.</p>
@@ -1114,11 +1140,12 @@
         selectedCustomer
           ? compactMobile
             ? `
-              <div class="collection-selected-card collection-selected-card-mobile">
+              <div class="collection-selected-card collection-selected-card-mobile ${selectedCustomer.status === "favorite" ? "collection-selected-card-favorite" : ""}">
                 <div class="collection-selected-copy collection-selected-copy-mobile">
                   <p class="kicker" style="margin: 0 0 4px;">Selected Customer</p>
                   <h3 class="section-title" style="margin: 0; font-size: 1.45rem;">${escapeHtml(selectedCustomer.customerName)}</h3>
-                  <p class="customer-meta" style="margin-top: 4px;">${escapeHtml(selectedCustomer.status === "regular" ? "Regular Customer" : "Occasional Customer")}</p>
+                  <p class="customer-meta" style="margin-top: 4px;">${escapeHtml(selectedStatusLabel)}</p>
+                  ${selectedFavoriteProgress}
                   <p class="collection-selected-bio">${escapeHtml(showFullBio ? selectedCustomerBio : selectedCustomerBioPreview.text)}</p>
                   ${
                     selectedCustomerBioPreview.isTruncated
@@ -1131,7 +1158,7 @@
                 <div class="collection-selected-mobile-row">
                   <img class="customer-avatar collection-selected-avatar" src="${resolveCustomerImage(selectedCustomer)}" alt="${escapeHtml(selectedCustomer.customerName)}" onerror="this.onerror=null;this.src='../assets/restaurant-challenge/customers/customer-placeholder.svg';" />
                   <div class="collection-selected-mobile-actions">
-                    <span class="collection-selected-value">${core.formatCurrency(selectedCustomer.status === "regular" ? selectedCustomer.regularValue : selectedCustomer.occasionalValue)}</span>
+                    <span class="collection-selected-value">${core.formatCurrency(selectedValue)}</span>
                     <span class="chip collection-selected-rarity-chip">${selectedCustomer.rarity}</span>
                     <a class="button button-primary" id="selected-invite-back-button" href="/americana/?customerId=${encodeURIComponent(selectedCustomer.customerId)}">Invite Back</a>
                   </div>
@@ -1139,13 +1166,14 @@
               </div>
             `
             : `
-              <div class="collection-selected-card">
+              <div class="collection-selected-card ${selectedCustomer.status === "favorite" ? "collection-selected-card-favorite" : ""}">
                 <div class="collection-selected-top">
                   <img class="customer-avatar collection-selected-avatar" src="${resolveCustomerImage(selectedCustomer)}" alt="${escapeHtml(selectedCustomer.customerName)}" onerror="this.onerror=null;this.src='../assets/restaurant-challenge/customers/customer-placeholder.svg';" />
                   <div class="collection-selected-copy">
                     <p class="kicker" style="margin: 0 0 4px;">Selected Customer</p>
                     <h3 class="section-title" style="margin: 0; font-size: 1.45rem;">${escapeHtml(selectedCustomer.customerName)}</h3>
-                    <p class="customer-meta" style="margin-top: 4px;">${escapeHtml(selectedCustomer.status === "regular" ? "Regular Customer" : "Occasional Customer")}</p>
+                    <p class="customer-meta" style="margin-top: 4px;">${escapeHtml(selectedStatusLabel)}</p>
+                    ${selectedFavoriteProgress}
                     <p class="collection-selected-bio">${escapeHtml(showFullBio ? selectedCustomerBio : selectedCustomerBioPreview.text)}</p>
                     ${
                       selectedCustomerBioPreview.isTruncated
@@ -1158,7 +1186,7 @@
                 </div>
                 <div class="chip-row" style="margin-top: 10px;">
                   <span class="chip">${selectedCustomer.rarity}</span>
-                  <span class="chip">${core.formatCurrency(selectedCustomer.status === "regular" ? selectedCustomer.regularValue : selectedCustomer.occasionalValue)}</span>
+                  <span class="chip">${core.formatCurrency(selectedValue)}</span>
                 </div>
                 <div class="button-row" style="margin-top: 10px;">
                   <a class="button button-primary" id="selected-invite-back-button" href="/americana/?customerId=${encodeURIComponent(selectedCustomer.customerId)}">Invite Back</a>
@@ -1175,13 +1203,40 @@
                 .map(
                   (entry) => {
                     const image = resolveCustomerImage(entry);
+                    const entryValue = core.getCollectionEntryValue
+                      ? core.getCollectionEntryValue(entry)
+                      : entry.status === "regular"
+                        ? entry.regularValue
+                        : entry.occasionalValue;
+                    const entryStatusLabel =
+                      entry.status === "favorite"
+                        ? "⭐ Favorite Customer"
+                        : core.getCustomerStatusLabel
+                          ? core.getCustomerStatusLabel(entry.status)
+                          : entry.status === "regular"
+                            ? "Regular Customer"
+                            : "Occasional Customer";
+                    const entryFavoriteVisits = Math.max(0, Math.min(favoriteGoal, Number(entry.favoriteVisits) || 0));
+                    const entryProgress =
+                      entry.status === "favorite"
+                        ? `Value: ${core.formatCurrency(entryValue)}`
+                        : entry.status === "regular"
+                          ? `Favorite Progress: ${entryFavoriteVisits}/${favoriteGoal}`
+                          : "";
+                    const statusClass =
+                      entry.status === "favorite"
+                        ? "customer-mini-card-favorite"
+                        : entry.status === "regular"
+                          ? "customer-mini-card-regular"
+                          : "customer-mini-card-occasional";
                     return `
-                    <button class="customer-mini-card ${entry.status === "regular" ? "customer-mini-card-regular" : "customer-mini-card-occasional"} ${selectedCustomer && selectedCustomer.customerId === entry.customerId ? "customer-mini-card-selected" : ""}" type="button" data-customer-id="${escapeHtml(entry.customerId)}">
+                    <button class="customer-mini-card ${statusClass} ${selectedCustomer && selectedCustomer.customerId === entry.customerId ? "customer-mini-card-selected" : ""}" type="button" data-customer-id="${escapeHtml(entry.customerId)}">
                       <div class="customer-mini-summary">
                         <img class="customer-avatar customer-avatar-compact" src="${image}" alt="${escapeHtml(entry.customerName)}" onerror="this.onerror=null;this.src='../assets/restaurant-challenge/customers/customer-placeholder.svg';" />
                         <div class="customer-mini-copy">
                           <p class="customer-name">${escapeHtml(entry.customerName)}</p>
-                          <p class="customer-meta">${escapeHtml(entry.status === "regular" ? "Regular Customer" : "Occasional Customer")}</p>
+                          <p class="customer-meta">${escapeHtml(entryStatusLabel)}</p>
+                          ${entryProgress ? `<p class="customer-favorite-progress customer-favorite-progress-mini">${escapeHtml(entryProgress)}</p>` : ""}
                         </div>
                       </div>
                     </button>
