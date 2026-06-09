@@ -5,11 +5,13 @@ const RESTAURANT_API_URL = "/api/admin/restaurants";
 const RESTAURANT_IMAGE_API_URL = "/api/admin/restaurant-image";
 const CUSTOMER_PHOTO_API_URL = "/api/admin/customer-photo";
 const QUESTION_IMAGE_API_URL = "/api/admin/questions";
+const BACKUP_API_URL = "/api/admin/backup";
 const KEY_STORAGE = "communityverseQuestionsAdminKey";
 
 const elements = {
   tabs: [...document.querySelectorAll(".workshop-tab")],
   connectionStatus: document.querySelector("#connection-status"),
+  downloadBackupButton: document.querySelector("#download-backup-button"),
   lockButton: document.querySelector("#lock-button"),
   newButton: document.querySelector("#new-question-button"),
   refreshButton: document.querySelector("#refresh-button"),
@@ -246,6 +248,50 @@ async function restaurantApiRequest(path = "", options = {}) {
   }
 
   return data;
+}
+
+async function downloadFullBackup() {
+  if (!adminKey) {
+    elements.login.showModal();
+    return;
+  }
+
+  const originalText = elements.downloadBackupButton.textContent;
+  elements.downloadBackupButton.disabled = true;
+  elements.downloadBackupButton.textContent = "Building backup...";
+
+  try {
+    const response = await fetch(BACKUP_API_URL, {
+      headers: {
+        Authorization: `Bearer ${adminKey}`,
+      },
+    });
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.error || `Backup failed (${response.status}).`);
+    }
+
+    const blob = await response.blob();
+    const disposition = response.headers.get("content-disposition") || "";
+    const filenameMatch = disposition.match(/filename="([^"]+)"/);
+    const filename =
+      filenameMatch?.[1] || `communityverse-backup-${new Date().toISOString().slice(0, 10)}.zip`;
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    showMessage("Backup downloaded. Keep that ZIP somewhere private and safe.");
+  } catch (error) {
+    showMessage(error.message, true);
+  } finally {
+    elements.downloadBackupButton.disabled = false;
+    elements.downloadBackupButton.textContent = originalText;
+  }
 }
 
 
@@ -1534,6 +1580,10 @@ elements.lockButton.addEventListener("click", () => {
   setConnected(false);
   elements.adminKey.value = "";
   elements.login.showModal();
+});
+
+elements.downloadBackupButton.addEventListener("click", () => {
+  void downloadFullBackup();
 });
 
 elements.newButton.addEventListener("click", () => {
