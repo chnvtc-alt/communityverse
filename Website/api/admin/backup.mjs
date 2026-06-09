@@ -1,3 +1,4 @@
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { requireQuestionsAdmin } from "../_lib/admin-auth.mjs";
 import {
   getSupabaseConfig,
@@ -7,6 +8,7 @@ import {
 } from "../_lib/supabase.mjs";
 
 const STORAGE_BUCKETS = ["restaurant-images", "customer-photos", "question-images"];
+const DOWNLOAD_TOKEN_TTL_MS = 2 * 60 * 1000;
 
 const CRC_TABLE = Array.from({ length: 256 }, (_, index) => {
   let value = index;
@@ -103,6 +105,45 @@ function makeZip(entries) {
 
 function backupTimestamp(date = new Date()) {
   return date.toISOString().replace(/[:.]/g, "-");
+}
+
+function base64Url(buffer) {
+  return Buffer.from(buffer)
+    .toString("base64")
+    .replaceAll("+", "-")
+    .replaceAll("/", "_")
+    .replace(/=+$/, "");
+}
+
+function getBackupTokenSecret() {
+  return String(process.env.QUESTIONS_ADMIN_KEY || "").trim();
+}
+
+function signBackupDownloadExpiry(expiresAt) {
+  return base64Url(
+    createHmac("sha256", getBackupTokenSecret())
+      .update(String(expiresAt))
+      .digest()
+  );
+}
+
+function createBackupDownloadToken(date = new Date()) {
+  const expiresAt = date.getTime() + DOWNLOAD_TOKEN_TTL_MS;
+  return `${expiresAt}.${signBackupDownloadExpiry(expiresAt)}`;
+}
+
+function isValidBackupDownloadToken(token) {
+  const [expiresAtRaw, signature = ""] = String(token || "").split(".");
+  const expiresAt = Number(expiresAtRaw);
+
+  if (!expiresAt || expiresAt < Date.now() || !signature || !getBackupTokenSecret()) {
+    return false;
+  }
+
+  const expected = signBackupDownloadExpiry(expiresAt);
+  const expectedBuffer = Buffer.from(expected);
+  const suppliedBuffer = Buffer.from(signature);
+  return expectedBuffer.length === suppliedBuffer.length && timingSafeEqual(expectedBuffer, suppliedBuffer);
 }
 
 async function fetchTableRows(table) {
@@ -204,8 +245,27 @@ async function downloadStorageObject(bucket, objectPath) {
 }
 
 export async function GET(request) {
-  const denied = requireQuestionsAdmin(request);
-  if (denied) return denied;
+  const requestUrl = new URL(request.url);
+  const action = requestUrl.searchParams.get("action") || "";
+  const downloadToken = requestUrl.searchParams.get("downloadToken") || "";
+
+  if (action === "download-link") {
+    const denied = requireQuestionsAdmin(request);
+    if (denied) return denied;
+
+    const token = createBackupDownloadToken();
+    return jsonResponse({
+      ok: true,
+      downloadUrl: `/api/admin/backup?downloadToken=${encodeURIComponent(token)}`,
+      expiresInSeconds: DOWNLOAD_TOKEN_TTL_MS / 1000,
+    });
+  }
+
+  if (!isValidBackupDownloadToken(downloadToken)) {
+    const denied = requireQuestionsAdmin(request);
+    if (denied) return denied;
+  }
+
   if (!hasSupabaseConfig()) {
     return jsonResponse({ ok: false, error: "Supabase is not configured." }, 503);
   }

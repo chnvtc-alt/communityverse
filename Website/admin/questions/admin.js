@@ -161,6 +161,12 @@ function showMessage(text, isError = false) {
   elements.message.hidden = !text;
 }
 
+function showBackupDownloadMessage(downloadUrl) {
+  elements.message.classList.remove("message-error");
+  elements.message.innerHTML = `Backup download opened. If it does not appear in Downloads, <a href="${escapeHtml(downloadUrl)}" target="_blank" rel="noopener">click here to try again</a>. This private link expires quickly.`;
+  elements.message.hidden = false;
+}
+
 function showFormErrors(errors) {
   const messages = Array.isArray(errors) ? errors : [errors];
   elements.formErrors.innerHTML = messages.map((message) => `<div>${escapeHtml(message)}</div>`).join("");
@@ -261,7 +267,7 @@ async function downloadFullBackup() {
   elements.downloadBackupButton.textContent = "Building backup...";
 
   try {
-    const response = await fetch(BACKUP_API_URL, {
+    const response = await fetch(`${BACKUP_API_URL}?action=download-link`, {
       headers: {
         Authorization: `Bearer ${adminKey}`,
       },
@@ -272,23 +278,20 @@ async function downloadFullBackup() {
       throw new Error(data.error || `Backup failed (${response.status}).`);
     }
 
-    const blob = await response.blob();
-    const disposition = response.headers.get("content-disposition") || "";
-    const filenameMatch = disposition.match(/filename="([^"]+)"/);
-    const filename =
-      filenameMatch?.[1] || `communityverse-backup-${new Date().toISOString().slice(0, 10)}.zip`;
-    const url = URL.createObjectURL(blob);
+    const data = await response.json();
+    const downloadUrl = data.downloadUrl;
+    if (!downloadUrl) {
+      throw new Error("Backup link was not created.");
+    }
+
     const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
+    link.href = downloadUrl;
+    link.target = "_blank";
     link.rel = "noopener";
     document.body.append(link);
     link.click();
-    window.setTimeout(() => {
-      link.remove();
-      URL.revokeObjectURL(url);
-    }, 30000);
-    showMessage(`Backup download started: ${filename}. Keep that ZIP somewhere private and safe.`);
+    link.remove();
+    showBackupDownloadMessage(downloadUrl);
   } catch (error) {
     showMessage(error.message, true);
   } finally {
