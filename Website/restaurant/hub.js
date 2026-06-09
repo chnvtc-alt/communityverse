@@ -6,11 +6,31 @@
   const authCallbackMode = query.get("auth") === "callback";
 
   const metricOptions = [
-    { value: "estimatedSales", label: "Sales" },
-    { value: "regularCustomers", label: "Regular Customers" },
-    { value: "collected", label: "Collected" },
-    { value: "gamesPlayed", label: "Games" },
-    { value: "rating", label: "Rating" },
+    {
+      value: "estimatedSales",
+      label: "Sales",
+      description: "Estimated sales from the customers each restaurant has earned.",
+    },
+    {
+      value: "collected",
+      label: "Customers",
+      description: "Total customers collected, including regular and occasional customers.",
+    },
+    {
+      value: "regularCustomers",
+      label: "Regulars",
+      description: "Regular customers only. These are the strongest customer wins.",
+    },
+    {
+      value: "gamesPlayed",
+      label: "Games",
+      description: "Total completed games played by each restaurant.",
+    },
+    {
+      value: "rating",
+      label: "Rating",
+      description: "Answer accuracy shown as a 5-star customer rating.",
+    },
   ];
 
   const state = {
@@ -895,6 +915,7 @@
         ? core.getLeaderboard(state.metric)
         : core.getLeaderboard(state.metric, restaurant?.slug || "americana");
     const scopeLabel = state.leaderboardScope === "overall" ? "Overall" : restaurant?.name || "Restaurant";
+    const selectedMetric = metricOptions.find((option) => option.value === state.metric) || metricOptions[0];
 
     function renderRows(list, emptyMessage) {
       if (!list.length) {
@@ -971,12 +992,10 @@
           .join("")}
       </div>
 
-      <h3 class="kicker" style="margin-top: 0;">${scopeLabel}</h3>
-      ${
-        state.metric === "rating"
-          ? `<p class="helper" style="margin: -6px 0 10px;">Customer rating is your answer accuracy scaled to a 5-star score.</p>`
-          : ""
-      }
+      <div class="leaderboard-explainer">
+        <h3 class="kicker">${scopeLabel}</h3>
+        <p class="helper">${escapeHtml(selectedMetric.description)}</p>
+      </div>
       <div class="leaderboard-scroll">
         ${renderRows(rows, state.leaderboardScope === "overall" ? "No leaderboard entries yet." : `No ${scopeLabel} scores yet.`)}
       </div>

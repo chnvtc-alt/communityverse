@@ -961,6 +961,19 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   font-size: 0.9rem;
 }
 
+.leaderboard-explainer {
+  display: grid;
+  gap: 5px;
+  margin: 8px 0 14px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(93, 116, 105, 0.12);
+}
+
+.leaderboard-explainer .kicker,
+.leaderboard-explainer .helper {
+  margin: 0;
+}
+
 .leaderboard-row {
   display: grid;
   grid-template-columns: 30px minmax(0, 1fr) auto;
