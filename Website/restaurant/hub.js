@@ -116,7 +116,7 @@
     const tabs = ensureMobileTabs();
     tabs.innerHTML = `
       <button class="button ${state.activeMobileTab === "overview" ? "button-primary" : "button-muted"}" data-hub-tab="overview" type="button">Overview</button>
-      <button class="button ${state.activeMobileTab === "collection" ? "button-primary" : "button-muted"}" data-hub-tab="collection" type="button">Collection</button>
+      <button class="button ${state.activeMobileTab === "collection" ? "button-primary" : "button-muted"}" data-hub-tab="collection" type="button">Customers</button>
       <button class="button ${state.activeMobileTab === "leaderboard" ? "button-primary" : "button-muted"}" data-hub-tab="leaderboard" type="button">Leaderboards</button>
     `;
 
