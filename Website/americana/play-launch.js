@@ -582,6 +582,7 @@
           </div>
           <div class="chip-row">
             <span class="chip gold">Score ${session.score}</span>
+            <span class="chip">Need ${customerThresholds.regular}</span>
           </div>
         </div>
 
