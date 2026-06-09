@@ -187,7 +187,6 @@ export function leaderboardValue(stats, metric) {
 export function buildLeaderboard(profiles, metric = "estimatedSales", restaurantSlug = "") {
   return (Array.isArray(profiles) ? profiles : [])
     .map(normalizeProfile)
-    .filter((profile) => !profile.isGuest)
     .map((profile) => {
       const stats = restaurantStatsFor(profile, restaurantSlug);
       const accuracy = stats.gamesPlayed ? (stats.totalCorrectAnswers / (stats.gamesPlayed * 10)) * 100 : 0;

@@ -250,7 +250,7 @@
     const stats = summary?.stats || null;
     const collected = stats ? stats.regularCustomers + stats.occasionalCustomers : 0;
     const hasGames = Boolean(stats?.gamesPlayed);
-    const rank = profile && !profile.isGuest
+    const rank = profile
       ? core.getPlayerRank(profile.id, "estimatedSales", restaurantSlug)
       : null;
 
@@ -260,9 +260,7 @@
     elements.splashCustomersBadge.textContent = `👥 Customers: ${collected}`;
     elements.splashRankBadge.textContent = rank
       ? `🏆 Rank: #${rank}`
-      : profile?.isGuest && hasGames
-        ? "🏆 Rank: Save to Rank"
-        : "🏆 Rank: Not Ranked";
+      : "🏆 Rank: Not Ranked";
   }
 
   function scrollMobileSection(section, extraOffset = 0) {

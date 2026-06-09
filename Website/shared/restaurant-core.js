@@ -3093,7 +3093,7 @@
     });
 
     return profiles
-      .filter((entry) => !entry.profile.isGuest && (entry.stats.gamesPlayed > 0 || !restaurantSlug))
+      .filter((entry) => entry.stats.gamesPlayed > 0 || !restaurantSlug)
       .sort((left, right) => {
         if (right.value !== left.value) {
           return right.value - left.value;
