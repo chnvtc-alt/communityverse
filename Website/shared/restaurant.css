@@ -2698,6 +2698,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   .opening-guest-card {
     grid-template-columns: 1fr;
     border-radius: 12px;
+    overflow: hidden;
   }
 
   .opening-guest-card-starter {
@@ -2722,6 +2723,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   .opening-guest-photo {
     min-height: 0;
     aspect-ratio: 1 / 1;
+    height: auto;
   }
 
   .opening-guest-photo-starter {
@@ -2841,10 +2843,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .hero-directory-item h2 {
-    font-family: Arial, sans-serif !important;
-    font-weight: 800;
-    font-size: 0.76rem !important;
-    line-height: 1;
+    display: none;
   }
 
   .hero-directory-button {
@@ -3087,7 +3086,10 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .result-hero-image {
-    min-height: 84px;
+    min-height: 0;
+    aspect-ratio: auto;
+    height: auto;
+    max-height: none;
   }
 
   .result-top-layout {
@@ -3311,12 +3313,15 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .result-screen-return-actions .result-followup-actions {
-    gap: 5px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
   }
 
   .result-screen-return-actions .result-followup-actions .button {
     width: 100%;
-    min-height: 36px;
+    min-width: 0;
+    min-height: 38px;
     font-size: 0.82rem;
   }
 
@@ -3362,20 +3367,20 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .result-screen-return-actions .result-banner .result-metrics {
-    margin-top: auto;
+    margin-top: 2px;
   }
 
   .result-screen-return-actions .result-metrics {
-    gap: 8px;
+    gap: 6px;
   }
 
   .result-screen-return-actions .result-metric-row {
-    gap: 8px;
+    gap: 6px;
   }
 
   .result-screen-return-actions .result-metric-card {
-    min-height: 42px;
-    padding: 8px 10px;
+    min-height: 34px;
+    padding: 5px 7px;
   }
 
   .result-screen-return-actions .result-metric-label {
@@ -3733,7 +3738,9 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .result-hero-image {
-    max-height: 170px;
+    aspect-ratio: auto;
+    height: auto;
+    max-height: none;
     object-fit: contain;
     border-radius: 16px;
   }
@@ -3759,8 +3766,8 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .result-screen-return-actions .result-metric-card {
-    min-height: 38px;
-    padding: 7px 8px;
+    min-height: 34px;
+    padding: 5px 7px;
     border-radius: 14px;
   }
 
@@ -3889,10 +3896,6 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     min-height: 36px;
   }
 
-  .result-hero-image {
-    max-height: 142px;
-  }
-
   .collection-grid-compact {
     gap: 8px;
   }
@@ -3905,5 +3908,11 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
   .customer-mini-copy .customer-name {
     font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 340px) {
+  .result-screen-return-actions .result-followup-actions {
+    grid-template-columns: 1fr;
   }
 }
