@@ -3210,6 +3210,7 @@
       score: 0,
       answers: [],
       startedAt: nowIso(),
+      hasStarted: false,
       updatedAt: nowIso(),
       completed: false,
       result: "",
@@ -3263,6 +3264,19 @@
     } catch (error) {
       // Ignore storage blocks and rely on the in-memory cache.
     }
+  }
+
+  function markActiveSessionStarted() {
+    const session = getActiveSession();
+    if (!session || session.completed) {
+      return null;
+    }
+
+    session.hasStarted = true;
+    session.updatedAt = nowIso();
+    activeSessionState.session = clone(session);
+    writeJson(STORAGE_KEYS.activeSession, session);
+    return clone(session);
   }
 
   function completeSession(session) {
@@ -3404,6 +3418,7 @@
       };
     }
 
+    session.hasStarted = true;
     const isCorrect = Number(selectedIndex) === question.correctIndex;
     session.answers.push({
       questionId: question.id,
@@ -3627,6 +3642,7 @@
     buildSessionQuestions,
     getActiveSession,
     clearActiveSession,
+    markActiveSessionStarted,
     startNewSession,
     answerActiveSession,
     getLeaderboard,

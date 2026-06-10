@@ -150,6 +150,10 @@
     return session;
   }
 
+  function shouldResumeQuestions(session) {
+    return Boolean(session && !session.completed && (session.hasStarted || session.currentIndex > 0));
+  }
+
   function getSessionStorage() {
     try {
       return window.sessionStorage || null;
@@ -231,11 +235,11 @@
 
     core.applyRestaurantTheme?.(restaurant);
 
-    if (freshMode) {
+    const existingSession = getSession();
+    if (freshMode && !shouldResumeQuestions(existingSession)) {
       core.clearActiveSession();
       clearResultVisibleSessionId();
     } else {
-      const existingSession = getSession();
       const visibleSessionId = getResultVisibleSessionId();
       if (existingSession && existingSession.completed && visibleSessionId !== existingSession.id) {
         core.clearActiveSession();
@@ -247,7 +251,13 @@
     }
 
     if (playMode || autoPlayMode) {
-      void startGame();
+      const existingSession = getSession();
+      if (existingSession && !existingSession.completed) {
+        state.showGame = shouldResumeQuestions(existingSession);
+        renderAll();
+      } else {
+        void startGame();
+      }
     } else {
       renderAll();
     }
@@ -552,6 +562,7 @@
     `;
 
     document.getElementById("begin-questions-button")?.addEventListener("click", () => {
+      core.markActiveSessionStarted?.();
       state.showGame = true;
       renderAll();
       window.requestAnimationFrame(() => {
@@ -1064,7 +1075,8 @@
           return;
         }
 
-        if (session && state.showGame) {
+        if (session && (state.showGame || shouldResumeQuestions(session))) {
+          state.showGame = true;
           elements.start.classList.add("hidden");
           elements.game.classList.remove("hidden");
           elements.result.classList.add("hidden");
