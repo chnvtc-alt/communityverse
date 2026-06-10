@@ -6,6 +6,7 @@ import {
   sanitizeProfile,
   storeProfile,
 } from "../_lib/profile-security.mjs";
+import { validateRestaurantProfileName } from "../_lib/restaurant-name-rules.mjs";
 import { hasSupabaseConfig, jsonResponse, readJsonBody } from "../_lib/supabase.mjs";
 
 function getProfileIdFromRequest(request) {
@@ -51,6 +52,11 @@ export async function PUT(request) {
   const body = await readJsonBody(request);
   if (!body || typeof body !== "object") {
     return jsonResponse({ ok: false, error: "Expected a JSON profile object." }, 400);
+  }
+
+  const nameError = validateRestaurantProfileName(body.restaurantName);
+  if (nameError) {
+    return jsonResponse({ ok: false, error: nameError }, 400);
   }
 
   try {

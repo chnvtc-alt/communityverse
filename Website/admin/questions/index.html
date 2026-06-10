@@ -31,6 +31,7 @@
       <button class="workshop-tab is-active" type="button" data-tab="questions">Questions</button>
       <button class="workshop-tab" type="button" data-tab="customers">Customers</button>
       <button class="workshop-tab" type="button" data-tab="restaurants">Restaurants</button>
+      <button class="workshop-tab" type="button" data-tab="profiles">Guest Restaurants</button>
     </nav>
 
     <main id="questions-panel" class="layout admin-panel">
@@ -236,6 +237,50 @@
 
         <div id="restaurant-message" class="message" role="status" hidden></div>
         <div id="restaurant-list" class="question-list" aria-live="polite"></div>
+      </section>
+    </section>
+
+    <section id="profiles-panel" class="layout admin-panel" hidden>
+      <aside class="sidebar">
+        <section class="filter-card" aria-labelledby="profile-filter-title">
+          <div class="section-heading">
+            <h2 id="profile-filter-title">Find guest restaurants</h2>
+            <button id="clear-profile-filters-button" class="text-button" type="button">Clear</button>
+          </div>
+
+          <label>
+            Search
+            <input id="profile-filter-query" type="search" placeholder="Restaurant, player, id..." />
+          </label>
+
+          <label>
+            Type
+            <select id="profile-filter-type">
+              <option value="all">All</option>
+              <option value="guest">Guest only</option>
+              <option value="registered">Registered only</option>
+            </select>
+          </label>
+        </section>
+
+        <section class="help-card">
+          <h2>Leaderboard names</h2>
+          <p>These are player restaurant names, not the public restaurant games like Americana Diner.</p>
+          <p>Use this to clean up guest names or rename restaurants that appear on leaderboards.</p>
+        </section>
+      </aside>
+
+      <section class="content">
+        <div class="list-heading">
+          <div>
+            <p id="profile-count" class="count">0 guest restaurants</p>
+            <p class="subtle">Editing a name changes how that restaurant appears on leaderboards.</p>
+          </div>
+          <button id="refresh-profiles-button" class="button button-secondary" type="button">Refresh</button>
+        </div>
+
+        <div id="profile-message" class="message" role="status" hidden></div>
+        <div id="profile-list" class="question-list" aria-live="polite"></div>
       </section>
     </section>
 

@@ -33,13 +33,58 @@
   });
 
   const BLOCKED_RESTAURANT_NAMES = [
-    "mcdonalds",
-    "mc donalds",
+    "applebees",
+    "arbys",
+    "burger king",
+    "buffalo wild wings",
+    "cheesecake factory",
     "chick fil a",
     "chickfila",
-    "waffle house",
+    "chipotle",
+    "cracker barrel",
+    "dairy queen",
+    "dennys",
+    "dominos",
+    "five guys",
+    "ihop",
+    "in n out",
+    "kfc",
+    "little caesars",
+    "mcdonalds",
+    "mc donalds",
     "olive garden",
+    "outback steakhouse",
+    "panera",
+    "panda express",
+    "pizza hut",
+    "popeyes",
+    "red lobster",
+    "sonic",
+    "starbucks",
+    "subway",
+    "taco bell",
+    "texas roadhouse",
+    "wendys",
+    "waffle house",
     "americana diner",
+    "waffle master",
+  ];
+
+  const BLOCKED_RESTAURANT_NAME_WORDS = [
+    "asshole",
+    "bastard",
+    "bitch",
+    "crap",
+    "damn",
+    "dick",
+    "fart",
+    "fuck",
+    "hell",
+    "piss",
+    "porn",
+    "shit",
+    "slut",
+    "whore",
   ];
 
   const GUEST_RESTAURANT_NAME_PARTS = {
@@ -74,6 +119,38 @@
       "Hickory",
       "Sunnyside",
       "Cozy",
+      "Bayside",
+      "Brickhouse",
+      "Bright",
+      "Canary",
+      "Cinnamon",
+      "Clover",
+      "Cottonwood",
+      "Elm Street",
+      "Firefly",
+      "Foxglove",
+      "Front Porch",
+      "Gingham",
+      "Greenhouse",
+      "High Noon",
+      "Jubilee",
+      "Kindred",
+      "Little Lantern",
+      "Marigold",
+      "North Star",
+      "Oak Barrel",
+      "Patchwork",
+      "Pinecone",
+      "Porchlight",
+      "Redbud",
+      "Rolling",
+      "Rosemary",
+      "Saffron",
+      "Shady Grove",
+      "Sweetwater",
+      "Tin Roof",
+      "Two Spoon",
+      "Whistlestop",
     ],
     nouns: [
       "Spoon",
@@ -111,6 +188,31 @@
       "Noodle Bar",
       "Taco Stop",
       "Waffle Cart",
+      "Bakehouse",
+      "Beanery",
+      "Breakfast Bar",
+      "Butterhouse",
+      "Cantina",
+      "Carvery",
+      "Chow Hall",
+      "Cookhouse",
+      "Cupboard",
+      "Delicatessen",
+      "Eatery",
+      "Flapjack House",
+      "Fry House",
+      "Lunch Counter",
+      "Malt Shop",
+      "Noodle House",
+      "Pie Counter",
+      "Pizzeria",
+      "Sandwich Shop",
+      "Snack Shack",
+      "Soup Kitchen",
+      "Steakhouse",
+      "Taqueria",
+      "Toast House",
+      "Waffle Works",
     ],
   };
 
@@ -2340,9 +2442,37 @@
   }
 
   function generateGuestRestaurantName() {
-    const adjective = pickOne(GUEST_RESTAURANT_NAME_PARTS.adjectives);
-    const noun = pickOne(GUEST_RESTAURANT_NAME_PARTS.nouns);
-    return `The ${adjective} ${noun}`;
+    const existingWords = new Set(
+      getProfiles()
+        .map((profile) => normalizeText(profile.restaurantName).split(" "))
+        .flat()
+        .filter((word) => word && word !== "the")
+    );
+    let bestName = "";
+    let bestScore = Number.POSITIVE_INFINITY;
+
+    for (let attempt = 0; attempt < 30; attempt += 1) {
+      const adjective = pickOne(GUEST_RESTAURANT_NAME_PARTS.adjectives);
+      const noun = pickOne(GUEST_RESTAURANT_NAME_PARTS.nouns);
+      const candidate = `The ${adjective} ${noun}`;
+      const candidateWords = normalizeText(candidate)
+        .split(" ")
+        .filter((word) => word && word !== "the");
+      const overlapScore = candidateWords.filter((word) => existingWords.has(word)).length;
+      const blockedScore = isRestaurantNameBlocked(candidate) ? 100 : 0;
+      const score = overlapScore + blockedScore;
+
+      if (!bestName || score < bestScore) {
+        bestName = candidate;
+        bestScore = score;
+      }
+
+      if (score === 0) {
+        return candidate;
+      }
+    }
+
+    return bestName || "The Friendly Table";
   }
 
   function updateProfile(updatedProfile) {
@@ -2667,14 +2797,27 @@
 
   function isRestaurantNameBlocked(name) {
     const normalized = normalizeText(name);
+    const compact = compactRestaurantText(name);
     if (!normalized) {
       return false;
     }
 
-    return BLOCKED_RESTAURANT_NAMES.some((blocked) => {
-      const blockedNormalized = normalizeText(blocked);
-      return normalized === blockedNormalized || normalized.includes(blockedNormalized);
-    });
+    return (
+      BLOCKED_RESTAURANT_NAMES.some((blocked) => {
+        const blockedNormalized = normalizeText(blocked);
+        const blockedCompact = compactRestaurantText(blocked);
+        return (
+          normalized === blockedNormalized ||
+          normalized.includes(blockedNormalized) ||
+          compact === blockedCompact ||
+          compact.includes(blockedCompact)
+        );
+      }) ||
+      BLOCKED_RESTAURANT_NAME_WORDS.some((blocked) => {
+        const blockedNormalized = normalizeText(blocked);
+        return normalized.split(" ").includes(blockedNormalized);
+      })
+    );
   }
 
   function validateProfileInput(playerName, restaurantName) {

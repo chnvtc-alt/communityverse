@@ -2,6 +2,7 @@ const API_URL = "/api/admin/questions";
 const GENERATOR_API_URL = "/api/admin/question-generator";
 const CUSTOMER_API_URL = "/api/admin/customers";
 const RESTAURANT_API_URL = "/api/admin/restaurants";
+const PROFILE_API_URL = "/api/admin/profiles";
 const RESTAURANT_IMAGE_API_URL = "/api/admin/restaurant-image";
 const CUSTOMER_PHOTO_API_URL = "/api/admin/customer-photo";
 const QUESTION_IMAGE_API_URL = "/api/admin/questions";
@@ -29,6 +30,7 @@ const elements = {
   customersPanel: document.querySelector("#customers-panel"),
   questionsPanel: document.querySelector("#questions-panel"),
   restaurantsPanel: document.querySelector("#restaurants-panel"),
+  profilesPanel: document.querySelector("#profiles-panel"),
   newCustomerButton: document.querySelector("#new-customer-button"),
   refreshCustomersButton: document.querySelector("#refresh-customers-button"),
   clearCustomerFiltersButton: document.querySelector("#clear-customer-filters-button"),
@@ -95,6 +97,13 @@ const elements = {
   restaurantFilterQuery: document.querySelector("#restaurant-filter-query"),
   restaurantFilterStatus: document.querySelector("#restaurant-filter-status"),
   restaurantFilterArea: document.querySelector("#restaurant-filter-area"),
+  refreshProfilesButton: document.querySelector("#refresh-profiles-button"),
+  clearProfileFiltersButton: document.querySelector("#clear-profile-filters-button"),
+  profileCount: document.querySelector("#profile-count"),
+  profileList: document.querySelector("#profile-list"),
+  profileMessage: document.querySelector("#profile-message"),
+  profileFilterQuery: document.querySelector("#profile-filter-query"),
+  profileFilterType: document.querySelector("#profile-filter-type"),
   login: document.querySelector("#login-dialog"),
   loginForm: document.querySelector("#login-form"),
   loginError: document.querySelector("#login-error"),
@@ -132,9 +141,11 @@ let adminKey = sessionStorage.getItem(KEY_STORAGE) || "";
 let questions = [];
 let customers = [];
 let restaurants = [];
+let profiles = [];
 let filterTimer = 0;
 let customerFilterTimer = 0;
 let restaurantFilterTimer = 0;
+let profileFilterTimer = 0;
 let aiDrafts = [];
 let selectedAiDraftIndex = -1;
 let selectedQuestionImageFile = null;
@@ -237,6 +248,27 @@ async function customerApiRequest(path = "", options = {}) {
 
 async function restaurantApiRequest(path = "", options = {}) {
   const response = await fetch(`${RESTAURANT_API_URL}${path}`, {
+    ...options,
+    headers: {
+      ...(options.body ? { "Content-Type": "application/json" } : {}),
+      Authorization: `Bearer ${adminKey}`,
+      ...(options.headers || {}),
+    },
+  });
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const error = new Error(data.error || data.errors?.join(" ") || `Request failed (${response.status}).`);
+    error.status = response.status;
+    error.details = data.errors;
+    throw error;
+  }
+
+  return data;
+}
+
+async function profileApiRequest(path = "", options = {}) {
+  const response = await fetch(`${PROFILE_API_URL}${path}`, {
     ...options,
     headers: {
       ...(options.body ? { "Content-Type": "application/json" } : {}),
@@ -406,6 +438,7 @@ function setActiveTab(tabName) {
   elements.questionsPanel.hidden = tabName !== "questions";
   elements.customersPanel.hidden = tabName !== "customers";
   elements.restaurantsPanel.hidden = tabName !== "restaurants";
+  elements.profilesPanel.hidden = tabName !== "profiles";
 }
 
 function populateDatalist(id, values) {
@@ -518,6 +551,12 @@ function showRestaurantFormErrors(errors) {
   const messages = Array.isArray(errors) ? errors : [errors];
   elements.restaurantFormErrors.innerHTML = messages.map((message) => `<div>${escapeHtml(message)}</div>`).join("");
   elements.restaurantFormErrors.hidden = !messages.filter(Boolean).length;
+}
+
+function showProfileMessage(text, isError = false) {
+  elements.profileMessage.textContent = text;
+  elements.profileMessage.classList.toggle("message-error", isError);
+  elements.profileMessage.hidden = !text;
 }
 
 function createCustomerId(name) {
@@ -936,6 +975,109 @@ async function loadRestaurants({ quiet = false } = {}) {
       return;
     }
     showRestaurantMessage(error.message, true);
+  }
+}
+
+function profileFilterParams() {
+  const params = new URLSearchParams();
+  const query = elements.profileFilterQuery.value.trim();
+  const type = elements.profileFilterType.value.trim();
+  if (query) params.set("q", query);
+  if (type && type !== "all") params.set("type", type);
+  return params;
+}
+
+function getProfileStatus(profile) {
+  return profile.isGuest ? "Guest" : "Registered";
+}
+
+function renderProfiles() {
+  elements.profileCount.textContent = `${profiles.length} restaurant name${profiles.length === 1 ? "" : "s"}`;
+
+  if (!profiles.length) {
+    elements.profileList.innerHTML = '<div class="empty-state">No guest restaurants match these filters.</div>';
+    return;
+  }
+
+  elements.profileList.innerHTML = profiles
+    .map((profile) => {
+      const stats = profile.stats || {};
+      const updatedAt = profile.updatedAt || profile.lastPlayedAt || profile.createdAt || "";
+      const chips = [
+        getProfileStatus(profile),
+        profile.restaurantSlug,
+        `${Number(stats.gamesPlayed) || 0} games`,
+        updatedAt ? `Updated ${new Date(updatedAt).toLocaleDateString()}` : "",
+      ].filter(Boolean);
+
+      return `
+        <article class="question-card" data-id="${escapeHtml(profile.id)}">
+          <div>
+            <p class="question-prompt">${escapeHtml(profile.restaurantName || "Unnamed Restaurant")}</p>
+            <p class="question-answer">${escapeHtml(profile.playerName || "Guest Player")}</p>
+            <div class="question-meta">
+              ${chips.map((chip) => `<span class="meta-chip">${escapeHtml(chip)}</span>`).join("")}
+            </div>
+          </div>
+          <div class="profile-edit-row">
+            <label>
+              Restaurant name
+              <input class="profile-name-input" data-profile-name type="text" value="${escapeHtml(profile.restaurantName || "")}" maxlength="64" />
+            </label>
+            <button class="button button-secondary save-profile-name-button" type="button">Save name</button>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+async function loadProfiles({ quiet = false } = {}) {
+  if (!adminKey) {
+    if (!elements.login.open) {
+      elements.login.showModal();
+    }
+    return;
+  }
+
+  if (!quiet) showProfileMessage("Loading guest restaurants...");
+
+  try {
+    const data = await profileApiRequest(`?${profileFilterParams().toString()}`);
+    profiles = data.profiles || [];
+    renderProfiles();
+    showProfileMessage("");
+    if (elements.login.open) elements.login.close();
+  } catch (error) {
+    if (error.status === 401) {
+      adminKey = "";
+      sessionStorage.removeItem(KEY_STORAGE);
+      elements.loginError.textContent = "That admin key was not accepted.";
+      elements.loginError.hidden = false;
+      if (!elements.login.open) elements.login.showModal();
+      return;
+    }
+    showProfileMessage(error.message, true);
+  }
+}
+
+async function saveProfileName(profile, card) {
+  const input = card.querySelector("[data-profile-name]");
+  const restaurantName = input.value.trim();
+  if (!restaurantName) {
+    showProfileMessage("Restaurant name is required.", true);
+    return;
+  }
+
+  try {
+    await profileApiRequest(`/${encodeURIComponent(profile.id)}`, {
+      method: "PUT",
+      body: JSON.stringify({ restaurantName }),
+    });
+    showProfileMessage("Restaurant name updated.");
+    await loadProfiles({ quiet: true });
+  } catch (error) {
+    showProfileMessage(error.message, true);
   }
 }
 
@@ -1572,6 +1714,7 @@ elements.loginForm.addEventListener("submit", async (event) => {
   await loadQuestions();
   await loadCustomers();
   await loadRestaurants();
+  await loadProfiles();
 });
 
 elements.lockButton.addEventListener("click", () => {
@@ -1580,9 +1723,11 @@ elements.lockButton.addEventListener("click", () => {
   questions = [];
   customers = [];
   restaurants = [];
+  profiles = [];
   renderQuestions();
   renderCustomers();
   renderRestaurants();
+  renderProfiles();
   setConnected(false);
   elements.adminKey.value = "";
   elements.login.showModal();
@@ -1610,6 +1755,7 @@ elements.newRestaurantButton.addEventListener("click", () => {
 elements.refreshButton.addEventListener("click", () => loadQuestions());
 elements.refreshCustomersButton.addEventListener("click", () => loadCustomers());
 elements.refreshRestaurantsButton.addEventListener("click", () => loadRestaurants());
+elements.refreshProfilesButton.addEventListener("click", () => loadProfiles());
 elements.clearFiltersButton.addEventListener("click", () => {
   filterIds.forEach((id) => {
     const input = document.querySelector(`#${id}`);
@@ -1636,6 +1782,12 @@ elements.clearRestaurantFiltersButton.addEventListener("click", () => {
   elements.restaurantFilterStatus.value = "all";
   elements.restaurantFilterArea.value = "";
   loadRestaurants();
+});
+
+elements.clearProfileFiltersButton.addEventListener("click", () => {
+  elements.profileFilterQuery.value = "";
+  elements.profileFilterType.value = "all";
+  loadProfiles();
 });
 
 filterIds.forEach((id) => {
@@ -1672,6 +1824,18 @@ filterIds.forEach((id) => {
     input.addEventListener(eventName, () => {
       window.clearTimeout(restaurantFilterTimer);
       restaurantFilterTimer = window.setTimeout(() => loadRestaurants({ quiet: true }), 250);
+    });
+  });
+});
+
+[
+  elements.profileFilterQuery,
+  elements.profileFilterType,
+].forEach((input) => {
+  ["input", "change"].forEach((eventName) => {
+    input.addEventListener(eventName, () => {
+      window.clearTimeout(profileFilterTimer);
+      profileFilterTimer = window.setTimeout(() => loadProfiles({ quiet: true }), 250);
     });
   });
 });
@@ -1714,6 +1878,17 @@ elements.restaurantList.addEventListener("click", (event) => {
   }
   if (event.target.closest(".toggle-restaurant-playable-button")) toggleRestaurantPlayable(restaurant);
   if (event.target.closest(".toggle-restaurant-list-button")) toggleRestaurantListVisibility(restaurant);
+});
+
+elements.profileList.addEventListener("click", (event) => {
+  const card = event.target.closest(".question-card");
+  if (!card) return;
+  const profile = profiles.find((item) => item.id === card.dataset.id);
+  if (!profile) return;
+
+  if (event.target.closest(".save-profile-name-button")) {
+    saveProfileName(profile, card);
+  }
 });
 
 elements.scope.addEventListener("change", updateScopeFields);
@@ -1860,13 +2035,18 @@ elements.tabs.forEach((button) => {
     if (button.dataset.tab === "restaurants") {
       loadRestaurants({ quiet: true });
     }
+    if (button.dataset.tab === "profiles") {
+      loadProfiles({ quiet: true });
+    }
   });
 });
 
 renderQuestions();
 renderCustomers();
 renderRestaurants();
+renderProfiles();
 setActiveTab("questions");
 loadQuestions();
 loadCustomers();
 loadRestaurants();
+loadProfiles();

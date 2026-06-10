@@ -1,4 +1,5 @@
 import { profileFromRecord } from "../_lib/restaurant-data.mjs";
+import { validateRestaurantProfileName } from "../_lib/restaurant-name-rules.mjs";
 import {
   createClaimState,
   fetchProfile,
@@ -216,6 +217,11 @@ export async function POST(request) {
 
   if (!String(body.id || "").trim()) {
     return jsonResponse({ ok: false, error: "Profile id is required." }, 400);
+  }
+
+  const nameError = validateRestaurantProfileName(body.restaurantName);
+  if (nameError) {
+    return jsonResponse({ ok: false, error: nameError }, 400);
   }
 
   try {
