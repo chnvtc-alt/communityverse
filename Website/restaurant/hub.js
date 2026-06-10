@@ -576,7 +576,7 @@
     const compactMobile = isMobileHub();
     const profile = core.getActiveProfile();
     const profileState = getProfileState(profile);
-    const summary = profileState === "registered" ? core.getProfileSummary(profile, "americana") : null;
+    const summary = profileState === "registered" ? core.getProfileSummary(profile) : null;
     const safeSummary =
       summary && summary.stats
         ? summary
