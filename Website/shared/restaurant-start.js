@@ -29,7 +29,48 @@
     return `/${restaurant.slug}/play/`;
   }
 
+  function dailyRotationOffset(restaurantSlug, count) {
+    if (!count) {
+      return 0;
+    }
+
+    const todayKey = new Date().toISOString().slice(0, 10);
+    const seed = `${restaurantSlug || "restaurant"}-${todayKey}`;
+    let hash = 0;
+    for (let index = 0; index < seed.length; index += 1) {
+      hash = (hash * 31 + seed.charCodeAt(index)) % 100000;
+    }
+    return hash % count;
+  }
+
+  function rotateCustomers(customers, restaurantSlug, count) {
+    if (!customers.length) {
+      return [];
+    }
+
+    const offset = dailyRotationOffset(restaurantSlug, customers.length);
+    const rotated = customers.slice(offset).concat(customers.slice(0, offset));
+    return rotated.slice(0, count);
+  }
+
   function getOpeningCustomers(restaurant) {
+    const activeProfile = core.getActiveProfile?.() || null;
+    const rotatedCustomers = activeProfile
+      ? core.getFeaturedGuestLineup(activeProfile, restaurant.slug, 3)
+      : [];
+
+    if (rotatedCustomers.length) {
+      return rotatedCustomers;
+    }
+
+    const photoReadyCustomers = core
+      .getCustomersForRestaurant(restaurant.slug)
+      .filter((customer) => customer.image && !customer.image.includes("customer-placeholder"));
+
+    if (photoReadyCustomers.length) {
+      return rotateCustomers(photoReadyCustomers, restaurant.slug, 3);
+    }
+
     const featuredIds = Array.isArray(restaurant.openingCustomerIds) ? restaurant.openingCustomerIds : [];
     const featuredCustomers = featuredIds
       .map((id) => core.getCustomerById(id))
@@ -39,10 +80,7 @@
       return featuredCustomers.slice(0, 3);
     }
 
-    return core
-      .getCustomersForRestaurant(restaurant.slug)
-      .filter((customer) => customer.image && !customer.image.includes("customer-placeholder"))
-      .slice(0, 3);
+    return [];
   }
 
   function renderUnavailable(slug) {
