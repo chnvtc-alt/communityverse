@@ -2696,9 +2696,11 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .opening-guest-card {
+    position: relative;
     grid-template-columns: 1fr;
     border-radius: 12px;
     overflow: hidden;
+    background: transparent;
   }
 
   .opening-guest-card-starter {
@@ -2709,8 +2711,14 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .opening-guest-copy {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 1;
     min-height: 46px;
-    padding: 7px 8px 8px;
+    padding: 28px 8px 8px;
+    background: linear-gradient(180deg, rgba(28, 20, 14, 0), rgba(28, 20, 14, 0.78));
+    pointer-events: none;
   }
 
   .opening-guest-copy-starter {
@@ -2733,6 +2741,8 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .opening-guest-name {
+    color: #fffdf8;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.62);
     font-size: 0.76rem;
     line-height: 1.08;
     max-width: 10ch;
@@ -3583,7 +3593,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
   .opening-guest-copy {
     min-height: 38px;
-    padding: 6px 7px;
+    padding: 24px 7px 7px;
   }
 
   .opening-guest-name {
