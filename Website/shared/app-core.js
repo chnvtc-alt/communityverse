@@ -3062,7 +3062,11 @@
     });
 
     if (remainingIndex < remainingSlots.length) {
-      const fallbackPool = questions.filter((question) => !usedIds.has(question.id));
+      const fallbackPool = questions.filter(
+        (question) =>
+          !usedIds.has(question.id) &&
+          isQuestionAllowedForRestaurant(question, restaurant)
+      );
       pickMany(fallbackPool, remainingSlots.length - remainingIndex).forEach((question) => {
         if (remainingIndex >= remainingSlots.length) {
           return;
