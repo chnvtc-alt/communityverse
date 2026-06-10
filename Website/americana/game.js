@@ -531,6 +531,16 @@
                 <strong>${core.formatCurrency(customer.occasionalValue)}</strong>
               </div>
             </div>
+            <div class="customer-reveal-mobile-summary">
+              <div class="customer-reveal-combo">
+                <span class="customer-reveal-label">Regular Goal & Value</span>
+                <strong>${thresholds.regular}/10 correct &bull; ${core.formatCurrency(customer.regularValue)}</strong>
+              </div>
+              <div class="customer-reveal-combo">
+                <span class="customer-reveal-label">Occasional Goal & Value</span>
+                <strong>${thresholds.occasional}/10 correct &bull; ${core.formatCurrency(customer.occasionalValue)}</strong>
+              </div>
+            </div>
             ${favoriteBonusMarkup}
             <div class="button-row customer-reveal-actions">
               <button class="button button-hot" id="begin-questions-button" type="button">Begin Questions</button>

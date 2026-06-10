@@ -35,6 +35,9 @@ export function profileTokenMatches(profile, token) {
 
 export function sanitizeProfile(profile) {
   const safeProfile = normalizeProfile(profile);
+  safeProfile.emailConnected = Boolean(
+    profile?.emailConnected || profile?.ownerUserId || profile?.ownerEmail
+  );
   PRIVATE_PROFILE_FIELDS.forEach((field) => {
     delete safeProfile[field];
   });

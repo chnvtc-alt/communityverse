@@ -20,6 +20,7 @@ export function normalizeProfile(profile) {
   safeProfile.updatedAt = String(safeProfile.updatedAt || "");
   safeProfile.lastPlayedAt = String(safeProfile.lastPlayedAt || "");
   safeProfile.isGuest = Boolean(safeProfile.isGuest);
+  safeProfile.emailConnected = Boolean(safeProfile.emailConnected);
   safeProfile.stats = { ...emptyStats(), ...(safeProfile.stats || {}) };
   safeProfile.restaurantStats =
     safeProfile.restaurantStats && typeof safeProfile.restaurantStats === "object"

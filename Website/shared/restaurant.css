@@ -1849,6 +1849,10 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   font-size: 1.35rem;
 }
 
+.customer-reveal-mobile-summary {
+  display: none;
+}
+
 .customer-reveal-label {
   color: var(--muted);
   font-family: Arial, sans-serif;
@@ -3546,6 +3550,10 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     gap: 7px;
   }
 
+  .opening-start-heading .kicker {
+    display: none;
+  }
+
   .opening-title {
     font-size: clamp(1.06rem, 5.1vw, 1.28rem);
     line-height: 1.02;
@@ -3565,7 +3573,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .opening-guest-photo {
-    aspect-ratio: 1.05 / 1;
+    aspect-ratio: 1 / 1;
   }
 
   .opening-guest-copy {
@@ -3579,9 +3587,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .opening-title-small-bottom {
-    margin: 0;
-    font-size: 0.86rem;
-    line-height: 1.12;
+    display: none;
   }
 
   .opening-start-actions-bottom {
@@ -3628,23 +3634,32 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
   .customer-reveal-goals,
   .customer-reveal-values {
+    display: none;
+  }
+
+  .customer-reveal-mobile-summary {
+    display: grid;
     gap: 6px;
   }
 
-  .customer-reveal-goal,
-  .customer-reveal-value {
+  .customer-reveal-combo {
+    display: grid;
+    gap: 3px;
     min-height: 54px;
     padding: 8px;
     border-radius: 14px;
+    align-content: center;
+    border: 1px solid rgba(93, 116, 105, 0.14);
+    background: rgba(255, 255, 255, 0.72);
   }
 
-  .customer-reveal-label {
+  .customer-reveal-combo .customer-reveal-label {
     font-size: 0.68rem;
     letter-spacing: 0.03em;
   }
 
-  .customer-reveal-goal strong,
-  .customer-reveal-value strong {
+  .customer-reveal-combo strong {
+    color: var(--ink);
     font-size: 1rem;
   }
 

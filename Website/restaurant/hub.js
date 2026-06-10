@@ -602,6 +602,7 @@
       ? profile.customerCollection.find((entry) => entry && entry.status !== "lost")
       : null;
     const latestCustomerName = latestCustomerEntry ? latestCustomerEntry.customerName || "Customer" : "";
+    const emailConnected = Boolean(profile && profile.emailConnected);
 
     elements.hero.innerHTML = `
       <div class="hero-stack">
@@ -640,11 +641,11 @@
                         }
                       </div>
                         <div class="hero-profile-actions hero-profile-actions-top">
-                          <button class="button button-primary button-sm" type="button" data-show-connect-email>Save With Email</button>
+                          ${!emailConnected ? `<button class="button button-primary button-sm" type="button" data-show-connect-email>Save With Email</button>` : ""}
                           <a class="button button-muted button-sm" href="${withHubMode("./?edit=1")}">Edit My Profile</a>
                         </div>
                     </div>
-                    ${!editMode ? renderConnectInfoMarkup(profile) : ``}
+                    ${!editMode && !emailConnected ? renderConnectInfoMarkup(profile) : ``}
                     <div class="hero-profile-meta hero-profile-meta-compact">
                       <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
                       <span class="chip hero-stat-chip">👥 Customers ${collectedCustomers}</span>
@@ -653,7 +654,7 @@
                       <span class="chip hero-stat-chip">${bestRankLabel}</span>
                     </div>
                     ${
-                      !editMode ? renderConnectEmailMarkup(profile) : ``
+                      !editMode && !emailConnected ? renderConnectEmailMarkup(profile) : ``
                     }
                     ${
                       editMode
@@ -696,11 +697,11 @@
                       }
                     </div>
                     <div class="hero-profile-actions hero-profile-actions-top">
-                      <button class="button button-primary button-sm" type="button" data-show-connect-email>Save With Email</button>
+                      ${!emailConnected ? `<button class="button button-primary button-sm" type="button" data-show-connect-email>Save With Email</button>` : ""}
                       <a class="button button-muted button-sm" href="${withHubMode("./?edit=1")}">Edit My Profile</a>
                     </div>
                   </div>
-                  ${!editMode ? renderConnectInfoMarkup(profile) : ``}
+                  ${!editMode && !emailConnected ? renderConnectInfoMarkup(profile) : ``}
                   <div class="hero-profile-meta">
                     <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
                     <span class="chip hero-stat-chip">👥 Customers ${collectedCustomers}</span>
@@ -709,7 +710,7 @@
                     <span class="chip hero-stat-chip">${bestRankLabel}</span>
                   </div>
                   ${
-                    !editMode ? renderConnectEmailMarkup(profile) : ``
+                    !editMode && !emailConnected ? renderConnectEmailMarkup(profile) : ``
                   }
                   ${
                     editMode
