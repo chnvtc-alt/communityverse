@@ -572,6 +572,67 @@
     `;
   }
 
+  function renderOverviewPreviewMarkup(profile) {
+    if (!profile || !isMobileHub()) {
+      return "";
+    }
+
+    const customers = Array.isArray(profile.customerCollection)
+      ? profile.customerCollection.filter((entry) => entry && entry.status !== "lost").slice(0, 3)
+      : [];
+    const leaderboardRows = core.getLeaderboard("estimatedSales").slice(0, 4);
+
+    if (!customers.length && !leaderboardRows.length) {
+      return "";
+    }
+
+    const customerMarkup = customers.length
+      ? customers
+          .map((entry) => `
+            <button class="hub-overview-mini-row" type="button" data-overview-customer="${escapeHtml(entry.customerId)}">
+              <img class="hub-overview-avatar" src="${resolveCustomerImage(entry)}" alt="${escapeHtml(entry.customerName)}" onerror="this.onerror=null;this.src='../assets/restaurant-challenge/customers/customer-placeholder.svg';" />
+              <span>${escapeHtml(entry.customerName)}</span>
+            </button>
+          `)
+          .join("")
+      : `<p class="helper" style="margin: 0;">Play a game to collect customers.</p>`;
+
+    const leaderboardMarkup = leaderboardRows.length
+      ? leaderboardRows
+          .map((row) => `
+            <button class="hub-overview-mini-row hub-overview-leader-row ${row.profileId === profile.id ? "hub-overview-current" : ""}" type="button" data-overview-tab="leaderboard">
+              <span class="hub-overview-rank">${row.rank}</span>
+              <span>${escapeHtml(row.restaurantName)}</span>
+              <strong>${core.formatCurrency(row.value)}</strong>
+            </button>
+          `)
+          .join("")
+      : `<p class="helper" style="margin: 0;">No leaderboard entries yet.</p>`;
+
+    return `
+      <div class="hub-overview-preview">
+        <section class="hub-overview-panel">
+          <button class="hub-overview-heading" type="button" data-overview-tab="collection">
+            <span>Recent Customers</span>
+            <span>View all</span>
+          </button>
+          <div class="hub-overview-list">
+            ${customerMarkup}
+          </div>
+        </section>
+        <section class="hub-overview-panel">
+          <button class="hub-overview-heading" type="button" data-overview-tab="leaderboard">
+            <span>Overall Leaders</span>
+            <span>View all</span>
+          </button>
+          <div class="hub-overview-list">
+            ${leaderboardMarkup}
+          </div>
+        </section>
+      </div>
+    `;
+  }
+
   function renderHero() {
     const compactMobile = isMobileHub();
     const profile = core.getActiveProfile();
@@ -675,6 +736,7 @@
                         : ``
                     }
                   </div>
+                  ${renderOverviewPreviewMarkup(profile)}
                 `
                 : `
                 <div class="hero-profile-strip">
@@ -731,6 +793,7 @@
                       : ``
                   }
                 </div>
+                ${renderOverviewPreviewMarkup(profile)}
                 `
                 : profileState === "guest"
                   ? `
@@ -922,6 +985,23 @@
         applyMobileTabVisibility();
       });
     }
+
+    elements.hero.querySelectorAll("[data-overview-tab]").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.activeMobileTab = button.dataset.overviewTab;
+        renderAll();
+        applyMobileTabVisibility();
+      });
+    });
+
+    elements.hero.querySelectorAll("[data-overview-customer]").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.selectedCustomerId = button.dataset.overviewCustomer;
+        state.activeMobileTab = "collection";
+        renderAll();
+        applyMobileTabVisibility();
+      });
+    });
   }
 
   function renderLeaderboard() {
