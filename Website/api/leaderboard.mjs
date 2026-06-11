@@ -1,4 +1,5 @@
 import { buildLeaderboard, profileFromRecord } from "./_lib/restaurant-data.mjs";
+import { fetchRestaurantsFromSupabase } from "./_lib/restaurant-admin.mjs";
 import { hasSupabaseConfig, jsonResponse, supabaseRequest } from "./_lib/supabase.mjs";
 
 async function fetchProfiles() {
@@ -16,7 +17,12 @@ export async function GET(request) {
     const metric = String(url.searchParams.get("metric") || "estimatedSales");
     const restaurantSlug = String(url.searchParams.get("restaurantSlug") || "");
     const profiles = await fetchProfiles();
-    return jsonResponse(buildLeaderboard(profiles, metric, restaurantSlug));
+    const restaurants = await fetchRestaurantsFromSupabase();
+    const publicRestaurantSlugs = restaurants
+      .filter((restaurant) => restaurant.visibleInList !== false)
+      .map((restaurant) => restaurant.slug);
+
+    return jsonResponse(buildLeaderboard(profiles, metric, restaurantSlug, { publicRestaurantSlugs }));
   } catch (error) {
     return jsonResponse(
       { ok: false, error: error instanceof Error ? error.message : String(error) },

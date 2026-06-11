@@ -3484,12 +3484,52 @@
     return buildSession(restaurantSlug, options);
   }
 
+  function isPublicLeaderboardRestaurant(restaurantSlug) {
+    const restaurant = getRestaurantBySlug(restaurantSlug);
+    return Boolean(
+      restaurant &&
+        restaurant.active !== false &&
+        restaurant.playable !== false &&
+        restaurant.visibleInList !== false
+    );
+  }
+
+  function addStats(target, source) {
+    target.gamesPlayed += Number(source.gamesPlayed) || 0;
+    target.totalCorrectAnswers += Number(source.totalCorrectAnswers) || 0;
+    target.regularCustomers += Number(source.regularCustomers) || 0;
+    target.favoriteCustomers += Number(source.favoriteCustomers) || 0;
+    target.occasionalCustomers += Number(source.occasionalCustomers) || 0;
+    target.lostCustomers += Number(source.lostCustomers) || 0;
+    target.totalCustomerValue += Number(source.totalCustomerValue) || 0;
+    target.estimatedSales += Number(source.estimatedSales) || 0;
+  }
+
+  function getPublicLeaderboardStats(profile) {
+    const safeProfile = ensureProfileShape(profile);
+    const entries = Object.entries(safeProfile.restaurantStats || {});
+
+    if (!entries.length) {
+      return safeProfile.stats;
+    }
+
+    return entries.reduce((stats, [restaurantSlug, restaurantStats]) => {
+      if (isPublicLeaderboardRestaurant(restaurantSlug)) {
+        addStats(stats, restaurantStats);
+      }
+
+      return stats;
+    }, buildEmptyStats());
+  }
+
   function getLeaderboard(metric, restaurantSlug) {
     const profiles = getProfiles().map((profile) => {
       const safeProfile = ensureProfileShape(profile);
       const stats = restaurantSlug
-        ? safeProfile.restaurantStats[restaurantSlug] || buildEmptyStats()
-        : safeProfile.stats;
+        ? isPublicLeaderboardRestaurant(restaurantSlug)
+          ? safeProfile.restaurantStats[restaurantSlug] || buildEmptyStats()
+          : buildEmptyStats()
+        : getPublicLeaderboardStats(safeProfile);
       const accuracy = stats.gamesPlayed
         ? (stats.totalCorrectAnswers / (stats.gamesPlayed * 10)) * 100
         : 0;

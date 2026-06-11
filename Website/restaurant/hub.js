@@ -399,8 +399,10 @@
 
   function getSelectedLeaderboardRestaurant() {
     return (
-      core.getRestaurantBySlug(state.leaderboardRestaurantSlug) ||
-      getPlayableRestaurants()[0] ||
+      getPlayableRestaurants({ publicOnly: true }).find(
+        (restaurant) => restaurant.slug === state.leaderboardRestaurantSlug
+      ) ||
+      getPlayableRestaurants({ publicOnly: true })[0] ||
       core.restaurants[0] ||
       null
     );
@@ -1056,7 +1058,7 @@
                 <label class="field" style="gap: 6px;">
                   <span class="field-label">Restaurant</span>
                   <select class="select leaderboard-select" data-control="restaurant" aria-label="Restaurant leaderboard">
-                    ${getPlayableRestaurants()
+                    ${getPlayableRestaurants({ publicOnly: true })
                       .map(
                         (restaurantOption) => `
                           <option value="${restaurantOption.slug}" ${restaurantOption.slug === (restaurant?.slug || "americana") ? "selected" : ""}>

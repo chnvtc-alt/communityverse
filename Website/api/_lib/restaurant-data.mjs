@@ -159,6 +159,34 @@ function restaurantStatsFor(profile, restaurantSlug) {
   return safeProfile.restaurantStats[restaurantSlug] || emptyStats();
 }
 
+function addStats(target, source) {
+  target.gamesPlayed += Number(source.gamesPlayed) || 0;
+  target.totalCorrectAnswers += Number(source.totalCorrectAnswers) || 0;
+  target.regularCustomers += Number(source.regularCustomers) || 0;
+  target.favoriteCustomers += Number(source.favoriteCustomers) || 0;
+  target.occasionalCustomers += Number(source.occasionalCustomers) || 0;
+  target.lostCustomers += Number(source.lostCustomers) || 0;
+  target.totalCustomerValue += Number(source.totalCustomerValue) || 0;
+  target.estimatedSales += Number(source.estimatedSales) || 0;
+}
+
+function publicOverallStatsFor(profile, publicRestaurantSlugs) {
+  const safeProfile = normalizeProfile(profile);
+  const entries = Object.entries(safeProfile.restaurantStats || {});
+
+  if (!entries.length) {
+    return safeProfile.stats;
+  }
+
+  return entries.reduce((stats, [restaurantSlug, restaurantStats]) => {
+    if (publicRestaurantSlugs.has(restaurantSlug)) {
+      addStats(stats, restaurantStats);
+    }
+
+    return stats;
+  }, emptyStats());
+}
+
 export function leaderboardValue(stats, metric) {
   const accuracy = stats.gamesPlayed ? (stats.totalCorrectAnswers / (stats.gamesPlayed * 10)) * 100 : 0;
 
@@ -185,11 +213,21 @@ export function leaderboardValue(stats, metric) {
   return stats.estimatedSales;
 }
 
-export function buildLeaderboard(profiles, metric = "estimatedSales", restaurantSlug = "") {
+export function buildLeaderboard(profiles, metric = "estimatedSales", restaurantSlug = "", options = {}) {
+  const publicRestaurantSlugs = options.publicRestaurantSlugs
+    ? new Set(options.publicRestaurantSlugs)
+    : null;
+
   return (Array.isArray(profiles) ? profiles : [])
     .map(normalizeProfile)
     .map((profile) => {
-      const stats = restaurantStatsFor(profile, restaurantSlug);
+      const stats = restaurantSlug
+        ? publicRestaurantSlugs && !publicRestaurantSlugs.has(restaurantSlug)
+          ? emptyStats()
+          : restaurantStatsFor(profile, restaurantSlug)
+        : publicRestaurantSlugs
+          ? publicOverallStatsFor(profile, publicRestaurantSlugs)
+          : restaurantStatsFor(profile, "");
       const accuracy = stats.gamesPlayed ? (stats.totalCorrectAnswers / (stats.gamesPlayed * 10)) * 100 : 0;
       const value = leaderboardValue(stats, metric);
 
