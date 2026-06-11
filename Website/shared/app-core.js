@@ -1301,8 +1301,43 @@
     return answers.slice(0, count);
   }
 
+  function orderedWrongAnswers(pool, correctAnswer, count = 3) {
+    const normalizedCorrect = normalizeText(correctAnswer);
+    const seen = new Set([normalizedCorrect]);
+    const answers = [];
+
+    pool.forEach((candidate) => {
+      const normalizedCandidate = normalizeText(candidate);
+      if (!normalizedCandidate || seen.has(normalizedCandidate)) {
+        return;
+      }
+
+      seen.add(normalizedCandidate);
+      answers.push(candidate);
+    });
+
+    return answers.slice(0, count);
+  }
+
   function customerQuestionGroup(customer) {
     const type = normalizeCharacterType(customer.characterType || customer.group || customer.groupName || "");
+    const searchable = normalizeText(
+      [
+        customer.name,
+        customer.questionPlace,
+        customer.questionFact,
+        customer.bio,
+        customer.restaurant,
+      ].filter(Boolean).join(" ")
+    );
+    if (
+      /douglasville|douglas county|commissioner|postmaster|mayor|county|courthouse|founder|pioneer|historic|history/.test(searchable)
+    ) {
+      return "local-history";
+    }
+    if (/waitress|diner|restaurant|menu|breakfast|burger|pie|dessert|food|server|cook|chef/.test(searchable)) {
+      return "restaurant";
+    }
     if (type === "historical") {
       return "historical";
     }
@@ -1313,6 +1348,79 @@
       return "local";
     }
     return type || "customer";
+  }
+
+  function topicWrongAnswerBank(group, kind) {
+    const factBanks = {
+      "local-history": [
+        "serving as an early mayor of Douglasville",
+        "publishing one of Douglas County's first newspapers",
+        "helping bring the railroad through early Douglasville",
+        "operating an early general store in Douglas County",
+        "donating land for one of Douglasville's first public buildings",
+        "serving as an early judge in Douglas County",
+      ],
+      historical: [
+        "serving as a famous Civil War general",
+        "signing an important early American treaty",
+        "leading a major expedition across the American frontier",
+        "serving as an early governor during a time of expansion",
+        "writing a famous speech remembered in American history",
+        "commanding troops in a major national conflict",
+      ],
+      storybook: [
+        "following a mysterious path through an enchanted forest",
+        "solving a riddle in a magical kingdom",
+        "meeting strange characters on a fairy-tale journey",
+        "protecting a hidden treasure in an old story",
+        "escaping trouble with a clever trick",
+        "making a famous wish that changed the story",
+      ],
+      restaurant: [
+        "creating a signature dish that regulars still order",
+        "running the busiest breakfast shift in town",
+        "winning a local dessert contest",
+        "welcoming guests at a favorite neighborhood restaurant",
+        "serving a famous house special",
+        "helping make the restaurant a local gathering place",
+      ],
+    };
+    const placeBanks = {
+      "local-history": [
+        "early Douglasville",
+        "the old Douglas County courthouse square",
+        "historic downtown Douglasville",
+        "an early Douglas County post office",
+        "the railroad-era center of Douglasville",
+        "a pioneer community in west Georgia",
+      ],
+      historical: [
+        "the American frontier",
+        "the Civil War era",
+        "colonial America",
+        "the Revolutionary era",
+        "a nineteenth-century battlefield",
+        "early American public life",
+      ],
+      storybook: [
+        "an enchanted forest",
+        "a fairy-tale village",
+        "a mysterious castle",
+        "a magical garden",
+        "a storybook road",
+        "a hidden kingdom",
+      ],
+      restaurant: [
+        "a busy diner counter",
+        "a neighborhood restaurant kitchen",
+        "a local breakfast spot",
+        "a family dining room",
+        "a dessert display case",
+        "a hometown cafe",
+      ],
+    };
+    const banks = kind === "place" ? placeBanks : factBanks;
+    return banks[group] || [];
   }
 
   function addToQuestionPool(pools, group, value) {
@@ -1328,10 +1436,13 @@
     pools.get(group).push(answer);
   }
 
-  function groupedWrongAnswers(groupedPool, fallbackPool, group, correctAnswer, count = 3) {
+  function groupedWrongAnswers(groupedPool, fallbackPool, group, correctAnswer, count = 3, kind = "fact") {
+    const topicBank = topicWrongAnswerBank(group, kind);
     const primary = groupedPool.get(group) || [];
-    const combined = [...primary, ...fallbackPool];
-    return uniqueWrongAnswers(combined, correctAnswer, count);
+    const relatedGroups = group === "local-history" ? ["historical"] : group === "historical" ? ["local-history"] : [];
+    const related = relatedGroups.flatMap((relatedGroup) => groupedPool.get(relatedGroup) || []);
+    const combined = [...shuffle(topicBank), ...shuffle(primary), ...shuffle(related), ...shuffle(fallbackPool)];
+    return orderedWrongAnswers(combined, correctAnswer, count);
   }
 
   function buildCustomerQuestions() {
@@ -1388,7 +1499,7 @@
         difficulty: "hard",
         prompt: `Which place or story is ${customer.name} most associated with?`,
         correctAnswer: customer.questionPlace,
-        wrongAnswers: groupedWrongAnswers(placePoolsByGroup, placePool, questionGroup, customer.questionPlace, 3),
+        wrongAnswers: groupedWrongAnswers(placePoolsByGroup, placePool, questionGroup, customer.questionPlace, 3, "place"),
       });
 
       generated.push({
