@@ -1330,8 +1330,8 @@
                         <div class="customer-mini-copy">
                           <p class="customer-name">${escapeHtml(entry.customerName)}</p>
                           <p class="customer-meta">${escapeHtml(entryStatusLabel)}</p>
-                          ${entryProgress ? `<p class="customer-favorite-progress customer-favorite-progress-mini">${escapeHtml(entryProgress)}</p>` : ""}
                         </div>
+                        ${entryProgress ? `<p class="customer-favorite-progress customer-favorite-progress-mini">${escapeHtml(entryProgress)}</p>` : ""}
                       </div>
                     </button>
                   `;
