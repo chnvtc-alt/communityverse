@@ -176,7 +176,16 @@
             <p id="customer-count" class="count">0 customers</p>
             <p class="subtle">Customers now live in Supabase and still fall back to the repo seed file.</p>
           </div>
-          <button id="refresh-customers-button" class="button button-secondary" type="button">Refresh</button>
+          <div class="list-actions">
+            <label class="inline-control">
+              Sort
+              <select id="customer-sort-mode">
+                <option value="recent">Most recent</option>
+                <option value="alpha">Alphabetical</option>
+              </select>
+            </label>
+            <button id="refresh-customers-button" class="button button-secondary" type="button">Refresh</button>
+          </div>
         </div>
 
         <div id="customer-message" class="message" role="status" hidden></div>

@@ -34,6 +34,7 @@ const elements = {
   newCustomerButton: document.querySelector("#new-customer-button"),
   refreshCustomersButton: document.querySelector("#refresh-customers-button"),
   clearCustomerFiltersButton: document.querySelector("#clear-customer-filters-button"),
+  customerSortMode: document.querySelector("#customer-sort-mode"),
   customerCount: document.querySelector("#customer-count"),
   customerList: document.querySelector("#customer-list"),
   customerMessage: document.querySelector("#customer-message"),
@@ -140,6 +141,7 @@ const filterIds = [
 let adminKey = sessionStorage.getItem(KEY_STORAGE) || "";
 let questions = [];
 let customers = [];
+let customerSortMode = "recent";
 let restaurants = [];
 let profiles = [];
 let filterTimer = 0;
@@ -604,6 +606,8 @@ function normalizeCustomer(customer) {
   safeCustomer.questionFact = String(safeCustomer.questionFact || "").trim();
   safeCustomer.active = safeCustomer.active !== false;
   safeCustomer.sortOrder = Number(safeCustomer.sortOrder) || 0;
+  safeCustomer.createdAt = String(safeCustomer.createdAt || safeCustomer.created_at || "").trim();
+  safeCustomer.updatedAt = String(safeCustomer.updatedAt || safeCustomer.updated_at || "").trim();
   return safeCustomer;
 }
 
@@ -800,6 +804,27 @@ function customerFilterParams() {
   return params;
 }
 
+function customerTimestamp(customer) {
+  const value = Date.parse(customer.updatedAt || customer.createdAt || "");
+  return Number.isFinite(value) ? value : 0;
+}
+
+function sortedCustomersForDisplay() {
+  return [...customers].sort((left, right) => {
+    if (customerSortMode === "alpha") {
+      return left.name.localeCompare(right.name, undefined, { sensitivity: "base" });
+    }
+
+    const timeDelta = customerTimestamp(right) - customerTimestamp(left);
+    if (timeDelta) return timeDelta;
+
+    const sortDelta = (Number(right.sortOrder) || 0) - (Number(left.sortOrder) || 0);
+    if (sortDelta) return sortDelta;
+
+    return left.name.localeCompare(right.name, undefined, { sensitivity: "base" });
+  });
+}
+
 function renderCustomers() {
   elements.customerCount.textContent = `${customers.length} customer${customers.length === 1 ? "" : "s"}`;
   populateCustomerSuggestions();
@@ -809,7 +834,7 @@ function renderCustomers() {
     return;
   }
 
-  elements.customerList.innerHTML = customers
+  elements.customerList.innerHTML = sortedCustomersForDisplay()
     .map((customer) => {
       const chips = [
         formatRestaurantLabel(customer.restaurant),
@@ -1775,6 +1800,11 @@ elements.clearCustomerFiltersButton.addEventListener("click", () => {
   });
   elements.customerFilterStatus.value = "all";
   loadCustomers();
+});
+
+elements.customerSortMode.addEventListener("change", () => {
+  customerSortMode = elements.customerSortMode.value === "alpha" ? "alpha" : "recent";
+  renderCustomers();
 });
 
 elements.clearRestaurantFiltersButton.addEventListener("click", () => {

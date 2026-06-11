@@ -67,6 +67,8 @@ export function normalizeCustomer(customer) {
   safeCustomer.questionFact = String(safeCustomer.questionFact || "").trim();
   safeCustomer.active = safeCustomer.active !== false;
   safeCustomer.sortOrder = Number(safeCustomer.sortOrder) || 0;
+  safeCustomer.createdAt = String(safeCustomer.createdAt || safeCustomer.created_at || "").trim();
+  safeCustomer.updatedAt = String(safeCustomer.updatedAt || safeCustomer.updated_at || "").trim();
   safeCustomer.customQuestions = Array.isArray(safeCustomer.customQuestions)
     ? safeCustomer.customQuestions.map((question) => ({
         id: String(question?.id || "").trim(),
@@ -102,6 +104,8 @@ export function customerFromRecord(record) {
     bio: record.bio ?? payload.bio,
     questionPlace: record.question_place ?? payload.questionPlace,
     questionFact: record.question_fact ?? payload.questionFact,
+    createdAt: record.created_at ?? payload.createdAt,
+    updatedAt: record.updated_at ?? payload.updatedAt,
   });
 }
 
