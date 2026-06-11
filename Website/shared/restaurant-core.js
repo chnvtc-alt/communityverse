@@ -2901,7 +2901,50 @@
     return !getRestaurantQuestionSlug(question);
   }
 
+  function getRestaurantAreaSlugs(restaurant) {
+    const areaAliases = {
+      douglasville: "douglas-county",
+      "douglas-county": "douglasville",
+      ga: "georgia",
+      georgia: "georgia",
+    };
+    const sourceValues = [
+      restaurant.areaSlug,
+      restaurant.location,
+      restaurant.description,
+    ].filter(Boolean);
+    const areaSlugs = new Set();
+
+    sourceValues.forEach((value) => {
+      const text = String(value || "");
+      const parts = [text, ...text.split(/[,/|]+|\s+-\s+|\s+and\s+/i)];
+
+      parts.forEach((part) => {
+        const slug = slugify(part);
+        if (slug) {
+          areaSlugs.add(slug);
+        }
+        if (areaAliases[slug]) {
+          areaSlugs.add(areaAliases[slug]);
+        }
+      });
+    });
+
+    return areaSlugs;
+  }
+
+  function isAreaQuestionForRestaurant(question, restaurant, restaurantAreaSlugs) {
+    const questionAreaSlug = slugify(question.areaSlug || "");
+    const questionTags = Array.isArray(question.tags) ? question.tags.map(slugify) : [];
+
+    return (
+      restaurantAreaSlugs.has(questionAreaSlug) ||
+      questionTags.some((tag) => restaurantAreaSlugs.has(tag))
+    );
+  }
+
   function getQuestionPoolForSession(restaurant, customer) {
+    const restaurantAreaSlugs = getRestaurantAreaSlugs(restaurant);
     const restaurantQuestions = questions.filter(
       (question) => getRestaurantQuestionSlug(question) === restaurant.slug
     );
@@ -2914,7 +2957,7 @@
         : questions.filter(
             (question) =>
               question.scope === "area" &&
-              question.areaSlug === restaurant.areaSlug &&
+              isAreaQuestionForRestaurant(question, restaurant, restaurantAreaSlugs) &&
               isSharedQuestion(question)
           );
     const customerQuestions = questions.filter((question) => {
@@ -3031,8 +3074,8 @@
     const challengingCustomer = customer.characterType === "historical" || customer.characterType === "storybook";
     const customerQuestionCount = isAmericanaDemo ? 0 : challengingCustomer ? 3 : 1;
     const focusQuestionCount = isAmericanaDemo ? 0 : challengingCustomer ? 0 : 1;
-    const globalQuestionCount = isAmericanaDemo ? 8 : challengingCustomer ? 2 : 3;
-    const areaQuestionCount = 1;
+    const areaQuestionCount = isAmericanaDemo ? 1 : Math.min(2, pools.areaQuestions.length);
+    const globalQuestionCount = isAmericanaDemo ? 8 : challengingCustomer ? 3 - areaQuestionCount : 4 - areaQuestionCount;
     const globalQuestionPool = isAmericanaDemo
       ? pools.globalQuestions.filter(isGeneralTriviaQuestion)
       : pools.globalQuestions;
