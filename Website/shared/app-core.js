@@ -1301,6 +1301,39 @@
     return answers.slice(0, count);
   }
 
+  function customerQuestionGroup(customer) {
+    const type = normalizeCharacterType(customer.characterType || customer.group || customer.groupName || "");
+    if (type === "historical") {
+      return "historical";
+    }
+    if (type === "storybook" || type === "cryptid") {
+      return "storybook";
+    }
+    if (type === "communityverse" || type === "exclusive") {
+      return "local";
+    }
+    return type || "customer";
+  }
+
+  function addToQuestionPool(pools, group, value) {
+    const answer = String(value || "").trim();
+    if (!answer) {
+      return;
+    }
+
+    if (!pools.has(group)) {
+      pools.set(group, []);
+    }
+
+    pools.get(group).push(answer);
+  }
+
+  function groupedWrongAnswers(groupedPool, fallbackPool, group, correctAnswer, count = 3) {
+    const primary = groupedPool.get(group) || [];
+    const combined = [...primary, ...fallbackPool];
+    return uniqueWrongAnswers(combined, correctAnswer, count);
+  }
+
   function buildCustomerQuestions() {
     const featuredCustomers = customers.filter(
       (customer) => customer.questionPlace && customer.questionFact
@@ -1312,10 +1345,19 @@
     const factPool = Array.from(
       new Set(featuredCustomers.map((customer) => customer.questionFact).filter(Boolean))
     );
+    const placePoolsByGroup = new Map();
+    const factPoolsByGroup = new Map();
+
+    featuredCustomers.forEach((customer) => {
+      const group = customerQuestionGroup(customer);
+      addToQuestionPool(placePoolsByGroup, group, customer.questionPlace);
+      addToQuestionPool(factPoolsByGroup, group, customer.questionFact);
+    });
 
     const generated = [];
 
     featuredCustomers.forEach((customer) => {
+      const questionGroup = customerQuestionGroup(customer);
       if (Array.isArray(customer.customQuestions) && customer.customQuestions.length) {
         customer.customQuestions.forEach((question) => {
           generated.push({
@@ -1346,7 +1388,7 @@
         difficulty: "hard",
         prompt: `Which place or story is ${customer.name} most associated with?`,
         correctAnswer: customer.questionPlace,
-        wrongAnswers: uniqueWrongAnswers(placePool, customer.questionPlace, 3),
+        wrongAnswers: groupedWrongAnswers(placePoolsByGroup, placePool, questionGroup, customer.questionPlace, 3),
       });
 
       generated.push({
@@ -1360,7 +1402,7 @@
         difficulty: "hard",
         prompt: `What is ${customer.name} best known for?`,
         correctAnswer: customer.questionFact,
-        wrongAnswers: uniqueWrongAnswers(factPool, customer.questionFact, 3),
+        wrongAnswers: groupedWrongAnswers(factPoolsByGroup, factPool, questionGroup, customer.questionFact, 3),
       });
 
       if (customer.characterType === "historical") {
@@ -1375,7 +1417,7 @@
           difficulty: "hard",
           prompt: `Which clue best matches ${customer.name}?`,
           correctAnswer: customer.questionFact,
-          wrongAnswers: uniqueWrongAnswers(factPool, customer.questionFact, 3),
+          wrongAnswers: groupedWrongAnswers(factPoolsByGroup, factPool, questionGroup, customer.questionFact, 3),
         });
       }
     });
