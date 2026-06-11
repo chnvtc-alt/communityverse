@@ -132,6 +132,19 @@ export async function fetchRestaurantsFromSupabase({ includeHidden = false } = {
   return Array.isArray(rows) ? rows.map(restaurantFromRecord).filter(Boolean) : [];
 }
 
+export async function fetchRestaurantBySlugFromSupabase(slug, { includeHidden = false } = {}) {
+  const normalizedSlug = slugifyRestaurant(slug);
+  if (!normalizedSlug) {
+    return null;
+  }
+
+  const filters = includeHidden ? "" : "&active=eq.true&playable=eq.true";
+  const rows = await supabaseRequest(
+    `restaurants?select=id,active,playable,visible_in_list,sort_order,slug,name,public_game_name,location,area_slug,description,hero_image,logo_square,logo_horizontal,primary_color,secondary_color,accent_color,opening_copy,created_at,updated_at,payload_json&slug=eq.${encodeURIComponent(normalizedSlug)}${filters}&limit=1`
+  );
+  return Array.isArray(rows) && rows.length ? restaurantFromRecord(rows[0]) : null;
+}
+
 export async function fetchAdminRestaurantsFromSupabase() {
   const rows = await supabaseRequest(
     "restaurants?select=id,active,playable,visible_in_list,sort_order,slug,name,public_game_name,location,area_slug,description,hero_image,logo_square,logo_horizontal,primary_color,secondary_color,accent_color,opening_copy,created_at,updated_at,payload_json&order=sort_order.asc,updated_at.asc"

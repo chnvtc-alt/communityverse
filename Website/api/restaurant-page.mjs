@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { fetchRestaurantsFromSupabase, slugifyRestaurant } from "./_lib/restaurant-admin.mjs";
+import { fetchRestaurantBySlugFromSupabase, slugifyRestaurant } from "./_lib/restaurant-admin.mjs";
 import { hasSupabaseConfig } from "./_lib/supabase.mjs";
 
 const defaultRestaurants = [
@@ -66,8 +66,7 @@ async function getRestaurant(slug) {
 
   if (hasSupabaseConfig()) {
     try {
-      const restaurants = await fetchRestaurantsFromSupabase();
-      const restaurant = restaurants.find((entry) => entry.slug === normalizedSlug);
+      const restaurant = await fetchRestaurantBySlugFromSupabase(normalizedSlug);
       if (restaurant) {
         return restaurant;
       }
