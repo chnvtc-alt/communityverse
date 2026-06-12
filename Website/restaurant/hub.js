@@ -256,9 +256,9 @@
   }
 
   function bindHowToPlay() {
-    if (elements.splashHowToPlayButton) {
-      elements.splashHowToPlayButton.addEventListener("click", openHowToPlay);
-    }
+    document.querySelectorAll("[data-how-to-play-button]").forEach((button) => {
+      button.addEventListener("click", openHowToPlay);
+    });
 
     if (elements.howToPlayModal) {
       elements.howToPlayModal.querySelectorAll("[data-how-to-play-close]").forEach((button) => {
@@ -1096,8 +1096,9 @@
 
     elements.leaderboard.innerHTML = `
       <div class="leaderboard-head">
-        <div>
+        <div class="leaderboard-title-stack">
           <h2 class="section-title">Leaderboards</h2>
+          <button class="button button-muted button-sm leaderboard-help-button" type="button" data-how-to-play-button>How to Play</button>
         </div>
         <div class="leaderboard-controls">
           <label class="field" style="gap: 6px;">
@@ -1172,6 +1173,10 @@
         }
         renderAll();
       });
+    });
+
+    elements.leaderboard.querySelectorAll("[data-how-to-play-button]").forEach((button) => {
+      button.addEventListener("click", openHowToPlay);
     });
   }
 

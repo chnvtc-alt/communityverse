@@ -1093,6 +1093,16 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   gap: 14px;
 }
 
+.leaderboard-title-stack {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.leaderboard-help-button {
+  min-height: 34px;
+}
+
 .leaderboard-controls {
   display: flex;
   flex-wrap: wrap;
