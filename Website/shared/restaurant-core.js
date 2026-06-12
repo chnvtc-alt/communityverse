@@ -1135,6 +1135,11 @@
     safeCustomer.focusTag = safeCustomer.restaurant;
     safeCustomer.image = normalizeAssetPath(safeCustomer.image);
     safeCustomer.bio = String(safeCustomer.bio || "").trim();
+    safeCustomer.areaSlug = slugify(safeCustomer.areaSlug || safeCustomer.area_slug || "");
+    safeCustomer.location = String(safeCustomer.location || "").trim();
+    safeCustomer.tags = Array.isArray(safeCustomer.tags)
+      ? safeCustomer.tags.map((tag) => String(tag || "").trim()).filter(Boolean)
+      : [];
     safeCustomer.questionPlace = String(safeCustomer.questionPlace || "").trim();
     safeCustomer.questionFact = String(safeCustomer.questionFact || "").trim();
     safeCustomer.active = safeCustomer.active !== false;
