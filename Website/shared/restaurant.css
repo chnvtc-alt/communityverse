@@ -322,6 +322,10 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   background: rgba(255, 255, 255, 0.68);
 }
 
+.how-to-play-topic-wide {
+  grid-column: 1 / -1;
+}
+
 .how-to-play-topic h3 {
   margin: 0;
   color: var(--green);
