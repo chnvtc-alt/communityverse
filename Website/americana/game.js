@@ -215,10 +215,9 @@
   }
 
   function bindHowToPlay() {
-    const button = document.getElementById("reveal-how-to-play-button");
-    if (button) {
+    document.querySelectorAll("[data-how-to-play-button]").forEach((button) => {
       button.addEventListener("click", openHowToPlay);
-    }
+    });
 
     const modal = document.getElementById("how-to-play-modal");
     if (modal) {
@@ -236,6 +235,14 @@
         }
       });
     }
+  }
+
+  function removeHowToPlayModals() {
+    document.querySelectorAll("#how-to-play-modal").forEach((modal) => {
+      modal.remove();
+    });
+    document.body.classList.remove("how-to-play-open");
+    howToPlayReturnFocus = null;
   }
 
   function getProfile() {
@@ -609,6 +616,7 @@
   }
 
   function renderCustomerRevealPanel(session) {
+    removeHowToPlayModals();
     const customer = session.customer;
     const customerBio = core.getCustomerBio(customer);
     const thresholds = core.getCustomerWinThresholds(customer);
@@ -685,7 +693,7 @@
             <div class="button-row customer-reveal-actions">
               <button class="button button-hot" id="begin-questions-button" type="button">Begin Questions</button>
               <a class="button button-muted" href="/restaurant/?hub=1">View My Restaurant</a>
-              <button class="button button-muted" id="reveal-how-to-play-button" type="button">How to Play</button>
+              <button class="button button-muted" id="reveal-how-to-play-button" type="button" data-how-to-play-button>How to Play</button>
             </div>
           </div>
         </div>
@@ -924,6 +932,7 @@
   }
 
   function renderResultPanel(session) {
+    removeHowToPlayModals();
     const profile = getProfile();
     const summary = profile ? core.getProfileSummary(profile, restaurantSlug) : null;
     const isGuest = Boolean(profile && profile.isGuest);
@@ -1078,11 +1087,14 @@
                 <div class="button-row result-followup-actions">
                   <button class="button button-hot" id="play-again-button" type="button">Play Again</button>
                   <a class="button button-muted" href="/restaurant/?hub=1">View My Restaurant</a>
+                  <button class="button button-muted" id="result-how-to-play-button" type="button" data-how-to-play-button>How to Play</button>
                 </div>
               `
         }
+        ${howToPlayModalHtml()}
       </div>
     `;
+    bindHowToPlay();
 
     const toggleBioButton = document.getElementById("toggle-bio-button");
     if (toggleBioButton) {
