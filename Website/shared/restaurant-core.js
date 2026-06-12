@@ -3101,6 +3101,55 @@
     );
   }
 
+  function getCustomerAreaMatchSlugs(restaurant) {
+    const areaSlugs = getRestaurantAreaSlugs(restaurant);
+    [...areaSlugs].forEach((areaSlug) => {
+      String(areaSlug || "").split("-").forEach((piece) => {
+        if (piece.length >= 4) {
+          areaSlugs.add(piece);
+        }
+      });
+    });
+    return areaSlugs;
+  }
+
+  function customerMatchesRestaurantArea(customer, restaurantAreaSlugs) {
+    if (!restaurantAreaSlugs.size) {
+      return false;
+    }
+
+    const customerValues = [
+      customer.areaSlug,
+      customer.location,
+      customer.questionPlace,
+      customer.questionFact,
+      customer.bio,
+      customer.name,
+      ...(Array.isArray(customer.tags) ? customer.tags : []),
+    ].filter(Boolean);
+
+    return customerValues.some((value) => {
+      const text = String(value || "");
+      const parts = [text, ...text.split(/[,/|]+|\s+-\s+|\s+and\s+/i)];
+      return parts.some((part) => {
+        const slug = slugify(part);
+        if (!slug) {
+          return false;
+        }
+        if (restaurantAreaSlugs.has(slug)) {
+          return true;
+        }
+        const slugPieces = slug.split("-");
+        return [...restaurantAreaSlugs].some(
+          (areaSlug) =>
+            areaSlug.length >= 4 &&
+            (slugPieces.includes(areaSlug) ||
+              areaSlug.split("-").some((piece) => piece.length >= 4 && slugPieces.includes(piece)))
+        );
+      });
+    });
+  }
+
   function getQuestionPoolForSession(restaurant, customer) {
     const restaurantAreaSlugs = getRestaurantAreaSlugs(restaurant);
     const restaurantQuestions = questions.filter(
@@ -3307,14 +3356,56 @@
     return pickOne(weighted);
   }
 
-  function pickCustomerForRestaurant(restaurant, profile) {
+  function pickCustomerForRestaurant(restaurant, profile, candidateCustomerIds = []) {
     const recentCustomerIds = (profile.recentSessions || [])
       .slice(0, 3)
       .map((session) => session.customerId);
 
-    const allCustomers = getCustomersForRestaurant(restaurant.slug);
+    const candidateSet = new Set(candidateCustomerIds);
+    const allCustomers = getCustomersForRestaurant(restaurant.slug)
+      .filter((customer) => !candidateSet.size || candidateSet.has(customer.id));
     const ownedCustomerIds = getOwnedCustomerIdsForRestaurant(profile, restaurant.slug);
+    const areaSlugs = getCustomerAreaMatchSlugs(restaurant);
     const collection = ensureProfileShape(profile).customerCollection;
+    const isPhotoReady = (customer) =>
+      customer.image && !customer.image.includes("customer-placeholder");
+    const unownedRecentSafe = (customer) =>
+      !recentCustomerIds.includes(customer.id) && !ownedCustomerIds.has(customer.id);
+    const pickFrom = (customers) => {
+      const photoReady = customers.filter(isPhotoReady);
+      return weightedCustomerPick(photoReady.length ? photoReady : customers);
+    };
+    const restaurantSpecific = allCustomers.filter(
+      (customer) =>
+        customer.restaurant === restaurant.slug &&
+        unownedRecentSafe(customer)
+    );
+
+    if (restaurantSpecific.length) {
+      return pickFrom(restaurantSpecific);
+    }
+
+    const areaSpecific = allCustomers.filter(
+      (customer) =>
+        customer.restaurant === "shared" &&
+        unownedRecentSafe(customer) &&
+        customerMatchesRestaurantArea(customer, areaSlugs)
+    );
+
+    if (areaSpecific.length) {
+      return pickFrom(areaSpecific);
+    }
+
+    const sharedSpecific = allCustomers.filter(
+      (customer) =>
+        customer.restaurant === "shared" &&
+        unownedRecentSafe(customer)
+    );
+
+    if (sharedSpecific.length) {
+      return pickFrom(sharedSpecific);
+    }
+
     const favoriteReplayIds = new Set(
       collection
         .filter(
@@ -3328,8 +3419,7 @@
       (customer) =>
         favoriteReplayIds.has(customer.id) &&
         !recentCustomerIds.includes(customer.id) &&
-        customer.image &&
-        !customer.image.includes("customer-placeholder")
+        isPhotoReady(customer)
     );
 
     if (favoriteReplayCandidates.length && Math.random() < 0.25) {
@@ -3340,9 +3430,7 @@
       (customer) =>
         !recentCustomerIds.includes(customer.id) && !ownedCustomerIds.has(customer.id)
     );
-    const photoReady = (preferred.length ? preferred : allCustomers).filter(
-      (customer) => customer.image && !customer.image.includes("customer-placeholder")
-    );
+    const photoReady = (preferred.length ? preferred : allCustomers).filter(isPhotoReady);
 
     const selectable = photoReady.length
       ? photoReady
@@ -3376,7 +3464,9 @@
     const preferredCustomer = preferredCustomerId
       ? allCustomers.find((customer) => customer.id === preferredCustomerId) || null
       : null;
-    const featuredGuests = getFeaturedGuestLineup(workingProfile, restaurant.slug, 4);
+    const featuredGuests = candidateCustomerIds.length
+      ? getFeaturedGuestLineup(workingProfile, restaurant.slug, 4)
+      : [];
     const selectableFeaturedGuests = candidateCustomerIds.length
       ? featuredGuests.filter((customer) => candidateCustomerIds.includes(customer.id))
       : featuredGuests;
@@ -3385,7 +3475,7 @@
         ? weightedCustomerPick(selectableFeaturedGuests)
         : featuredGuests.length
           ? weightedCustomerPick(featuredGuests)
-        : pickCustomerForRestaurant(restaurant, profile));
+        : pickCustomerForRestaurant(restaurant, profile, candidateCustomerIds));
     if (!customer) {
       return null;
     }
