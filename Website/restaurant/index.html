@@ -25,9 +25,9 @@
         }
       })();
     </script>
-    <link rel="stylesheet" href="../shared/restaurant.css" />
+    <link rel="stylesheet" href="../shared/restaurant.css?v=how-to-play" />
     <script defer src="../shared/app-core.js?v=email-recovery"></script>
-    <script defer src="hub.js?v=email-recovery"></script>
+    <script defer src="hub.js?v=how-to-play"></script>
   </head>
   <body data-page="hub">
     <main class="app-shell">
@@ -57,6 +57,7 @@
               <a class="button button-primary challenge-splash-primary" id="splash-play-button" href="/americana/">Start Playing</a>
               <a class="button button-muted challenge-splash-secondary" id="splash-my-restaurant-button" href="/restaurant/?hub=1#hero-panel">My Restaurant</a>
               <a class="button button-muted challenge-splash-secondary" id="splash-leaderboard-button" href="/restaurant/?hub=1#leaderboard-panel">Leaderboard</a>
+              <button class="button button-muted challenge-splash-secondary" id="splash-how-to-play-button" type="button">How to Play</button>
             </div>
             <div class="challenge-progress-card" aria-label="Player restaurant progress">
               <div class="challenge-progress-heading">
@@ -78,6 +79,47 @@
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section class="how-to-play-modal hidden" id="how-to-play-modal" aria-hidden="true">
+        <div class="how-to-play-backdrop" data-how-to-play-close></div>
+        <div
+          class="how-to-play-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="how-to-play-title"
+          aria-describedby="how-to-play-summary"
+        >
+          <button class="how-to-play-close" type="button" data-how-to-play-close aria-label="Close How to Play">Close</button>
+          <p class="kicker">Restaurant Challenge</p>
+          <h2 class="section-title" id="how-to-play-title">How to Play</h2>
+          <p class="copy" id="how-to-play-summary">
+            Restaurant Challenge is a quick trivia game where each round helps your restaurant earn customers.
+          </p>
+          <div class="how-to-play-topics">
+            <section class="how-to-play-topic">
+              <h3>The Short Version</h3>
+              <p>Choose a restaurant, answer 10 questions, and try to earn a customer for your own restaurant.</p>
+            </section>
+            <section class="how-to-play-topic">
+              <h3>What Are Customers?</h3>
+              <p>Customers are the people your restaurant collects when you do well in a game. They help your restaurant grow.</p>
+            </section>
+            <section class="how-to-play-topic">
+              <h3>Occasional, Regular, and Favorite</h3>
+              <p>A better score earns a stronger customer. Regular customers can become Favorites after more successful visits.</p>
+            </section>
+            <section class="how-to-play-topic">
+              <h3>Leaderboard</h3>
+              <p>The leaderboard compares restaurants by sales, customers, rating, games played, and other progress.</p>
+            </section>
+            <section class="how-to-play-topic">
+              <h3>For Restaurant Owners</h3>
+              <p>You can share your restaurant game link and let players answer local trivia while your restaurant collects customers.</p>
+            </section>
+          </div>
+          <button class="button button-primary how-to-play-return" type="button" data-how-to-play-close>Back to Restaurant Challenge</button>
         </div>
       </section>
 

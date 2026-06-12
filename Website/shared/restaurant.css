@@ -255,6 +255,96 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   background: rgba(255, 255, 255, 0.92);
 }
 
+.how-to-play-open {
+  overflow: hidden;
+}
+
+.how-to-play-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.how-to-play-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(24, 32, 28, 0.42);
+}
+
+.how-to-play-panel {
+  position: relative;
+  display: grid;
+  gap: 14px;
+  width: min(100%, 760px);
+  max-height: min(760px, calc(100dvh - 36px));
+  overflow: auto;
+  padding: 28px;
+  border: 1px solid rgba(93, 116, 105, 0.2);
+  border-radius: 24px;
+  background: #fffaf1;
+  box-shadow: 0 24px 70px rgba(34, 47, 42, 0.28);
+}
+
+.how-to-play-panel .section-title,
+.how-to-play-panel .copy {
+  margin: 0;
+}
+
+.how-to-play-close {
+  justify-self: end;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid rgba(93, 116, 105, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--ink);
+  font-family: Arial, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.how-to-play-topics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.how-to-play-topic {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid rgba(93, 116, 105, 0.14);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.how-to-play-topic h3 {
+  margin: 0;
+  color: var(--green);
+  font-family: Arial, sans-serif;
+  font-size: 0.84rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.how-to-play-topic p {
+  margin: 0;
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.how-to-play-return {
+  justify-self: center;
+  min-width: min(100%, 260px);
+}
+
 .challenge-progress-card {
   display: grid;
   gap: 10px;
@@ -2483,6 +2573,34 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
   .challenge-splash-actions .button {
     width: 100%;
+  }
+
+  #splash-leaderboard-button {
+    display: none;
+  }
+
+  .how-to-play-modal {
+    align-items: end;
+    padding: 10px;
+  }
+
+  .how-to-play-panel {
+    max-height: calc(100dvh - 20px);
+    padding: 20px 16px 16px;
+    border-radius: 22px;
+  }
+
+  .how-to-play-topics {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .how-to-play-topic {
+    padding: 12px;
+  }
+
+  .how-to-play-topic p {
+    font-size: 0.9rem;
   }
 
   .challenge-progress-strip {

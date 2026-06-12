@@ -82,6 +82,8 @@
     splashPlayButton: document.getElementById("splash-play-button"),
     splashMyRestaurantButton: document.getElementById("splash-my-restaurant-button"),
     splashLeaderboardButton: document.getElementById("splash-leaderboard-button"),
+    splashHowToPlayButton: document.getElementById("splash-how-to-play-button"),
+    howToPlayModal: document.getElementById("how-to-play-modal"),
     splashPlayerRestaurantName: document.getElementById("splash-player-restaurant-name"),
     splashStatsScope: document.getElementById("splash-stats-scope"),
     splashRatingBadge: document.getElementById("splash-rating-badge"),
@@ -92,6 +94,8 @@
     leaderboard: document.getElementById("leaderboard-panel"),
     sections: document.querySelector(".grid-two"),
   };
+
+  let howToPlayReturnFocus = null;
 
   function isMobileHub() {
     return window.matchMedia(mobileHubQuery).matches;
@@ -216,6 +220,57 @@
       state.selectedDirectorySlug = event.currentTarget.value;
       renderSplashChooser();
     };
+  }
+
+  function openHowToPlay() {
+    if (!elements.howToPlayModal) {
+      return;
+    }
+
+    howToPlayReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : elements.splashHowToPlayButton;
+    elements.howToPlayModal.classList.remove("hidden");
+    elements.howToPlayModal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("how-to-play-open");
+
+    requestAnimationFrame(() => {
+      const closeButton = elements.howToPlayModal.querySelector("[data-how-to-play-close]");
+      if (closeButton instanceof HTMLElement) {
+        closeButton.focus();
+      }
+    });
+  }
+
+  function closeHowToPlay() {
+    if (!elements.howToPlayModal) {
+      return;
+    }
+
+    elements.howToPlayModal.classList.add("hidden");
+    elements.howToPlayModal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("how-to-play-open");
+
+    if (howToPlayReturnFocus instanceof HTMLElement) {
+      howToPlayReturnFocus.focus();
+    }
+    howToPlayReturnFocus = null;
+  }
+
+  function bindHowToPlay() {
+    if (elements.splashHowToPlayButton) {
+      elements.splashHowToPlayButton.addEventListener("click", openHowToPlay);
+    }
+
+    if (elements.howToPlayModal) {
+      elements.howToPlayModal.querySelectorAll("[data-how-to-play-close]").forEach((button) => {
+        button.addEventListener("click", closeHowToPlay);
+      });
+    }
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && elements.howToPlayModal && !elements.howToPlayModal.classList.contains("hidden")) {
+        closeHowToPlay();
+      }
+    });
   }
 
   function getSplashStatsOptions(profile, selectedRestaurantSlug) {
@@ -1411,6 +1466,7 @@
       .replace(/'/g, "&#39;");
   }
 
+  bindHowToPlay();
   renderAll();
   if (core.whenReady) {
     core.whenReady().then(async () => {
