@@ -18,6 +18,8 @@
   const resultVisibleSessionState = {
     sessionId: "",
   };
+  let howToPlayReturnFocus = null;
+  let howToPlayKeydownBound = false;
 
   const elements = {
     hero: document.getElementById("hero-panel"),
@@ -106,6 +108,134 @@
     }
 
     return `${escapeHtml(parts.slice(0, -1).join(" "))}<br />${escapeHtml(parts[parts.length - 1])}`;
+  }
+
+  function howToPlayModalHtml() {
+    return `
+      <section class="how-to-play-modal hidden" id="how-to-play-modal" aria-hidden="true">
+        <div class="how-to-play-backdrop" data-how-to-play-close></div>
+        <div
+          class="how-to-play-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="how-to-play-title"
+          aria-describedby="how-to-play-summary"
+        >
+          <button class="how-to-play-close" type="button" data-how-to-play-close aria-label="Close How to Play">Close</button>
+          <p class="kicker">Restaurant Challenge</p>
+          <h2 class="section-title" id="how-to-play-title">How to Play</h2>
+          <p class="copy" id="how-to-play-summary">
+            Restaurant Challenge is a quick 10-question trivia game. Answer questions, earn customers for your restaurant, improve your rating, and compete on the leaderboard.
+          </p>
+          <div class="how-to-play-topics">
+            <section class="how-to-play-topic how-to-play-topic-wide">
+              <h3>The Quick Version</h3>
+              <p>
+                Choose a restaurant, answer 10 trivia questions, see how well you scored, and try to earn a customer for your own restaurant.
+              </p>
+              <p>
+                You can enjoy the game just for the trivia, or you can build your restaurant and compete against other players.
+              </p>
+            </section>
+            <section class="how-to-play-topic">
+              <h3>Step 1: Choose a Restaurant</h3>
+              <p>Before each game, choose a restaurant to play. Each game has 10 questions.</p>
+              <p>Questions may include general trivia, questions about the restaurant, and questions about the local area.</p>
+            </section>
+            <section class="how-to-play-topic">
+              <h3>Step 2: Earn Customers</h3>
+              <p>Before the quiz begins, you will meet the customer you are playing for.</p>
+              <p>
+                If you meet the higher target, they become a Regular Customer. If you meet the lower target, they become an Occasional Customer. If your score is too low, they do not visit your restaurant.
+              </p>
+            </section>
+            <section class="how-to-play-topic">
+              <h3>Step 3: Build Your Restaurant</h3>
+              <p>Every customer you earn helps your restaurant grow. Some customers are worth more than others.</p>
+              <p>You can invite Occasional Customers back and try to turn them into Regular Customers.</p>
+              <p>After 10 successful visits, a Regular Customer becomes a Favorite Customer and becomes even more valuable.</p>
+            </section>
+            <section class="how-to-play-topic">
+              <h3>Step 4: Improve Your Rating</h3>
+              <p>Your restaurant has a rating from 0 to 5 stars. The rating is based on your average trivia score.</p>
+              <p>For example, averaging 10 correct answers is 5.0 stars. Averaging 8 correct answers is 4.0 stars. Averaging 6 correct answers is 3.0 stars.</p>
+            </section>
+            <section class="how-to-play-topic">
+              <h3>Step 5: Climb the Leaderboard</h3>
+              <p>The leaderboard compares your restaurant to other players by rating, customers, sales, games played, and other progress.</p>
+              <p>Sales are the combined value of all customers you have earned.</p>
+            </section>
+            <section class="how-to-play-topic how-to-play-topic-wide">
+              <h3>Play Your Way</h3>
+              <p>
+                Some players enjoy Restaurant Challenge simply as a quick trivia game. Others enjoy building their restaurant, collecting customers, improving their rating, and competing on the leaderboard.
+              </p>
+              <p>Both ways are correct.</p>
+            </section>
+          </div>
+          <button class="button button-primary how-to-play-return" type="button" data-how-to-play-close>Back to Restaurant Challenge</button>
+        </div>
+      </section>
+    `;
+  }
+
+  function openHowToPlay() {
+    const modal = document.getElementById("how-to-play-modal");
+    if (!modal) {
+      return;
+    }
+
+    howToPlayReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    modal.classList.remove("hidden");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("how-to-play-open");
+
+    requestAnimationFrame(() => {
+      const closeButton = modal.querySelector("[data-how-to-play-close]");
+      if (closeButton instanceof HTMLElement) {
+        closeButton.focus();
+      }
+    });
+  }
+
+  function closeHowToPlay() {
+    const modal = document.getElementById("how-to-play-modal");
+    if (!modal) {
+      return;
+    }
+
+    modal.classList.add("hidden");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("how-to-play-open");
+
+    if (howToPlayReturnFocus instanceof HTMLElement) {
+      howToPlayReturnFocus.focus();
+    }
+    howToPlayReturnFocus = null;
+  }
+
+  function bindHowToPlay() {
+    const button = document.getElementById("reveal-how-to-play-button");
+    if (button) {
+      button.addEventListener("click", openHowToPlay);
+    }
+
+    const modal = document.getElementById("how-to-play-modal");
+    if (modal) {
+      modal.querySelectorAll("[data-how-to-play-close]").forEach((closeButton) => {
+        closeButton.addEventListener("click", closeHowToPlay);
+      });
+    }
+
+    if (!howToPlayKeydownBound) {
+      howToPlayKeydownBound = true;
+      document.addEventListener("keydown", (event) => {
+        const activeModal = document.getElementById("how-to-play-modal");
+        if (event.key === "Escape" && activeModal && !activeModal.classList.contains("hidden")) {
+          closeHowToPlay();
+        }
+      });
+    }
   }
 
   function getProfile() {
@@ -555,11 +685,14 @@
             <div class="button-row customer-reveal-actions">
               <button class="button button-hot" id="begin-questions-button" type="button">Begin Questions</button>
               <a class="button button-muted" href="/restaurant/?hub=1">View My Restaurant</a>
+              <button class="button button-muted" id="reveal-how-to-play-button" type="button">How to Play</button>
             </div>
           </div>
         </div>
       </div>
+      ${howToPlayModalHtml()}
     `;
+    bindHowToPlay();
 
     document.getElementById("begin-questions-button")?.addEventListener("click", () => {
       core.markActiveSessionStarted?.();
