@@ -56,6 +56,7 @@ const elements = {
   customerActive: document.querySelector("#customer-active"),
   customerBio: document.querySelector("#customer-bio"),
   customerQuestionPlace: document.querySelector("#customer-question-place"),
+  customerAreaSlugs: document.querySelector("#customer-area-slugs"),
   customerQuestionFact: document.querySelector("#customer-question-fact"),
   customerImage: document.querySelector("#customer-image"),
   customerPhotoFile: document.querySelector("#customer-photo-file"),
@@ -602,6 +603,12 @@ function normalizeCustomer(customer) {
   safeCustomer.focusTag = safeCustomer.restaurant;
   safeCustomer.image = String(safeCustomer.image || "").trim();
   safeCustomer.bio = String(safeCustomer.bio || "").trim();
+  safeCustomer.areaSlugs = Array.isArray(safeCustomer.areaSlugs)
+    ? safeCustomer.areaSlugs.map((slug) => slugify(slug)).filter(Boolean)
+    : String(safeCustomer.areaSlugs || safeCustomer.area_slugs || "")
+      .split(",")
+      .map((slug) => slugify(slug))
+      .filter(Boolean);
   safeCustomer.questionPlace = String(safeCustomer.questionPlace || "").trim();
   safeCustomer.questionFact = String(safeCustomer.questionFact || "").trim();
   safeCustomer.active = safeCustomer.active !== false;
@@ -1335,6 +1342,9 @@ function resetCustomerEditor(customer = null) {
   elements.customerActive.checked = customer?.active !== false;
   elements.customerBio.value = customer?.bio || "";
   elements.customerQuestionPlace.value = customer?.questionPlace || "";
+  elements.customerAreaSlugs.value = Array.isArray(customer?.areaSlugs)
+    ? customer.areaSlugs.join(", ")
+    : "";
   elements.customerQuestionFact.value = customer?.questionFact || "";
   elements.customerImage.value = customer?.image || "";
   updateCustomerPhotoPreview(customer?.image || "");
@@ -1357,6 +1367,10 @@ function customerFromForm() {
     active: elements.customerActive.checked,
     bio: elements.customerBio.value.trim(),
     questionPlace: elements.customerQuestionPlace.value.trim(),
+    areaSlugs: elements.customerAreaSlugs.value
+      .split(",")
+      .map((slug) => slugify(slug))
+      .filter(Boolean),
     questionFact: elements.customerQuestionFact.value.trim(),
     image: elements.customerImage.value.trim(),
   };

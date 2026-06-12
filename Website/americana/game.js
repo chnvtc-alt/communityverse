@@ -192,6 +192,24 @@
       return false;
     }
 
+    if (Array.isArray(customer.areaSlugs) && customer.areaSlugs.length) {
+      return customer.areaSlugs
+        .map((areaSlug) => core.slugify(areaSlug))
+        .filter(Boolean)
+        .some((customerAreaSlug) => {
+          if (areaSlugs.has(customerAreaSlug)) {
+            return true;
+          }
+          const customerPieces = customerAreaSlug.split("-");
+          return [...areaSlugs].some(
+            (areaSlug) =>
+              areaSlug.length >= 4 &&
+              (customerPieces.includes(areaSlug) ||
+                areaSlug.split("-").some((piece) => piece.length >= 4 && customerPieces.includes(piece)))
+          );
+        });
+    }
+
     const customerValues = [
       customer.areaSlug,
       customer.location,
@@ -430,7 +448,13 @@
 
     if (selectedCustomers.length < count) {
       addCustomers(rotateCustomers(
-        allCustomers.filter((customer) => customer.restaurant === "shared"),
+        allCustomers.filter(
+          (customer) =>
+            customer.restaurant === "shared" &&
+            (!Array.isArray(customer.areaSlugs) ||
+              !customer.areaSlugs.length ||
+              customerMatchesArea(customer, areaSlugs))
+        ),
         restaurantSlug,
         allCustomers.length
       ));

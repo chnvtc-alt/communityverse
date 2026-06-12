@@ -1136,6 +1136,12 @@
     safeCustomer.image = normalizeAssetPath(safeCustomer.image);
     safeCustomer.bio = String(safeCustomer.bio || "").trim();
     safeCustomer.areaSlug = slugify(safeCustomer.areaSlug || safeCustomer.area_slug || "");
+    safeCustomer.areaSlugs = Array.isArray(safeCustomer.areaSlugs)
+      ? safeCustomer.areaSlugs.map((areaSlug) => slugify(areaSlug)).filter(Boolean)
+      : String(safeCustomer.areaSlugs || safeCustomer.area_slugs || "")
+        .split(",")
+        .map((areaSlug) => slugify(areaSlug))
+        .filter(Boolean);
     safeCustomer.location = String(safeCustomer.location || "").trim();
     safeCustomer.tags = Array.isArray(safeCustomer.tags)
       ? safeCustomer.tags.map((tag) => String(tag || "").trim()).filter(Boolean)
@@ -2949,8 +2955,14 @@
     if (!restaurant) {
       return [];
     }
+    const restaurantAreaSlugs = getCustomerAreaMatchSlugs(restaurant);
 
-    return customers.filter((customer) => customer.restaurant === "shared" || customer.restaurant === restaurant.slug);
+    return customers.filter(
+      (customer) =>
+        customer.restaurant === restaurant.slug ||
+        (customer.restaurant === "shared" &&
+          customerAreaSlugsMatchRestaurant(customer, restaurantAreaSlugs))
+    );
   }
 
   function isRestaurantNameBlocked(name) {
@@ -3118,6 +3130,10 @@
       return false;
     }
 
+    if (Array.isArray(customer.areaSlugs) && customer.areaSlugs.length) {
+      return customerAreaSlugsMatchRestaurant(customer, restaurantAreaSlugs);
+    }
+
     const customerValues = [
       customer.areaSlug,
       customer.location,
@@ -3147,6 +3163,33 @@
               areaSlug.split("-").some((piece) => piece.length >= 4 && slugPieces.includes(piece)))
         );
       });
+    });
+  }
+
+  function customerAreaSlugsMatchRestaurant(customer, restaurantAreaSlugs) {
+    const customerAreaSlugs = Array.isArray(customer.areaSlugs)
+      ? customer.areaSlugs.map((areaSlug) => slugify(areaSlug)).filter(Boolean)
+      : [];
+    if (!customerAreaSlugs.length) {
+      return true;
+    }
+    if (!restaurantAreaSlugs.size) {
+      return false;
+    }
+
+    return customerAreaSlugs.some((customerAreaSlug) => {
+      if (restaurantAreaSlugs.has(customerAreaSlug)) {
+        return true;
+      }
+      const customerPieces = customerAreaSlug.split("-");
+      return [...restaurantAreaSlugs].some(
+        (restaurantAreaSlug) =>
+          restaurantAreaSlug.length >= 4 &&
+          (customerPieces.includes(restaurantAreaSlug) ||
+            restaurantAreaSlug.split("-").some(
+              (piece) => piece.length >= 4 && customerPieces.includes(piece)
+            ))
+      );
     });
   }
 

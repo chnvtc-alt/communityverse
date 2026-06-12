@@ -45,6 +45,21 @@ function normalizeCharacterType(value) {
   return String(value || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 }
 
+function normalizeAreaSlugs(value) {
+  const rawValues = Array.isArray(value)
+    ? value
+    : String(value || "").split(",");
+  return uniqueStrings(
+    rawValues.map((slug) =>
+      String(slug || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+    )
+  );
+}
+
 export function normalizeCustomer(customer) {
   const safeCustomer = typeof customer === "object" && customer ? structuredClone(customer) : {};
   safeCustomer.id = String(safeCustomer.id || "").trim();
@@ -63,6 +78,7 @@ export function normalizeCustomer(customer) {
   safeCustomer.focusTag = safeCustomer.restaurant;
   safeCustomer.image = String(safeCustomer.image || "").trim();
   safeCustomer.bio = String(safeCustomer.bio || "").trim();
+  safeCustomer.areaSlugs = normalizeAreaSlugs(safeCustomer.areaSlugs || safeCustomer.area_slugs || "");
   safeCustomer.questionPlace = String(safeCustomer.questionPlace || "").trim();
   safeCustomer.questionFact = String(safeCustomer.questionFact || "").trim();
   safeCustomer.active = safeCustomer.active !== false;

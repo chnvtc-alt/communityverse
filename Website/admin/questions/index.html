@@ -535,6 +535,11 @@
             <input id="customer-question-place" />
           </label>
           <label class="form-span">
+            Customer area slugs
+            <input id="customer-area-slugs" placeholder="villa-rica, douglas-county" />
+            <span class="optional">For shared customers, limit where they appear. Use commas between areas.</span>
+          </label>
+          <label class="form-span">
             Question fact
             <input id="customer-question-fact" />
           </label>
@@ -668,6 +673,6 @@
         </div>
       </form>
     </dialog>
-    <script type="module" src="/admin/questions/admin.js"></script>
+    <script type="module" src="/admin/questions/admin.js?v=customer-area-slugs"></script>
   </body>
 </html>
