@@ -292,7 +292,7 @@
 
   function getOpeningCustomers(restaurant) {
     const activeProfile = core.getActiveProfile?.() || null;
-    const count = 3;
+    const count = 4;
     const selectedCustomers = [];
     const selectedIds = new Set();
     const ownedCustomerIds = getOwnedCustomerIds(activeProfile, restaurant.slug);
