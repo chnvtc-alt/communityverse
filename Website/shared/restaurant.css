@@ -1598,6 +1598,11 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   min-height: 100%;
 }
 
+.opening-start-hero .hero-banner-image-start {
+  height: 100%;
+  min-height: 100%;
+}
+
 .opening-start-side {
   display: grid;
   gap: 16px;
