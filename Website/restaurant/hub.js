@@ -9,7 +9,7 @@
     {
       value: "estimatedSales",
       label: "Sales",
-      description: "Estimated sales from the customers each restaurant has earned.",
+      description: "Total sales from the customers each restaurant has earned.",
     },
     {
       value: "collected",
