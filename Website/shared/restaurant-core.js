@@ -3246,6 +3246,28 @@
     return tags.every((tag) => !blockedTags.has(tag));
   }
 
+  function isFoodPhotoQuestion(question) {
+    if (!(question.image || question.imagePrompt)) {
+      return false;
+    }
+
+    const tags = Array.isArray(question.tags) ? question.tags.map(slugify) : [];
+    if (tags.some((tag) => ["food", "menu", "menu-item", "dish", "drink", "dessert"].includes(tag))) {
+      return true;
+    }
+
+    const searchable = normalizeText(
+      [
+        question.prompt,
+        question.imageAlt,
+        question.imagePrompt,
+        question.correctAnswer,
+        ...(question.wrongAnswers || []),
+      ].filter(Boolean).join(" ")
+    );
+    return /menu|food|dish|drink|dessert|breakfast|burger|pizza|pie|platter|sandwich|steak|cobbler|coffee|meal/.test(searchable);
+  }
+
   function prepareQuestion(question) {
     const options = shuffle([
       question.correctAnswer,
@@ -3277,9 +3299,7 @@
     const openerSlots = [0];
 
     const restaurantQuestions = shuffle(pools.restaurantQuestions);
-    const restaurantImageQuestions = pools.restaurantQuestions.filter(
-      (question) => question.image || question.imagePrompt
-    );
+    const restaurantImageQuestions = pools.restaurantQuestions.filter(isFoodPhotoQuestion);
     const restaurantImageQuestion = selectNextImageQuestion(
       restaurantImageQuestions,
       getRestaurantQuestionMemory(profile, restaurant.slug).lastImageQuestionId

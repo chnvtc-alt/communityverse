@@ -4,7 +4,8 @@
     "scope": "restaurant",
     "restaurantSlug": "americana",
     "tags": [
-      "americana"
+      "americana",
+      "food"
     ],
     "prompt": "What kind of food is Americana Diner best known for?",
     "correctAnswer": "Classic comfort diner food",
@@ -19,7 +20,8 @@
     "scope": "restaurant",
     "restaurantSlug": "americana",
     "tags": [
-      "americana"
+      "americana",
+      "food"
     ],
     "prompt": "Which meal is Americana Diner happiest to serve all day?",
     "correctAnswer": "Breakfast",
@@ -34,7 +36,8 @@
     "scope": "restaurant",
     "restaurantSlug": "americana",
     "tags": [
-      "americana"
+      "americana",
+      "food"
     ],
     "image": "../assets/restaurant-challenge/restaurants/americana/americana-mile-high-cherry-pie.jpg",
     "imageAlt": "Americana Mile-High Cherry Pie",
@@ -52,7 +55,8 @@
     "scope": "restaurant",
     "restaurantSlug": "americana",
     "tags": [
-      "americana"
+      "americana",
+      "food"
     ],
     "prompt": "What drink should you expect to see at a classic diner counter?",
     "correctAnswer": "Fresh hot coffee",
@@ -67,7 +71,8 @@
     "scope": "restaurant",
     "restaurantSlug": "americana",
     "tags": [
-      "americana"
+      "americana",
+      "food"
     ],
     "prompt": "Which menu item sounds like a strong Americana Diner special?",
     "correctAnswer": "The Route 66 Burger",
@@ -97,7 +102,8 @@
     "scope": "restaurant",
     "restaurantSlug": "americana",
     "tags": [
-      "americana"
+      "americana",
+      "food"
     ],
     "image": "../assets/restaurant-challenge/restaurants/americana/route-66-burger.jpg",
     "imageAlt": "Route 66 Burger",
@@ -115,7 +121,8 @@
     "scope": "restaurant",
     "restaurantSlug": "americana",
     "tags": [
-      "americana"
+      "americana",
+      "food"
     ],
     "image": "../assets/restaurant-challenge/restaurants/americana/all-day-breakfast-platter.jpg",
     "imageAlt": "All-Day Breakfast Platter",
