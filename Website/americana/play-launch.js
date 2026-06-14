@@ -1133,6 +1133,7 @@
     removeHowToPlayModals();
     const profile = getProfile();
     const summary = profile ? core.getProfileSummary(profile, restaurantSlug) : null;
+    const overallSummary = profile ? core.getProfileSummary(profile) : null;
     const isGuest = Boolean(profile && profile.isGuest);
     const resultLayoutMode = isGuest
       ? (state.showProfileForm ? "register-form" : "guest-prompt")
@@ -1231,7 +1232,7 @@
                 </div>
                 <div class="result-metric-card">
                   <span class="result-metric-label">Player sales:</span>
-                  <span class="result-metric-value">${summary ? core.formatCurrency(summary.stats.estimatedSales) : core.formatCurrency(0)}</span>
+                  <span class="result-metric-value">${overallSummary ? core.formatCurrency(overallSummary.stats.estimatedSales) : core.formatCurrency(0)}</span>
                 </div>
               </div>
             </div>
