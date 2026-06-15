@@ -2419,7 +2419,133 @@
       safeEntry.favoriteVisits = FAVORITE_VISIT_GOAL;
     }
 
+    safeEntry.restaurantCredits = normalizeRestaurantCredits(safeEntry);
+
     return safeEntry;
+  }
+
+  function normalizeRestaurantCredit(credit, fallback = {}) {
+    const safeCredit = credit && typeof credit === "object" ? { ...credit } : {};
+    const status = ["regular", "occasional", "favorite"].includes(safeCredit.status)
+      ? safeCredit.status
+      : ["regular", "occasional", "favorite"].includes(fallback.status)
+        ? fallback.status
+        : "";
+
+    return {
+      restaurantSlug: String(safeCredit.restaurantSlug || fallback.restaurantSlug || "").trim(),
+      restaurantName: String(safeCredit.restaurantName || fallback.restaurantName || "").trim(),
+      status,
+      dateWon: safeCredit.dateWon || fallback.dateWon || "",
+    };
+  }
+
+  function normalizeRestaurantCredits(entry) {
+    const credits = {};
+    const rawCredits = entry?.restaurantCredits;
+
+    if (rawCredits && typeof rawCredits === "object" && !Array.isArray(rawCredits)) {
+      Object.entries(rawCredits).forEach(([restaurantSlug, credit]) => {
+        const normalized = normalizeRestaurantCredit(credit, {
+          restaurantSlug,
+          restaurantName: entry.restaurantName,
+          status: entry.status,
+          dateWon: entry.dateWon,
+        });
+
+        if (normalized.restaurantSlug && normalized.status) {
+          credits[normalized.restaurantSlug] = normalized;
+        }
+      });
+    }
+
+    if (
+      !Object.keys(credits).length &&
+      entry?.restaurantSlug &&
+      ["regular", "occasional", "favorite"].includes(entry.status)
+    ) {
+      const normalized = normalizeRestaurantCredit(null, {
+        restaurantSlug: entry.restaurantSlug,
+        restaurantName: entry.restaurantName,
+        status: entry.status,
+        dateWon: entry.dateWon,
+      });
+
+      if (normalized.restaurantSlug && normalized.status) {
+        credits[normalized.restaurantSlug] = normalized;
+      }
+    }
+
+    return credits;
+  }
+
+  function mergeRestaurantCredit(existingCredit, incomingCredit) {
+    if (!existingCredit) {
+      return incomingCredit;
+    }
+
+    const existingRank = getCustomerStatusRank(existingCredit.status);
+    const incomingRank = getCustomerStatusRank(incomingCredit.status);
+    const strongerCredit =
+      incomingRank > existingRank
+        ? incomingCredit
+        : incomingRank < existingRank
+          ? existingCredit
+          : getNewerCollectionEntry(existingCredit, incomingCredit);
+
+    return normalizeRestaurantCredit({
+      ...existingCredit,
+      ...strongerCredit,
+      restaurantSlug: existingCredit.restaurantSlug || incomingCredit.restaurantSlug,
+      restaurantName: incomingCredit.restaurantName || existingCredit.restaurantName,
+    });
+  }
+
+  function mergeRestaurantCredits(existingCredits, incomingCredits) {
+    const mergedCredits = {};
+
+    [existingCredits, incomingCredits].forEach((credits) => {
+      Object.values(credits || {}).forEach((credit) => {
+        const normalized = normalizeRestaurantCredit(credit);
+        if (!normalized.restaurantSlug || !normalized.status) {
+          return;
+        }
+
+        mergedCredits[normalized.restaurantSlug] = mergeRestaurantCredit(
+          mergedCredits[normalized.restaurantSlug],
+          normalized
+        );
+      });
+    });
+
+    return mergedCredits;
+  }
+
+  function buildRestaurantCreditForSession(session) {
+    if (!session || !["regular", "occasional", "favorite"].includes(session.result)) {
+      return null;
+    }
+
+    return normalizeRestaurantCredit(null, {
+      restaurantSlug: session.restaurantSlug,
+      restaurantName: session.restaurantName,
+      status: session.result,
+      dateWon: session.completedAt || nowIso(),
+    });
+  }
+
+  function addRestaurantCreditToEntry(entry, session) {
+    const credit = buildRestaurantCreditForSession(session);
+    const restaurantCredits = normalizeRestaurantCredits(entry);
+
+    if (credit) {
+      restaurantCredits[credit.restaurantSlug] = mergeRestaurantCredit(
+        restaurantCredits[credit.restaurantSlug],
+        credit
+      );
+    }
+
+    return restaurantCredits;
   }
 
   function getCustomerStatusRank(status) {
@@ -2463,6 +2589,10 @@
       dateWon: newerEntry.dateWon || strongerEntry.dateWon || existingEntry.dateWon,
       status,
       favoriteVisits: status === "favorite" ? FAVORITE_VISIT_GOAL : favoriteVisits,
+      restaurantCredits: mergeRestaurantCredits(
+        existingEntry.restaurantCredits,
+        incomingEntry.restaurantCredits
+      ),
     });
   }
 
@@ -2534,6 +2664,14 @@
       stats.estimatedSales = stats.totalCustomerValue;
     };
 
+    const applyRestaurantCreditStats = (stats, entry, credit, customer) => {
+      const creditStatus =
+        entry.status === "favorite" && credit.status === "regular"
+          ? "favorite"
+          : credit.status;
+      applyCollectionStats(stats, { ...entry, status: creditStatus }, customer);
+    };
+
     safeProfile.customerCollection.forEach((entry) => {
       const customer = getCustomerById(entry.customerId);
       if (!customer) {
@@ -2542,10 +2680,16 @@
 
       applyCollectionStats(safeProfile.stats, entry, customer);
 
-      const restaurantStats = safeProfile.restaurantStats[entry.restaurantSlug];
-      if (restaurantStats) {
-        applyCollectionStats(restaurantStats, entry, customer);
-      }
+      Object.values(normalizeRestaurantCredits(entry)).forEach((credit) => {
+        if (!safeProfile.restaurantStats[credit.restaurantSlug]) {
+          safeProfile.restaurantStats[credit.restaurantSlug] = Object.assign(buildEmptyRestaurantStats(), {
+            gamesPlayed: 0,
+            totalCorrectAnswers: 0,
+          });
+        }
+
+        applyRestaurantCreditStats(safeProfile.restaurantStats[credit.restaurantSlug], entry, credit, customer);
+      });
     });
 
     safeProfile.stats.estimatedSales = safeProfile.stats.totalCustomerValue;
@@ -2703,7 +2847,7 @@
     const safeProfile = ensureProfileShape(profile);
     return new Set(
       safeProfile.customerCollection
-        .filter((entry) => entry.customerId)
+        .filter((entry) => entry.customerId && normalizeRestaurantCredits(entry)[restaurantSlug])
         .map((entry) => entry.customerId)
     );
   }
@@ -3564,7 +3708,6 @@
       score: 0,
       answers: [],
       startedAt: nowIso(),
-      hasStarted: false,
       updatedAt: nowIso(),
       completed: false,
       result: "",
@@ -3618,19 +3761,6 @@
     } catch (error) {
       // Ignore storage blocks and rely on the in-memory cache.
     }
-  }
-
-  function markActiveSessionStarted() {
-    const session = getActiveSession();
-    if (!session || session.completed) {
-      return null;
-    }
-
-    session.hasStarted = true;
-    session.updatedAt = nowIso();
-    activeSessionState.session = clone(session);
-    writeJson(STORAGE_KEYS.activeSession, session);
-    return clone(session);
   }
 
   function completeSession(session) {
@@ -3713,6 +3843,7 @@
           regularValue: session.customer.regularValue,
           occasionalValue: session.customer.occasionalValue,
           favoriteVisits: bestStatus === "favorite" ? FAVORITE_VISIT_GOAL : nextFavoriteVisits,
+          restaurantCredits: addRestaurantCreditToEntry(existingCustomer, session),
           image: session.customer.image,
           bio: getCustomerBio(session.customer),
           dateWon: nowIso(),
@@ -3735,6 +3866,12 @@
             regularValue: session.customer.regularValue,
             occasionalValue: session.customer.occasionalValue,
             favoriteVisits: 0,
+            restaurantCredits: addRestaurantCreditToEntry({
+              restaurantSlug: session.restaurantSlug,
+              restaurantName: session.restaurantName,
+              status: session.result,
+              dateWon: session.completedAt || nowIso(),
+            }, session),
             image: session.customer.image,
             bio: getCustomerBio(session.customer),
             dateWon: nowIso(),
@@ -3772,7 +3909,6 @@
       };
     }
 
-    session.hasStarted = true;
     const isCorrect = Number(selectedIndex) === question.correctIndex;
     session.answers.push({
       questionId: question.id,
@@ -4036,11 +4172,11 @@
     buildSessionQuestions,
     getActiveSession,
     clearActiveSession,
-    markActiveSessionStarted,
     startNewSession,
     answerActiveSession,
     getLeaderboard,
     getPlayerRank,
+    getPublicLeaderboardStats,
     getProfileSummary,
     applyRestaurantTheme,
     getCurrentTimestamp: nowIso,

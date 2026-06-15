@@ -114,7 +114,18 @@
     const collection = Array.isArray(profile?.customerCollection) ? profile.customerCollection : [];
     return new Set(
       collection
-        .filter((entry) => !targetRestaurantSlug || !entry.restaurantSlug || entry.restaurantSlug === targetRestaurantSlug)
+        .filter((entry) => {
+          if (!targetRestaurantSlug) {
+            return true;
+          }
+
+          const credits = entry?.restaurantCredits;
+          if (credits && typeof credits === "object" && credits[targetRestaurantSlug]) {
+            return true;
+          }
+
+          return !credits && (!entry.restaurantSlug || entry.restaurantSlug === targetRestaurantSlug);
+        })
         .map((entry) => String(entry.customerId || ""))
         .filter(Boolean)
     );
@@ -1134,6 +1145,10 @@
     const profile = getProfile();
     const summary = profile ? core.getProfileSummary(profile, restaurantSlug) : null;
     const overallSummary = profile ? core.getProfileSummary(profile) : null;
+    const overallSalesStats =
+      profile && typeof core.getPublicLeaderboardStats === "function"
+        ? core.getPublicLeaderboardStats(profile)
+        : overallSummary?.stats;
     const isGuest = Boolean(profile && profile.isGuest);
     const resultLayoutMode = isGuest
       ? (state.showProfileForm ? "register-form" : "guest-prompt")
@@ -1232,7 +1247,7 @@
                 </div>
                 <div class="result-metric-card">
                   <span class="result-metric-label">Player sales:</span>
-                  <span class="result-metric-value">${overallSummary ? core.formatCurrency(overallSummary.stats.estimatedSales) : core.formatCurrency(0)}</span>
+                  <span class="result-metric-value">${overallSalesStats ? core.formatCurrency(overallSalesStats.estimatedSales) : core.formatCurrency(0)}</span>
                 </div>
               </div>
             </div>
