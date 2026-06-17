@@ -2266,13 +2266,6 @@
   const RECENT_SESSION_LIMIT = 250;
   const RESTAURANT_UPGRADES = [
     {
-      id: "new-sign",
-      label: "New Sign",
-      cost: 600,
-      value: 600,
-      salesBoostPercent: 1,
-    },
-    {
       id: "better-chairs",
       label: "Better Chairs",
       cost: 250,
@@ -2287,10 +2280,24 @@
       salesBoostPercent: 1,
     },
     {
+      id: "new-sign",
+      label: "New Sign",
+      cost: 600,
+      value: 600,
+      salesBoostPercent: 1,
+    },
+    {
       id: "kitchen-equipment",
       label: "Kitchen Equipment",
       cost: 750,
       value: 750,
+      salesBoostPercent: 1,
+    },
+    {
+      id: "online-ordering-system",
+      label: "Online Ordering System",
+      cost: 1000,
+      value: 1000,
       salesBoostPercent: 1,
     },
     {
@@ -2301,10 +2308,31 @@
       salesBoostPercent: 1,
     },
     {
-      id: "delivery-setup",
-      label: "Delivery Service",
+      id: "loyalty-rewards-program",
+      label: "Loyalty Rewards Program",
       cost: 2000,
       value: 2000,
+      salesBoostPercent: 1,
+    },
+    {
+      id: "catering-service",
+      label: "Catering Service",
+      cost: 3000,
+      value: 3000,
+      salesBoostPercent: 1,
+    },
+    {
+      id: "stage",
+      label: "Stage",
+      cost: 4000,
+      value: 4000,
+      salesBoostPercent: 1,
+    },
+    {
+      id: "mobile-app",
+      label: "Mobile App",
+      cost: 5000,
+      value: 5000,
       salesBoostPercent: 1,
     },
   ];
