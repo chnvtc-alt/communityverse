@@ -2364,12 +2364,17 @@
     return regularOnlyCustomers * 100 + favoriteCustomers * 300;
   }
 
-  function getRatingValue(stats) {
+  function getRatingMultiplier(stats) {
     if (!stats.gamesPlayed) {
       return 0;
     }
     const accuracy = (stats.totalCorrectAnswers / (stats.gamesPlayed * 10)) * 100;
-    return (accuracy / 20) * 500;
+    const rating = accuracy / 20;
+    return rating / 200;
+  }
+
+  function getRatingValue(stats, baseValue = 0) {
+    return Math.round(Math.max(0, Number(baseValue) || 0) * getRatingMultiplier(stats));
   }
 
   function getRecentPerformanceValue(profile, restaurantSlug = "") {
@@ -2401,14 +2406,13 @@
 
   function getRestaurantValue(profile, stats, restaurantSlug = "") {
     const economy = normalizeRestaurantEconomy(profile?.restaurantEconomy);
+    const expansionValue = getExpansionValue(economy);
+    const upgradeValue = getUpgradeValue(economy);
+    const loyaltyValue = getCustomerLoyaltyValue(stats);
     const recentPerformanceValue = Math.round(getRecentPerformanceValue(profile, restaurantSlug) * RECENT_PERFORMANCE_VALUE_RATE);
-    return Math.round(
-      getExpansionValue(economy) +
-        getUpgradeValue(economy) +
-        getCustomerLoyaltyValue(stats) +
-        recentPerformanceValue +
-        getRatingValue(stats)
-    );
+    const valueBeforeRating = expansionValue + upgradeValue + loyaltyValue + recentPerformanceValue;
+    const ratingValue = getRatingValue(stats, valueBeforeRating);
+    return Math.round(valueBeforeRating + ratingValue);
   }
 
   function getRestaurantValueBreakdown(profile, stats, restaurantSlug = "") {
@@ -2419,10 +2423,11 @@
     const loyaltyValue = getCustomerLoyaltyValue(stats);
     const recentPerformanceSales = getRecentPerformanceValue(profile, restaurantSlug);
     const recentPerformanceValue = Math.round(recentPerformanceSales * RECENT_PERFORMANCE_VALUE_RATE);
-    const ratingValue = getRatingValue(stats);
+    const valueBeforeRating = expansionValue + upgradeValue + loyaltyValue + recentPerformanceValue;
+    const ratingValue = getRatingValue(stats, valueBeforeRating);
 
     return {
-      total: Math.round(expansionValue + upgradeValue + loyaltyValue + recentPerformanceValue + ratingValue),
+      total: Math.round(valueBeforeRating + ratingValue),
       expansionLabel: expansion.label,
       expansionValue,
       upgradeValue,
@@ -2430,7 +2435,8 @@
       recentPerformanceSales,
       recentPerformanceValue,
       recentPerformanceRate: RECENT_PERFORMANCE_VALUE_RATE,
-      ratingValue: Math.round(ratingValue),
+      ratingRate: getRatingMultiplier(stats),
+      ratingValue,
     };
   }
 
