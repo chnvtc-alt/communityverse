@@ -739,7 +739,7 @@
     const compactMobile = isMobileHub();
     const profile = core.getActiveProfile();
     const profileState = getProfileState(profile);
-    const summary = profileState === "registered" ? core.getProfileSummary(profile) : null;
+    const summary = profile ? core.getProfileSummary(profile) : null;
     const safeSummary =
       summary && summary.stats
         ? summary
@@ -767,6 +767,23 @@
       : null;
     const latestCustomerName = latestCustomerEntry ? latestCustomerEntry.customerName || "Customer" : "";
     const emailConnected = Boolean(profile && profile.emailConnected);
+    const hasSavedProgress = Boolean(
+      profile && (safeSummary.stats.gamesPlayed || collectedCustomers || safeSummary.stats.estimatedSales)
+    );
+    const guestProgressMarkup =
+      profile && hasSavedProgress
+        ? `
+          <div class="hero-profile-meta ${compactMobile ? "hero-profile-meta-compact" : ""}">
+            <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
+            <span class="chip hero-stat-chip">🏦 Value ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
+            <span class="chip hero-stat-chip">👥 Customers ${collectedCustomers}</span>
+            <span class="chip hero-stat-chip">💰 Sales ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
+            <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
+            <span class="chip hero-stat-chip">${bestRankLabel}</span>
+          </div>
+          ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
+        `
+        : "";
 
     elements.hero.innerHTML = `
       <div class="hero-stack">
@@ -907,11 +924,16 @@
                     <div class="hero-profile-strip hero-profile-strip-guest">
                       <div>
                         <p class="kicker" style="margin: 0 0 4px;">Guest Progress</p>
-                        <h2 class="hero-profile-name">Play first, then register to save your restaurant.</h2>
-                        <p class="copy compact-copy" style="margin: 4px 0 0;">You can keep playing as a guest, but registering after your next game keeps your customers and leaderboard progress with you.</p>
+                        <h2 class="hero-profile-name">${hasSavedProgress ? escapeHtml(profile.restaurantName) : "Play first, then register to save your restaurant."}</h2>
+                        <p class="copy compact-copy" style="margin: 4px 0 0;">${
+                          hasSavedProgress
+                            ? "This restaurant is saved on this device. Add email recovery when you are ready."
+                            : "You can keep playing as a guest, but registering after your next game keeps your customers and leaderboard progress with you."
+                        }</p>
                         ${renderSignInMarkup()}
                       </div>
                       <a class="button button-primary button-sm" href="${playAgainTarget.href}">Play ${escapeHtml(playAgainTarget.name)}</a>
+                      ${guestProgressMarkup}
                     </div>
                   `
                   : `
