@@ -294,6 +294,7 @@
             <section class="how-to-play-topic">
               <h3>Step 3: Build Your Restaurant</h3>
               <p>Every customer you earn helps your restaurant grow. Some customers are worth more than others.</p>
+              <p>Customer wins add to Sales and Cash. Cash can be saved or spent on restaurant expansions and upgrades.</p>
               <p>You can invite Occasional Customers back and try to turn them into Regular Customers.</p>
               <p>After 10 successful visits, a Regular Customer becomes a Favorite Customer and becomes even more valuable.</p>
             </section>
@@ -304,8 +305,9 @@
             </section>
             <section class="how-to-play-topic">
               <h3>Step 5: Climb the Leaderboard</h3>
-              <p>The leaderboard compares your restaurant to other players by rating, customers, sales, games played, and other progress.</p>
-              <p>Sales are the combined value of all customers you have earned.</p>
+              <p>Net Worth is the main leaderboard score. It combines your Restaurant Value and your Cash.</p>
+              <p>Restaurant Value comes from your restaurant size, upgrades, customer loyalty, recent sales, and rating bonus.</p>
+              <p>Upgrades add value and give a small boost to future customer sales.</p>
             </section>
             <section class="how-to-play-topic how-to-play-topic-wide">
               <h3>Play Your Way</h3>
