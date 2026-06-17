@@ -2658,6 +2658,20 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     align-content: start;
   }
 
+  html.restaurant-hub-mode .hero-content-panel-side {
+    order: -1;
+    padding: 8px;
+  }
+
+  html.restaurant-hub-mode .hero-content-panel-main {
+    order: 1;
+  }
+
+  html.restaurant-hub-mode .hero-content-panel-side .hero-side,
+  html.restaurant-hub-mode .hero-content-panel-side .hero-card {
+    height: auto;
+  }
+
   .hub-overview-preview {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3330,7 +3344,8 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .hero-directory-showcase {
-    padding: 6px;
+    padding: 8px;
+    border-radius: 18px;
   }
 
   .hero-directory-stack {
@@ -3338,8 +3353,10 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .hero-directory-item {
-    padding: 8px;
+    padding: 0;
     gap: 6px;
+    border: 0;
+    background: transparent;
   }
 
   .hero-directory-item-compact {
