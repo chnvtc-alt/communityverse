@@ -2225,7 +2225,38 @@
     {
       id: "food-truck",
       label: "Food Truck",
+      cost: 0,
       value: 500,
+    },
+    {
+      id: "counter-service",
+      label: "Counter Service",
+      cost: 500,
+      value: 1500,
+    },
+    {
+      id: "small-diner",
+      label: "Small Diner",
+      cost: 1500,
+      value: 4500,
+    },
+    {
+      id: "family-restaurant",
+      label: "Family Restaurant",
+      cost: 3000,
+      value: 10500,
+    },
+    {
+      id: "regional-favorite",
+      label: "Regional Favorite",
+      cost: 7500,
+      value: 25500,
+    },
+    {
+      id: "local-landmark",
+      label: "Local Landmark",
+      cost: 15000,
+      value: 55500,
     },
   ];
 
@@ -2332,6 +2363,23 @@
       loyaltyValue,
       recentPerformanceValue,
       ratingValue: Math.round(ratingValue),
+    };
+  }
+
+  function getRestaurantExpansionPreview(profile) {
+    const economy = normalizeRestaurantEconomy(profile?.restaurantEconomy);
+    const currentIndex = Math.max(
+      0,
+      EXPANSION_LEVELS.findIndex((level) => level.id === economy.expansionLevel)
+    );
+    const current = EXPANSION_LEVELS[currentIndex] || EXPANSION_LEVELS[0];
+    const next = EXPANSION_LEVELS[currentIndex + 1] || null;
+
+    return {
+      current,
+      next,
+      valueAdded: next ? Math.max(0, (Number(next.value) || 0) - (Number(current.value) || 0)) : 0,
+      isMaxLevel: !next,
     };
   }
 
@@ -4294,6 +4342,7 @@
     getCustomerStatusLabel,
     getRestaurantValue,
     getRestaurantValueBreakdown,
+    getRestaurantExpansionPreview,
     getCustomersForRestaurant,
     getPhotoReadyCustomersForRestaurant,
     getFeaturedGuestLineup,

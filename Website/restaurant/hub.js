@@ -735,6 +735,49 @@
     `;
   }
 
+  function renderExpansionPreviewMarkup(profile) {
+    if (!profile || !core.getRestaurantExpansionPreview) {
+      return "";
+    }
+
+    const preview = core.getRestaurantExpansionPreview(profile);
+    if (!preview?.current) {
+      return "";
+    }
+
+    return `
+      <div class="restaurant-expansion-preview" aria-label="Restaurant expansion preview">
+        <div>
+          <span class="restaurant-expansion-label">Current size</span>
+          <strong>${escapeHtml(preview.current.label || "Food Truck")}</strong>
+        </div>
+        ${
+          preview.next
+            ? `
+              <div>
+                <span class="restaurant-expansion-label">Next expansion</span>
+                <strong>${escapeHtml(preview.next.label)}</strong>
+              </div>
+              <div>
+                <span class="restaurant-expansion-label">Cost</span>
+                <strong>${core.formatCurrency(preview.next.cost)}</strong>
+              </div>
+              <div>
+                <span class="restaurant-expansion-label">Adds value</span>
+                <strong>${core.formatCurrency(preview.valueAdded)}</strong>
+              </div>
+            `
+            : `
+              <div>
+                <span class="restaurant-expansion-label">Next expansion</span>
+                <strong>Fully expanded</strong>
+              </div>
+            `
+        }
+      </div>
+    `;
+  }
+
   function renderHero() {
     const compactMobile = isMobileHub();
     const profile = core.getActiveProfile();
@@ -784,6 +827,7 @@
             <span class="chip hero-stat-chip">${bestRankLabel}</span>
           </div>
           ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
+          ${renderExpansionPreviewMarkup(profile)}
         `
         : "";
 
@@ -839,6 +883,7 @@
                       <span class="chip hero-stat-chip">${bestRankLabel}</span>
                     </div>
                     ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
+                    ${renderExpansionPreviewMarkup(profile)}
                     ${
                       !editMode && !emailConnected ? renderConnectEmailMarkup(profile) : ``
                     }
@@ -899,6 +944,7 @@
                     <span class="chip hero-stat-chip">${bestRankLabel}</span>
                   </div>
                   ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
+                  ${renderExpansionPreviewMarkup(profile)}
                   ${
                     !editMode && !emailConnected ? renderConnectEmailMarkup(profile) : ``
                   }

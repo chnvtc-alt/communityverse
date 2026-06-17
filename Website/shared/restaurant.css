@@ -636,6 +636,41 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   white-space: nowrap;
 }
 
+.restaurant-expansion-preview {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 0;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: rgba(213, 138, 43, 0.08);
+  border: 1px solid rgba(213, 138, 43, 0.14);
+}
+
+.restaurant-expansion-preview > div {
+  display: grid;
+  gap: 3px;
+  min-height: 42px;
+  align-content: center;
+}
+
+.restaurant-expansion-label {
+  font-family: Arial, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.restaurant-expansion-preview strong {
+  font-family: Arial, sans-serif;
+  font-size: 0.92rem;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
 .rating-display {
   display: inline-flex;
   align-items: center;
@@ -2844,6 +2879,16 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   .restaurant-value-breakdown-row {
     min-height: 34px;
     padding: 6px 7px;
+  }
+
+  .restaurant-expansion-preview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 9px;
+    border-radius: 14px;
+  }
+
+  .restaurant-expansion-preview > div {
+    min-height: 38px;
   }
 
   .hero-stat-chip {
