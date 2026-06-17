@@ -14,7 +14,7 @@
     {
       value: "restaurantValue",
       label: "Value",
-      description: "Restaurant Value combines your current size, upgrades, customer loyalty, recent sales, and rating.",
+      description: "Restaurant Value combines your current size, upgrades, customer loyalty, recent sales, and rating. This value stays the same in every leaderboard scope.",
     },
     {
       value: "collected",

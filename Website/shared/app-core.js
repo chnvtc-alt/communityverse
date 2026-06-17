@@ -4141,6 +4141,8 @@
       const accuracy = stats.gamesPlayed
         ? (stats.totalCorrectAnswers / (stats.gamesPlayed * 10)) * 100
         : 0;
+      const restaurantValueStats =
+        metric === "restaurantValue" ? getPublicLeaderboardStats(safeProfile) : stats;
 
       return {
         profile: safeProfile,
@@ -4155,7 +4157,7 @@
             : metric === "gamesPlayed"
               ? stats.gamesPlayed
               : metric === "restaurantValue"
-                ? stats.restaurantValue || getRestaurantValue(safeProfile, stats, restaurantSlug || "")
+                ? restaurantValueStats.restaurantValue || getRestaurantValue(safeProfile, restaurantValueStats)
               : metric === "regularCustomers"
                 ? stats.regularCustomers
                 : metric === "favoriteCustomers"

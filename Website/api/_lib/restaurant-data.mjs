@@ -288,7 +288,9 @@ function publicOverallStatsFor(profile, publicRestaurantSlugs) {
   const entries = Object.entries(safeProfile.restaurantStats || {});
 
   if (!entries.length) {
-    return safeProfile.stats;
+    const stats = { ...emptyStats(), ...(safeProfile.stats || {}) };
+    stats.restaurantValue = getRestaurantValue(safeProfile, stats, "", publicRestaurantSlugs);
+    return stats;
   }
 
   const stats = entries.reduce((combinedStats, [restaurantSlug, restaurantStats]) => {
@@ -349,9 +351,20 @@ export function buildLeaderboard(profiles, metric = "estimatedSales", restaurant
           ? publicOverallStatsFor(profile, publicRestaurantSlugs)
           : restaurantStatsFor(profile, "");
       const accuracy = stats.gamesPlayed ? (stats.totalCorrectAnswers / (stats.gamesPlayed * 10)) * 100 : 0;
-      const value = leaderboardValue(stats, metric);
-      if (metric === "restaurantValue" && !value) {
-        stats.restaurantValue = getRestaurantValue(profile, stats, restaurantSlug, publicRestaurantSlugs);
+      const restaurantValueStats =
+        metric === "restaurantValue"
+          ? publicRestaurantSlugs
+            ? publicOverallStatsFor(profile, publicRestaurantSlugs)
+            : restaurantStatsFor(profile, "")
+          : stats;
+      const value = leaderboardValue(metric === "restaurantValue" ? restaurantValueStats : stats, metric);
+      if (metric === "restaurantValue" && !restaurantValueStats.restaurantValue) {
+        restaurantValueStats.restaurantValue = getRestaurantValue(
+          profile,
+          restaurantValueStats,
+          "",
+          publicRestaurantSlugs
+        );
       }
 
       return {
@@ -361,7 +374,7 @@ export function buildLeaderboard(profiles, metric = "estimatedSales", restaurant
         stats,
         accuracy,
         rating: accuracy / 20,
-        value: metric === "restaurantValue" ? stats.restaurantValue : value,
+        value: metric === "restaurantValue" ? restaurantValueStats.restaurantValue : value,
       };
     })
     .filter((entry) => entry.stats.gamesPlayed > 0)
