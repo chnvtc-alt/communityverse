@@ -2494,6 +2494,79 @@
     );
   }
 
+  function buyRestaurantUpgrade(profileId = "", upgradeId = "") {
+    const targetProfileId = String(profileId || getActiveProfileId() || "").trim();
+    const targetUpgradeId = String(upgradeId || "").trim();
+    const profile = getProfiles().find((entry) => entry.id === targetProfileId) || null;
+    if (!profile) {
+      return { ok: false, message: "No restaurant profile was found." };
+    }
+
+    const safeProfile = ensureProfileShape(profile);
+    const expansionPreview = getRestaurantExpansionPreview(safeProfile);
+    if (expansionPreview.current?.id === DEFAULT_EXPANSION_LEVEL) {
+      return {
+        ok: false,
+        message: "Upgrades are available after expanding to Counter Service.",
+        profile: safeProfile,
+      };
+    }
+
+    const economy = normalizeRestaurantEconomy(safeProfile.restaurantEconomy);
+    if (economy.upgrades[targetUpgradeId]) {
+      return { ok: false, message: "This upgrade has already been bought.", profile: safeProfile };
+    }
+
+    const upgrade = RESTAURANT_UPGRADES.find((entry) => entry.id === targetUpgradeId) || null;
+    if (!upgrade) {
+      return { ok: false, message: "That upgrade was not found.", profile: safeProfile };
+    }
+
+    const cost = Math.max(0, Number(upgrade.cost) || 0);
+    const cashOnHand = getRestaurantCashOnHand(safeProfile, safeProfile.stats);
+    if (cashOnHand < cost) {
+      return {
+        ok: false,
+        message: `You need ${formatCurrency(cost - cashOnHand)} more cash for ${upgrade.label}.`,
+        profile: safeProfile,
+      };
+    }
+
+    const lifetimeCashEarned = Math.max(
+      Number(economy.lifetimeCashEarned) || 0,
+      Number(safeProfile.stats?.estimatedSales) || 0,
+      cashOnHand
+    );
+    const updatedProfile = {
+      ...safeProfile,
+      restaurantEconomy: {
+        ...economy,
+        cashOnHand: Math.max(0, cashOnHand - cost),
+        lifetimeCashEarned,
+        upgrades: {
+          ...economy.upgrades,
+          [upgrade.id]: {
+            id: upgrade.id,
+            label: upgrade.label,
+            cost,
+            value: Math.max(0, Number(upgrade.value ?? upgrade.cost) || 0),
+            salesBoostPercent: Math.max(0, Number(upgrade.salesBoostPercent) || 0),
+            purchasedAt: nowIso(),
+          },
+        },
+      },
+    };
+
+    return {
+      ok: true,
+      message: `${upgrade.label} purchased.`,
+      profile: updateProfile(updatedProfile),
+      upgrade,
+      cost,
+      valueAdded: Math.max(0, Number(upgrade.value ?? upgrade.cost) || 0),
+    };
+  }
+
   function buyNextRestaurantExpansion(profileId = "") {
     const targetProfileId = String(profileId || getActiveProfileId() || "").trim();
     const profile = getProfiles().find((entry) => entry.id === targetProfileId) || null;
@@ -4520,6 +4593,7 @@
     getRestaurantCashOnHand,
     getRestaurantExpansionPreview,
     getRestaurantUpgradePreview,
+    buyRestaurantUpgrade,
     buyNextRestaurantExpansion,
     getCustomersForRestaurant,
     getPhotoReadyCustomersForRestaurant,

@@ -762,6 +762,15 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   line-height: 1.05;
 }
 
+.restaurant-upgrade-button {
+  align-self: end;
+  justify-self: start;
+  min-height: 32px;
+  margin-top: 4px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+}
+
 .restaurant-upgrade-preview-locked {
   background: rgba(255, 255, 255, 0.5);
 }

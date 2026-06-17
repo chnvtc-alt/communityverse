@@ -63,6 +63,8 @@
     connectError: "",
     expansionMessage: "",
     expansionError: "",
+    upgradeMessage: "",
+    upgradeError: "",
   };
 
   const mobileHubQuery = "(max-width: 960px)";
@@ -817,6 +819,9 @@
       ? core.getRestaurantExpansionPreview(profile)
       : null;
     const upgradesLocked = expansionPreview?.current?.id === "food-truck";
+    const cashOnHand = core.getRestaurantCashOnHand
+      ? core.getRestaurantCashOnHand(profile, profile.stats)
+      : Number(profile.stats?.estimatedSales) || 0;
 
     return `
       <div class="restaurant-upgrade-preview ${upgradesLocked ? "restaurant-upgrade-preview-locked" : ""}" aria-label="Next restaurant upgrades">
@@ -827,17 +832,31 @@
         <div class="restaurant-upgrade-preview-grid">
           ${upgrades
             .map(
-              (upgrade) => `
+              (upgrade) => {
+                const cost = Math.max(0, Number(upgrade.cost) || 0);
+                const canBuyUpgrade = !upgradesLocked && core.buyRestaurantUpgrade && cashOnHand >= cost;
+                return `
                 <div class="restaurant-upgrade-preview-card">
                   <strong>${escapeHtml(upgrade.label)}</strong>
                   <span>Cost ${core.formatCurrency(upgrade.cost)}</span>
                   <span>Adds value ${core.formatCurrency(upgrade.value)}</span>
                   <span>Future sales +${Number(upgrade.salesBoostPercent) || 0}%</span>
+                  ${
+                    upgradesLocked
+                      ? ""
+                      : `<button class="button ${canBuyUpgrade ? "button-primary" : "button-muted"} button-sm restaurant-upgrade-button" type="button" data-buy-upgrade="${escapeHtml(upgrade.id)}" ${canBuyUpgrade ? "" : "disabled"}>${canBuyUpgrade ? "Buy Upgrade" : `Need ${core.formatCurrency(cost - cashOnHand)}`}</button>`
+                  }
                 </div>
-              `
+              `;
+              }
             )
             .join("")}
         </div>
+        ${
+          state.upgradeMessage || state.upgradeError
+            ? `<p class="restaurant-expansion-status ${state.upgradeError ? "restaurant-expansion-status-error" : ""}">${escapeHtml(state.upgradeError || state.upgradeMessage)}</p>`
+            : ""
+        }
       </div>
     `;
   }
@@ -1245,6 +1264,25 @@
           ? `${result.expansion?.label || "Expansion"} bought. Cash spent: ${core.formatCurrency(result.cost || 0)}.`
           : "";
         state.expansionError = result?.ok ? "" : result?.message || "Unable to buy this expansion yet.";
+        state.upgradeMessage = "";
+        state.upgradeError = "";
+        renderAll();
+      });
+    });
+
+    elements.hero.querySelectorAll("[data-buy-upgrade]").forEach((button) => {
+      button.addEventListener("click", () => {
+        if (!profile || !core.buyRestaurantUpgrade) {
+          return;
+        }
+
+        const result = core.buyRestaurantUpgrade(profile.id, button.dataset.buyUpgrade);
+        state.upgradeMessage = result?.ok
+          ? `${result.upgrade?.label || "Upgrade"} bought. Cash spent: ${core.formatCurrency(result.cost || 0)}.`
+          : "";
+        state.upgradeError = result?.ok ? "" : result?.message || "Unable to buy this upgrade yet.";
+        state.expansionMessage = "";
+        state.expansionError = "";
         renderAll();
       });
     });
