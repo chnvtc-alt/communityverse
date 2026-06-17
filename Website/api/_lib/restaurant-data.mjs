@@ -144,7 +144,8 @@ function getRecentPerformanceValue(profile, restaurantSlug = "", publicRestauran
       ? session.result
       : "";
     const entry = collection.find((item) => item?.customerId === session.customerId);
-    return entry && status ? total + entryValueForStatus(entry, status) : total;
+    const sessionValue = Math.max(0, Number(session.customerValue) || 0);
+    return entry && status ? total + (sessionValue || entryValueForStatus(entry, status)) : total;
   }, 0);
 }
 

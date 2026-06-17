@@ -2368,6 +2368,40 @@
     }, 0);
   }
 
+  function getRestaurantSalesBoostPercent(profile) {
+    const economy = normalizeRestaurantEconomy(profile?.restaurantEconomy);
+    return Object.values(economy.upgrades || {}).reduce((total, upgrade) => {
+      if (!upgrade || typeof upgrade !== "object") {
+        return total;
+      }
+      return total + Math.max(0, Number(upgrade.salesBoostPercent) || 0);
+    }, 0);
+  }
+
+  function applyRestaurantSalesBoost(value, boostPercent = 0) {
+    const baseValue = Math.max(0, Number(value) || 0);
+    const safeBoostPercent = Math.max(0, Number(boostPercent) || 0);
+    return Math.round(baseValue * (1 + safeBoostPercent / 100));
+  }
+
+  function getBoostedCustomerValues(customer, profile) {
+    const boostPercent = getRestaurantSalesBoostPercent(profile);
+    const baseRegularValue = Math.max(0, Number(customer?.regularValue) || 0);
+    const baseOccasionalValue = Math.max(0, Number(customer?.occasionalValue) || 0);
+    const boostedRegularValue = applyRestaurantSalesBoost(baseRegularValue, boostPercent);
+    const boostedOccasionalValue = applyRestaurantSalesBoost(baseOccasionalValue, boostPercent);
+
+    return {
+      boostPercent,
+      baseRegularValue,
+      baseOccasionalValue,
+      baseFavoriteValue: getFavoriteCustomerValue(baseRegularValue),
+      regularValue: boostedRegularValue,
+      occasionalValue: boostedOccasionalValue,
+      favoriteValue: getFavoriteCustomerValue(boostedRegularValue),
+    };
+  }
+
   function hasTrackedRestaurantEconomy(economy) {
     const safeEconomy = normalizeRestaurantEconomy(economy);
     return Boolean(
@@ -2426,8 +2460,9 @@
       const status = ["regular", "occasional", "favorite"].includes(session.result)
         ? session.result
         : "";
+      const sessionValue = Math.max(0, Number(session.customerValue) || 0);
       return customer && status
-        ? total + getCollectionValueForStatus(customer, status)
+        ? total + (sessionValue || getCollectionValueForStatus(customer, status))
         : total;
     }, 0);
   }
@@ -2833,6 +2868,9 @@
       restaurantSlug: String(safeCredit.restaurantSlug || fallback.restaurantSlug || "").trim(),
       restaurantName: String(safeCredit.restaurantName || fallback.restaurantName || "").trim(),
       status,
+      regularValue: Math.max(0, Number(safeCredit.regularValue ?? fallback.regularValue) || 0),
+      occasionalValue: Math.max(0, Number(safeCredit.occasionalValue ?? fallback.occasionalValue) || 0),
+      salesBoostPercent: Math.max(0, Number(safeCredit.salesBoostPercent ?? fallback.salesBoostPercent) || 0),
       dateWon: safeCredit.dateWon || fallback.dateWon || "",
     };
   }
@@ -2847,6 +2885,9 @@
           restaurantSlug,
           restaurantName: entry.restaurantName,
           status: entry.status,
+          regularValue: entry.regularValue,
+          occasionalValue: entry.occasionalValue,
+          salesBoostPercent: entry.salesBoostPercent,
           dateWon: entry.dateWon,
         });
 
@@ -2865,6 +2906,9 @@
         restaurantSlug: entry.restaurantSlug,
         restaurantName: entry.restaurantName,
         status: entry.status,
+        regularValue: entry.regularValue,
+        occasionalValue: entry.occasionalValue,
+        salesBoostPercent: entry.salesBoostPercent,
         dateWon: entry.dateWon,
       });
 
@@ -2895,6 +2939,9 @@
       ...strongerCredit,
       restaurantSlug: existingCredit.restaurantSlug || incomingCredit.restaurantSlug,
       restaurantName: incomingCredit.restaurantName || existingCredit.restaurantName,
+      regularValue: strongerCredit.regularValue,
+      occasionalValue: strongerCredit.occasionalValue,
+      salesBoostPercent: strongerCredit.salesBoostPercent,
     });
   }
 
@@ -2927,6 +2974,9 @@
       restaurantSlug: session.restaurantSlug,
       restaurantName: session.restaurantName,
       status: session.result,
+      regularValue: session.customer.regularValue,
+      occasionalValue: session.customer.occasionalValue,
+      salesBoostPercent: session.salesBoostPercent,
       dateWon: session.completedAt || nowIso(),
     });
   }
@@ -3066,7 +3116,12 @@
         entry.status === "favorite" && credit.status === "regular"
           ? "favorite"
           : credit.status;
-      applyCollectionStats(stats, { ...entry, status: creditStatus }, customer);
+      const creditCustomer = {
+        ...customer,
+        regularValue: Number(credit.regularValue) || Number(entry.regularValue) || Number(customer.regularValue) || 0,
+        occasionalValue: Number(credit.occasionalValue) || Number(entry.occasionalValue) || Number(customer.occasionalValue) || 0,
+      };
+      applyCollectionStats(stats, { ...entry, status: creditStatus }, creditCustomer);
     };
 
     safeProfile.customerCollection.forEach((entry) => {
@@ -3075,7 +3130,12 @@
         return;
       }
 
-      applyCollectionStats(safeProfile.stats, entry, customer);
+      const entryCustomer = {
+        ...customer,
+        regularValue: Number(entry.regularValue) || Number(customer.regularValue) || 0,
+        occasionalValue: Number(entry.occasionalValue) || Number(customer.occasionalValue) || 0,
+      };
+      applyCollectionStats(safeProfile.stats, entry, entryCustomer);
 
       Object.values(normalizeRestaurantCredits(entry)).forEach((credit) => {
         if (!safeProfile.restaurantStats[credit.restaurantSlug]) {
@@ -4209,6 +4269,9 @@
           score: session.score,
           totalQuestions: session.questions.length,
           result: session.result,
+          customerValue: Math.max(0, Number(session.customerValue) || 0),
+          salesBoostPercent: Math.max(0, Number(session.salesBoostPercent) || 0),
+          customerBaseValues: session.customerBaseValues || null,
           playedAt: session.completedAt || nowIso(),
         },
         ...nextProfile.recentSessions,
@@ -4244,6 +4307,7 @@
           rarity: session.customer.rarity,
           regularValue: session.customer.regularValue,
           occasionalValue: session.customer.occasionalValue,
+          salesBoostPercent: Math.max(0, Number(session.salesBoostPercent) || 0),
           favoriteVisits: bestStatus === "favorite" ? FAVORITE_VISIT_GOAL : nextFavoriteVisits,
           restaurantCredits: addRestaurantCreditToEntry(existingCustomer, session),
           image: session.customer.image,
@@ -4267,6 +4331,7 @@
             rarity: session.customer.rarity,
             regularValue: session.customer.regularValue,
             occasionalValue: session.customer.occasionalValue,
+            salesBoostPercent: Math.max(0, Number(session.salesBoostPercent) || 0),
             favoriteVisits: 0,
             restaurantCredits: addRestaurantCreditToEntry({
               restaurantSlug: session.restaurantSlug,
@@ -4377,6 +4442,31 @@
       session.result = isRegularReplay
         ? (becameFavorite || favoriteWasAlreadyComplete ? "favorite" : "regular")
         : scoreResult;
+      const activeProfile = getProfiles().find((profile) => profile.id === session.profileId) || null;
+      const boostedValues = getBoostedCustomerValues(session.customer, activeProfile);
+      session.salesBoostPercent = boostedValues.boostPercent;
+      session.customerBaseValues = {
+        regularValue: boostedValues.baseRegularValue,
+        occasionalValue: boostedValues.baseOccasionalValue,
+        favoriteValue: boostedValues.baseFavoriteValue,
+      };
+      session.customer = {
+        ...session.customer,
+        regularValue: boostedValues.regularValue,
+        occasionalValue: boostedValues.occasionalValue,
+      };
+      if (session.favoriteProgress) {
+        session.favoriteProgress.regularValue = boostedValues.regularValue;
+        session.favoriteProgress.favoriteValue = boostedValues.favoriteValue;
+      }
+      session.customerValue =
+        session.result === "favorite"
+          ? boostedValues.favoriteValue
+          : session.result === "regular"
+            ? boostedValues.regularValue
+            : session.result === "occasional"
+              ? boostedValues.occasionalValue
+              : 0;
       session.outcomeText =
         session.result === "favorite"
           ? "favorite customer"
@@ -4593,6 +4683,7 @@
     getRestaurantCashOnHand,
     getRestaurantExpansionPreview,
     getRestaurantUpgradePreview,
+    getRestaurantSalesBoostPercent,
     buyRestaurantUpgrade,
     buyNextRestaurantExpansion,
     getCustomersForRestaurant,

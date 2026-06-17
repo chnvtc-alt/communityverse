@@ -2536,6 +2536,10 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   color: #fffdf8;
 }
 
+.result-metric-card-wide {
+  grid-column: 1 / -1;
+}
+
 .result-metric-label {
   font-family: Arial, sans-serif;
   font-size: 0.72rem;

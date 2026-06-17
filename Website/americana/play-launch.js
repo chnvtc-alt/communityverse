@@ -1203,6 +1203,26 @@
           : session.result === "occasional"
             ? session.customer.occasionalValue
             : 0;
+    const salesBoostPercent = Math.max(0, Number(session.salesBoostPercent) || 0);
+    const baseCustomerValue =
+      session.result === "favorite"
+        ? Number(session.customerBaseValues?.favoriteValue) || 0
+        : session.result === "regular"
+          ? Number(session.customerBaseValues?.regularValue) || 0
+          : session.result === "occasional"
+            ? Number(session.customerBaseValues?.occasionalValue) || 0
+            : 0;
+    const salesBoostMarkup =
+      salesBoostPercent > 0 && customerValue > 0 && baseCustomerValue > 0
+        ? `
+          <div class="result-metric-row result-sales-boost-row">
+            <div class="result-metric-card result-metric-card-wide">
+              <span class="result-metric-label">Upgrade bonus:</span>
+              <span class="result-metric-value">${core.formatCurrency(baseCustomerValue)} +${salesBoostPercent.toFixed(0)}% = ${core.formatCurrency(customerValue)}</span>
+            </div>
+          </div>
+        `
+        : "";
 
     elements.result.innerHTML = `
       <div class="result-screen result-screen-${resultLayoutMode}">
@@ -1250,6 +1270,7 @@
                   <span class="result-metric-value">${overallSalesStats ? core.formatCurrency(overallSalesStats.estimatedSales) : core.formatCurrency(0)}</span>
                 </div>
               </div>
+              ${salesBoostMarkup}
             </div>
           </div>
         </div>

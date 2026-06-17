@@ -822,12 +822,21 @@
     const cashOnHand = core.getRestaurantCashOnHand
       ? core.getRestaurantCashOnHand(profile, profile.stats)
       : Number(profile.stats?.estimatedSales) || 0;
+    const ownedBoostPercent = core.getRestaurantSalesBoostPercent
+      ? core.getRestaurantSalesBoostPercent(profile)
+      : 0;
 
     return `
       <div class="restaurant-upgrade-preview ${upgradesLocked ? "restaurant-upgrade-preview-locked" : ""}" aria-label="Next restaurant upgrades">
         <div class="restaurant-upgrade-preview-head">
           <span>${upgradesLocked ? "Upgrades" : "Next Upgrades"}</span>
-          ${upgradesLocked ? `<span>Available after expansion to Counter Service.</span>` : ""}
+          ${
+            upgradesLocked
+              ? `<span>Available after expansion to Counter Service.</span>`
+              : ownedBoostPercent > 0
+                ? `<span>Owned upgrades: +${Number(ownedBoostPercent).toFixed(0)}% future sales.</span>`
+                : ""
+          }
         </div>
         <div class="restaurant-upgrade-preview-grid">
           ${upgrades
