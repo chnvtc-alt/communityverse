@@ -2221,6 +2221,100 @@
     return `${(Number(value) || 0).toFixed(1)}/5`;
   }
 
+  const EXPANSION_LEVELS = [
+    {
+      id: "food-truck",
+      label: "Food Truck",
+      value: 500,
+    },
+  ];
+
+  const DEFAULT_EXPANSION_LEVEL = EXPANSION_LEVELS[0].id;
+  const RECENT_PERFORMANCE_DAYS = 30;
+
+  function normalizeRestaurantEconomy(economy) {
+    const safeEconomy = economy && typeof economy === "object" ? { ...economy } : {};
+    const expansionLevel = EXPANSION_LEVELS.some((level) => level.id === safeEconomy.expansionLevel)
+      ? safeEconomy.expansionLevel
+      : DEFAULT_EXPANSION_LEVEL;
+
+    return {
+      cashOnHand: Math.max(0, Number(safeEconomy.cashOnHand) || 0),
+      lifetimeCashEarned: Math.max(0, Number(safeEconomy.lifetimeCashEarned) || 0),
+      expansionLevel,
+      upgrades:
+        safeEconomy.upgrades && typeof safeEconomy.upgrades === "object" && !Array.isArray(safeEconomy.upgrades)
+          ? { ...safeEconomy.upgrades }
+          : {},
+    };
+  }
+
+  function getExpansionValue(economy) {
+    const expansion = EXPANSION_LEVELS.find((level) => level.id === economy.expansionLevel) || EXPANSION_LEVELS[0];
+    return Number(expansion.value) || 0;
+  }
+
+  function getUpgradeValue(economy) {
+    return Object.values(economy.upgrades || {}).reduce((total, upgrade) => {
+      if (!upgrade || typeof upgrade !== "object") {
+        return total;
+      }
+      return total + Math.max(0, Number(upgrade.value ?? upgrade.cost) || 0);
+    }, 0);
+  }
+
+  function getCustomerLoyaltyValue(stats) {
+    const favoriteCustomers = Math.max(0, Number(stats.favoriteCustomers) || 0);
+    const regularOnlyCustomers = Math.max(0, (Number(stats.regularCustomers) || 0) - favoriteCustomers);
+    return regularOnlyCustomers * 100 + favoriteCustomers * 300;
+  }
+
+  function getRatingValue(stats) {
+    if (!stats.gamesPlayed) {
+      return 0;
+    }
+    const accuracy = (stats.totalCorrectAnswers / (stats.gamesPlayed * 10)) * 100;
+    return (accuracy / 20) * 500;
+  }
+
+  function getRecentPerformanceValue(profile, restaurantSlug = "") {
+    const cutoff = Date.now() - RECENT_PERFORMANCE_DAYS * 24 * 60 * 60 * 1000;
+    const sessions = Array.isArray(profile?.recentSessions) ? profile.recentSessions : [];
+
+    return sessions.reduce((total, session) => {
+      const playedAt = Date.parse(session?.playedAt || "");
+      const sessionRestaurantSlug = String(session?.restaurantSlug || "").trim();
+      if (!playedAt || playedAt < cutoff) {
+        return total;
+      }
+      if (restaurantSlug && sessionRestaurantSlug !== restaurantSlug) {
+        return total;
+      }
+      if (!restaurantSlug && sessionRestaurantSlug && !isPublicLeaderboardRestaurant(sessionRestaurantSlug)) {
+        return total;
+      }
+
+      const customer = getCustomerById(session.customerId);
+      const status = ["regular", "occasional", "favorite"].includes(session.result)
+        ? session.result
+        : "";
+      return customer && status
+        ? total + getCollectionValueForStatus(customer, status)
+        : total;
+    }, 0);
+  }
+
+  function getRestaurantValue(profile, stats, restaurantSlug = "") {
+    const economy = normalizeRestaurantEconomy(profile?.restaurantEconomy);
+    return Math.round(
+      getExpansionValue(economy) +
+        getUpgradeValue(economy) +
+        getCustomerLoyaltyValue(stats) +
+        getRecentPerformanceValue(profile, restaurantSlug) +
+        getRatingValue(stats)
+    );
+  }
+
   function getProfiles() {
     return getProfilesCache();
   }
@@ -2371,6 +2465,7 @@
       lostCustomers: 0,
       totalCustomerValue: 0,
       estimatedSales: 0,
+      restaurantValue: 0,
     };
   }
 
@@ -2397,6 +2492,7 @@
     safeProfile.recentSessions = Array.isArray(safeProfile.recentSessions)
       ? safeProfile.recentSessions
       : [];
+    safeProfile.restaurantEconomy = normalizeRestaurantEconomy(safeProfile.restaurantEconomy);
     safeProfile.isGuest = Boolean(safeProfile.isGuest);
     safeProfile.customerCollection = dedupeCustomerCollection(
       safeProfile.customerCollection.map(normalizeCollectionEntry)
@@ -2693,8 +2789,12 @@
     });
 
     safeProfile.stats.estimatedSales = safeProfile.stats.totalCustomerValue;
+    safeProfile.stats.restaurantValue = getRestaurantValue(safeProfile, safeProfile.stats);
     Object.values(safeProfile.restaurantStats).forEach((stats) => {
       stats.estimatedSales = stats.totalCustomerValue;
+    });
+    Object.entries(safeProfile.restaurantStats).forEach(([restaurantSlug, stats]) => {
+      stats.restaurantValue = getRestaurantValue(safeProfile, stats, restaurantSlug);
     });
 
     return safeProfile;
@@ -4018,13 +4118,16 @@
       return safeProfile.stats;
     }
 
-    return entries.reduce((stats, [restaurantSlug, restaurantStats]) => {
+    const stats = entries.reduce((combinedStats, [restaurantSlug, restaurantStats]) => {
       if (isPublicLeaderboardRestaurant(restaurantSlug)) {
-        addStats(stats, restaurantStats);
+        addStats(combinedStats, restaurantStats);
       }
 
-      return stats;
+      return combinedStats;
     }, buildEmptyStats());
+
+    stats.restaurantValue = getRestaurantValue(safeProfile, stats);
+    return stats;
   }
 
   function getLeaderboard(metric, restaurantSlug) {
@@ -4051,6 +4154,8 @@
               ? accuracy
             : metric === "gamesPlayed"
               ? stats.gamesPlayed
+              : metric === "restaurantValue"
+                ? stats.restaurantValue || getRestaurantValue(safeProfile, stats, restaurantSlug || "")
               : metric === "regularCustomers"
                 ? stats.regularCustomers
                 : metric === "favoriteCustomers"
@@ -4165,6 +4270,7 @@
     getFavoriteVisitGoal,
     getCollectionEntryValue,
     getCustomerStatusLabel,
+    getRestaurantValue,
     getCustomersForRestaurant,
     getPhotoReadyCustomersForRestaurant,
     getFeaturedGuestLineup,

@@ -3,11 +3,123 @@ export function emptyStats() {
     gamesPlayed: 0,
     totalCorrectAnswers: 0,
     regularCustomers: 0,
+    favoriteCustomers: 0,
     occasionalCustomers: 0,
     lostCustomers: 0,
     totalCustomerValue: 0,
     estimatedSales: 0,
+    restaurantValue: 0,
   };
+}
+
+const EXPANSION_LEVELS = [
+  {
+    id: "food-truck",
+    label: "Food Truck",
+    value: 500,
+  },
+];
+
+const DEFAULT_EXPANSION_LEVEL = EXPANSION_LEVELS[0].id;
+const RECENT_PERFORMANCE_DAYS = 30;
+
+function normalizeRestaurantEconomy(economy) {
+  const safeEconomy = economy && typeof economy === "object" ? { ...economy } : {};
+  const expansionLevel = EXPANSION_LEVELS.some((level) => level.id === safeEconomy.expansionLevel)
+    ? safeEconomy.expansionLevel
+    : DEFAULT_EXPANSION_LEVEL;
+
+  return {
+    cashOnHand: Math.max(0, Number(safeEconomy.cashOnHand) || 0),
+    lifetimeCashEarned: Math.max(0, Number(safeEconomy.lifetimeCashEarned) || 0),
+    expansionLevel,
+    upgrades:
+      safeEconomy.upgrades && typeof safeEconomy.upgrades === "object" && !Array.isArray(safeEconomy.upgrades)
+        ? { ...safeEconomy.upgrades }
+        : {},
+  };
+}
+
+function getExpansionValue(economy) {
+  const expansion = EXPANSION_LEVELS.find((level) => level.id === economy.expansionLevel) || EXPANSION_LEVELS[0];
+  return Number(expansion.value) || 0;
+}
+
+function getUpgradeValue(economy) {
+  return Object.values(economy.upgrades || {}).reduce((total, upgrade) => {
+    if (!upgrade || typeof upgrade !== "object") {
+      return total;
+    }
+    return total + Math.max(0, Number(upgrade.value ?? upgrade.cost) || 0);
+  }, 0);
+}
+
+function getCustomerLoyaltyValue(stats) {
+  const favoriteCustomers = Math.max(0, Number(stats.favoriteCustomers) || 0);
+  const regularOnlyCustomers = Math.max(0, (Number(stats.regularCustomers) || 0) - favoriteCustomers);
+  return regularOnlyCustomers * 100 + favoriteCustomers * 300;
+}
+
+function getRatingValue(stats) {
+  if (!stats.gamesPlayed) {
+    return 0;
+  }
+  const accuracy = (stats.totalCorrectAnswers / (stats.gamesPlayed * 10)) * 100;
+  return (accuracy / 20) * 500;
+}
+
+function favoriteCustomerValue(value) {
+  return Math.round((Number(value) || 0) * 1.2);
+}
+
+function entryValueForStatus(entry, status) {
+  if (status === "favorite") {
+    return favoriteCustomerValue(entry.regularValue);
+  }
+  if (status === "regular") {
+    return Number(entry.regularValue) || 0;
+  }
+  if (status === "occasional") {
+    return Number(entry.occasionalValue) || 0;
+  }
+  return 0;
+}
+
+function getRecentPerformanceValue(profile, restaurantSlug = "", publicRestaurantSlugs = null) {
+  const cutoff = Date.now() - RECENT_PERFORMANCE_DAYS * 24 * 60 * 60 * 1000;
+  const sessions = Array.isArray(profile?.recentSessions) ? profile.recentSessions : [];
+  const collection = Array.isArray(profile?.customerCollection) ? profile.customerCollection : [];
+
+  return sessions.reduce((total, session) => {
+    const playedAt = Date.parse(session?.playedAt || "");
+    const sessionRestaurantSlug = String(session?.restaurantSlug || "").trim();
+    if (!playedAt || playedAt < cutoff) {
+      return total;
+    }
+    if (restaurantSlug && sessionRestaurantSlug !== restaurantSlug) {
+      return total;
+    }
+    if (!restaurantSlug && publicRestaurantSlugs && sessionRestaurantSlug && !publicRestaurantSlugs.has(sessionRestaurantSlug)) {
+      return total;
+    }
+
+    const status = ["regular", "occasional", "favorite"].includes(session.result)
+      ? session.result
+      : "";
+    const entry = collection.find((item) => item?.customerId === session.customerId);
+    return entry && status ? total + entryValueForStatus(entry, status) : total;
+  }, 0);
+}
+
+function getRestaurantValue(profile, stats, restaurantSlug = "", publicRestaurantSlugs = null) {
+  const economy = normalizeRestaurantEconomy(profile?.restaurantEconomy);
+  return Math.round(
+    getExpansionValue(economy) +
+      getUpgradeValue(economy) +
+      getCustomerLoyaltyValue(stats) +
+      getRecentPerformanceValue(profile, restaurantSlug, publicRestaurantSlugs) +
+      getRatingValue(stats)
+  );
 }
 
 export function normalizeProfile(profile) {
@@ -21,6 +133,7 @@ export function normalizeProfile(profile) {
   safeProfile.lastPlayedAt = String(safeProfile.lastPlayedAt || "");
   safeProfile.isGuest = Boolean(safeProfile.isGuest);
   safeProfile.emailConnected = Boolean(safeProfile.emailConnected);
+  safeProfile.restaurantEconomy = normalizeRestaurantEconomy(safeProfile.restaurantEconomy);
   safeProfile.stats = { ...emptyStats(), ...(safeProfile.stats || {}) };
   safeProfile.restaurantStats =
     safeProfile.restaurantStats && typeof safeProfile.restaurantStats === "object"
@@ -178,13 +291,16 @@ function publicOverallStatsFor(profile, publicRestaurantSlugs) {
     return safeProfile.stats;
   }
 
-  return entries.reduce((stats, [restaurantSlug, restaurantStats]) => {
+  const stats = entries.reduce((combinedStats, [restaurantSlug, restaurantStats]) => {
     if (publicRestaurantSlugs.has(restaurantSlug)) {
-      addStats(stats, restaurantStats);
+      addStats(combinedStats, restaurantStats);
     }
 
-    return stats;
+    return combinedStats;
   }, emptyStats());
+
+  stats.restaurantValue = getRestaurantValue(safeProfile, stats, "", publicRestaurantSlugs);
+  return stats;
 }
 
 export function leaderboardValue(stats, metric) {
@@ -200,6 +316,10 @@ export function leaderboardValue(stats, metric) {
 
   if (metric === "gamesPlayed") {
     return stats.gamesPlayed;
+  }
+
+  if (metric === "restaurantValue") {
+    return stats.restaurantValue;
   }
 
   if (metric === "regularCustomers") {
@@ -230,6 +350,9 @@ export function buildLeaderboard(profiles, metric = "estimatedSales", restaurant
           : restaurantStatsFor(profile, "");
       const accuracy = stats.gamesPlayed ? (stats.totalCorrectAnswers / (stats.gamesPlayed * 10)) * 100 : 0;
       const value = leaderboardValue(stats, metric);
+      if (metric === "restaurantValue" && !value) {
+        stats.restaurantValue = getRestaurantValue(profile, stats, restaurantSlug, publicRestaurantSlugs);
+      }
 
       return {
         profileId: profile.id,
@@ -238,7 +361,7 @@ export function buildLeaderboard(profiles, metric = "estimatedSales", restaurant
         stats,
         accuracy,
         rating: accuracy / 20,
-        value,
+        value: metric === "restaurantValue" ? stats.restaurantValue : value,
       };
     })
     .filter((entry) => entry.stats.gamesPlayed > 0)

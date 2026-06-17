@@ -12,6 +12,11 @@
       description: "Total sales from the customers each restaurant has earned.",
     },
     {
+      value: "restaurantValue",
+      label: "Value",
+      description: "Restaurant Value combines your current size, upgrades, customer loyalty, recent sales, and rating.",
+    },
+    {
       value: "collected",
       label: "Customers",
       description: "Total customers collected, including regular and occasional customers.",
@@ -409,6 +414,10 @@
       return stats.gamesPlayed;
     }
 
+    if (metric === "restaurantValue") {
+      return stats.restaurantValue || 0;
+    }
+
     if (metric === "regularCustomers") {
       return stats.regularCustomers;
     }
@@ -425,7 +434,7 @@
   }
 
   function formatMetricValue(value, metric) {
-    if (metric === "estimatedSales") {
+    if (metric === "estimatedSales" || metric === "restaurantValue") {
       return core.formatCurrency(value);
     }
 
@@ -703,6 +712,7 @@
             stats: {
               gamesPlayed: 0,
               estimatedSales: 0,
+              restaurantValue: 0,
               regularCustomers: 0,
               favoriteCustomers: 0,
               occasionalCustomers: 0,
@@ -766,6 +776,7 @@
                     ${!editMode && !emailConnected ? renderConnectInfoMarkup(profile) : ``}
                     <div class="hero-profile-meta hero-profile-meta-compact">
                       <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
+                      <span class="chip hero-stat-chip">🏦 Value ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
                       <span class="chip hero-stat-chip">👥 Customers ${collectedCustomers}</span>
                       <span class="chip hero-stat-chip">💰 Sales ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
                       <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
@@ -823,6 +834,7 @@
                   ${!editMode && !emailConnected ? renderConnectInfoMarkup(profile) : ``}
                   <div class="hero-profile-meta">
                     <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
+                    <span class="chip hero-stat-chip">🏦 Value ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
                     <span class="chip hero-stat-chip">👥 Customers ${collectedCustomers}</span>
                     <span class="chip hero-stat-chip">💰 Sales ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
                     <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
