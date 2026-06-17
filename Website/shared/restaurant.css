@@ -226,7 +226,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 .challenge-splash-picker {
   display: grid;
   gap: 8px;
-  max-width: 620px;
+  max-width: 760px;
   margin-top: 8px;
   width: 100%;
 }
@@ -268,7 +268,9 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   background: rgba(255, 255, 255, 0.94);
   box-shadow: 0 14px 26px rgba(32, 49, 42, 0.08);
   color: var(--ink);
-  font-size: 1.03rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.12rem;
+  font-weight: 700;
   appearance: none;
 }
 
