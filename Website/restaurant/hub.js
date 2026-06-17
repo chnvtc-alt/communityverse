@@ -746,7 +746,7 @@
     `;
   }
 
-  function renderExpansionPreviewMarkup(profile) {
+  function renderExpansionPreviewMarkup(profile, stats = null) {
     if (!profile || !core.getRestaurantExpansionPreview) {
       return "";
     }
@@ -756,8 +756,8 @@
       return "";
     }
     const cashOnHand = core.getRestaurantCashOnHand
-      ? core.getRestaurantCashOnHand(profile, profile.stats)
-      : Math.max(0, Number(profile.stats?.estimatedSales) || 0);
+      ? core.getRestaurantCashOnHand(profile, stats || profile.stats)
+      : Math.max(0, Number((stats || profile.stats)?.estimatedSales) || 0);
     const nextCost = Math.max(0, Number(preview.next?.cost) || 0);
     const canBuyNext = Boolean(preview.next && core.buyNextRestaurantExpansion && cashOnHand >= nextCost);
     const shortfall = preview.next ? Math.max(0, nextCost - cashOnHand) : 0;
@@ -805,7 +805,7 @@
     `;
   }
 
-  function renderUpgradePreviewMarkup(profile) {
+  function renderUpgradePreviewMarkup(profile, stats = null) {
     if (!profile || !core.getRestaurantUpgradePreview) {
       return "";
     }
@@ -819,8 +819,8 @@
       : null;
     const upgradesLocked = expansionPreview?.current?.id === "food-truck";
     const cashOnHand = core.getRestaurantCashOnHand
-      ? core.getRestaurantCashOnHand(profile, profile.stats)
-      : Number(profile.stats?.estimatedSales) || 0;
+      ? core.getRestaurantCashOnHand(profile, stats || profile.stats)
+      : Number((stats || profile.stats)?.estimatedSales) || 0;
     const ownedBoostPercent = core.getRestaurantSalesBoostPercent
       ? core.getRestaurantSalesBoostPercent(profile)
       : 0;
@@ -920,8 +920,8 @@
             <span class="chip hero-stat-chip">${bestRankLabel}</span>
           </div>
           ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
-          ${renderExpansionPreviewMarkup(profile)}
-          ${renderUpgradePreviewMarkup(profile)}
+          ${renderExpansionPreviewMarkup(profile, safeSummary.stats)}
+          ${renderUpgradePreviewMarkup(profile, safeSummary.stats)}
         `
         : "";
 
@@ -977,8 +977,8 @@
                       <span class="chip hero-stat-chip">${bestRankLabel}</span>
                     </div>
                     ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
-                    ${renderExpansionPreviewMarkup(profile)}
-                    ${renderUpgradePreviewMarkup(profile)}
+                    ${renderExpansionPreviewMarkup(profile, safeSummary.stats)}
+                    ${renderUpgradePreviewMarkup(profile, safeSummary.stats)}
                     ${
                       !editMode && !emailConnected ? renderConnectEmailMarkup(profile) : ``
                     }
@@ -1039,8 +1039,8 @@
                     <span class="chip hero-stat-chip">${bestRankLabel}</span>
                   </div>
                   ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
-                  ${renderExpansionPreviewMarkup(profile)}
-                  ${renderUpgradePreviewMarkup(profile)}
+                  ${renderExpansionPreviewMarkup(profile, safeSummary.stats)}
+                  ${renderUpgradePreviewMarkup(profile, safeSummary.stats)}
                   ${
                     !editMode && !emailConnected ? renderConnectEmailMarkup(profile) : ``
                   }

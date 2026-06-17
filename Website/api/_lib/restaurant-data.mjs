@@ -99,9 +99,18 @@ function hasTrackedRestaurantEconomy(economy) {
 function getRestaurantCashOnHand(profile, stats = null) {
   const safeStats = stats || profile?.stats || {};
   const economy = normalizeRestaurantEconomy(profile?.restaurantEconomy);
+  const restaurantStatsSales = Object.values(profile?.restaurantStats || {}).reduce(
+    (total, restaurantStats) => total + Math.max(0, Number(restaurantStats?.estimatedSales) || 0),
+    0
+  );
   return hasTrackedRestaurantEconomy(economy)
     ? economy.cashOnHand
-    : Math.max(0, Number(safeStats.estimatedSales) || 0);
+    : Math.max(
+        0,
+        Number(safeStats.estimatedSales) || 0,
+        Number(profile?.stats?.estimatedSales) || 0,
+        restaurantStatsSales
+      );
 }
 
 function getCustomerLoyaltyValue(stats) {

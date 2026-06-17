@@ -2415,9 +2415,18 @@
   function getRestaurantCashOnHand(profile, stats = null) {
     const safeStats = stats || profile?.stats || {};
     const economy = normalizeRestaurantEconomy(profile?.restaurantEconomy);
+    const restaurantStatsSales = Object.values(profile?.restaurantStats || {}).reduce(
+      (total, restaurantStats) => total + Math.max(0, Number(restaurantStats?.estimatedSales) || 0),
+      0
+    );
     return hasTrackedRestaurantEconomy(economy)
       ? economy.cashOnHand
-      : Math.max(0, Number(safeStats.estimatedSales) || 0);
+      : Math.max(
+          0,
+          Number(safeStats.estimatedSales) || 0,
+          Number(profile?.stats?.estimatedSales) || 0,
+          restaurantStatsSales
+        );
   }
 
   function getCustomerLoyaltyValue(stats) {
@@ -2537,6 +2546,7 @@
       return { ok: false, message: "No restaurant profile was found." };
     }
 
+    const originalCashOnHand = getRestaurantCashOnHand(profile, profile.stats);
     const safeProfile = ensureProfileShape(profile);
     const expansionPreview = getRestaurantExpansionPreview(safeProfile);
     if (expansionPreview.current?.id === DEFAULT_EXPANSION_LEVEL) {
@@ -2558,7 +2568,10 @@
     }
 
     const cost = Math.max(0, Number(upgrade.cost) || 0);
-    const cashOnHand = getRestaurantCashOnHand(safeProfile, safeProfile.stats);
+    const cashOnHand = Math.max(
+      originalCashOnHand,
+      getRestaurantCashOnHand(safeProfile, safeProfile.stats)
+    );
     if (cashOnHand < cost) {
       return {
         ok: false,
@@ -2609,6 +2622,7 @@
       return { ok: false, message: "No restaurant profile was found." };
     }
 
+    const originalCashOnHand = getRestaurantCashOnHand(profile, profile.stats);
     const safeProfile = ensureProfileShape(profile);
     const preview = getRestaurantExpansionPreview(safeProfile);
     if (!preview.next) {
@@ -2616,7 +2630,10 @@
     }
 
     const cost = Math.max(0, Number(preview.next.cost) || 0);
-    const cashOnHand = getRestaurantCashOnHand(safeProfile, safeProfile.stats);
+    const cashOnHand = Math.max(
+      originalCashOnHand,
+      getRestaurantCashOnHand(safeProfile, safeProfile.stats)
+    );
     if (cashOnHand < cost) {
       return {
         ok: false,
