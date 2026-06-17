@@ -758,6 +758,7 @@
     const collectedCustomers =
       (safeSummary.stats.regularCustomers || 0) + (safeSummary.stats.occasionalCustomers || 0);
     const favoriteCustomers = safeSummary.stats.favoriteCustomers || 0;
+    const cashOnHand = safeSummary.stats.estimatedSales || 0;
     const bestRankLabel = overallRank ? `🏆 Best Rank #${overallRank}` : "🏆 Best Rank --";
     const selectedDirectoryRestaurant = getSelectedDirectoryRestaurant(profile);
     const lastPlayedSlug = getDefaultDirectorySlug(profile);
@@ -776,6 +777,7 @@
           <div class="hero-profile-meta ${compactMobile ? "hero-profile-meta-compact" : ""}">
             <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
             <span class="chip hero-stat-chip">🏦 Value ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
+            <span class="chip hero-stat-chip">💵 Cash ${core.formatCurrency(cashOnHand)}</span>
             <span class="chip hero-stat-chip">👥 Customers ${collectedCustomers}</span>
             <span class="chip hero-stat-chip">💰 Sales ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
             <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
@@ -830,6 +832,7 @@
                     <div class="hero-profile-meta hero-profile-meta-compact">
                       <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
                       <span class="chip hero-stat-chip">🏦 Value ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
+                      <span class="chip hero-stat-chip">💵 Cash ${core.formatCurrency(cashOnHand)}</span>
                       <span class="chip hero-stat-chip">👥 Customers ${collectedCustomers}</span>
                       <span class="chip hero-stat-chip">💰 Sales ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
                       <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
@@ -889,6 +892,7 @@
                   <div class="hero-profile-meta">
                     <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
                     <span class="chip hero-stat-chip">🏦 Value ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
+                    <span class="chip hero-stat-chip">💵 Cash ${core.formatCurrency(cashOnHand)}</span>
                     <span class="chip hero-stat-chip">👥 Customers ${collectedCustomers}</span>
                     <span class="chip hero-stat-chip">💰 Sales ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
                     <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
