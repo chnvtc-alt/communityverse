@@ -2338,6 +2338,24 @@
     }, 0);
   }
 
+  function hasTrackedRestaurantEconomy(economy) {
+    const safeEconomy = normalizeRestaurantEconomy(economy);
+    return Boolean(
+      safeEconomy.cashOnHand ||
+        safeEconomy.lifetimeCashEarned ||
+        safeEconomy.expansionLevel !== DEFAULT_EXPANSION_LEVEL ||
+        Object.keys(safeEconomy.upgrades || {}).length
+    );
+  }
+
+  function getRestaurantCashOnHand(profile, stats = null) {
+    const safeStats = stats || profile?.stats || {};
+    const economy = normalizeRestaurantEconomy(profile?.restaurantEconomy);
+    return hasTrackedRestaurantEconomy(economy)
+      ? economy.cashOnHand
+      : Math.max(0, Number(safeStats.estimatedSales) || 0);
+  }
+
   function getCustomerLoyaltyValue(stats) {
     const favoriteCustomers = Math.max(0, Number(stats.favoriteCustomers) || 0);
     const regularOnlyCustomers = Math.max(0, (Number(stats.regularCustomers) || 0) - favoriteCustomers);
@@ -2434,6 +2452,55 @@
       0,
       Math.max(0, Number(limit) || 0)
     );
+  }
+
+  function buyNextRestaurantExpansion(profileId = "") {
+    const targetProfileId = String(profileId || getActiveProfileId() || "").trim();
+    const profile = getProfiles().find((entry) => entry.id === targetProfileId) || null;
+    if (!profile) {
+      return { ok: false, message: "No restaurant profile was found." };
+    }
+
+    const safeProfile = ensureProfileShape(profile);
+    const preview = getRestaurantExpansionPreview(safeProfile);
+    if (!preview.next) {
+      return { ok: false, message: "This restaurant is already fully expanded.", profile: safeProfile };
+    }
+
+    const cost = Math.max(0, Number(preview.next.cost) || 0);
+    const cashOnHand = getRestaurantCashOnHand(safeProfile, safeProfile.stats);
+    if (cashOnHand < cost) {
+      return {
+        ok: false,
+        message: `You need ${formatCurrency(cost - cashOnHand)} more cash for this expansion.`,
+        profile: safeProfile,
+      };
+    }
+
+    const economy = normalizeRestaurantEconomy(safeProfile.restaurantEconomy);
+    const lifetimeCashEarned = Math.max(
+      Number(economy.lifetimeCashEarned) || 0,
+      Number(safeProfile.stats?.estimatedSales) || 0,
+      cashOnHand
+    );
+    const updatedProfile = {
+      ...safeProfile,
+      restaurantEconomy: {
+        ...economy,
+        cashOnHand: Math.max(0, cashOnHand - cost),
+        lifetimeCashEarned,
+        expansionLevel: preview.next.id,
+      },
+    };
+
+    return {
+      ok: true,
+      message: `${preview.next.label} purchased.`,
+      profile: updateProfile(updatedProfile),
+      expansion: preview.next,
+      cost,
+      valueAdded: preview.valueAdded,
+    };
   }
 
   function getProfiles() {
@@ -3991,6 +4058,7 @@
       }
 
       const nextProfile = ensureProfileShape(profile);
+      const previousEstimatedSales = Math.max(0, Number(nextProfile.stats?.estimatedSales) || 0);
 
       const overallStats = nextProfile.stats;
       overallStats.gamesPlayed += 1;
@@ -4100,7 +4168,21 @@
         }
       }
 
-      return rebuildCollectionDerivedStats(nextProfile);
+      const rebuiltProfile = rebuildCollectionDerivedStats(nextProfile);
+      const cashEarned = Math.max(
+        0,
+        (Number(rebuiltProfile.stats?.estimatedSales) || 0) - previousEstimatedSales
+      );
+      const economy = normalizeRestaurantEconomy(rebuiltProfile.restaurantEconomy);
+      if (cashEarned > 0 && hasTrackedRestaurantEconomy(economy)) {
+        rebuiltProfile.restaurantEconomy = {
+          ...economy,
+          cashOnHand: economy.cashOnHand + cashEarned,
+          lifetimeCashEarned: Math.max(economy.lifetimeCashEarned, previousEstimatedSales) + cashEarned,
+        };
+      }
+
+      return rebuiltProfile;
     });
 
     saveProfiles(profiles);
@@ -4395,8 +4477,10 @@
     getCustomerStatusLabel,
     getRestaurantValue,
     getRestaurantValueBreakdown,
+    getRestaurantCashOnHand,
     getRestaurantExpansionPreview,
     getRestaurantUpgradePreview,
+    buyNextRestaurantExpansion,
     getCustomersForRestaurant,
     getPhotoReadyCustomersForRestaurant,
     getFeaturedGuestLineup,

@@ -61,6 +61,8 @@
     authError: "",
     connectMessage: "",
     connectError: "",
+    expansionMessage: "",
+    expansionError: "",
   };
 
   const mobileHubQuery = "(max-width: 960px)";
@@ -744,6 +746,12 @@
     if (!preview?.current) {
       return "";
     }
+    const cashOnHand = core.getRestaurantCashOnHand
+      ? core.getRestaurantCashOnHand(profile, profile.stats)
+      : Math.max(0, Number(profile.stats?.estimatedSales) || 0);
+    const nextCost = Math.max(0, Number(preview.next?.cost) || 0);
+    const canBuyNext = Boolean(preview.next && core.buyNextRestaurantExpansion && cashOnHand >= nextCost);
+    const shortfall = preview.next ? Math.max(0, nextCost - cashOnHand) : 0;
 
     return `
       <div class="restaurant-expansion-preview" aria-label="Restaurant expansion preview">
@@ -766,6 +774,11 @@
                 <span class="restaurant-expansion-label">Adds value</span>
                 <strong>${core.formatCurrency(preview.valueAdded)}</strong>
               </div>
+              <div class="restaurant-expansion-action">
+                <button class="button ${canBuyNext ? "button-primary" : "button-muted"} button-sm restaurant-expansion-button" type="button" data-buy-expansion ${canBuyNext ? "" : "disabled"}>
+                  ${canBuyNext ? "Buy Expansion" : `Need ${core.formatCurrency(shortfall)} more`}
+                </button>
+              </div>
             `
             : `
               <div>
@@ -775,6 +788,11 @@
             `
         }
       </div>
+      ${
+        state.expansionMessage || state.expansionError
+          ? `<p class="restaurant-expansion-status ${state.expansionError ? "restaurant-expansion-status-error" : ""}">${escapeHtml(state.expansionError || state.expansionMessage)}</p>`
+          : ""
+      }
     `;
   }
 
@@ -834,7 +852,9 @@
     const collectedCustomers =
       (safeSummary.stats.regularCustomers || 0) + (safeSummary.stats.occasionalCustomers || 0);
     const favoriteCustomers = safeSummary.stats.favoriteCustomers || 0;
-    const cashOnHand = safeSummary.stats.estimatedSales || 0;
+    const cashOnHand = core.getRestaurantCashOnHand
+      ? core.getRestaurantCashOnHand(profile, safeSummary.stats)
+      : safeSummary.stats.estimatedSales || 0;
     const bestRankLabel = overallRank ? `🏆 Best Rank #${overallRank}` : "🏆 Best Rank --";
     const selectedDirectoryRestaurant = getSelectedDirectoryRestaurant(profile);
     const lastPlayedSlug = getDefaultDirectorySlug(profile);
@@ -1200,6 +1220,21 @@
         applyMobileTabVisibility();
       });
     }
+
+    elements.hero.querySelectorAll("[data-buy-expansion]").forEach((button) => {
+      button.addEventListener("click", () => {
+        if (!profile || !core.buyNextRestaurantExpansion) {
+          return;
+        }
+
+        const result = core.buyNextRestaurantExpansion(profile.id);
+        state.expansionMessage = result?.ok
+          ? `${result.expansion?.label || "Expansion"} bought. Cash spent: ${core.formatCurrency(result.cost || 0)}.`
+          : "";
+        state.expansionError = result?.ok ? "" : result?.message || "Unable to buy this expansion yet.";
+        renderAll();
+      });
+    });
 
     elements.hero.querySelectorAll("[data-overview-tab]").forEach((button) => {
       button.addEventListener("click", () => {
