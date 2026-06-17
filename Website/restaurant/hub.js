@@ -714,7 +714,7 @@
     const rows = [
       [`${breakdown.expansionLabel || "Food Truck"} base`, breakdown.expansionValue],
       ["Customer loyalty", breakdown.loyaltyValue],
-      ["Recent sales", breakdown.recentPerformanceValue],
+      [`Recent sales ${Math.round((Number(breakdown.recentPerformanceRate) || 0) * 100)}%`, breakdown.recentPerformanceValue],
       ["Rating bonus", breakdown.ratingValue],
       ["Upgrades", breakdown.upgradeValue],
     ];

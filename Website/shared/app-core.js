@@ -2262,6 +2262,8 @@
 
   const DEFAULT_EXPANSION_LEVEL = EXPANSION_LEVELS[0].id;
   const RECENT_PERFORMANCE_DAYS = 30;
+  const RECENT_PERFORMANCE_VALUE_RATE = 0.25;
+  const RECENT_SESSION_LIMIT = 250;
   const RESTAURANT_UPGRADES = [
     {
       id: "new-sign",
@@ -2399,11 +2401,12 @@
 
   function getRestaurantValue(profile, stats, restaurantSlug = "") {
     const economy = normalizeRestaurantEconomy(profile?.restaurantEconomy);
+    const recentPerformanceValue = Math.round(getRecentPerformanceValue(profile, restaurantSlug) * RECENT_PERFORMANCE_VALUE_RATE);
     return Math.round(
       getExpansionValue(economy) +
         getUpgradeValue(economy) +
         getCustomerLoyaltyValue(stats) +
-        getRecentPerformanceValue(profile, restaurantSlug) +
+        recentPerformanceValue +
         getRatingValue(stats)
     );
   }
@@ -2414,7 +2417,8 @@
     const expansionValue = getExpansionValue(economy);
     const upgradeValue = getUpgradeValue(economy);
     const loyaltyValue = getCustomerLoyaltyValue(stats);
-    const recentPerformanceValue = getRecentPerformanceValue(profile, restaurantSlug);
+    const recentPerformanceSales = getRecentPerformanceValue(profile, restaurantSlug);
+    const recentPerformanceValue = Math.round(recentPerformanceSales * RECENT_PERFORMANCE_VALUE_RATE);
     const ratingValue = getRatingValue(stats);
 
     return {
@@ -2423,7 +2427,9 @@
       expansionValue,
       upgradeValue,
       loyaltyValue,
+      recentPerformanceSales,
       recentPerformanceValue,
+      recentPerformanceRate: RECENT_PERFORMANCE_VALUE_RATE,
       ratingValue: Math.round(ratingValue),
     };
   }
@@ -4099,7 +4105,7 @@
           playedAt: session.completedAt || nowIso(),
         },
         ...nextProfile.recentSessions,
-      ].slice(0, 12);
+      ].slice(0, RECENT_SESSION_LIMIT);
 
       const existingCustomerIndex = nextProfile.customerCollection.findIndex(
         (entry) => entry.customerId === session.customer.id
