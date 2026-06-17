@@ -25,9 +25,9 @@
         }
       })();
     </script>
-    <link rel="stylesheet" href="../shared/restaurant.css?v=registered-cash-fallback" />
-    <script defer src="../shared/app-core.js?v=registered-cash-fallback"></script>
-    <script defer src="hub.js?v=registered-cash-fallback"></script>
+    <link rel="stylesheet" href="../shared/restaurant.css?v=contact-form" />
+    <script defer src="../shared/app-core.js?v=contact-form"></script>
+    <script defer src="hub.js?v=contact-form"></script>
   </head>
   <body data-page="hub">
     <main class="app-shell">
@@ -60,6 +60,7 @@
               <a class="button button-muted challenge-splash-secondary" id="splash-my-restaurant-button" href="/restaurant/?hub=1#hero-panel">My Restaurant</a>
               <a class="button button-muted challenge-splash-secondary" id="splash-leaderboard-button" href="/restaurant/?hub=1#leaderboard-panel">Leaderboard</a>
               <button class="button button-muted challenge-splash-secondary" id="splash-how-to-play-button" type="button" data-how-to-play-button>How to Play</button>
+              <button class="button button-muted challenge-splash-secondary" id="splash-contact-button" type="button" data-contact-button>Contact</button>
             </div>
           </div>
         </div>
@@ -129,6 +130,47 @@
             </section>
           </div>
           <button class="button button-primary how-to-play-return" type="button" data-how-to-play-close>Back to Restaurant Challenge</button>
+        </div>
+      </section>
+
+      <section class="contact-modal hidden" id="contact-modal" aria-hidden="true">
+        <div class="how-to-play-backdrop" data-contact-close></div>
+        <div
+          class="how-to-play-panel contact-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="contact-title"
+          aria-describedby="contact-summary"
+        >
+          <button class="how-to-play-close" type="button" data-contact-close aria-label="Close Contact">Close</button>
+          <p class="kicker">CommunityVerse Games</p>
+          <h2 class="section-title" id="contact-title">Contact Us</h2>
+          <p class="copy" id="contact-summary">
+            Send a note about Restaurant Challenge, a local restaurant game, or CommunityVerse Games.
+          </p>
+          <form class="contact-form" id="contact-form">
+            <div class="input-grid">
+              <label class="field" for="contact-name">
+                <span class="field-label">Name</span>
+                <input class="input" id="contact-name" name="name" autocomplete="name" maxlength="80" required />
+              </label>
+              <label class="field" for="contact-email">
+                <span class="field-label">Email address</span>
+                <input class="input" id="contact-email" name="email" type="email" autocomplete="email" maxlength="120" required />
+              </label>
+              <label class="field" for="contact-message">
+                <span class="field-label">Message</span>
+                <textarea class="textarea" id="contact-message" name="message" maxlength="2000" required></textarea>
+              </label>
+              <label class="contact-extra-field" for="contact-company">
+                Company
+                <input id="contact-company" name="company" tabindex="-1" autocomplete="off" />
+              </label>
+            </div>
+            <p class="helper">Your message will be sent privately to CommunityVerse Games.</p>
+            <p class="form-message hidden" id="contact-message-status"></p>
+            <button class="button button-primary contact-submit" id="contact-submit" type="submit">Send Message</button>
+          </form>
         </div>
       </section>
 

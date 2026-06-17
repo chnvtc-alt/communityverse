@@ -295,11 +295,13 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   background: rgba(255, 255, 255, 0.92);
 }
 
-.how-to-play-open {
+.how-to-play-open,
+.contact-open {
   overflow: hidden;
 }
 
-.how-to-play-modal {
+.how-to-play-modal,
+.contact-modal {
   position: fixed;
   inset: 0;
   z-index: 80;
@@ -387,6 +389,47 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 .how-to-play-return {
   justify-self: center;
   min-width: min(100%, 260px);
+}
+
+.contact-panel {
+  width: min(100%, 560px);
+}
+
+.contact-form {
+  display: grid;
+  gap: 14px;
+}
+
+.contact-extra-field {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.contact-submit {
+  justify-self: start;
+  min-width: 180px;
+}
+
+.form-message {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  font-family: Arial, sans-serif;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.form-message-success {
+  color: var(--green);
+  background: rgba(47, 111, 82, 0.1);
+}
+
+.form-message-error {
+  color: #8f2f1e;
+  background: rgba(194, 72, 43, 0.1);
 }
 
 .challenge-progress-card {

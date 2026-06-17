@@ -87,7 +87,12 @@
     splashMyRestaurantButton: document.getElementById("splash-my-restaurant-button"),
     splashLeaderboardButton: document.getElementById("splash-leaderboard-button"),
     splashHowToPlayButton: document.getElementById("splash-how-to-play-button"),
+    splashContactButton: document.getElementById("splash-contact-button"),
     howToPlayModal: document.getElementById("how-to-play-modal"),
+    contactModal: document.getElementById("contact-modal"),
+    contactForm: document.getElementById("contact-form"),
+    contactStatus: document.getElementById("contact-message-status"),
+    contactSubmit: document.getElementById("contact-submit"),
     splashPlayerRestaurantName: document.getElementById("splash-player-restaurant-name"),
     splashStatsScope: document.getElementById("splash-stats-scope"),
     splashRatingBadge: document.getElementById("splash-rating-badge"),
@@ -100,6 +105,7 @@
   };
 
   let howToPlayReturnFocus = null;
+  let contactReturnFocus = null;
 
   function isMobileHub() {
     return window.matchMedia(mobileHubQuery).matches;
@@ -273,6 +279,114 @@
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && elements.howToPlayModal && !elements.howToPlayModal.classList.contains("hidden")) {
         closeHowToPlay();
+      }
+    });
+  }
+
+  function openContact() {
+    if (!elements.contactModal) {
+      return;
+    }
+
+    contactReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : elements.splashContactButton;
+    elements.contactModal.classList.remove("hidden");
+    elements.contactModal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("contact-open");
+
+    requestAnimationFrame(() => {
+      const firstField = document.getElementById("contact-name");
+      if (firstField instanceof HTMLElement) {
+        firstField.focus();
+      }
+    });
+  }
+
+  function closeContact() {
+    if (!elements.contactModal) {
+      return;
+    }
+
+    elements.contactModal.classList.add("hidden");
+    elements.contactModal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("contact-open");
+
+    if (contactReturnFocus instanceof HTMLElement) {
+      contactReturnFocus.focus();
+    }
+    contactReturnFocus = null;
+  }
+
+  function setContactStatus(message, isError = false) {
+    if (!elements.contactStatus) {
+      return;
+    }
+    elements.contactStatus.textContent = message;
+    elements.contactStatus.classList.toggle("hidden", !message);
+    elements.contactStatus.classList.toggle("form-message-error", isError);
+    elements.contactStatus.classList.toggle("form-message-success", Boolean(message) && !isError);
+  }
+
+  function bindContact() {
+    document.querySelectorAll("[data-contact-button]").forEach((button) => {
+      button.addEventListener("click", openContact);
+    });
+
+    if (elements.contactModal) {
+      elements.contactModal.querySelectorAll("[data-contact-close]").forEach((button) => {
+        button.addEventListener("click", closeContact);
+      });
+    }
+
+    if (elements.contactForm) {
+      elements.contactForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const formData = new FormData(form);
+        const payload = {
+          name: String(formData.get("name") || "").trim(),
+          email: String(formData.get("email") || "").trim(),
+          message: String(formData.get("message") || "").trim(),
+          company: String(formData.get("company") || "").trim(),
+          page: window.location.href,
+        };
+
+        setContactStatus("");
+        if (elements.contactSubmit) {
+          elements.contactSubmit.disabled = true;
+          elements.contactSubmit.textContent = "Sending...";
+        }
+
+        try {
+          const response = await fetch("/api/contact", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+          });
+          const result = await response.json().catch(() => ({
+            error: "Contact email is not configured yet.",
+          }));
+          if (!response.ok || result?.ok === false) {
+            throw new Error(result?.error || "The message could not be sent.");
+          }
+
+          form.reset();
+          setContactStatus("Thanks. Your message was sent.");
+        } catch (error) {
+          setContactStatus(error instanceof Error ? error.message : "The message could not be sent.", true);
+        } finally {
+          if (elements.contactSubmit) {
+            elements.contactSubmit.disabled = false;
+            elements.contactSubmit.textContent = "Send Message";
+          }
+        }
+      });
+    }
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && elements.contactModal && !elements.contactModal.classList.contains("hidden")) {
+        closeContact();
       }
     });
   }
@@ -1737,6 +1851,7 @@
   }
 
   bindHowToPlay();
+  bindContact();
   renderAll();
   if (core.whenReady) {
     core.whenReady().then(async () => {
