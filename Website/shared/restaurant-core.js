@@ -4533,6 +4533,7 @@
     }, buildEmptyStats());
 
     stats.restaurantValue = getRestaurantValue(safeProfile, stats);
+    stats.netWorth = stats.restaurantValue + getRestaurantCashOnHand(safeProfile, safeProfile.stats);
     return stats;
   }
 
@@ -4548,7 +4549,7 @@
         ? (stats.totalCorrectAnswers / (stats.gamesPlayed * 10)) * 100
         : 0;
       const restaurantValueStats =
-        metric === "restaurantValue" ? getPublicLeaderboardStats(safeProfile) : stats;
+        metric === "restaurantValue" || metric === "netWorth" ? getPublicLeaderboardStats(safeProfile) : stats;
 
       return {
         profile: safeProfile,
@@ -4564,6 +4565,10 @@
               ? stats.gamesPlayed
               : metric === "restaurantValue"
                 ? restaurantValueStats.restaurantValue || getRestaurantValue(safeProfile, restaurantValueStats)
+              : metric === "netWorth"
+                ? restaurantValueStats.netWorth ||
+                  ((restaurantValueStats.restaurantValue || getRestaurantValue(safeProfile, restaurantValueStats)) +
+                    getRestaurantCashOnHand(safeProfile, safeProfile.stats))
               : metric === "regularCustomers"
                 ? stats.regularCustomers
                 : metric === "favoriteCustomers"

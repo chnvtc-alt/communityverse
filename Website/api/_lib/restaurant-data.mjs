@@ -86,6 +86,24 @@ function getUpgradeValue(economy) {
   }, 0);
 }
 
+function hasTrackedRestaurantEconomy(economy) {
+  const safeEconomy = normalizeRestaurantEconomy(economy);
+  return Boolean(
+    safeEconomy.cashOnHand ||
+      safeEconomy.lifetimeCashEarned ||
+      safeEconomy.expansionLevel !== DEFAULT_EXPANSION_LEVEL ||
+      Object.keys(safeEconomy.upgrades || {}).length
+  );
+}
+
+function getRestaurantCashOnHand(profile, stats = null) {
+  const safeStats = stats || profile?.stats || {};
+  const economy = normalizeRestaurantEconomy(profile?.restaurantEconomy);
+  return hasTrackedRestaurantEconomy(economy)
+    ? economy.cashOnHand
+    : Math.max(0, Number(safeStats.estimatedSales) || 0);
+}
+
 function getCustomerLoyaltyValue(stats) {
   const favoriteCustomers = Math.max(0, Number(stats.favoriteCustomers) || 0);
   const regularOnlyCustomers = Math.max(0, (Number(stats.regularCustomers) || 0) - favoriteCustomers);
@@ -331,6 +349,7 @@ function publicOverallStatsFor(profile, publicRestaurantSlugs) {
   if (!entries.length) {
     const stats = { ...emptyStats(), ...(safeProfile.stats || {}) };
     stats.restaurantValue = getRestaurantValue(safeProfile, stats, "", publicRestaurantSlugs);
+    stats.netWorth = stats.restaurantValue + getRestaurantCashOnHand(safeProfile, safeProfile.stats);
     return stats;
   }
 
@@ -343,6 +362,7 @@ function publicOverallStatsFor(profile, publicRestaurantSlugs) {
   }, emptyStats());
 
   stats.restaurantValue = getRestaurantValue(safeProfile, stats, "", publicRestaurantSlugs);
+  stats.netWorth = stats.restaurantValue + getRestaurantCashOnHand(safeProfile, safeProfile.stats);
   return stats;
 }
 
@@ -363,6 +383,10 @@ export function leaderboardValue(stats, metric) {
 
   if (metric === "restaurantValue") {
     return stats.restaurantValue;
+  }
+
+  if (metric === "netWorth") {
+    return stats.netWorth || stats.restaurantValue || 0;
   }
 
   if (metric === "regularCustomers") {
@@ -393,19 +417,23 @@ export function buildLeaderboard(profiles, metric = "estimatedSales", restaurant
           : restaurantStatsFor(profile, "");
       const accuracy = stats.gamesPlayed ? (stats.totalCorrectAnswers / (stats.gamesPlayed * 10)) * 100 : 0;
       const restaurantValueStats =
-        metric === "restaurantValue"
+        metric === "restaurantValue" || metric === "netWorth"
           ? publicRestaurantSlugs
             ? publicOverallStatsFor(profile, publicRestaurantSlugs)
             : restaurantStatsFor(profile, "")
           : stats;
-      const value = leaderboardValue(metric === "restaurantValue" ? restaurantValueStats : stats, metric);
-      if (metric === "restaurantValue" && !restaurantValueStats.restaurantValue) {
+      const value = leaderboardValue(metric === "restaurantValue" || metric === "netWorth" ? restaurantValueStats : stats, metric);
+      if ((metric === "restaurantValue" || metric === "netWorth") && !restaurantValueStats.restaurantValue) {
         restaurantValueStats.restaurantValue = getRestaurantValue(
           profile,
           restaurantValueStats,
           "",
           publicRestaurantSlugs
         );
+      }
+      if (metric === "netWorth" && !restaurantValueStats.netWorth) {
+        restaurantValueStats.netWorth =
+          restaurantValueStats.restaurantValue + getRestaurantCashOnHand(profile, profile.stats);
       }
 
       return {
@@ -415,7 +443,11 @@ export function buildLeaderboard(profiles, metric = "estimatedSales", restaurant
         stats,
         accuracy,
         rating: accuracy / 20,
-        value: metric === "restaurantValue" ? restaurantValueStats.restaurantValue : value,
+        value: metric === "restaurantValue"
+          ? restaurantValueStats.restaurantValue
+          : metric === "netWorth"
+            ? restaurantValueStats.netWorth
+            : value,
       };
     })
     .filter((entry) => entry.stats.gamesPlayed > 0)

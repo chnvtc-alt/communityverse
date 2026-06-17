@@ -7,6 +7,11 @@
 
   const metricOptions = [
     {
+      value: "netWorth",
+      label: "Net Worth",
+      description: "Restaurant Value plus cash on hand.",
+    },
+    {
       value: "estimatedSales",
       label: "Sales",
       description: "Total sales from the customers each restaurant has earned.",
@@ -22,16 +27,6 @@
       description: "Total customers collected, including regular and occasional customers.",
     },
     {
-      value: "regularCustomers",
-      label: "Regulars",
-      description: "Regular customers only. These are the strongest customer wins.",
-    },
-    {
-      value: "favoriteCustomers",
-      label: "Favorites",
-      description: "Favorite customers earned after repeated successful visits with a regular customer.",
-    },
-    {
       value: "gamesPlayed",
       label: "Games",
       description: "Total completed games played by each restaurant.",
@@ -44,7 +39,7 @@
   ];
 
   const state = {
-    metric: "estimatedSales",
+    metric: "netWorth",
     leaderboardScope: "overall",
     leaderboardRestaurantSlug: "americana",
     selectedDirectorySlug: "",
@@ -422,6 +417,10 @@
       return stats.restaurantValue || 0;
     }
 
+    if (metric === "netWorth") {
+      return stats.netWorth || stats.restaurantValue || 0;
+    }
+
     if (metric === "regularCustomers") {
       return stats.regularCustomers;
     }
@@ -438,7 +437,7 @@
   }
 
   function formatMetricValue(value, metric) {
-    if (metric === "estimatedSales" || metric === "restaurantValue") {
+    if (metric === "estimatedSales" || metric === "restaurantValue" || metric === "netWorth") {
       return core.formatCurrency(value);
     }
 
