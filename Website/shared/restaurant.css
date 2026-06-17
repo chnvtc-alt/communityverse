@@ -1184,6 +1184,48 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   overflow-x: hidden;
 }
 
+@media (min-width: 961px) {
+  html.restaurant-hub-mode #leaderboard-panel .leaderboard-title-stack {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+  }
+
+  html.restaurant-hub-mode #leaderboard-panel .leaderboard-tabs {
+    gap: 8px;
+    margin: 8px 0 10px;
+  }
+
+  html.restaurant-hub-mode #leaderboard-panel .leaderboard-tabs .button {
+    min-height: 38px;
+    padding: 0 14px;
+  }
+
+  html.restaurant-hub-mode #leaderboard-panel .leaderboard-controls .field-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  html.restaurant-hub-mode #leaderboard-panel .leaderboard-explainer {
+    gap: 3px;
+    margin: 6px 0 10px;
+  }
+
+  html.restaurant-hub-mode #leaderboard-panel .leaderboard-scroll {
+    gap: 6px;
+  }
+
+  html.restaurant-hub-mode #leaderboard-panel .leaderboard-row {
+    padding: 8px 12px;
+    border-radius: 12px;
+  }
+}
+
 .compact-profile-card {
   display: grid;
   gap: 12px;

@@ -14,7 +14,7 @@
     {
       value: "restaurantValue",
       label: "Value",
-      description: "Restaurant Value combines your current size, upgrades, customer loyalty, recent sales, and rating. This value stays the same in every leaderboard scope.",
+      description: "Combines size, upgrades, loyalty, recent sales, and rating.",
     },
     {
       value: "collected",
@@ -1213,14 +1213,12 @@
     elements.sections.style.height = `${availableHeight}px`;
     elements.sections.style.minHeight = `${availableHeight}px`;
     elements.collection.style.height = "";
-    elements.leaderboard.style.height = "";
+    elements.leaderboard.style.height = `${availableHeight}px`;
     requestAnimationFrame(() => {
       const collectionHeight = Math.ceil(elements.collection.getBoundingClientRect().height);
-      if (collectionHeight > 0) {
-        elements.leaderboard.style.height = `${collectionHeight}px`;
-      }
       elements.sections.style.height = `${availableHeight}px`;
       elements.sections.style.minHeight = `${availableHeight}px`;
+      elements.leaderboard.style.height = `${Math.max(collectionHeight, availableHeight)}px`;
     });
   }
 
