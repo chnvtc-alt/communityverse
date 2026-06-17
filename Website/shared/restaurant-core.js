@@ -2266,8 +2266,8 @@
     {
       id: "new-sign",
       label: "New Sign",
-      cost: 150,
-      value: 150,
+      cost: 600,
+      value: 600,
       salesBoostPercent: 1,
     },
     {
@@ -2300,7 +2300,7 @@
     },
     {
       id: "delivery-setup",
-      label: "Delivery Setup",
+      label: "Delivery Service",
       cost: 2000,
       value: 2000,
       salesBoostPercent: 1,

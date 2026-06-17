@@ -805,11 +805,16 @@
     if (!upgrades.length) {
       return "";
     }
+    const expansionPreview = core.getRestaurantExpansionPreview
+      ? core.getRestaurantExpansionPreview(profile)
+      : null;
+    const upgradesLocked = expansionPreview?.current?.id === "food-truck";
 
     return `
-      <div class="restaurant-upgrade-preview" aria-label="Next restaurant upgrades">
+      <div class="restaurant-upgrade-preview ${upgradesLocked ? "restaurant-upgrade-preview-locked" : ""}" aria-label="Next restaurant upgrades">
         <div class="restaurant-upgrade-preview-head">
-          <span>Next Upgrades</span>
+          <span>${upgradesLocked ? "Upgrades" : "Next Upgrades"}</span>
+          ${upgradesLocked ? `<span>Available after expansion to Counter Service.</span>` : ""}
         </div>
         <div class="restaurant-upgrade-preview-grid">
           ${upgrades

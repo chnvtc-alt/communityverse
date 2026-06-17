@@ -705,10 +705,17 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 }
 
 .restaurant-upgrade-preview-head {
+  display: grid;
+  gap: 2px;
   font-family: Arial, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--green);
+}
+
+.restaurant-upgrade-preview-head > span:first-child {
   font-size: 0.9rem;
   font-weight: 800;
-  color: var(--green);
 }
 
 .restaurant-upgrade-preview-grid {
@@ -734,6 +741,14 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   color: var(--ink);
   font-size: 0.9rem;
   line-height: 1.05;
+}
+
+.restaurant-upgrade-preview-locked {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.restaurant-upgrade-preview-locked .restaurant-upgrade-preview-card {
+  opacity: 0.72;
 }
 
 .rating-display {
