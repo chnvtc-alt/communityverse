@@ -1371,7 +1371,7 @@
       const directoryCard = document.getElementById("directory-card");
       const sectionsTop = elements.sections.getBoundingClientRect().top;
       const directoryBottom = directoryCard ? directoryCard.getBoundingClientRect().bottom : sectionsTop;
-      const pullUp = Math.max(0, Math.ceil(sectionsTop - directoryBottom - 18));
+      const pullUp = Math.max(0, Math.ceil(sectionsTop - directoryBottom - 30));
       const leaderboardHeight = Math.max(collectionHeight, availableHeight) + pullUp;
       elements.sections.style.height = `${availableHeight}px`;
       elements.sections.style.minHeight = `${availableHeight}px`;
