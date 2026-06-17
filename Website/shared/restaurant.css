@@ -1397,10 +1397,12 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     min-height: 0;
     height: auto;
     align-self: start;
+    pointer-events: none;
   }
 
   html.restaurant-hub-mode .hero-side {
     height: auto;
+    pointer-events: auto;
   }
 
   html.restaurant-hub-mode .hero-side .hero-card,
