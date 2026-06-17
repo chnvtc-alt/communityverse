@@ -453,7 +453,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .hero-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+  grid-template-columns: minmax(0, 1.06fr) minmax(360px, 0.94fr);
   gap: 22px;
   align-items: stretch;
   padding: 0;
@@ -1048,7 +1048,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .grid-two {
   display: grid;
-  grid-template-columns: minmax(0, 1.16fr) minmax(300px, 0.84fr);
+  grid-template-columns: minmax(0, 1.06fr) minmax(360px, 0.94fr);
   grid-template-rows: minmax(0, 1fr);
   gap: 18px;
   align-items: stretch;
