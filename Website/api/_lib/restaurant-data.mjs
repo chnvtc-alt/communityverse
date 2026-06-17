@@ -16,12 +16,44 @@ const EXPANSION_LEVELS = [
   {
     id: "food-truck",
     label: "Food Truck",
+    cost: 0,
     value: 500,
+  },
+  {
+    id: "counter-service",
+    label: "Counter Service",
+    cost: 500,
+    value: 1500,
+  },
+  {
+    id: "small-diner",
+    label: "Small Diner",
+    cost: 1500,
+    value: 4500,
+  },
+  {
+    id: "family-restaurant",
+    label: "Family Restaurant",
+    cost: 3000,
+    value: 10500,
+  },
+  {
+    id: "regional-favorite",
+    label: "Regional Favorite",
+    cost: 7500,
+    value: 25500,
+  },
+  {
+    id: "local-landmark",
+    label: "Local Landmark",
+    cost: 15000,
+    value: 55500,
   },
 ];
 
 const DEFAULT_EXPANSION_LEVEL = EXPANSION_LEVELS[0].id;
 const RECENT_PERFORMANCE_DAYS = 30;
+const RECENT_PERFORMANCE_VALUE_RATE = 0.25;
 
 function normalizeRestaurantEconomy(economy) {
   const safeEconomy = economy && typeof economy === "object" ? { ...economy } : {};
@@ -60,12 +92,17 @@ function getCustomerLoyaltyValue(stats) {
   return regularOnlyCustomers * 100 + favoriteCustomers * 300;
 }
 
-function getRatingValue(stats) {
+function getRatingMultiplier(stats) {
   if (!stats.gamesPlayed) {
     return 0;
   }
   const accuracy = (stats.totalCorrectAnswers / (stats.gamesPlayed * 10)) * 100;
-  return (accuracy / 20) * 500;
+  const rating = Math.round((accuracy / 20) * 10) / 10;
+  return rating / 200;
+}
+
+function getRatingValue(stats, baseValue = 0) {
+  return Math.round(Math.max(0, Number(baseValue) || 0) * getRatingMultiplier(stats));
 }
 
 function favoriteCustomerValue(value) {
@@ -113,13 +150,16 @@ function getRecentPerformanceValue(profile, restaurantSlug = "", publicRestauran
 
 function getRestaurantValue(profile, stats, restaurantSlug = "", publicRestaurantSlugs = null) {
   const economy = normalizeRestaurantEconomy(profile?.restaurantEconomy);
-  return Math.round(
-    getExpansionValue(economy) +
-      getUpgradeValue(economy) +
-      getCustomerLoyaltyValue(stats) +
-      getRecentPerformanceValue(profile, restaurantSlug, publicRestaurantSlugs) +
-      getRatingValue(stats)
+  const expansionValue = getExpansionValue(economy);
+  const upgradeValue = getUpgradeValue(economy);
+  const loyaltyValue = getCustomerLoyaltyValue(stats);
+  const recentPerformanceValue = Math.round(
+    getRecentPerformanceValue(profile, restaurantSlug, publicRestaurantSlugs) *
+      RECENT_PERFORMANCE_VALUE_RATE
   );
+  const valueBeforeRating = expansionValue + upgradeValue + loyaltyValue + recentPerformanceValue;
+  const ratingValue = getRatingValue(stats, valueBeforeRating);
+  return Math.round(valueBeforeRating + ratingValue);
 }
 
 export function normalizeProfile(profile) {
