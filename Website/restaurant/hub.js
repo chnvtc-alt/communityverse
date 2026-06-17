@@ -778,6 +778,39 @@
     `;
   }
 
+  function renderUpgradePreviewMarkup(profile) {
+    if (!profile || !core.getRestaurantUpgradePreview) {
+      return "";
+    }
+
+    const upgrades = core.getRestaurantUpgradePreview(profile, 3);
+    if (!upgrades.length) {
+      return "";
+    }
+
+    return `
+      <div class="restaurant-upgrade-preview" aria-label="Next restaurant upgrades">
+        <div class="restaurant-upgrade-preview-head">
+          <span>Next Upgrades</span>
+        </div>
+        <div class="restaurant-upgrade-preview-grid">
+          ${upgrades
+            .map(
+              (upgrade) => `
+                <div class="restaurant-upgrade-preview-card">
+                  <strong>${escapeHtml(upgrade.label)}</strong>
+                  <span>Cost ${core.formatCurrency(upgrade.cost)}</span>
+                  <span>Adds value ${core.formatCurrency(upgrade.value)}</span>
+                  <span>Future sales +${Number(upgrade.salesBoostPercent) || 0}%</span>
+                </div>
+              `
+            )
+            .join("")}
+        </div>
+      </div>
+    `;
+  }
+
   function renderHero() {
     const compactMobile = isMobileHub();
     const profile = core.getActiveProfile();
@@ -828,6 +861,7 @@
           </div>
           ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
           ${renderExpansionPreviewMarkup(profile)}
+          ${renderUpgradePreviewMarkup(profile)}
         `
         : "";
 
@@ -884,6 +918,7 @@
                     </div>
                     ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
                     ${renderExpansionPreviewMarkup(profile)}
+                    ${renderUpgradePreviewMarkup(profile)}
                     ${
                       !editMode && !emailConnected ? renderConnectEmailMarkup(profile) : ``
                     }
@@ -945,6 +980,7 @@
                   </div>
                   ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
                   ${renderExpansionPreviewMarkup(profile)}
+                  ${renderUpgradePreviewMarkup(profile)}
                   ${
                     !editMode && !emailConnected ? renderConnectEmailMarkup(profile) : ``
                   }

@@ -671,6 +671,48 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   color: var(--ink);
 }
 
+.restaurant-upgrade-preview {
+  width: 100%;
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.64);
+  border: 1px solid rgba(93, 116, 105, 0.14);
+}
+
+.restaurant-upgrade-preview-head {
+  font-family: Arial, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--green);
+}
+
+.restaurant-upgrade-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.restaurant-upgrade-preview-card {
+  display: grid;
+  gap: 3px;
+  min-height: 82px;
+  padding: 8px;
+  border-radius: 12px;
+  background: rgba(47, 111, 82, 0.06);
+  font-family: Arial, sans-serif;
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.12;
+}
+
+.restaurant-upgrade-preview-card strong {
+  color: var(--ink);
+  font-size: 0.9rem;
+  line-height: 1.05;
+}
+
 .rating-display {
   display: inline-flex;
   align-items: center;
@@ -2889,6 +2931,19 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
   .restaurant-expansion-preview > div {
     min-height: 38px;
+  }
+
+  .restaurant-upgrade-preview {
+    padding: 9px;
+    border-radius: 14px;
+  }
+
+  .restaurant-upgrade-preview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .restaurant-upgrade-preview-card {
+    min-height: 0;
   }
 
   .hero-stat-chip {

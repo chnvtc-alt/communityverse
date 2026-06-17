@@ -2262,6 +2262,50 @@
 
   const DEFAULT_EXPANSION_LEVEL = EXPANSION_LEVELS[0].id;
   const RECENT_PERFORMANCE_DAYS = 30;
+  const RESTAURANT_UPGRADES = [
+    {
+      id: "new-sign",
+      label: "New Sign",
+      cost: 150,
+      value: 150,
+      salesBoostPercent: 1,
+    },
+    {
+      id: "better-chairs",
+      label: "Better Chairs",
+      cost: 250,
+      value: 250,
+      salesBoostPercent: 1,
+    },
+    {
+      id: "sound-system",
+      label: "Sound System",
+      cost: 400,
+      value: 400,
+      salesBoostPercent: 1,
+    },
+    {
+      id: "kitchen-equipment",
+      label: "Kitchen Equipment",
+      cost: 750,
+      value: 750,
+      salesBoostPercent: 1,
+    },
+    {
+      id: "patio-seating",
+      label: "Patio Seating",
+      cost: 1200,
+      value: 1200,
+      salesBoostPercent: 1,
+    },
+    {
+      id: "delivery-setup",
+      label: "Delivery Setup",
+      cost: 2000,
+      value: 2000,
+      salesBoostPercent: 1,
+    },
+  ];
 
   function normalizeRestaurantEconomy(economy) {
     const safeEconomy = economy && typeof economy === "object" ? { ...economy } : {};
@@ -2381,6 +2425,15 @@
       valueAdded: next ? Math.max(0, (Number(next.value) || 0) - (Number(current.value) || 0)) : 0,
       isMaxLevel: !next,
     };
+  }
+
+  function getRestaurantUpgradePreview(profile, limit = 3) {
+    const economy = normalizeRestaurantEconomy(profile?.restaurantEconomy);
+    const ownedUpgradeIds = new Set(Object.keys(economy.upgrades || {}));
+    return RESTAURANT_UPGRADES.filter((upgrade) => !ownedUpgradeIds.has(upgrade.id)).slice(
+      0,
+      Math.max(0, Number(limit) || 0)
+    );
   }
 
   function getProfiles() {
@@ -4343,6 +4396,7 @@
     getRestaurantValue,
     getRestaurantValueBreakdown,
     getRestaurantExpansionPreview,
+    getRestaurantUpgradePreview,
     getCustomersForRestaurant,
     getPhotoReadyCustomersForRestaurant,
     getFeaturedGuestLineup,
