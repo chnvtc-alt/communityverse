@@ -636,6 +636,25 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   white-space: nowrap;
 }
 
+.restaurant-net-worth-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border-top: 1px solid rgba(47, 111, 82, 0.12);
+  font-family: Arial, sans-serif;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--green);
+}
+
+.restaurant-net-worth-row strong {
+  color: var(--ink);
+  font-size: 1rem;
+  white-space: nowrap;
+}
+
 .restaurant-expansion-preview {
   width: 100%;
   display: grid;

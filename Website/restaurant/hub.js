@@ -707,6 +707,10 @@
     }
 
     const breakdown = core.getRestaurantValueBreakdown(profile, summary.stats);
+    const cashOnHand = core.getRestaurantCashOnHand
+      ? core.getRestaurantCashOnHand(profile, summary.stats)
+      : Math.max(0, Number(summary.stats.estimatedSales) || 0);
+    const netWorth = Math.max(0, Number(breakdown.total) || 0) + cashOnHand;
     const rows = [
       [`${breakdown.expansionLabel || "Food Truck"} base`, breakdown.expansionValue],
       ["Customer loyalty", breakdown.loyaltyValue],
@@ -732,6 +736,10 @@
               `
             )
             .join("")}
+        </div>
+        <div class="restaurant-net-worth-row">
+          <span>Total Net Worth</span>
+          <strong>${core.formatCurrency(netWorth)}</strong>
         </div>
       </div>
     `;
