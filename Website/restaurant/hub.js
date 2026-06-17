@@ -1348,6 +1348,11 @@
       elements.sections.style.minHeight = "";
       elements.collection.style.height = "";
       elements.leaderboard.style.height = "";
+      const leaderboardStack = elements.leaderboard.closest(".grid-stack");
+      if (leaderboardStack) {
+        leaderboardStack.style.marginTop = "";
+        leaderboardStack.style.height = "";
+      }
       return;
     }
 
@@ -1362,9 +1367,19 @@
     elements.leaderboard.style.height = `${availableHeight}px`;
     requestAnimationFrame(() => {
       const collectionHeight = Math.ceil(elements.collection.getBoundingClientRect().height);
+      const leaderboardStack = elements.leaderboard.closest(".grid-stack");
+      const directoryCard = document.getElementById("directory-card");
+      const sectionsTop = elements.sections.getBoundingClientRect().top;
+      const directoryBottom = directoryCard ? directoryCard.getBoundingClientRect().bottom : sectionsTop;
+      const pullUp = Math.max(0, Math.ceil(sectionsTop - directoryBottom - 18));
+      const leaderboardHeight = Math.max(collectionHeight, availableHeight) + pullUp;
       elements.sections.style.height = `${availableHeight}px`;
       elements.sections.style.minHeight = `${availableHeight}px`;
-      elements.leaderboard.style.height = `${Math.max(collectionHeight, availableHeight)}px`;
+      if (leaderboardStack) {
+        leaderboardStack.style.marginTop = pullUp ? `-${pullUp}px` : "";
+        leaderboardStack.style.height = `${leaderboardHeight}px`;
+      }
+      elements.leaderboard.style.height = `${leaderboardHeight}px`;
     });
   }
 

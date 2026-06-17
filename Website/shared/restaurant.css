@@ -1358,6 +1358,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   html.restaurant-hub-mode .hero-content-panel-side {
     min-height: 0;
     height: auto;
+    align-self: start;
   }
 
   html.restaurant-hub-mode .hero-side {
