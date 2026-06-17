@@ -2397,7 +2397,7 @@
       return 0;
     }
     const accuracy = (stats.totalCorrectAnswers / (stats.gamesPlayed * 10)) * 100;
-    const rating = accuracy / 20;
+    const rating = Math.round((accuracy / 20) * 10) / 10;
     return rating / 200;
   }
 
