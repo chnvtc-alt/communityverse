@@ -1372,6 +1372,21 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 }
 
 @media (min-width: 961px) {
+  html.restaurant-hub-mode .grid-two {
+    position: relative;
+    z-index: 3;
+  }
+
+  html.restaurant-hub-mode .hero-stack,
+  html.restaurant-hub-mode .hero-grid {
+    pointer-events: none;
+  }
+
+  html.restaurant-hub-mode .hero-content-panel-main,
+  html.restaurant-hub-mode .hero-side {
+    pointer-events: auto;
+  }
+
   html.restaurant-hub-mode #leaderboard-panel .leaderboard-title-stack {
     display: flex;
     flex-wrap: wrap;
