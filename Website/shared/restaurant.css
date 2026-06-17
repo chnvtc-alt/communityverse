@@ -1354,6 +1354,46 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     padding: 8px 12px;
     border-radius: 12px;
   }
+
+  html.restaurant-hub-mode .hero-content-panel-side {
+    min-height: 0;
+    height: auto;
+  }
+
+  html.restaurant-hub-mode .hero-side {
+    height: auto;
+  }
+
+  html.restaurant-hub-mode .hero-side .hero-card,
+  html.restaurant-hub-mode .hero-directory-showcase-compact {
+    height: auto;
+    flex: 0 0 auto;
+  }
+
+  html.restaurant-hub-mode .hero-directory-showcase {
+    padding: 10px;
+  }
+
+  html.restaurant-hub-mode .hero-directory-showcase-compact {
+    gap: 8px;
+  }
+
+  html.restaurant-hub-mode .hero-directory-picker {
+    gap: 6px;
+  }
+
+  html.restaurant-hub-mode .hero-directory-item {
+    gap: 8px;
+    padding: 8px;
+  }
+
+  html.restaurant-hub-mode .hero-directory-item-compact {
+    grid-template-columns: 92px minmax(0, 1fr);
+  }
+
+  html.restaurant-hub-mode .hero-directory-button {
+    margin-top: 6px;
+  }
 }
 
 .compact-profile-card {
