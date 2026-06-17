@@ -715,7 +715,7 @@
       [`${breakdown.expansionLabel || "Food Truck"} base`, breakdown.expansionValue],
       ["Customer loyalty", breakdown.loyaltyValue],
       [`Recent sales ${Math.round((Number(breakdown.recentPerformanceRate) || 0) * 100)}%`, breakdown.recentPerformanceValue],
-      [`Rating bonus ${((Number(breakdown.ratingRate) || 0) * 100).toFixed(1)}%`, breakdown.ratingValue],
+      [`Rating bonus ${((Number(breakdown.ratingRate) || 0) * 100).toFixed(2)}%`, breakdown.ratingValue],
       ["Upgrades", breakdown.upgradeValue],
     ];
 
