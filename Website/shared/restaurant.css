@@ -583,6 +583,59 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   margin-top: 2px;
 }
 
+.restaurant-value-breakdown {
+  width: 100%;
+  display: grid;
+  gap: 8px;
+  margin-top: 2px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: rgba(47, 111, 82, 0.07);
+  border: 1px solid rgba(47, 111, 82, 0.12);
+}
+
+.restaurant-value-breakdown-head,
+.restaurant-value-breakdown-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: Arial, sans-serif;
+}
+
+.restaurant-value-breakdown-head {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--green);
+}
+
+.restaurant-value-breakdown-head strong {
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.restaurant-value-breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.restaurant-value-breakdown-row {
+  min-height: 36px;
+  padding: 7px 8px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.64);
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.15;
+}
+
+.restaurant-value-breakdown-row strong {
+  color: var(--ink);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
 .rating-display {
   display: inline-flex;
   align-items: center;
@@ -2777,6 +2830,20 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   .hero-profile-meta-compact {
     flex-wrap: wrap;
     margin-top: 2px;
+  }
+
+  .restaurant-value-breakdown {
+    padding: 9px;
+    border-radius: 14px;
+  }
+
+  .restaurant-value-breakdown-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .restaurant-value-breakdown-row {
+    min-height: 34px;
+    padding: 6px 7px;
   }
 
   .hero-stat-chip {

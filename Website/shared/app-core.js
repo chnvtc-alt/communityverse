@@ -2315,6 +2315,26 @@
     );
   }
 
+  function getRestaurantValueBreakdown(profile, stats, restaurantSlug = "") {
+    const economy = normalizeRestaurantEconomy(profile?.restaurantEconomy);
+    const expansion = EXPANSION_LEVELS.find((level) => level.id === economy.expansionLevel) || EXPANSION_LEVELS[0];
+    const expansionValue = getExpansionValue(economy);
+    const upgradeValue = getUpgradeValue(economy);
+    const loyaltyValue = getCustomerLoyaltyValue(stats);
+    const recentPerformanceValue = getRecentPerformanceValue(profile, restaurantSlug);
+    const ratingValue = getRatingValue(stats);
+
+    return {
+      total: Math.round(expansionValue + upgradeValue + loyaltyValue + recentPerformanceValue + ratingValue),
+      expansionLabel: expansion.label,
+      expansionValue,
+      upgradeValue,
+      loyaltyValue,
+      recentPerformanceValue,
+      ratingValue: Math.round(ratingValue),
+    };
+  }
+
   function getProfiles() {
     return getProfilesCache();
   }
@@ -4273,6 +4293,7 @@
     getCollectionEntryValue,
     getCustomerStatusLabel,
     getRestaurantValue,
+    getRestaurantValueBreakdown,
     getCustomersForRestaurant,
     getPhotoReadyCustomersForRestaurant,
     getFeaturedGuestLineup,

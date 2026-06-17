@@ -699,6 +699,42 @@
     `;
   }
 
+  function renderRestaurantValueBreakdownMarkup(profile, summary) {
+    if (!profile || !summary?.stats || !core.getRestaurantValueBreakdown) {
+      return "";
+    }
+
+    const breakdown = core.getRestaurantValueBreakdown(profile, summary.stats);
+    const rows = [
+      [`${breakdown.expansionLabel || "Food Truck"} base`, breakdown.expansionValue],
+      ["Customer loyalty", breakdown.loyaltyValue],
+      ["Recent sales", breakdown.recentPerformanceValue],
+      ["Rating bonus", breakdown.ratingValue],
+      ["Upgrades", breakdown.upgradeValue],
+    ];
+
+    return `
+      <div class="restaurant-value-breakdown" aria-label="Restaurant Value breakdown">
+        <div class="restaurant-value-breakdown-head">
+          <span>Restaurant Value</span>
+          <strong>${core.formatCurrency(breakdown.total)}</strong>
+        </div>
+        <div class="restaurant-value-breakdown-grid">
+          ${rows
+            .map(
+              ([label, value]) => `
+                <div class="restaurant-value-breakdown-row">
+                  <span>${escapeHtml(label)}</span>
+                  <strong>${core.formatCurrency(value)}</strong>
+                </div>
+              `
+            )
+            .join("")}
+        </div>
+      </div>
+    `;
+  }
+
   function renderHero() {
     const compactMobile = isMobileHub();
     const profile = core.getActiveProfile();
@@ -782,6 +818,7 @@
                       <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
                       <span class="chip hero-stat-chip">${bestRankLabel}</span>
                     </div>
+                    ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
                     ${
                       !editMode && !emailConnected ? renderConnectEmailMarkup(profile) : ``
                     }
@@ -840,6 +877,7 @@
                     <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
                     <span class="chip hero-stat-chip">${bestRankLabel}</span>
                   </div>
+                  ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
                   ${
                     !editMode && !emailConnected ? renderConnectEmailMarkup(profile) : ``
                   }
