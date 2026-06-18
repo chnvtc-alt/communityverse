@@ -1239,9 +1239,9 @@
             <div class="hero-side">
               <div class="hero-card hero-card-strong hero-directory-showcase hero-directory-showcase-compact" id="directory-card">
                 <div class="hero-directory-picker">
-                  <p class="kicker" style="margin: 0;">Choose A Restaurant Challenge Trivia Game</p>
+                  <p class="kicker" style="margin: 0;">Choose A Restaurant Challenge Game</p>
                   <label class="field" style="gap: 6px;">
-                    <select class="select hero-directory-select" id="directory-select" aria-label="Choose a Restaurant Challenge Trivia game">
+                    <select class="select hero-directory-select" id="directory-select" aria-label="Choose a Restaurant Challenge game">
                       ${getDirectoryRestaurants()
                         .map(
                           (restaurantOption) => `
