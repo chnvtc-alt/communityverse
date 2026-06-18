@@ -2845,6 +2845,8 @@
     safeProfile.recentSessions = Array.isArray(safeProfile.recentSessions)
       ? safeProfile.recentSessions
       : [];
+    safeProfile.baseRestaurantSlug = normalizeRestaurant(safeProfile.baseRestaurantSlug || "");
+    safeProfile.baseRestaurantName = String(safeProfile.baseRestaurantName || "").trim();
     safeProfile.restaurantEconomy = normalizeRestaurantEconomy(safeProfile.restaurantEconomy);
     safeProfile.isGuest = Boolean(safeProfile.isGuest);
     safeProfile.customerCollection = dedupeCustomerCollection(
@@ -4261,6 +4263,13 @@
       overallStats.estimatedSales = 0;
 
       nextProfile.lastPlayedAt = nowIso();
+      if (!String(nextProfile.baseRestaurantSlug || "").trim()) {
+        const previousRecentSession = Array.isArray(nextProfile.recentSessions)
+          ? nextProfile.recentSessions[0]
+          : null;
+        nextProfile.baseRestaurantSlug = String(previousRecentSession?.restaurantSlug || session.restaurantSlug || "").trim();
+        nextProfile.baseRestaurantName = String(previousRecentSession?.restaurantName || session.restaurantName || "").trim();
+      }
 
       const restaurantStats =
         nextProfile.restaurantStats[session.restaurantSlug] ||

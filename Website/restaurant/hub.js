@@ -193,7 +193,7 @@
 
     const profile = core.getActiveProfile();
     const directoryRestaurants = getDirectoryRestaurants();
-    const selectedSlug = state.selectedDirectorySlug || directoryRestaurants[0]?.slug || "americana";
+    const selectedSlug = state.selectedDirectorySlug || getDefaultDirectorySlug(profile);
     const selectedRestaurant =
       directoryRestaurants.find((restaurant) => restaurant.slug === selectedSlug) ||
       directoryRestaurants[0] ||
@@ -203,7 +203,7 @@
       .map(
         (restaurantOption) => `
           <option value="${restaurantOption.slug}" ${restaurantOption.slug === selectedRestaurant?.slug ? "selected" : ""}>
-            ${escapeHtml(restaurantOption.name)}
+            ${escapeHtml(restaurantOption.gameName || restaurantOption.name)}
           </option>
         `
       )
@@ -595,6 +595,7 @@
       return playableRestaurants.map((restaurant) => ({
           slug: restaurant.slug,
           name: restaurant.name,
+          gameName: getDirectoryGameName(restaurant),
           image: restaurant.logoSquare || restaurant.squareImage || restaurant.logoHorizontal || restaurant.heroImage,
           href: `/${restaurant.slug}/`,
           available: true,
@@ -605,6 +606,7 @@
       {
         slug: "americana",
         name: "Americana Diner",
+        gameName: "Americana Diner Game",
         image: "../assets/restaurant-challenge/restaurants/americana/americana-diner-logo.jpg",
         href: "/americana/",
         available: true,
@@ -612,13 +614,32 @@
     ];
   }
 
+  function getDirectoryGameName(restaurant) {
+    const name = String(restaurant?.name || "").trim() || "Restaurant Challenge";
+    return /\bgame\b/i.test(name) ? name : `${name} Game`;
+  }
+
+  function getFeaturedDirectorySlug(directoryRestaurants) {
+    return (
+      directoryRestaurants.find((restaurant) => /hudson/i.test(restaurant.name))?.slug ||
+      directoryRestaurants.find((restaurant) => restaurant.slug === "hudsons-hickory-house")?.slug ||
+      directoryRestaurants.find((restaurant) => restaurant.slug === "hudson-s-hickory-house")?.slug ||
+      directoryRestaurants[0]?.slug ||
+      "americana"
+    );
+  }
+
   function getDefaultDirectorySlug(profile) {
+    const baseRestaurantSlug = String(profile?.baseRestaurantSlug || "").trim();
     const recentRestaurantSlug = String(profile?.recentSessions?.[0]?.restaurantSlug || "").trim();
     const directoryRestaurants = getDirectoryRestaurants();
+    if (baseRestaurantSlug && directoryRestaurants.some((restaurant) => restaurant.slug === baseRestaurantSlug)) {
+      return baseRestaurantSlug;
+    }
     if (recentRestaurantSlug && directoryRestaurants.some((restaurant) => restaurant.slug === recentRestaurantSlug)) {
       return recentRestaurantSlug;
     }
-    return directoryRestaurants[0]?.slug || "americana";
+    return getFeaturedDirectorySlug(directoryRestaurants);
   }
 
   function getSelectedDirectoryRestaurant(profile) {
@@ -1011,7 +1032,8 @@
       : safeSummary.stats.estimatedSales || 0;
     const bestRankLabel = overallRank ? `🏆 Best Rank #${overallRank}` : "🏆 Best Rank --";
     const selectedDirectoryRestaurant = getSelectedDirectoryRestaurant(profile);
-    const lastPlayedSlug = getDefaultDirectorySlug(profile);
+    const baseRestaurantSlug = String(profile?.baseRestaurantSlug || "").trim();
+    const recentRestaurantSlug = String(profile?.recentSessions?.[0]?.restaurantSlug || "").trim();
     const playAgainTarget = getPlayAgainTarget(profile);
     const latestCustomerEntry = profile && Array.isArray(profile.customerCollection)
       ? profile.customerCollection.find((entry) => entry && entry.status !== "lost")
@@ -1220,7 +1242,7 @@
                         .map(
                           (restaurantOption) => `
                             <option value="${restaurantOption.slug}" ${selectedDirectoryRestaurant && restaurantOption.slug === selectedDirectoryRestaurant.slug ? "selected" : ""}>
-                              ${escapeHtml(restaurantOption.name)}${restaurantOption.slug === lastPlayedSlug ? " (Last Played)" : ""}
+                              ${escapeHtml(restaurantOption.gameName || restaurantOption.name)}${restaurantOption.slug === baseRestaurantSlug ? " (Base)" : restaurantOption.slug === recentRestaurantSlug ? " (Last Played)" : ""}
                             </option>
                           `
                         )
@@ -1236,9 +1258,11 @@
                         <div>
                           <h2 class="section-title" style="margin-bottom: 4px; color: inherit; font-size: 1.2rem;">${escapeHtml(selectedDirectoryRestaurant.name)}</h2>
                           ${
-                            selectedDirectoryRestaurant.slug === lastPlayedSlug && !compactMobile
-                              ? `<p class="hero-directory-note" style="margin: 0 0 8px;">Last played</p>`
-                              : ""
+                            selectedDirectoryRestaurant.slug === baseRestaurantSlug && !compactMobile
+                              ? `<p class="hero-directory-note" style="margin: 0 0 8px;">Base restaurant</p>`
+                              : selectedDirectoryRestaurant.slug === recentRestaurantSlug && !compactMobile
+                                ? `<p class="hero-directory-note" style="margin: 0 0 8px;">Last played</p>`
+                                : ""
                           }
                           ${
                             selectedDirectoryRestaurant.available

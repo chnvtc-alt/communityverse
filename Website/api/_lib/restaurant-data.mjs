@@ -55,6 +55,14 @@ const DEFAULT_EXPANSION_LEVEL = EXPANSION_LEVELS[0].id;
 const RECENT_PERFORMANCE_DAYS = 30;
 const RECENT_PERFORMANCE_VALUE_RATE = 0.25;
 
+function normalizeRestaurantSlug(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function normalizeRestaurantEconomy(economy) {
   const safeEconomy = economy && typeof economy === "object" ? { ...economy } : {};
   const expansionLevel = EXPANSION_LEVELS.some((level) => level.id === safeEconomy.expansionLevel)
@@ -199,6 +207,8 @@ export function normalizeProfile(profile) {
   safeProfile.createdAt = String(safeProfile.createdAt || "");
   safeProfile.updatedAt = String(safeProfile.updatedAt || "");
   safeProfile.lastPlayedAt = String(safeProfile.lastPlayedAt || "");
+  safeProfile.baseRestaurantSlug = normalizeRestaurantSlug(safeProfile.baseRestaurantSlug || "");
+  safeProfile.baseRestaurantName = String(safeProfile.baseRestaurantName || "").trim();
   safeProfile.isGuest = Boolean(safeProfile.isGuest);
   safeProfile.emailConnected = Boolean(safeProfile.emailConnected);
   safeProfile.restaurantEconomy = normalizeRestaurantEconomy(safeProfile.restaurantEconomy);
