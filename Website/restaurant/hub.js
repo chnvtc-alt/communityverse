@@ -87,7 +87,6 @@
     splashMyRestaurantButton: document.getElementById("splash-my-restaurant-button"),
     splashLeaderboardButton: document.getElementById("splash-leaderboard-button"),
     splashHowToPlayButton: document.getElementById("splash-how-to-play-button"),
-    splashContactButton: document.getElementById("splash-contact-button"),
     howToPlayModal: document.getElementById("how-to-play-modal"),
     contactModal: document.getElementById("contact-modal"),
     contactForm: document.getElementById("contact-form"),
@@ -327,8 +326,13 @@
   }
 
   function bindContact() {
-    document.querySelectorAll("[data-contact-button]").forEach((button) => {
-      button.addEventListener("click", openContact);
+    document.addEventListener("click", (event) => {
+      const button = event.target instanceof Element ? event.target.closest("[data-contact-button]") : null;
+      if (!button) {
+        return;
+      }
+      event.preventDefault();
+      openContact();
     });
 
     if (elements.contactModal) {
