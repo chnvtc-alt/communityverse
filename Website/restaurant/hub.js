@@ -202,7 +202,7 @@
       .map(
         (restaurantOption) => `
           <option value="${restaurantOption.slug}" ${restaurantOption.slug === selectedRestaurant?.slug ? "selected" : ""}>
-            ${escapeHtml(restaurantOption.gameName || restaurantOption.name)}
+            ${escapeHtml(restaurantOption.name)}
           </option>
         `
       )
@@ -599,7 +599,6 @@
       return playableRestaurants.map((restaurant) => ({
           slug: restaurant.slug,
           name: restaurant.name,
-          gameName: getDirectoryGameName(restaurant),
           image: restaurant.logoSquare || restaurant.squareImage || restaurant.logoHorizontal || restaurant.heroImage,
           href: `/${restaurant.slug}/`,
           available: true,
@@ -610,17 +609,11 @@
       {
         slug: "americana",
         name: "Americana Diner",
-        gameName: "Americana Diner Game",
         image: "../assets/restaurant-challenge/restaurants/americana/americana-diner-logo.jpg",
         href: "/americana/",
         available: true,
       },
     ];
-  }
-
-  function getDirectoryGameName(restaurant) {
-    const name = String(restaurant?.name || "").trim() || "Restaurant Challenge";
-    return /\bgame\b/i.test(name) ? name : `${name} Game`;
   }
 
   function getFeaturedDirectorySlug(directoryRestaurants) {
@@ -1246,7 +1239,7 @@
                         .map(
                           (restaurantOption) => `
                             <option value="${restaurantOption.slug}" ${selectedDirectoryRestaurant && restaurantOption.slug === selectedDirectoryRestaurant.slug ? "selected" : ""}>
-                              ${escapeHtml(restaurantOption.gameName || restaurantOption.name)}${restaurantOption.slug === baseRestaurantSlug ? " (Base)" : restaurantOption.slug === recentRestaurantSlug ? " (Last Played)" : ""}
+                              ${escapeHtml(restaurantOption.name)}${restaurantOption.slug === baseRestaurantSlug ? " (Base)" : restaurantOption.slug === recentRestaurantSlug ? " (Last Played)" : ""}
                             </option>
                           `
                         )
