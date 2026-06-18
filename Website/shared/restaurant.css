@@ -909,6 +909,8 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .hero-profile-actions-top {
   flex: 0 0 auto;
+  position: relative;
+  z-index: 4;
 }
 
 .hero-profile-edit-form {

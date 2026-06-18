@@ -56,6 +56,7 @@
     authError: "",
     connectMessage: "",
     connectError: "",
+    profileEditMode: editMode,
     expansionMessage: "",
     expansionError: "",
     upgradeMessage: "",
@@ -1096,10 +1097,10 @@
                       </div>
                         <div class="hero-profile-actions hero-profile-actions-top">
                           ${!emailConnected ? `<button class="button button-primary button-sm" type="button" data-show-connect-email>Save With Email</button>` : ""}
-                          <a class="button button-muted button-sm" href="${withHubMode("./?edit=1")}">Edit My Profile</a>
+                          <button class="button button-muted button-sm" type="button" data-edit-profile>Edit My Profile</button>
                         </div>
                     </div>
-                    ${!editMode && !emailConnected ? renderConnectInfoMarkup(profile) : ``}
+                    ${!state.profileEditMode && !emailConnected ? renderConnectInfoMarkup(profile) : ``}
                     <div class="hero-profile-meta hero-profile-meta-compact">
                       <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
                       <span class="chip hero-stat-chip">🏦 Value ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
@@ -1113,10 +1114,10 @@
                     ${renderExpansionPreviewMarkup(profile, safeSummary.stats)}
                     ${renderUpgradePreviewMarkup(profile, safeSummary.stats)}
                     ${
-                      !editMode && !emailConnected ? renderConnectEmailMarkup(profile) : ``
+                      !state.profileEditMode && !emailConnected ? renderConnectEmailMarkup(profile) : ``
                     }
                     ${
-                      editMode
+                      state.profileEditMode
                         ? `
                           <form class="hero-profile-edit-form hero-profile-edit-form-compact" id="hero-profile-edit-form">
                             <div class="field" style="gap: 6px;">
@@ -1124,7 +1125,7 @@
                               <div class="hero-profile-edit-row">
                                 <input class="input hero-profile-input" id="hero-restaurant-name" name="restaurantName" type="text" value="${escapeHtml(profile.restaurantName)}" />
                                 <button class="button button-primary button-sm" type="submit">Save Changes</button>
-                                <a class="button button-muted button-sm" href="${withHubMode("./")}">Cancel</a>
+                                <button class="button button-muted button-sm" type="button" data-cancel-profile-edit>Cancel</button>
                               </div>
                             </div>
                             <p class="helper" style="margin: 8px 0 0;">Your player name stays the same. Only the restaurant name changes here.</p>
@@ -1158,10 +1159,10 @@
                     </div>
                     <div class="hero-profile-actions hero-profile-actions-top">
                       ${!emailConnected ? `<button class="button button-primary button-sm" type="button" data-show-connect-email>Save With Email</button>` : ""}
-                      <a class="button button-muted button-sm" href="${withHubMode("./?edit=1")}">Edit My Profile</a>
+                      <button class="button button-muted button-sm" type="button" data-edit-profile>Edit My Profile</button>
                     </div>
                   </div>
-                  ${!editMode && !emailConnected ? renderConnectInfoMarkup(profile) : ``}
+                  ${!state.profileEditMode && !emailConnected ? renderConnectInfoMarkup(profile) : ``}
                   <div class="hero-profile-meta">
                     <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
                     <span class="chip hero-stat-chip">🏦 Value ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
@@ -1175,10 +1176,10 @@
                   ${renderExpansionPreviewMarkup(profile, safeSummary.stats)}
                   ${renderUpgradePreviewMarkup(profile, safeSummary.stats)}
                   ${
-                    !editMode && !emailConnected ? renderConnectEmailMarkup(profile) : ``
+                    !state.profileEditMode && !emailConnected ? renderConnectEmailMarkup(profile) : ``
                   }
                   ${
-                    editMode
+                    state.profileEditMode
                       ? `
                         <form class="hero-profile-edit-form" id="hero-profile-edit-form">
                           <div class="field" style="gap: 6px;">
@@ -1186,7 +1187,7 @@
                             <div class="hero-profile-edit-row">
                               <input class="input hero-profile-input" id="hero-restaurant-name" name="restaurantName" type="text" value="${escapeHtml(profile.restaurantName)}" />
                               <button class="button button-primary button-sm" type="submit">Save Changes</button>
-                              <a class="button button-muted button-sm" href="${withHubMode("./")}">Cancel</a>
+                              <button class="button button-muted button-sm" type="button" data-cancel-profile-edit>Cancel</button>
                             </div>
                           </div>
                           <p class="helper" style="margin: 8px 0 0;">Your player name stays the same. Only the restaurant name changes here.</p>
@@ -1278,7 +1279,28 @@
       </div>
     `;
 
-    if (editMode && profile && !profile.isGuest) {
+    elements.hero.querySelectorAll("[data-edit-profile]").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.profileEditMode = true;
+        renderHero();
+        requestAnimationFrame(() => {
+          const input = document.getElementById("hero-restaurant-name");
+          if (input instanceof HTMLInputElement) {
+            input.focus();
+            input.select();
+          }
+        });
+      });
+    });
+
+    elements.hero.querySelectorAll("[data-cancel-profile-edit]").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.profileEditMode = false;
+        renderHero();
+      });
+    });
+
+    if (state.profileEditMode && profile && !profile.isGuest) {
       const form = document.getElementById("hero-profile-edit-form");
       const error = document.getElementById("hero-profile-error");
 
@@ -1302,7 +1324,8 @@
           restaurantName,
           restaurantSlug: core.slugify(restaurantName),
         });
-        window.location.href = withHubMode("./");
+        state.profileEditMode = false;
+        renderHero();
       });
     }
 
