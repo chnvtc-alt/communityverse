@@ -725,6 +725,8 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 }
 
 .restaurant-value-breakdown-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   min-height: 36px;
   padding: 7px 8px;
   border-radius: 12px;
@@ -732,6 +734,10 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   color: var(--muted);
   font-size: 0.78rem;
   line-height: 1.15;
+}
+
+.restaurant-value-breakdown-row span {
+  min-width: 0;
 }
 
 .restaurant-value-breakdown-row strong {
