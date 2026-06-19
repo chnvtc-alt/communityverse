@@ -25,9 +25,9 @@
         }
       })();
     </script>
-    <link rel="stylesheet" href="../shared/restaurant.css?v=virtual-restaurant-wording" />
-    <script defer src="../shared/app-core.js?v=virtual-restaurant-wording"></script>
-    <script defer src="hub.js?v=virtual-restaurant-wording"></script>
+    <link rel="stylesheet" href="../shared/restaurant.css?v=restaurant-intro-steps" />
+    <script defer src="../shared/app-core.js?v=restaurant-intro-steps"></script>
+    <script defer src="hub.js?v=restaurant-intro-steps"></script>
   </head>
   <body data-page="hub">
     <main class="app-shell">
@@ -42,10 +42,21 @@
         <div class="challenge-splash-grid">
           <div class="challenge-splash-copy">
             <p class="kicker">Restaurant Challenge</p>
-            <h1 class="page-title challenge-splash-title">Turn a Food Truck into a Local Landmark</h1>
-            <p class="challenge-splash-lead">
-              Play trivia, collect customers, earn cash, buy upgrades, and compete to build the most valuable restaurant in town.
-            </p>
+            <h1 class="page-title challenge-splash-title">Restaurant Challenge</h1>
+            <div class="challenge-splash-steps" aria-label="Restaurant Challenge overview">
+              <section class="challenge-splash-step">
+                <h2>Test Your Trivia Knowledge</h2>
+                <p>Answer 10 questions in about 3 minutes.</p>
+              </section>
+              <section class="challenge-splash-step">
+                <h2>Earn Customers</h2>
+                <p>Good scores earn valuable customers for your collection.</p>
+              </section>
+              <section class="challenge-splash-step">
+                <h2>Create a Virtual Restaurant</h2>
+                <p>Use your customers to grow your virtual restaurant and climb the leaderboard.</p>
+              </section>
+            </div>
             <div class="challenge-splash-picker" id="splash-chooser">
               <label class="field challenge-splash-field" for="splash-restaurant-select">
                 <span class="field-label">Choose a Game</span>

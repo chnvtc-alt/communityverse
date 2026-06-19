@@ -223,8 +223,8 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .challenge-splash-title {
   margin: 0;
-  font-size: clamp(2.45rem, 5vw, 4.8rem);
-  max-width: 14ch;
+  font-size: clamp(2.5rem, 5vw, 4.9rem);
+  max-width: 16ch;
 }
 
 .challenge-splash-lead,
@@ -242,6 +242,41 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .challenge-splash-note {
   font-size: 0.96rem;
+}
+
+.challenge-splash-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  width: min(100%, 860px);
+}
+
+.challenge-splash-step {
+  display: grid;
+  gap: 5px;
+  padding: 14px 16px;
+  border: 1px solid rgba(93, 116, 105, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.52);
+  box-shadow: 0 12px 24px rgba(39, 55, 44, 0.06);
+}
+
+.challenge-splash-step h2,
+.challenge-splash-step p {
+  margin: 0;
+}
+
+.challenge-splash-step h2 {
+  color: var(--ink);
+  font-size: 1.08rem;
+  line-height: 1.12;
+}
+
+.challenge-splash-step p {
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+  font-size: 0.94rem;
+  line-height: 1.35;
 }
 
 .challenge-splash-picker {
@@ -2993,8 +3028,26 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .challenge-splash-title {
-    max-width: 13ch;
-    font-size: clamp(2rem, 9vw, 2.8rem);
+    max-width: 14ch;
+    font-size: clamp(2.25rem, 10vw, 3rem);
+  }
+
+  .challenge-splash-steps {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .challenge-splash-step {
+    padding: 10px 12px;
+    border-radius: 14px;
+  }
+
+  .challenge-splash-step h2 {
+    font-size: 0.98rem;
+  }
+
+  .challenge-splash-step p {
+    font-size: 0.86rem;
   }
 
   .challenge-splash-actions {
