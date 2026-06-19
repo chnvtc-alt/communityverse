@@ -1289,7 +1289,7 @@
               <div class="hero-card result-followup-card result-followup-card-guest" style="margin-top: 0; padding: 16px;">
                 <p class="kicker" style="margin: 0 0 6px;">Save your customer collection</p>
                 <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">You just earned ${escapeHtml(session.customer.name)}.</h3>
-                <p class="copy" style="margin: 0 0 12px;">Register a free virtual restaurant to save your customers, earn cash from future games, buy upgrades, and appear on the leaderboard.</p>
+                <p class="copy" style="margin: 0 0 12px;">Register a free virtual restaurant to save your customers, earn cash from future games, buy upgrades, and appear on the leaderboard. No email address required.</p>
                 <div class="button-row">
                   <button class="button button-hot" id="register-now-button" type="button">Save My Progress</button>
                   <button class="button button-muted" id="guest-continue-button" type="button">Keep Playing as Guest</button>
