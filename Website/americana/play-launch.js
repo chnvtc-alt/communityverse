@@ -959,7 +959,7 @@
       return;
     }
 
-    if (session.completed) {
+    if (session.completed && !state.feedback) {
       elements.game.classList.add("hidden");
       renderResultPanel(session);
       return;
