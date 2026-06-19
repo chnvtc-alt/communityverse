@@ -858,7 +858,7 @@
     elements.start.innerHTML = `
       <div class="customer-reveal-shell">
         <div class="customer-reveal-copy">
-          <p class="kicker">Customer Challenge</p>
+          <p class="kicker">Play Trivia To Earn This Customer</p>
           <h2 class="opening-title">You're playing for ${escapeHtml(customer.name)}</h2>
           <p class="copy opening-title-copy">${escapeHtml(customerBio)}</p>
         </div>
@@ -873,11 +873,11 @@
             <div class="customer-reveal-goals">
               <div class="customer-reveal-goal">
                 <span class="customer-reveal-label">Regular Customer</span>
-                <strong>${thresholds.regular}/10 correct</strong>
+                <strong>Need ${thresholds.regular}/10 Correct</strong>
               </div>
               <div class="customer-reveal-goal">
                 <span class="customer-reveal-label">Occasional Customer</span>
-                <strong>${thresholds.occasional}/10 correct</strong>
+                <strong>Need ${thresholds.occasional}/10 Correct</strong>
               </div>
             </div>
             <div class="customer-reveal-values">
@@ -892,12 +892,12 @@
             </div>
             <div class="customer-reveal-mobile-summary">
               <div class="customer-reveal-combo">
-                <span class="customer-reveal-label">Regular Goal & Value</span>
-                <strong>${thresholds.regular}/10 correct &bull; ${core.formatCurrency(customer.regularValue)}</strong>
+                <span class="customer-reveal-label">Regular Customer</span>
+                <strong>Need ${thresholds.regular}/10 Correct &bull; Value ${core.formatCurrency(customer.regularValue)}</strong>
               </div>
               <div class="customer-reveal-combo">
-                <span class="customer-reveal-label">Occasional Goal & Value</span>
-                <strong>${thresholds.occasional}/10 correct &bull; ${core.formatCurrency(customer.occasionalValue)}</strong>
+                <span class="customer-reveal-label">Occasional Customer</span>
+                <strong>Need ${thresholds.occasional}/10 Correct &bull; Value ${core.formatCurrency(customer.occasionalValue)}</strong>
               </div>
             </div>
             ${favoriteBonusMarkup}
