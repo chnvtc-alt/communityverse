@@ -447,7 +447,7 @@
           </div>
         </div>
 
-        <p class="opening-title-small opening-title-small-bottom">Can You Earn A New Regular Customer?</p>
+        <p class="opening-title-small opening-title-small-bottom">Can You Add A New Customer To Your Collection?</p>
 
         <div class="button-row opening-start-actions opening-start-actions-bottom">
           <a class="button button-hot" id="start-game-button" href="${escapeHtml(playHref)}">${customerId ? "INVITE BACK" : "START THE GAME"}</a>
