@@ -1070,8 +1070,8 @@
       selectedIndex,
       question: currentQuestion || outcome.question,
       message: outcome.isCorrect
-        ? "Nice choice. That answer helped the customer stay happy."
-        : `Close, but not quite. The right answer was "${outcome.correctAnswer}".`,
+        ? "Correct!"
+        : `Incorrect. The correct answer was "${outcome.correctAnswer}".`,
     };
 
     renderGamePanel();
