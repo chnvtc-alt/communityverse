@@ -3032,6 +3032,11 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     font-size: clamp(2.25rem, 10vw, 3rem);
   }
 
+  html.restaurant-hub-mode .challenge-splash-copy > .kicker,
+  html.restaurant-hub-mode .challenge-splash-title {
+    display: none;
+  }
+
   .challenge-splash-steps {
     grid-template-columns: 1fr;
     gap: 8px;
