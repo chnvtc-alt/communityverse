@@ -1079,7 +1079,7 @@
                   <div class="hero-profile-strip hero-profile-strip-compact">
                     <div class="hero-profile-head hero-profile-head-compact">
                       <div>
-                        <p class="kicker" style="margin: 0 0 4px;">Your Restaurant</p>
+                        <p class="kicker" style="margin: 0 0 4px;">Your Virtual Restaurant</p>
                         <h2 class="hero-profile-name">${escapeHtml(profile.restaurantName)}</h2>
                         <p class="hero-profile-subline hero-profile-subline-compact">
                           <span class="rating-display" aria-label="Guest rating ${(safeSummary.rating || 0).toFixed(1)} out of 5">
@@ -1128,7 +1128,7 @@
                                 <button class="button button-muted button-sm" type="button" data-cancel-profile-edit>Cancel</button>
                               </div>
                             </div>
-                            <p class="helper" style="margin: 8px 0 0;">Your player name stays the same. Only the restaurant name changes here.</p>
+                            <p class="helper" style="margin: 8px 0 0;">Your player name stays the same. Only the virtual restaurant name changes here.</p>
                             <p class="error hidden" id="hero-profile-error" aria-live="polite" style="margin-top: 8px;"></p>
                           </form>
                         `
@@ -1141,7 +1141,7 @@
                 <div class="hero-profile-strip">
                   <div class="hero-profile-head">
                     <div>
-                      <p class="kicker" style="margin: 0 0 4px;">Your Restaurant</p>
+                      <p class="kicker" style="margin: 0 0 4px;">Your Virtual Restaurant</p>
                       <h2 class="hero-profile-name">${escapeHtml(profile.restaurantName)}</h2>
                       <p class="hero-profile-subline">
                         <span class="rating-display" aria-label="Guest rating ${(safeSummary.rating || 0).toFixed(1)} out of 5">
@@ -1190,7 +1190,7 @@
                               <button class="button button-muted button-sm" type="button" data-cancel-profile-edit>Cancel</button>
                             </div>
                           </div>
-                          <p class="helper" style="margin: 8px 0 0;">Your player name stays the same. Only the restaurant name changes here.</p>
+                          <p class="helper" style="margin: 8px 0 0;">Your player name stays the same. Only the virtual restaurant name changes here.</p>
                           <p class="error hidden" id="hero-profile-error" aria-live="polite" style="margin-top: 8px;"></p>
                         </form>
                       `
@@ -1204,10 +1204,10 @@
                     <div class="hero-profile-strip hero-profile-strip-guest">
                       <div>
                         <p class="kicker" style="margin: 0 0 4px;">Guest Progress</p>
-                        <h2 class="hero-profile-name">${hasSavedProgress ? escapeHtml(profile.restaurantName) : "Play first, then register to save your restaurant."}</h2>
+                        <h2 class="hero-profile-name">${hasSavedProgress ? escapeHtml(profile.restaurantName) : "Play first, then register to save your virtual restaurant."}</h2>
                         <p class="copy compact-copy" style="margin: 4px 0 0;">${
                           hasSavedProgress
-                            ? "This restaurant is saved on this device. Add email recovery when you are ready."
+                            ? "This virtual restaurant is saved on this device. Add email recovery when you are ready."
                             : "You can keep playing as a guest, but registering after your next game keeps your customers and leaderboard progress with you."
                         }</p>
                         ${renderSignInMarkup()}
@@ -1220,8 +1220,8 @@
                     <div class="hero-profile-strip hero-profile-strip-guest">
                       <div>
                         <p class="kicker" style="margin: 0 0 4px;">Welcome</p>
-                        <h2 class="hero-profile-name">Play your first game, then save your restaurant.</h2>
-                        <p class="copy compact-copy" style="margin: 4px 0 0;">Start with a quick trivia round. After you win your first customer, visit My Restaurant to name and save your restaurant so progress can follow you.</p>
+                        <h2 class="hero-profile-name">Play your first game, then save your virtual restaurant.</h2>
+                        <p class="copy compact-copy" style="margin: 4px 0 0;">Start with a quick trivia round. After you win your first customer, visit My Virtual Restaurant to name and save your virtual restaurant so progress can follow you.</p>
                         ${renderSignInMarkup()}
                       </div>
                       <a class="button button-primary button-sm" href="${playAgainTarget.href}">Play First Game</a>
@@ -1376,7 +1376,7 @@
         submitButton.textContent = "Sending...";
         try {
           await core.sendEmailSignInLink(email, { profileId: profile.id });
-          state.connectMessage = "Check your email and tap the secure link to connect this restaurant.";
+          state.connectMessage = "Check your email and tap the secure link to connect this virtual restaurant.";
           renderHero();
         } catch (error) {
           state.connectError = error instanceof Error ? error.message : "Unable to send the email link.";
@@ -1399,7 +1399,7 @@
         submitButton.textContent = "Sending...";
         try {
           await core.sendEmailSignInLink(email);
-          state.authMessage = "Check your email and tap the secure link to restore your restaurant.";
+          state.authMessage = "Check your email and tap the secure link to restore your virtual restaurant.";
           renderHero();
         } catch (error) {
           state.authError = error instanceof Error ? error.message : "Unable to send the email link.";
@@ -1657,7 +1657,7 @@
     if (!profile) {
       elements.collection.innerHTML = `
         <h2 class="section-title">Customer Collection</h2>
-        <p class="copy">Play your first game to start collecting customers. After that, visit My Restaurant to name your restaurant and add email recovery when you are ready.</p>
+        <p class="copy">Play your first game to start collecting customers. After that, visit My Virtual Restaurant to name your virtual restaurant and add email recovery when you are ready.</p>
       `;
       return;
     }

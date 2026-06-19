@@ -267,16 +267,16 @@
           <p class="kicker">Restaurant Challenge</p>
           <h2 class="section-title" id="how-to-play-title">How to Play</h2>
           <p class="copy" id="how-to-play-summary">
-            Restaurant Challenge is a quick 10-question trivia game. Answer questions, earn customers for your restaurant, improve your rating, and compete on the leaderboard.
+            Restaurant Challenge is a quick 10-question trivia game. Answer questions, earn customers for your virtual restaurant, improve your rating, and compete on the leaderboard.
           </p>
           <div class="how-to-play-topics">
             <section class="how-to-play-topic how-to-play-topic-wide">
               <h3>The Quick Version</h3>
               <p>
-                Choose a restaurant, answer 10 trivia questions, see how well you scored, and try to earn a customer for your own restaurant.
+                Choose a restaurant, answer 10 trivia questions, see how well you scored, and try to earn a customer for your own virtual restaurant.
               </p>
               <p>
-                You can enjoy the game just for the trivia, or you can build your restaurant and compete against other players.
+                You can enjoy the game just for the trivia, or you can build your virtual restaurant and compete against other players.
               </p>
             </section>
             <section class="how-to-play-topic">
@@ -288,12 +288,12 @@
               <h3>Step 2: Earn Customers</h3>
               <p>Before the quiz begins, you will meet the customer you are playing for.</p>
               <p>
-                If you meet the higher target, they become a Regular Customer. If you meet the lower target, they become an Occasional Customer. If your score is too low, they do not visit your restaurant.
+                If you meet the higher target, they become a Regular Customer. If you meet the lower target, they become an Occasional Customer. If your score is too low, they do not visit your virtual restaurant.
               </p>
             </section>
             <section class="how-to-play-topic">
-              <h3>Step 3: Build Your Restaurant</h3>
-              <p>Every customer you earn helps your restaurant grow. Some customers are worth more than others.</p>
+              <h3>Step 3: Build Your Virtual Restaurant</h3>
+              <p>Every customer you earn helps your virtual restaurant grow. Some customers are worth more than others.</p>
               <p>Customer wins add to Sales and Cash. Cash can be saved or spent on restaurant expansions and upgrades.</p>
               <p>You can invite Occasional Customers back and try to turn them into Regular Customers.</p>
               <p>After 10 successful visits, a Regular Customer becomes a Favorite Customer and becomes even more valuable.</p>
@@ -306,7 +306,7 @@
             <section class="how-to-play-topic">
               <h3>Step 5: Climb the Leaderboard</h3>
               <p>Net Worth is the main leaderboard score. It combines your Restaurant Value and your Cash.</p>
-              <p>Restaurant Value comes from your restaurant size, upgrades, customer loyalty, recent sales, and rating bonus.</p>
+              <p>Restaurant Value comes from your virtual restaurant size, upgrades, customer loyalty, recent sales, and rating bonus.</p>
               <p>Upgrades add value and give a small boost to future customer sales.</p>
             </section>
             <section class="how-to-play-topic how-to-play-topic-wide">
@@ -714,11 +714,11 @@
             replayCustomer
               ? `
                 <a class="button button-muted" href="${restaurantBasePath()}?home=1">Cancel Invite Back</a>
-                <a class="button button-muted" href="/restaurant/?hub=1">View My Restaurant</a>
+                <a class="button button-muted" href="/restaurant/?hub=1">View My Virtual Restaurant</a>
               `
               : profile && !profile.isGuest
                 ? `
-                  <a class="button button-muted" href="/restaurant/?hub=1">View My Restaurant</a>
+                  <a class="button button-muted" href="/restaurant/?hub=1">View My Virtual Restaurant</a>
                 `
               : ""
           }
@@ -787,7 +787,7 @@
 
         <div class="button-row opening-start-actions opening-start-actions-bottom">
           <a class="button button-hot" id="start-game-button" href="${startHref}">START THE GAME</a>
-          <a class="button button-muted" href="/restaurant/?hub=1">View My Restaurant</a>
+          <a class="button button-muted" href="/restaurant/?hub=1">View My Virtual Restaurant</a>
         </div>
       </div>`;
 
@@ -903,7 +903,7 @@
             ${favoriteBonusMarkup}
             <div class="button-row customer-reveal-actions">
               <button class="button button-hot" id="begin-questions-button" type="button">Begin Questions</button>
-              <a class="button button-muted" href="/restaurant/?hub=1">View My Restaurant</a>
+              <a class="button button-muted" href="/restaurant/?hub=1">View My Virtual Restaurant</a>
               <button class="button button-muted" id="reveal-how-to-play-button" type="button" data-how-to-play-button>How to Play</button>
             </div>
           </div>
@@ -1115,7 +1115,7 @@
     }
 
     if (session.result === "regular") {
-      return `${session.customer.name} is now a regular customer at your restaurant.`;
+      return `${session.customer.name} is now a regular customer at your virtual restaurant.`;
     }
 
     if (session.result === "occasional") {
@@ -1283,8 +1283,8 @@
             ? `
               <div class="hero-card result-followup-card result-followup-card-guest" style="margin-top: 0; padding: 16px;">
                 <p class="kicker" style="margin: 0 0 6px;">Save progress</p>
-                <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">Save your progress and choose a restaurant name for the leaderboard.</h3>
-                <p class="copy" style="margin: 0 0 12px;">Save your restaurant now. You can add email recovery later from your restaurant page.</p>
+                <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">Save your progress and choose a virtual restaurant name for the leaderboard.</h3>
+                <p class="copy" style="margin: 0 0 12px;">Save your virtual restaurant now. You can add email recovery later from your virtual restaurant page.</p>
                 <div class="button-row">
                   <button class="button button-hot" id="register-now-button" type="button">Register Now</button>
                   <button class="button button-muted" id="guest-continue-button" type="button">Keep Playing as Guest</button>
@@ -1302,7 +1302,7 @@
                       <input class="input" id="player-name" name="playerName" type="text" placeholder="Tim" value="${escapeHtml(profile ? profile.playerName : "")}" />
                     </div>
                     <div class="field">
-                      <label class="field-label" for="restaurant-name">Fictional restaurant name</label>
+                      <label class="field-label" for="restaurant-name">Virtual restaurant name</label>
                       <input class="input" id="restaurant-name" name="restaurantName" type="text" placeholder="Tim's Roadhouse" value="${escapeHtml(profile ? profile.restaurantName : "")}" />
                     </div>
                     <div class="field">
@@ -1310,11 +1310,11 @@
                       <input class="input" id="profile-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" />
                     </div>
                     <button class="text-button" id="email-info-toggle" type="button">${state.emailInfoExpanded ? "Hide email note" : "Why save with email?"}</button>
-                    <p class="helper ${state.emailInfoExpanded ? "" : "hidden"}" style="margin: 0;">Email is only used to send a secure recovery link. Without it, your restaurant is saved in this browser, but it cannot be restored after clearing cache or changing devices.</p>
+                    <p class="helper ${state.emailInfoExpanded ? "" : "hidden"}" style="margin: 0;">Email is only used to send a secure recovery link. Without it, your virtual restaurant is saved in this browser, but it cannot be restored after clearing cache or changing devices.</p>
                     <p class="error hidden" id="profile-error" aria-live="polite"></p>
                     <p class="helper ${state.registrationMessage ? "" : "hidden"}" id="profile-success" aria-live="polite">${escapeHtml(state.registrationMessage)}</p>
                     <div class="form-actions">
-                      <button class="button button-hot" id="profile-submit-button" type="submit">Save Restaurant</button>
+                      <button class="button button-hot" id="profile-submit-button" type="submit">Save Virtual Restaurant</button>
                       <button class="button button-muted" id="cancel-register-button" type="button">Maybe Later</button>
                     </div>
                   </form>
@@ -1323,7 +1323,7 @@
               : `
                 <div class="button-row result-followup-actions">
                   <button class="button button-hot" id="play-again-button" type="button">Play Again</button>
-                  <a class="button button-muted" href="/restaurant/?hub=1">View My Restaurant</a>
+                  <a class="button button-muted" href="/restaurant/?hub=1">View My Virtual Restaurant</a>
                   <button class="button button-muted" id="result-how-to-play-button" type="button" data-how-to-play-button>How to Play</button>
                 </div>
               `
@@ -1408,7 +1408,7 @@
           error.textContent = "Your guest restaurant could not be found. Please play again.";
           error.classList.remove("hidden");
           submitButton.disabled = false;
-          submitButton.textContent = "Save Restaurant";
+          submitButton.textContent = "Save Virtual Restaurant";
           return;
         }
 
@@ -1421,13 +1421,13 @@
 
         try {
           await core.sendEmailSignInLink(email, { profileId: activeProfile.id });
-          state.registrationMessage = "Check your email and tap the secure link to finish saving your restaurant.";
+          state.registrationMessage = "Check your email and tap the secure link to finish saving your virtual restaurant.";
           renderAll();
         } catch (sendError) {
           error.textContent = sendError instanceof Error ? sendError.message : "Unable to send the email link.";
           error.classList.remove("hidden");
           submitButton.disabled = false;
-          submitButton.textContent = "Save Restaurant";
+          submitButton.textContent = "Save Virtual Restaurant";
         }
       });
     } else {
