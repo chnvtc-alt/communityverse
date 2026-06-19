@@ -1115,11 +1115,11 @@
     }
 
     if (session.result === "regular") {
-      return `${session.customer.name} is now a regular customer at your virtual restaurant.`;
+      return `${session.customer.name} has joined your customer collection.`;
     }
 
     if (session.result === "occasional") {
-      return `${session.customer.name} enjoyed the visit and may stop by occasionally.`;
+      return `${session.customer.name} has joined your customer collection.`;
     }
 
     return `${session.customer.name} was not impressed and will not be coming back.`;
@@ -1282,11 +1282,11 @@
           isGuest && !state.showProfileForm
             ? `
               <div class="hero-card result-followup-card result-followup-card-guest" style="margin-top: 0; padding: 16px;">
-                <p class="kicker" style="margin: 0 0 6px;">Save progress</p>
-                <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">Save your progress and choose a virtual restaurant name for the leaderboard.</h3>
-                <p class="copy" style="margin: 0 0 12px;">Save your virtual restaurant now. You can add email recovery later from your virtual restaurant page.</p>
+                <p class="kicker" style="margin: 0 0 6px;">Save your customer collection</p>
+                <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">You just earned ${escapeHtml(session.customer.name)}.</h3>
+                <p class="copy" style="margin: 0 0 12px;">Register a free virtual restaurant to save your customers, earn cash from future games, buy upgrades, and appear on the leaderboard.</p>
                 <div class="button-row">
-                  <button class="button button-hot" id="register-now-button" type="button">Register Now</button>
+                  <button class="button button-hot" id="register-now-button" type="button">Save My Progress</button>
                   <button class="button button-muted" id="guest-continue-button" type="button">Keep Playing as Guest</button>
                 </div>
               </div>
