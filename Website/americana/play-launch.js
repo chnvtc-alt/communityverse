@@ -716,7 +716,7 @@
                 <a class="button button-muted" href="${restaurantBasePath()}?home=1">Cancel Invite Back</a>
                 <a class="button button-muted" href="/restaurant/?hub=1">View My Virtual Restaurant</a>
               `
-              : profile && !profile.isGuest
+              : profile
                 ? `
                   <a class="button button-muted" href="/restaurant/?hub=1">View My Virtual Restaurant</a>
                 `
@@ -742,6 +742,7 @@
   }
 
   function renderSetupFallback() {
+    const profile = getProfile();
     const startHref = replayCustomer
       ? `${restaurantBasePath()}?play=1&customerId=${encodeURIComponent(replayCustomer.id)}`
       : `${restaurantBasePath()}?play=1`;
@@ -787,7 +788,11 @@
 
         <div class="button-row opening-start-actions opening-start-actions-bottom">
           <a class="button button-hot" id="start-game-button" href="${startHref}">START THE GAME</a>
-          <a class="button button-muted" href="/restaurant/?hub=1">View My Virtual Restaurant</a>
+          ${
+            profile
+              ? `<a class="button button-muted" href="/restaurant/?hub=1">View My Virtual Restaurant</a>`
+              : ""
+          }
         </div>
       </div>`;
 

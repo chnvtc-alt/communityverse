@@ -391,10 +391,12 @@
       return;
     }
 
+    const activeProfile = core.getActiveProfile?.() || null;
     const openingCustomers = getOpeningCustomers(restaurant);
     const playHref = customerId
       ? `${restaurantPlayPath(restaurant)}?fresh=1&customerId=${encodeURIComponent(customerId)}`
       : `${restaurantPlayPath(restaurant)}?fresh=1`;
+    const showMyRestaurantButton = Boolean(activeProfile || customerId);
     const openerCopy =
       restaurant.openingCopy ||
       "Play a quick game of trivia, win a customer, and progress on the leaderboard!";
@@ -451,7 +453,11 @@
 
         <div class="button-row opening-start-actions opening-start-actions-bottom">
           <a class="button button-hot" id="start-game-button" href="${escapeHtml(playHref)}">${customerId ? "INVITE BACK" : "START THE GAME"}</a>
-          <a class="button button-muted" href="/restaurant/?hub=1">View My Restaurant</a>
+          ${
+            showMyRestaurantButton
+              ? `<a class="button button-muted" href="/restaurant/?hub=1">View My Restaurant</a>`
+              : ""
+          }
           <button class="button button-muted" id="start-how-to-play-button" type="button">How to Play</button>
         </div>
       </div>
