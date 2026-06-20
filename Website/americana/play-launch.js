@@ -1291,7 +1291,10 @@
                 <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">You just earned ${escapeHtml(session.customer.name)}.</h3>
                 <p class="copy" style="margin: 0 0 12px;">Register a free virtual restaurant to save your customers, earn cash from future games, buy upgrades, and appear on the leaderboard. No email address required.</p>
                 <div class="button-row">
-                  <button class="button button-hot" id="register-now-button" type="button">Save My Progress</button>
+                  <button class="button button-hot result-save-progress-button" id="register-now-button" type="button">
+                    <span>Save My Progress</span>
+                    <small>No email required</small>
+                  </button>
                   <button class="button button-muted" id="guest-continue-button" type="button">Keep Playing as Guest</button>
                 </div>
               </div>

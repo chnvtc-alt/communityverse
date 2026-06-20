@@ -1233,6 +1233,19 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   box-shadow: 0 16px 34px rgba(53, 43, 27, 0.18);
 }
 
+.result-save-progress-button {
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.05;
+}
+
+.result-save-progress-button small {
+  font: inherit;
+  font-size: 0.74em;
+  font-weight: 800;
+  opacity: 0.86;
+}
+
 .button-dark {
   background: linear-gradient(135deg, var(--teal), var(--panel-strong));
   color: #fffdf8;
