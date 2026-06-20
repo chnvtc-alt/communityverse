@@ -1304,6 +1304,7 @@
                 <div class="hero-card result-followup-card result-followup-card-form" style="margin-top: 0; padding: 16px;">
                   <p class="kicker" style="margin: 0 0 6px;">Save Collection</p>
                   <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${escapeHtml(session.customer.name)} Has Joined Your Collection!</h3>
+                  <p class="copy result-save-mobile-note" style="margin: 0 0 14px;">Save now to keep your customers, trivia record, and leaderboard progress.</p>
                   <p class="copy" style="margin: 0 0 8px;">Save your collection to:</p>
                   <ul class="copy" style="margin: 0 0 16px; padding-left: 20px; line-height: 1.45;">
                     <li>Keep all customers you earn</li>

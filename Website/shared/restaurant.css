@@ -2787,6 +2787,10 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   display: none !important;
 }
 
+.result-save-mobile-note {
+  display: none;
+}
+
 .divider {
   height: 1px;
   background: rgba(93, 116, 105, 0.14);
@@ -4074,6 +4078,12 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
   .result-screen-guest-prompt .result-followup-card .copy {
     display: none;
+  }
+
+  body.result-screen-register-form #result-panel .result-followup-card .result-save-mobile-note {
+    display: block;
+    font-size: 0.82rem;
+    line-height: 1.28;
   }
 
   .result-screen-guest-prompt .result-followup-card .button-row {
