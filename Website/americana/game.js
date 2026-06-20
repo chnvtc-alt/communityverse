@@ -1302,8 +1302,15 @@
             : state.showProfileForm
               ? `
                 <div class="hero-card result-followup-card result-followup-card-form" style="margin-top: 0; padding: 16px;">
-                  <p class="kicker" style="margin: 0 0 6px;">Register</p>
-                  <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">Save your progress</h3>
+                  <p class="kicker" style="margin: 0 0 6px;">Save Collection</p>
+                  <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${escapeHtml(session.customer.name)} Has Joined Your Collection!</h3>
+                  <p class="copy" style="margin: 0 0 8px;">Save your collection to:</p>
+                  <ul class="copy" style="margin: 0 0 16px; padding-left: 20px; line-height: 1.45;">
+                    <li>Keep all customers you earn</li>
+                    <li>Track your trivia record</li>
+                    <li>Appear on the leaderboards</li>
+                    <li>Grow a virtual restaurant, optional</li>
+                  </ul>
                   <form class="input-grid" id="profile-form" style="margin-top: 8px;">
                     <div class="field">
                       <label class="field-label" for="player-name">Player name</label>
@@ -1322,7 +1329,7 @@
                     <p class="error hidden" id="profile-error" aria-live="polite"></p>
                     <p class="helper ${state.registrationMessage ? "" : "hidden"}" id="profile-success" aria-live="polite">${escapeHtml(state.registrationMessage)}</p>
                     <div class="form-actions">
-                      <button class="button button-hot" id="profile-submit-button" type="submit">Save Virtual Restaurant</button>
+                      <button class="button button-hot" id="profile-submit-button" type="submit">Save My Collection</button>
                       <button class="button button-muted" id="cancel-register-button" type="button">Maybe Later</button>
                     </div>
                   </form>
@@ -1416,7 +1423,7 @@
           error.textContent = "Your guest restaurant could not be found. Please play again.";
           error.classList.remove("hidden");
           submitButton.disabled = false;
-          submitButton.textContent = "Save Virtual Restaurant";
+          submitButton.textContent = "Save My Collection";
           return;
         }
 
@@ -1435,7 +1442,7 @@
           error.textContent = sendError instanceof Error ? sendError.message : "Unable to send the email link.";
           error.classList.remove("hidden");
           submitButton.disabled = false;
-          submitButton.textContent = "Save Virtual Restaurant";
+          submitButton.textContent = "Save My Collection";
         }
       });
     } else {
