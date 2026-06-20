@@ -908,7 +908,7 @@
             ${favoriteBonusMarkup}
             <div class="button-row customer-reveal-actions">
               <button class="button button-hot" id="begin-questions-button" type="button">Begin Questions</button>
-              <a class="button button-muted" href="/restaurant/?hub=1">View My Virtual Restaurant</a>
+              <a class="button button-muted" href="/restaurant/?hub=1">View My Collection / Leaderboard</a>
               <button class="button button-muted" id="reveal-how-to-play-button" type="button" data-how-to-play-button>How to Play</button>
             </div>
           </div>
