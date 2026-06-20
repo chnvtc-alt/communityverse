@@ -12,14 +12,9 @@
       description: "Restaurant Value plus cash on hand.",
     },
     {
-      value: "estimatedSales",
-      label: "Sales",
-      description: "Total sales from the customers each restaurant has earned.",
-    },
-    {
-      value: "restaurantValue",
-      label: "Value",
-      description: "Combines size, upgrades, loyalty, recent sales, and rating.",
+      value: "rating",
+      label: "Trivia %",
+      description: "Average trivia score after at least 5 games.",
     },
     {
       value: "collected",
@@ -27,14 +22,14 @@
       description: "Total customers collected, including regular and occasional customers.",
     },
     {
+      value: "estimatedSales",
+      label: "Sales",
+      description: "Total sales from the customers each restaurant has earned.",
+    },
+    {
       value: "gamesPlayed",
       label: "Games",
       description: "Total completed games played by each restaurant.",
-    },
-    {
-      value: "rating",
-      label: "Trivia %",
-      description: "Average trivia score after at least 5 games.",
     },
   ];
 
