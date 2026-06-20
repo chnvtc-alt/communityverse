@@ -148,8 +148,8 @@
               </select>
             </label>
             <label>
-              Character type
-              <input id="customer-filter-group" list="customer-group-options" placeholder="historical" />
+              Group name
+              <input id="customer-filter-group" list="customer-group-options" placeholder="exclusive" />
             </label>
             <label>
               Restaurant
@@ -166,7 +166,7 @@
           <h2>Customer photos</h2>
           <p>Upload JPGs at 512 x 512. The filename and current image path will be saved in Supabase.</p>
           <p>Use the editor to change names, bios, values, and the photo whenever you need to.</p>
-          <p><strong>Restaurant</strong> is usually <code>shared</code> or <code>americana</code>. <strong>Character type</strong> is what kind of customer they are.</p>
+          <p><strong>Restaurant</strong> is usually <code>shared</code> or a restaurant slug. <strong>Group name</strong> is the database category, such as <code>exclusive</code>, <code>historical</code>, or <code>communityverse</code>.</p>
         </section>
       </aside>
 
@@ -474,7 +474,7 @@
           <summary>Customer field guide</summary>
           <div class="field-guide-grid">
             <p><strong>Customer name:</strong> The name players will see after winning this customer.</p>
-            <p><strong>Character type:</strong> A simple category for organizing customers, like local, historical, story, celebrity, or staff.</p>
+            <p><strong>Group name:</strong> The database category for organizing customers, like exclusive, historical, storybook, communityverse, or staff.</p>
             <p><strong>Rarity / difficulty:</strong> Common appears most often and is easiest to win. Uncommon is in the middle. Rare appears less often and needs a better score.</p>
             <p><strong>Regular value:</strong> Use ranges so customers still feel individual. Common $75-$125, Uncommon $125-$200, Rare $200-$350.</p>
             <p><strong>Occasional value:</strong> Use a smaller amount for partial wins. Common $20-$40, Uncommon $40-$70, Rare $70-$125.</p>
@@ -494,8 +494,8 @@
             <input id="customer-name" required />
           </label>
           <label>
-            Character type
-            <input id="customer-group" list="customer-group-options" placeholder="historical" />
+            Group name
+            <input id="customer-group" list="customer-group-options" placeholder="exclusive" />
           </label>
           <label>
             Rarity / difficulty
