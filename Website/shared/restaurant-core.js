@@ -3969,7 +3969,7 @@
     const challengingCustomer = customer.characterType === "historical" || customer.characterType === "storybook";
     const customerQuestionCount = isAmericanaDemo ? 0 : challengingCustomer ? 3 : 1;
     const focusQuestionCount = isAmericanaDemo ? 0 : challengingCustomer ? 0 : 1;
-    const areaQuestionCount = isAmericanaDemo ? 1 : Math.min(2, pools.areaQuestions.length);
+    const areaQuestionCount = isAmericanaDemo ? 1 : Math.min(1, pools.areaQuestions.length);
     const globalQuestionCount = isAmericanaDemo ? 8 : challengingCustomer ? 3 - areaQuestionCount : 4 - areaQuestionCount;
     const globalQuestionPool = isAmericanaDemo
       ? pools.globalQuestions.filter(isGeneralTriviaQuestion)
