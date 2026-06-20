@@ -1292,7 +1292,7 @@
                 <p class="copy" style="margin: 0 0 12px;">Save your collection to keep customers, track your trivia progress, and compete on the leaderboards.</p>
                 <div class="button-row">
                   <button class="button button-hot result-save-progress-button" id="register-now-button" type="button">
-                    <span>Save My Progress</span>
+                    <span>Save My Customer Collection</span>
                     <small>No email required</small>
                   </button>
                   <button class="button button-muted" id="guest-continue-button" type="button">Keep Playing as Guest</button>
