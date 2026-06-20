@@ -1309,7 +1309,7 @@
                     <li>Keep all customers you earn</li>
                     <li>Track your trivia record</li>
                     <li>Appear on the leaderboards</li>
-                    <li>Grow a virtual restaurant, optional</li>
+                    <li>Grow a virtual restaurant if you want</li>
                   </ul>
                   <form class="input-grid" id="profile-form" style="margin-top: 8px;">
                     <div class="field">
