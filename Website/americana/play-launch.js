@@ -1347,8 +1347,8 @@
                   <form class="input-grid" id="profile-form" style="margin-top: 8px;">
                     <div class="field">
                       <label class="field-label save-restaurant-label" for="restaurant-name">Name Your Virtual Restaurant</label>
-                      <p class="helper save-restaurant-helper">This is how you will appear on the leaderboards. Make it yours, or keep our suggestion.</p>
-                      <input class="input" id="restaurant-name" name="restaurantName" type="text" placeholder="Tim's Roadhouse" value="${escapeHtml(profile ? profile.restaurantName : "")}" />
+                      <p class="helper save-restaurant-helper">This is how you will appear on the leaderboards. Make it yours by replacing "${escapeHtml(profile ? profile.restaurantName : "our suggestion")}", or keep that as your restaurant name.</p>
+                      <input class="input save-restaurant-input" id="restaurant-name" name="restaurantName" type="text" placeholder="Tim's Roadhouse" value="${escapeHtml(profile ? profile.restaurantName : "")}" data-suggested-name="${escapeHtml(profile ? profile.restaurantName : "")}" />
                     </div>
                     <div class="field">
                       <label class="field-label" for="player-name">Player name</label>
@@ -1415,10 +1415,17 @@
       const error = document.getElementById("profile-error");
       const cancel = document.getElementById("cancel-register-button");
       const emailInfoToggle = document.getElementById("email-info-toggle");
+      const restaurantInput = document.getElementById("restaurant-name");
 
       cancel.addEventListener("click", () => {
         state.showProfileForm = false;
         renderAll();
+      });
+
+      restaurantInput.addEventListener("focus", () => {
+        if (restaurantInput.value === restaurantInput.dataset.suggestedName) {
+          restaurantInput.select();
+        }
       });
 
       emailInfoToggle.addEventListener("click", () => {
