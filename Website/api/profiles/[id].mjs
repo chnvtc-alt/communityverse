@@ -3,6 +3,7 @@ import {
   getProfileAccessToken,
   hashProfileAccessToken,
   profileTokenMatches,
+  preserveNewerRestaurantName,
   sanitizeProfile,
   storeProfile,
 } from "../_lib/profile-security.mjs";
@@ -81,7 +82,7 @@ export async function PUT(request) {
       : {
           profileAccessTokenHash: hashProfileAccessToken(token),
         };
-    return jsonResponse(await storeProfile({ ...body, id }, privateFields));
+    return jsonResponse(await storeProfile(preserveNewerRestaurantName(existing, { ...body, id }), privateFields));
   } catch (error) {
     return jsonResponse(
       { ok: false, error: error instanceof Error ? error.message : String(error) },

@@ -90,6 +90,28 @@ export async function storeProfile(profile, privateFields = {}) {
   return sanitizeProfile(payload.payload_json);
 }
 
+export function preserveNewerRestaurantName(existingProfile, incomingProfile) {
+  if (!existingProfile) {
+    return incomingProfile;
+  }
+
+  const existingNameTime = Date.parse(existingProfile.restaurantNameUpdatedAt || "") || 0;
+  const incomingNameTime = Date.parse(incomingProfile?.restaurantNameUpdatedAt || "") || 0;
+  const existingName = String(existingProfile.restaurantName || "").trim();
+  const incomingName = String(incomingProfile?.restaurantName || "").trim();
+
+  if (existingNameTime && existingNameTime > incomingNameTime && existingName && existingName !== incomingName) {
+    return {
+      ...incomingProfile,
+      restaurantName: existingProfile.restaurantName,
+      restaurantSlug: existingProfile.restaurantSlug,
+      restaurantNameUpdatedAt: existingProfile.restaurantNameUpdatedAt,
+    };
+  }
+
+  return incomingProfile;
+}
+
 function stateSecret() {
   const { serviceRoleKey } = getSupabaseConfig();
   return serviceRoleKey;

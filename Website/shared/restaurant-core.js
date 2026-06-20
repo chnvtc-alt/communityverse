@@ -2117,13 +2117,26 @@
     }
 
     const token = ensureProfileAccessToken(activeProfile.id);
-    await requestJson(`/profiles/${encodeURIComponent(activeProfile.id)}`, {
+    const syncedProfile = await requestJson(`/profiles/${encodeURIComponent(activeProfile.id)}`, {
       method: "PUT",
       headers: {
         "X-Profile-Token": token,
       },
       body: JSON.stringify(activeProfile),
     });
+    if (syncedProfile?.id) {
+      const safeSyncedProfile = ensureProfileShape(syncedProfile);
+      const mergedProfiles = normalizeProfiles(profilesCacheState.profiles).map((profile) =>
+        profile.id === safeSyncedProfile.id ? safeSyncedProfile : profile
+      );
+      setProfilesCache(mergedProfiles, profilesCacheState.source);
+      activeProfileState.profile = safeSyncedProfile;
+      try {
+        writeJson(STORAGE_KEYS.profiles, mergedProfiles);
+      } catch (error) {
+        // Keep the server-corrected profile in memory even if browser storage is unavailable.
+      }
+    }
   }
 
   async function syncSessionToServer(session) {
@@ -3202,12 +3215,14 @@
   }
 
   function createProfile(playerName, restaurantName) {
+    const timestamp = nowIso();
     const profile = {
       id: makeId("player"),
       playerName: String(playerName || "").trim(),
       restaurantName: String(restaurantName || "").trim(),
       restaurantSlug: slugify(restaurantName || ""),
-      createdAt: nowIso(),
+      restaurantNameUpdatedAt: timestamp,
+      createdAt: timestamp,
       lastPlayedAt: null,
       isGuest: false,
       stats: buildEmptyStats(),
@@ -3227,12 +3242,14 @@
 
   function createGuestProfile() {
     const restaurantName = generateGuestRestaurantName();
+    const timestamp = nowIso();
     const profile = {
       id: makeId("guest"),
       playerName: "Guest Player",
       restaurantName,
       restaurantSlug: slugify(restaurantName),
-      createdAt: nowIso(),
+      restaurantNameUpdatedAt: timestamp,
+      createdAt: timestamp,
       lastPlayedAt: null,
       isGuest: true,
       stats: buildEmptyStats(),

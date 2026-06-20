@@ -204,6 +204,7 @@ export function normalizeProfile(profile) {
   safeProfile.playerName = String(safeProfile.playerName || "").trim();
   safeProfile.restaurantName = String(safeProfile.restaurantName || "").trim();
   safeProfile.restaurantSlug = String(safeProfile.restaurantSlug || "").trim();
+  safeProfile.restaurantNameUpdatedAt = String(safeProfile.restaurantNameUpdatedAt || "").trim();
   safeProfile.createdAt = String(safeProfile.createdAt || "");
   safeProfile.updatedAt = String(safeProfile.updatedAt || "");
   safeProfile.lastPlayedAt = String(safeProfile.lastPlayedAt || "");

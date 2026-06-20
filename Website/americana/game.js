@@ -590,6 +590,7 @@
           ...existingProfile,
           restaurantName,
           restaurantSlug: core.slugify(restaurantName),
+          restaurantNameUpdatedAt: new Date().toISOString(),
         });
         if (updatedProfile) {
           core.setActiveProfileId(updatedProfile.id);
@@ -1471,6 +1472,7 @@
             playerName,
             restaurantName,
             restaurantSlug: core.slugify(restaurantName),
+            restaurantNameUpdatedAt: new Date().toISOString(),
             isGuest: false,
           });
           core.setActiveProfileId(activeProfile.id);

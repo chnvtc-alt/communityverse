@@ -1343,6 +1343,7 @@
           ...profile,
           restaurantName,
           restaurantSlug: core.slugify(restaurantName),
+          restaurantNameUpdatedAt: new Date().toISOString(),
         });
         state.profileEditMode = false;
         renderHero();

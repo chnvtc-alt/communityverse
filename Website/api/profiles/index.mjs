@@ -7,6 +7,7 @@ import {
   getProfileAccessToken,
   hashProfileAccessToken,
   profileTokenMatches,
+  preserveNewerRestaurantName,
   readClaimState,
   sanitizeProfile,
   storeProfile,
@@ -245,7 +246,7 @@ export async function POST(request) {
       : {
           profileAccessTokenHash: hashProfileAccessToken(token),
         };
-    return jsonResponse(await storeProfile(body, privateFields), existing ? 200 : 201);
+    return jsonResponse(await storeProfile(preserveNewerRestaurantName(existing, body), privateFields), existing ? 200 : 201);
   } catch (error) {
     return jsonResponse(
       { ok: false, error: error instanceof Error ? error.message : String(error) },

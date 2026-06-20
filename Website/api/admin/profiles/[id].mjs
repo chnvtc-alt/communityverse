@@ -53,6 +53,7 @@ export async function PUT(request) {
         ...existing,
         restaurantName,
         restaurantSlug: slugify(restaurantName),
+        restaurantNameUpdatedAt: new Date().toISOString(),
       },
       {
         profileAccessTokenHash: existing.profileAccessTokenHash,
