@@ -33,6 +33,18 @@
     },
   ];
 
+  function getInitialMobileTab() {
+    if (window.location.hash === "#collection-panel") {
+      return "collection";
+    }
+
+    if (window.location.hash === "#leaderboard-panel") {
+      return "leaderboard";
+    }
+
+    return "overview";
+  }
+
   const state = {
     metric: "netWorth",
     leaderboardScope: "overall",
@@ -43,7 +55,7 @@
     inviteBackCustomerId: "",
     selectedCustomerId: "",
     selectedCustomerBioExpanded: false,
-    activeMobileTab: "overview",
+    activeMobileTab: getInitialMobileTab(),
     showSignIn: query.get("signin") === "1" || authCallbackMode,
     showConnectEmail: query.get("connect") === "1",
     connectInfoExpanded: false,
@@ -162,6 +174,17 @@
 
     tabs.querySelectorAll("[data-hub-tab]").forEach((button) => {
       button.addEventListener("click", () => {
+        if (!hubMode) {
+          const destination =
+            button.dataset.hubTab === "collection"
+              ? "/restaurant/?hub=1#collection-panel"
+              : button.dataset.hubTab === "leaderboard"
+                ? "/restaurant/?hub=1#leaderboard-panel"
+                : "/restaurant/?hub=1#hero-panel";
+          window.location.href = destination;
+          return;
+        }
+
         state.activeMobileTab = button.dataset.hubTab;
         renderAll();
         if (!isMobileHub()) {

@@ -3089,6 +3089,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     width: 100%;
   }
 
+  #splash-my-restaurant-button,
   #splash-leaderboard-button {
     display: none;
   }
