@@ -1067,6 +1067,7 @@
             <span class="chip hero-stat-chip">${bestRankLabel}</span>
           </div>
           <p class="hero-profile-rating-note">Your rating is based on your trivia accuracy.</p>
+          <p class="hero-profile-rating-note">Cash, sales, customer values, and net worth are virtual game values with no real cash value.</p>
           ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
           ${renderExpansionPreviewMarkup(profile, safeSummary.stats)}
           ${renderUpgradePreviewMarkup(profile, safeSummary.stats)}
@@ -1104,6 +1105,7 @@
                           <span>${safeSummary.stats.gamesPlayed} plays</span>
                         </p>
                         <p class="hero-profile-rating-note">Your rating is based on your trivia accuracy.</p>
+                        <p class="hero-profile-rating-note">Cash, sales, customer values, and net worth are virtual game values with no real cash value.</p>
                         ${
                           latestCustomerName
                             ? `<p class="hero-profile-detailline hero-profile-detailline-compact">Latest customer: <strong>${escapeHtml(latestCustomerName)}</strong></p>`
@@ -1167,6 +1169,7 @@
                         <span>${safeSummary.stats.gamesPlayed} plays</span>
                       </p>
                       <p class="hero-profile-rating-note">Your rating is based on your trivia accuracy.</p>
+                      <p class="hero-profile-rating-note">Cash, sales, customer values, and net worth are virtual game values with no real cash value.</p>
                       ${
                         latestCustomerName && !compactMobile
                           ? `<p class="hero-profile-detailline">Latest customer: <strong>${escapeHtml(latestCustomerName)}</strong></p>`

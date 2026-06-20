@@ -241,6 +241,17 @@
               <p>Customers increase your restaurant's value and generate sales.</p>
               <p>You can expand from a Food Truck into a Local Landmark by earning customers, saving cash, and purchasing upgrades.</p>
             </section>
+            <section class="how-to-play-topic">
+              <h3>VIRTUAL GAME VALUES</h3>
+              <p>All cash, sales, customer values, and net worth figures are virtual game values used for gameplay and leaderboards.</p>
+              <p>They have no real cash value.</p>
+            </section>
+            <section class="how-to-play-topic">
+              <h3>DO I WIN REAL PRIZES?</h3>
+              <p>Restaurant Challenge is primarily a trivia and customer collection game.</p>
+              <p>Most restaurants do not currently offer prizes.</p>
+              <p>Some restaurants may choose to offer promotions, discounts, contests, or giveaways in the future.</p>
+            </section>
             <section class="how-to-play-topic how-to-play-topic-wide">
               <h3>PLAY YOUR WAY</h3>
               <p>Some players enjoy Restaurant Challenge simply as a quick trivia game.</p>
