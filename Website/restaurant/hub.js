@@ -914,6 +914,23 @@
     return null;
   }
 
+  function getCustomerInviteBackHref(entry, fallbackRestaurant = null) {
+    const credits =
+      entry?.restaurantCredits && typeof entry.restaurantCredits === "object" && !Array.isArray(entry.restaurantCredits)
+        ? entry.restaurantCredits
+        : {};
+    const creditSlugs = Object.keys(credits).filter(Boolean);
+    const fallbackSlug = String(fallbackRestaurant?.slug || "").trim();
+    const restaurantSlug =
+      (fallbackSlug && creditSlugs.includes(fallbackSlug) ? fallbackSlug : "") ||
+      String(entry?.restaurantSlug || "").trim() ||
+      creditSlugs[0] ||
+      fallbackSlug ||
+      "americana";
+
+    return `/${encodeURIComponent(restaurantSlug)}/?customerId=${encodeURIComponent(entry?.customerId || "")}`;
+  }
+
   function renderCustomerCollectionCompleteMarkup(profile, restaurant) {
     if (!profile || !restaurant?.slug || !core.getCustomersForRestaurant) {
       return "";
@@ -1792,6 +1809,10 @@
         : selectedCustomer?.status === "regular"
           ? `<p class="customer-favorite-progress">Favorite Progress: ${selectedFavoriteVisits} / ${favoriteGoal} successful visits</p>`
           : "";
+    const selectedDirectoryRestaurant = getSelectedDirectoryRestaurant(profile);
+    const selectedInviteBackHref = selectedCustomer
+      ? getCustomerInviteBackHref(selectedCustomer, selectedDirectoryRestaurant)
+      : "";
       elements.collection.innerHTML = `
       <h2 class="section-title">Customer Collection</h2>
       <p class="copy">Your collected customers are stored here. Tap a card to view it or bring that customer back.</p>
@@ -1825,7 +1846,7 @@
                   <div class="collection-selected-mobile-actions">
                     <span class="collection-selected-value">${core.formatCurrency(selectedValue)}</span>
                     <span class="chip collection-selected-rarity-chip">${selectedCustomer.rarity}</span>
-                    <a class="button button-primary" id="selected-invite-back-button" href="/americana/?customerId=${encodeURIComponent(selectedCustomer.customerId)}">Invite Back</a>
+                    <a class="button button-primary" id="selected-invite-back-button" href="${selectedInviteBackHref}">Invite Back</a>
                   </div>
                 </div>
               </div>
@@ -1854,7 +1875,7 @@
                   <span class="chip">${core.formatCurrency(selectedValue)}</span>
                 </div>
                 <div class="button-row" style="margin-top: 10px;">
-                  <a class="button button-primary" id="selected-invite-back-button" href="/americana/?customerId=${encodeURIComponent(selectedCustomer.customerId)}">Invite Back</a>
+                  <a class="button button-primary" id="selected-invite-back-button" href="${selectedInviteBackHref}">Invite Back</a>
                 </div>
               </div>
             `
@@ -1894,14 +1915,16 @@
                         : entry.status === "regular"
                           ? "customer-mini-card-regular"
                           : "customer-mini-card-occasional";
+                    const isSelected = Boolean(selectedCustomer && selectedCustomer.customerId === entry.customerId);
                     return `
-                    <button class="customer-mini-card ${statusClass} ${selectedCustomer && selectedCustomer.customerId === entry.customerId ? "customer-mini-card-selected" : ""}" type="button" data-customer-id="${escapeHtml(entry.customerId)}">
+                    <button class="customer-mini-card ${statusClass} ${isSelected ? "customer-mini-card-selected" : ""}" type="button" data-customer-id="${escapeHtml(entry.customerId)}" aria-pressed="${isSelected ? "true" : "false"}">
                       <div class="customer-mini-summary">
                         <img class="customer-avatar customer-avatar-compact" src="${image}" alt="${escapeHtml(entry.customerName)}" onerror="this.onerror=null;this.src='../assets/restaurant-challenge/customers/customer-placeholder.svg';" />
                         <div class="customer-mini-copy">
                           <p class="customer-name">${escapeHtml(entry.customerName)}</p>
                           <p class="customer-meta">${escapeHtml(entryStatusLabel)}</p>
                         </div>
+                        ${isSelected ? `<span class="customer-mini-selected-label">Selected</span>` : ""}
                         ${entryProgress ? `<p class="customer-favorite-progress customer-favorite-progress-mini">${escapeHtml(entryProgress)}</p>` : ""}
                       </div>
                     </button>

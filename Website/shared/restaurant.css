@@ -1902,8 +1902,27 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 }
 
 .customer-mini-card-selected {
-  border-color: rgba(213, 138, 43, 0.28);
-  box-shadow: inset 0 0 0 1px rgba(213, 138, 43, 0.08);
+  border-color: rgba(213, 138, 43, 0.72);
+  background:
+    linear-gradient(135deg, rgba(255, 244, 214, 0.96), rgba(255, 255, 255, 0.9)),
+    rgba(255, 255, 255, 0.9);
+  box-shadow:
+    inset 0 0 0 2px rgba(213, 138, 43, 0.24),
+    0 10px 24px rgba(213, 138, 43, 0.12);
+}
+
+.customer-mini-selected-label {
+  justify-self: start;
+  grid-column: 1 / -1;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: #ffffff;
+  font-family: Arial, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 .collection-selected-card {
