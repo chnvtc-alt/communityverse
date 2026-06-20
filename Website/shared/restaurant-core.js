@@ -2203,6 +2203,23 @@
     return shuffle(items).slice(0, count);
   }
 
+  function pickManyPreferUnseen(items, count, usedIds, seenIds) {
+    const available = items.filter((item) => item && !usedIds.has(item.id));
+    const unseen = available.filter((item) => !seenIds.has(item.id));
+    const selected = pickMany(unseen, count);
+    if (selected.length >= count) {
+      return selected;
+    }
+
+    const selectedIds = new Set(selected.map((item) => item.id));
+    return selected.concat(
+      pickMany(
+        available.filter((item) => !selectedIds.has(item.id)),
+        count - selected.length
+      )
+    );
+  }
+
   function pickOne(items) {
     if (!items.length) {
       return null;
@@ -2845,6 +2862,9 @@
       : [];
     safeProfile.recentSessions = Array.isArray(safeProfile.recentSessions)
       ? safeProfile.recentSessions
+      : [];
+    safeProfile.seenQuestionIds = Array.isArray(safeProfile.seenQuestionIds)
+      ? [...new Set(safeProfile.seenQuestionIds.map((id) => String(id || "").trim()).filter(Boolean))]
       : [];
     safeProfile.baseRestaurantSlug = normalizeRestaurant(safeProfile.baseRestaurantSlug || "");
     safeProfile.baseRestaurantName = String(safeProfile.baseRestaurantName || "").trim();
@@ -3919,6 +3939,11 @@
     const pools = getQuestionPoolForSession(restaurant, customer);
     const chosen = Array(10).fill(null);
     const usedIds = new Set();
+    const seenIds = new Set(
+      Array.isArray(profile?.seenQuestionIds)
+        ? profile.seenQuestionIds.map((id) => String(id || "").trim()).filter(Boolean)
+        : []
+    );
     const isAmericanaDemo = restaurant.slug === "americana";
     const restaurantSlots = isAmericanaDemo ? [3] : [0, 5];
     const openerSlots = [0];
@@ -3935,14 +3960,15 @@
       restaurantSelection.push(restaurantImageQuestion);
     }
 
-    pickMany(
+    pickManyPreferUnseen(
       restaurantQuestions.filter(
         (question) =>
-          !usedIds.has(question.id) &&
           (!restaurantImageQuestion || question.id !== restaurantImageQuestion.id) &&
           !(question.image || question.imagePrompt)
       ),
-      restaurantSlots.length - restaurantSelection.length
+      restaurantSlots.length - restaurantSelection.length,
+      usedIds,
+      seenIds
     ).forEach((question) => {
       restaurantSelection.push(question);
     });
@@ -3953,11 +3979,13 @@
     });
 
     if (isAmericanaDemo) {
-      const openerQuestion = pickMany(
+      const openerQuestion = pickManyPreferUnseen(
         pools.globalQuestions.filter(
           (question) => isGeneralTriviaQuestion(question) && !usedIds.has(question.id)
         ),
-        1
+        1,
+        usedIds,
+        seenIds
       )[0];
 
       if (openerQuestion) {
@@ -3988,8 +4016,7 @@
     let remainingIndex = 0;
 
     buckets.forEach((bucket) => {
-      const available = bucket.pool.filter((question) => !usedIds.has(question.id));
-      pickMany(available, bucket.count).forEach((question) => {
+      pickManyPreferUnseen(bucket.pool, bucket.count, usedIds, seenIds).forEach((question) => {
         if (remainingIndex >= remainingSlots.length) {
           return;
         }
@@ -4002,10 +4029,14 @@
     if (remainingIndex < remainingSlots.length) {
       const fallbackPool = questions.filter(
         (question) =>
-          !usedIds.has(question.id) &&
           isQuestionAllowedForRestaurant(question, restaurant)
       );
-      pickMany(fallbackPool, remainingSlots.length - remainingIndex).forEach((question) => {
+      pickManyPreferUnseen(
+        fallbackPool,
+        remainingSlots.length - remainingIndex,
+        usedIds,
+        seenIds
+      ).forEach((question) => {
         if (remainingIndex >= remainingSlots.length) {
           return;
         }
@@ -4262,6 +4293,13 @@
       overallStats.lostCustomers = 0;
       overallStats.totalCustomerValue = 0;
       overallStats.estimatedSales = 0;
+
+      nextProfile.seenQuestionIds = [
+        ...new Set([
+          ...(Array.isArray(nextProfile.seenQuestionIds) ? nextProfile.seenQuestionIds : []),
+          ...session.questions.map((question) => String(question?.id || "").trim()).filter(Boolean),
+        ]),
+      ];
 
       nextProfile.lastPlayedAt = nowIso();
       if (!String(nextProfile.baseRestaurantSlug || "").trim()) {
