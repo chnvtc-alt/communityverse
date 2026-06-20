@@ -175,53 +175,76 @@
         >
           <button class="how-to-play-close" type="button" data-how-to-play-close aria-label="Close How to Play">Close</button>
           <p class="kicker">Restaurant Challenge</p>
-          <h2 class="section-title" id="how-to-play-title">How to Play</h2>
+          <h2 class="section-title" id="how-to-play-title">HOW TO PLAY</h2>
           <p class="copy" id="how-to-play-summary">
-            Restaurant Challenge is a quick 10-question trivia game. Answer questions, earn customers for your restaurant, improve your rating, and compete on the leaderboard.
+            Restaurant Challenge is a quick 10-question trivia game. Play in about 3 minutes, earn collectible customers, improve your trivia score, and compete on the leaderboards.
           </p>
           <div class="how-to-play-topics">
             <section class="how-to-play-topic how-to-play-topic-wide">
-              <h3>The Quick Version</h3>
-              <p>
-                Choose a restaurant, answer 10 trivia questions, see how well you scored, and try to earn a customer for your own restaurant.
-              </p>
-              <p>
-                You can enjoy the game just for the trivia, or you can build your restaurant and compete against other players.
-              </p>
+              <h3>THE QUICK VERSION</h3>
+              <ul>
+                <li>Answer 10 trivia questions.</li>
+                <li>Earn a customer for your collection.</li>
+                <li>Save your progress to keep customers and track your scores.</li>
+                <li>Climb the trivia and net worth leaderboards.</li>
+                <li>Optionally, build and grow a virtual restaurant.</li>
+              </ul>
+              <p>You can enjoy Restaurant Challenge simply as a trivia game, or you can explore the restaurant-building features later.</p>
             </section>
             <section class="how-to-play-topic">
-              <h3>Step 1: Choose a Restaurant</h3>
-              <p>Before each game, choose a restaurant to play. Each game has 10 questions.</p>
-              <p>Questions may include general trivia, questions about the restaurant, and questions about the local area.</p>
+              <h3>STEP 1: PLAY TRIVIA</h3>
+              <p>Choose a restaurant game and answer 10 trivia questions.</p>
+              <p>Questions may include:</p>
+              <ul>
+                <li>General trivia</li>
+                <li>Questions about the restaurant</li>
+                <li>Local community trivia</li>
+                <li>State and national trivia</li>
+              </ul>
+              <p>Most games take about 3 minutes to complete.</p>
             </section>
             <section class="how-to-play-topic">
-              <h3>Step 2: Earn Customers</h3>
-              <p>Before the quiz begins, you will meet the customer you are playing for.</p>
-              <p>
-                If you meet the higher target, they become a Regular Customer. If you meet the lower target, they become an Occasional Customer. If your score is too low, they do not visit your restaurant.
-              </p>
+              <h3>STEP 2: EARN CUSTOMERS</h3>
+              <p>Before each game begins, you will see the customer you are playing for.</p>
+              <p>The better your score, the more likely that customer is to join your collection.</p>
+              <p>Some customers are more valuable than others.</p>
+              <p>Customers increase your collection, sales, and future restaurant value.</p>
             </section>
             <section class="how-to-play-topic">
-              <h3>Step 3: Build Your Restaurant</h3>
-              <p>Every customer you earn helps your restaurant grow. Some customers are worth more than others.</p>
-              <p>You can invite Occasional Customers back and try to turn them into Regular Customers.</p>
-              <p>After 10 successful visits, a Regular Customer becomes a Favorite Customer and becomes even more valuable.</p>
+              <h3>STEP 3: SAVE YOUR COLLECTION</h3>
+              <p>When you earn customers, you can save your collection and continue building it over time.</p>
+              <p>Saving your progress allows you to:</p>
+              <ul>
+                <li>Keep customers you earn</li>
+                <li>Track your trivia scores</li>
+                <li>Appear on the leaderboards</li>
+                <li>Continue your collection on future visits</li>
+              </ul>
+              <p>An email address is optional.</p>
             </section>
             <section class="how-to-play-topic">
-              <h3>Step 4: Improve Your Rating</h3>
-              <p>Your restaurant has a rating from 0 to 5 stars. The rating is based on your average trivia score.</p>
-              <p>For example, averaging 10 correct answers is 5.0 stars. Averaging 8 correct answers is 4.0 stars. Averaging 6 correct answers is 3.0 stars.</p>
+              <h3>STEP 4: IMPROVE YOUR TRIVIA RANKING</h3>
+              <p>Your Trivia Percentage is based on your average trivia score across multiple games.</p>
+              <p>The Trivia Leaderboard shows the highest average scores.</p>
+              <p>Examples:</p>
+              <ul>
+                <li>10 correct answers = 100%</li>
+                <li>8 correct answers = 80%</li>
+                <li>6 correct answers = 60%</li>
+              </ul>
+              <p>A minimum of 5 games played is required before appearing on the Trivia % leaderboard.</p>
             </section>
             <section class="how-to-play-topic">
-              <h3>Step 5: Climb the Leaderboard</h3>
-              <p>The leaderboard compares your restaurant to other players by rating, customers, sales, games played, and other progress.</p>
-              <p>Sales are the combined value of all customers you have earned.</p>
+              <h3>STEP 5: BUILD A VIRTUAL RESTAURANT (OPTIONAL)</h3>
+              <p>Many players enjoy collecting customers and competing on the trivia leaderboard.</p>
+              <p>Others choose to build a virtual restaurant.</p>
+              <p>Customers increase your restaurant's value and generate sales.</p>
+              <p>You can expand from a Food Truck into a Local Landmark by earning customers, saving cash, and purchasing upgrades.</p>
             </section>
             <section class="how-to-play-topic how-to-play-topic-wide">
-              <h3>Play Your Way</h3>
-              <p>
-                Some players enjoy Restaurant Challenge simply as a quick trivia game. Others enjoy building their restaurant, collecting customers, improving their rating, and competing on the leaderboard.
-              </p>
+              <h3>PLAY YOUR WAY</h3>
+              <p>Some players enjoy Restaurant Challenge simply as a quick trivia game.</p>
+              <p>Others enjoy collecting customers, competing on the trivia leaderboard, and building a virtual restaurant.</p>
               <p>Both ways are correct.</p>
             </section>
           </div>

@@ -442,6 +442,19 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   line-height: 1.45;
 }
 
+.how-to-play-topic ul {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.how-to-play-topic li + li {
+  margin-top: 2px;
+}
+
 .how-to-play-return {
   justify-self: center;
   min-width: min(100%, 260px);
@@ -3114,7 +3127,8 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     padding: 12px;
   }
 
-  .how-to-play-topic p {
+  .how-to-play-topic p,
+  .how-to-play-topic ul {
     font-size: 0.9rem;
   }
 
