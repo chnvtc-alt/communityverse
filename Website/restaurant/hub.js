@@ -893,6 +893,57 @@
     `;
   }
 
+  function getRestaurantCreditForEntry(entry, restaurantSlug) {
+    if (!entry || !restaurantSlug) {
+      return null;
+    }
+
+    const credits =
+      entry.restaurantCredits && typeof entry.restaurantCredits === "object" && !Array.isArray(entry.restaurantCredits)
+        ? entry.restaurantCredits
+        : {};
+
+    if (credits[restaurantSlug]) {
+      return credits[restaurantSlug];
+    }
+
+    if (entry.restaurantSlug === restaurantSlug && entry.status && entry.status !== "lost") {
+      return entry;
+    }
+
+    return null;
+  }
+
+  function renderCustomerCollectionCompleteMarkup(profile, restaurant) {
+    if (!profile || !restaurant?.slug || !core.getCustomersForRestaurant) {
+      return "";
+    }
+
+    const availableCustomers = core.getCustomersForRestaurant(restaurant.slug);
+    if (!availableCustomers.length) {
+      return "";
+    }
+
+    const collection = Array.isArray(profile.customerCollection) ? profile.customerCollection : [];
+    const collectedIds = new Set(
+      collection
+        .filter((entry) => getRestaurantCreditForEntry(entry, restaurant.slug))
+        .map((entry) => entry.customerId)
+        .filter(Boolean)
+    );
+
+    if (collectedIds.size < availableCustomers.length) {
+      return "";
+    }
+
+    return `
+      <div class="restaurant-complete-note">
+        <strong>You collected every customer currently available in ${escapeHtml(restaurant.name)}.</strong>
+        <span>Keep playing here to improve trivia, build Favorites, earn sales, and grow your virtual restaurant. You can also try another Restaurant Challenge when you're ready.</span>
+      </div>
+    `;
+  }
+
   function renderExpansionPreviewMarkup(profile, stats = null) {
     if (!profile || !core.getRestaurantExpansionPreview) {
       return "";
@@ -908,8 +959,12 @@
     const nextCost = Math.max(0, Number(preview.next?.cost) || 0);
     const canBuyNext = Boolean(preview.next && core.buyNextRestaurantExpansion && cashOnHand >= nextCost);
     const shortfall = preview.next ? Math.max(0, nextCost - cashOnHand) : 0;
+    const cashNote = cashOnHand > 0
+      ? `You have ${core.formatCurrency(cashOnHand)} cash on hand. You can use it to expand your virtual restaurant or buy upgrades.`
+      : `Cash on hand: ${core.formatCurrency(0)}. Earn more customers to unlock expansions and upgrades.`;
 
     return `
+      <p class="restaurant-cash-note">${escapeHtml(cashNote)}</p>
       <div class="restaurant-expansion-preview" aria-label="Restaurant expansion preview">
         <div>
           <span class="restaurant-expansion-label">Current size</span>
@@ -1044,6 +1099,7 @@
       : safeSummary.stats.estimatedSales || 0;
     const bestRankLabel = overallRank ? `🏆 Best Rank #${overallRank}` : "🏆 Best Rank --";
     const selectedDirectoryRestaurant = getSelectedDirectoryRestaurant(profile);
+    const customerCompleteMarkup = renderCustomerCollectionCompleteMarkup(profile, selectedDirectoryRestaurant);
     const baseRestaurantSlug = String(profile?.baseRestaurantSlug || "").trim();
     const recentRestaurantSlug = String(profile?.recentSessions?.[0]?.restaurantSlug || "").trim();
     const playAgainTarget = getPlayAgainTarget(profile);
@@ -1128,6 +1184,7 @@
                       <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
                       <span class="chip hero-stat-chip">${bestRankLabel}</span>
                     </div>
+                    ${customerCompleteMarkup}
                     ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
                     ${renderExpansionPreviewMarkup(profile, safeSummary.stats)}
                     ${renderUpgradePreviewMarkup(profile, safeSummary.stats)}
@@ -1192,6 +1249,7 @@
                     <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
                     <span class="chip hero-stat-chip">${bestRankLabel}</span>
                   </div>
+                  ${customerCompleteMarkup}
                   ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
                   ${renderExpansionPreviewMarkup(profile, safeSummary.stats)}
                   ${renderUpgradePreviewMarkup(profile, safeSummary.stats)}

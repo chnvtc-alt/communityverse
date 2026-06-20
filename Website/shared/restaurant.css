@@ -743,6 +743,28 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   margin-top: 2px;
 }
 
+.restaurant-complete-note {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  margin-top: 4px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(47, 111, 82, 0.28);
+  border-left: 5px solid var(--green);
+  background: rgba(47, 111, 82, 0.11);
+  box-shadow: 0 8px 18px rgba(39, 55, 44, 0.08);
+  font-family: Arial, sans-serif;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.35;
+}
+
+.restaurant-complete-note strong {
+  color: var(--green);
+  font-size: 0.98rem;
+}
+
 .restaurant-value-breakdown {
   width: 100%;
   display: grid;
@@ -831,6 +853,20 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   border-radius: 16px;
   background: rgba(213, 138, 43, 0.08);
   border: 1px solid rgba(213, 138, 43, 0.14);
+}
+
+.restaurant-cash-note {
+  width: 100%;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(213, 138, 43, 0.18);
+  background: rgba(213, 138, 43, 0.11);
+  font-family: Arial, sans-serif;
+  font-size: 0.86rem;
+  font-weight: 800;
+  line-height: 1.35;
+  color: var(--ink);
 }
 
 .restaurant-expansion-preview > div {
