@@ -1346,12 +1346,13 @@
                   </ul>
                   <form class="input-grid" id="profile-form" style="margin-top: 8px;">
                     <div class="field">
-                      <label class="field-label" for="player-name">Player name</label>
-                      <input class="input" id="player-name" name="playerName" type="text" placeholder="Tim" value="${escapeHtml(profile ? profile.playerName : "")}" />
+                      <label class="field-label save-restaurant-label" for="restaurant-name">Name Your Virtual Restaurant</label>
+                      <p class="helper save-restaurant-helper">This is how you will appear on the leaderboards. Make it yours, or keep our suggestion.</p>
+                      <input class="input" id="restaurant-name" name="restaurantName" type="text" placeholder="Tim's Roadhouse" value="${escapeHtml(profile ? profile.restaurantName : "")}" />
                     </div>
                     <div class="field">
-                      <label class="field-label" for="restaurant-name">Virtual restaurant name</label>
-                      <input class="input" id="restaurant-name" name="restaurantName" type="text" placeholder="Tim's Roadhouse" value="${escapeHtml(profile ? profile.restaurantName : "")}" />
+                      <label class="field-label" for="player-name">Player name</label>
+                      <input class="input" id="player-name" name="playerName" type="text" placeholder="Tim" value="${escapeHtml(profile ? profile.playerName : "")}" />
                     </div>
                     <div class="field">
                       <label class="field-label" for="profile-email">Email address <span style="font-weight: 500;">(optional)</span></label>

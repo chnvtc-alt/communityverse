@@ -1386,6 +1386,19 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   font-weight: 700;
 }
 
+.save-restaurant-label {
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.18rem, 2vw, 1.42rem);
+  font-weight: 800;
+}
+
+.save-restaurant-helper {
+  max-width: 680px;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
 .input,
 .select,
 .textarea {
