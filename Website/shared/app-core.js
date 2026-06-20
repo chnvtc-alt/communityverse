@@ -9,6 +9,7 @@
   const USE_REMOTE_SYNC = typeof window.fetch === "function";
   const FAVORITE_VISIT_GOAL = 10;
   const FAVORITE_VALUE_MULTIPLIER = 1.2;
+  const TRIVIA_LEADERBOARD_MIN_GAMES = 5;
   const CUSTOMER_STATUS_RANK = {
     lost: 0,
     occasional: 1,
@@ -4584,7 +4585,7 @@
         rating: accuracy / 20,
         value:
           metric === "rating"
-            ? accuracy / 20
+            ? accuracy
             : metric === "accuracy"
               ? accuracy
             : metric === "gamesPlayed"
@@ -4606,7 +4607,11 @@
     });
 
     return profiles
-      .filter((entry) => entry.stats.gamesPlayed > 0)
+      .filter((entry) =>
+        metric === "rating"
+          ? entry.stats.gamesPlayed >= TRIVIA_LEADERBOARD_MIN_GAMES
+          : entry.stats.gamesPlayed > 0
+      )
       .sort((left, right) => {
         if (right.value !== left.value) {
           return right.value - left.value;

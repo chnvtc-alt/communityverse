@@ -33,8 +33,8 @@
     },
     {
       value: "rating",
-      label: "Rating",
-      description: "Answer accuracy shown as a 5-star customer rating.",
+      label: "Trivia %",
+      description: "Average trivia score after at least 5 games.",
     },
   ];
 
@@ -525,7 +525,7 @@
   function valueForMetric(stats, metric) {
     if (metric === "rating") {
       const accuracy = stats.gamesPlayed ? (stats.totalCorrectAnswers / (stats.gamesPlayed * 10)) * 100 : 0;
-      return accuracy / 20;
+      return accuracy;
     }
 
     if (metric === "gamesPlayed") {
@@ -561,14 +561,9 @@
     }
 
     if (metric === "rating") {
-      const rounded = Math.max(0, Math.min(5, Math.round(Number(value) || 0)));
-      const stars = "★".repeat(rounded) + "☆".repeat(5 - rounded);
-      return `
-        <span class="rating-display" aria-label="Customer rating ${(Number(value) || 0).toFixed(1)} out of 5">
-          <span class="rating-stars" aria-hidden="true">${stars}</span>
-          <span class="rating-number">${(Number(value) || 0).toFixed(1)}</span>
-        </span>
-      `;
+      const percent = Math.max(0, Math.min(100, Number(value) || 0));
+      const rounded = Math.round(percent * 10) / 10;
+      return `${rounded}%`;
     }
 
     return String(Math.round(value || 0));
@@ -1053,6 +1048,7 @@
             <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
             <span class="chip hero-stat-chip">${bestRankLabel}</span>
           </div>
+          <p class="hero-profile-rating-note">Your rating is based on your trivia accuracy.</p>
           ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
           ${renderExpansionPreviewMarkup(profile, safeSummary.stats)}
           ${renderUpgradePreviewMarkup(profile, safeSummary.stats)}
@@ -1089,6 +1085,7 @@
                           <span class="hero-profile-subline-sep">·</span>
                           <span>${safeSummary.stats.gamesPlayed} plays</span>
                         </p>
+                        <p class="hero-profile-rating-note">Your rating is based on your trivia accuracy.</p>
                         ${
                           latestCustomerName
                             ? `<p class="hero-profile-detailline hero-profile-detailline-compact">Latest customer: <strong>${escapeHtml(latestCustomerName)}</strong></p>`
@@ -1151,6 +1148,7 @@
                         <span class="hero-profile-subline-sep">·</span>
                         <span>${safeSummary.stats.gamesPlayed} plays</span>
                       </p>
+                      <p class="hero-profile-rating-note">Your rating is based on your trivia accuracy.</p>
                       ${
                         latestCustomerName && !compactMobile
                           ? `<p class="hero-profile-detailline">Latest customer: <strong>${escapeHtml(latestCustomerName)}</strong></p>`
@@ -1562,7 +1560,14 @@
         <p class="helper">${escapeHtml(selectedMetric.description)}</p>
       </div>
       <div class="leaderboard-scroll">
-        ${renderRows(rows, state.leaderboardScope === "overall" ? "No leaderboard entries yet." : `No ${scopeLabel} scores yet.`)}
+        ${renderRows(
+          rows,
+          state.metric === "rating"
+            ? "No Trivia % entries yet. Play 5 games to qualify."
+            : state.leaderboardScope === "overall"
+              ? "No leaderboard entries yet."
+              : `No ${scopeLabel} scores yet.`
+        )}
       </div>
     `;
 

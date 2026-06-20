@@ -706,6 +706,14 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   color: var(--muted);
 }
 
+.hero-profile-rating-note {
+  margin: 6px 0 0;
+  font-family: Arial, sans-serif;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: var(--muted);
+}
+
 .hero-profile-detailline strong {
   color: var(--ink);
 }
@@ -1515,6 +1523,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   overflow: auto;
   padding-right: 4px;
   display: grid;
+  align-content: start;
   gap: 8px;
 }
 
