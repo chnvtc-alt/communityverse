@@ -41,6 +41,22 @@
       "destination": "/cm-pepperville/index.html"
     },
     {
+      "source": "/privacy",
+      "destination": "/privacy/index.html"
+    },
+    {
+      "source": "/privacy/",
+      "destination": "/privacy/index.html"
+    },
+    {
+      "source": "/terms",
+      "destination": "/terms/index.html"
+    },
+    {
+      "source": "/terms/",
+      "destination": "/terms/index.html"
+    },
+    {
       "source": "/:restaurantSlug/play",
       "destination": "/api/restaurant-page?restaurantSlug=:restaurantSlug&page=play"
     },

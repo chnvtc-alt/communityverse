@@ -1359,6 +1359,12 @@
                     </div>
                     <button class="text-button" id="email-info-toggle" type="button">${state.emailInfoExpanded ? "Hide email note" : "Why save with email?"}</button>
                     <p class="helper ${state.emailInfoExpanded ? "" : "hidden"}" style="margin: 0;">Email is only used to send a secure recovery link. Without it, your virtual restaurant is saved in this browser, but it cannot be restored after clearing cache or changing devices.</p>
+                    <label class="checkbox-row profile-age-confirm" for="profile-age-confirm">
+                      <input id="profile-age-confirm" name="ageConfirm" type="checkbox" />
+                      <span>I am 13 or older.</span>
+                    </label>
+                    <p class="helper" style="margin: 0;">To save progress, you must be 13 or older. If you are under 13, please keep playing as a guest and do not enter personal information.</p>
+                    <p class="helper legal-form-note" style="margin: 0;">By saving, you agree to the <a href="/terms/" target="_blank" rel="noopener">Terms of Use</a> and acknowledge the <a href="/privacy/" target="_blank" rel="noopener">Privacy Policy</a>.</p>
                     <p class="error hidden" id="profile-error" aria-live="polite"></p>
                     <p class="helper ${state.registrationMessage ? "" : "hidden"}" id="profile-success" aria-live="polite">${escapeHtml(state.registrationMessage)}</p>
                     <div class="form-actions">
@@ -1424,11 +1430,18 @@
         const playerName = document.getElementById("player-name").value.trim();
         const restaurantName = document.getElementById("restaurant-name").value.trim();
         const email = document.getElementById("profile-email").value.trim();
+        const ageConfirmed = document.getElementById("profile-age-confirm").checked;
         const submitButton = document.getElementById("profile-submit-button");
         const validation = core.validateProfileInput(playerName, restaurantName);
 
         if (!validation.ok) {
           error.textContent = validation.message;
+          error.classList.remove("hidden");
+          return;
+        }
+
+        if (!ageConfirmed) {
+          error.textContent = "To save progress, you must be 13 or older. If you are under 13, keep playing as a guest and do not enter personal information.";
           error.classList.remove("hidden");
           return;
         }

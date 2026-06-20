@@ -109,6 +109,7 @@
     collection: document.getElementById("collection-panel"),
     leaderboard: document.getElementById("leaderboard-panel"),
     sections: document.querySelector(".grid-two"),
+    footer: document.getElementById("site-footer"),
   };
 
   let howToPlayReturnFocus = null;
