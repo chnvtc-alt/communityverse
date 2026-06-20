@@ -1358,6 +1358,7 @@
                       <label class="field-label" for="profile-email">Email address <span style="font-weight: 500;">(optional)</span></label>
                       <input class="input" id="profile-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" />
                     </div>
+                    <p class="helper" style="margin: 0;">Your player name and email are private. Other players only see your virtual restaurant name on leaderboards.</p>
                     <button class="text-button" id="email-info-toggle" type="button">${state.emailInfoExpanded ? "Hide email note" : "Why save with email?"}</button>
                     <p class="helper ${state.emailInfoExpanded ? "" : "hidden"}" style="margin: 0;">Email is only used to send a secure recovery link. Without it, your virtual restaurant is saved in this browser, but it cannot be restored after clearing cache or changing devices.</p>
                     <label class="checkbox-row profile-age-confirm" for="profile-age-confirm">
