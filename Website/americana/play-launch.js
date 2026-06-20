@@ -13,7 +13,7 @@
   const playMode = window.location.pathname.includes("/play");
   const autoPlayMode = query.get("play") === "1";
   const replayCustomerId = String(query.get("customerId") || "").trim();
-  const replayCustomer = replayCustomerId ? core.getCustomerById(replayCustomerId) : null;
+  let replayCustomer = null;
   const RESULT_VISIBLE_SESSION_KEY = `${restaurantSlug}_result_visible_session_v1`;
   const resultVisibleSessionState = {
     sessionId: "",
@@ -608,6 +608,7 @@
     await core.whenReady();
     restaurantSlug = getRestaurantSlugFromPath();
     restaurant = core.getRestaurantBySlug(restaurantSlug);
+    replayCustomer = replayCustomerId ? core.getCustomerById(replayCustomerId) : null;
 
     if (!isRestaurantPlayable()) {
       renderUnavailableRestaurant();
@@ -617,7 +618,14 @@
     core.applyRestaurantTheme?.(restaurant);
 
     const existingSession = getSession();
-    if (freshMode && !shouldResumeQuestions(existingSession)) {
+    const freshInviteCustomerChanged = Boolean(
+      freshMode &&
+        replayCustomerId &&
+        existingSession &&
+        !existingSession.completed &&
+        existingSession.customer?.id !== replayCustomerId
+    );
+    if ((freshMode && !shouldResumeQuestions(existingSession)) || freshInviteCustomerChanged) {
       core.clearActiveSession();
       clearResultVisibleSessionId();
     } else {
