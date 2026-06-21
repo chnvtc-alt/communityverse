@@ -3295,9 +3295,23 @@
 
   function rebuildCollectionDerivedStats(profile) {
     const safeProfile = profile;
-    const overallGamesPlayed = Number(safeProfile.stats.gamesPlayed) || 0;
-    const overallCorrectAnswers = Number(safeProfile.stats.totalCorrectAnswers) || 0;
     const baseRestaurantStats = safeProfile.restaurantStats || {};
+    const combinedRestaurantTriviaStats = Object.values(baseRestaurantStats).reduce(
+      (combinedStats, restaurantStats) => {
+        combinedStats.gamesPlayed += Number(restaurantStats?.gamesPlayed) || 0;
+        combinedStats.totalCorrectAnswers += Number(restaurantStats?.totalCorrectAnswers) || 0;
+        return combinedStats;
+      },
+      { gamesPlayed: 0, totalCorrectAnswers: 0 }
+    );
+    const overallGamesPlayed = Math.max(
+      Number(safeProfile.stats.gamesPlayed) || 0,
+      combinedRestaurantTriviaStats.gamesPlayed
+    );
+    const overallCorrectAnswers =
+      combinedRestaurantTriviaStats.gamesPlayed > (Number(safeProfile.stats.gamesPlayed) || 0)
+        ? combinedRestaurantTriviaStats.totalCorrectAnswers
+        : Number(safeProfile.stats.totalCorrectAnswers) || 0;
     const restaurantSlugs = new Set(Object.keys(baseRestaurantStats));
 
     safeProfile.stats = Object.assign(buildEmptyStats(), {

@@ -218,6 +218,18 @@ export function normalizeProfile(profile) {
     safeProfile.restaurantStats && typeof safeProfile.restaurantStats === "object"
       ? safeProfile.restaurantStats
       : {};
+  const combinedRestaurantTriviaStats = Object.values(safeProfile.restaurantStats).reduce(
+    (combinedStats, restaurantStats) => {
+      combinedStats.gamesPlayed += Number(restaurantStats?.gamesPlayed) || 0;
+      combinedStats.totalCorrectAnswers += Number(restaurantStats?.totalCorrectAnswers) || 0;
+      return combinedStats;
+    },
+    { gamesPlayed: 0, totalCorrectAnswers: 0 }
+  );
+  if (combinedRestaurantTriviaStats.gamesPlayed > safeProfile.stats.gamesPlayed) {
+    safeProfile.stats.gamesPlayed = combinedRestaurantTriviaStats.gamesPlayed;
+    safeProfile.stats.totalCorrectAnswers = combinedRestaurantTriviaStats.totalCorrectAnswers;
+  }
   safeProfile.customerCollection = Array.isArray(safeProfile.customerCollection)
     ? safeProfile.customerCollection
     : [];
