@@ -180,7 +180,6 @@
       "Market",
       "Nook",
       "Hearthstone",
-      "Sizzle",
       "Hideaway",
       "Pickle",
       "Pie Shop",
