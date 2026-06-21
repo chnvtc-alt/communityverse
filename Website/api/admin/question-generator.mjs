@@ -120,6 +120,8 @@ async function generateQuestions(input) {
         `Return exactly ${input.count} question object${input.count === 1 ? "" : "s"}.`,
         "Every question must have one unambiguous correct answer and exactly three believable but incorrect answers.",
         "Wrong answers must not be alternate spellings, synonyms, partial versions, or other arguably correct answers.",
+        "Write every prompt as a self-contained question. If the topic is Seinfeld, Bob Seger, Jennifer Lopez, a restaurant, or any other named subject, mention that subject in the prompt unless the prompt is already completely clear without it.",
+        "Use proper capitalization for names, places, titles, brands, restaurants, songs, movies, shows, and answer choices.",
         "Keep prompts concise. Avoid trick questions, disputed claims, politics, graphic material, and time-sensitive facts.",
         "Use lowercase hyphenated tags. The human editor will review every draft before saving.",
       ].join(" "),
