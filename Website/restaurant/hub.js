@@ -777,7 +777,7 @@
       <form class="hub-sign-in-form" id="hub-guest-save-form">
         <div class="field">
           <label class="field-label" for="hub-guest-restaurant-name">Restaurant name</label>
-          <input class="input hero-profile-input" id="hub-guest-restaurant-name" name="restaurantName" type="text" value="${escapeHtml(profile.restaurantName)}" />
+          <input class="input hero-profile-input" id="hub-guest-restaurant-name" name="restaurantName" type="text" maxlength="32" value="${escapeHtml(profile.restaurantName)}" />
         </div>
         <div class="field">
           <label class="field-label" for="hub-guest-player-name">Player name</label>
@@ -947,7 +947,7 @@
     `;
   }
 
-  function getCompactRestaurantName(name, maxLength = 26) {
+  function getCompactRestaurantName(name, maxLength = 22) {
     const value = String(name || "Your Restaurant").trim() || "Your Restaurant";
     if (value.length <= maxLength) {
       return value;
@@ -955,7 +955,12 @@
 
     const cutPoint = value.lastIndexOf(" ", maxLength - 3);
     const slicePoint = cutPoint > 8 ? cutPoint : maxLength - 3;
-    return `${value.slice(0, slicePoint).replace(/[.,;:!?-]+$/, "")}...`;
+    const compact = value
+      .slice(0, slicePoint)
+      .replace(/\s+(and|of|the|a|an|at|in|on|by|for)$/i, "")
+      .replace(/[.,;:!?-]+$/, "")
+      .trim();
+    return compact ? `${compact}...` : `${value.slice(0, maxLength - 3)}...`;
   }
 
   function renderFoodTruckVisualMarkup(profile) {
@@ -1309,7 +1314,7 @@
                             <div class="field" style="gap: 6px;">
                               <label class="field-label" for="hero-restaurant-name">Restaurant name</label>
                               <div class="hero-profile-edit-row">
-                                <input class="input hero-profile-input" id="hero-restaurant-name" name="restaurantName" type="text" value="${escapeHtml(profile.restaurantName)}" />
+                                <input class="input hero-profile-input" id="hero-restaurant-name" name="restaurantName" type="text" maxlength="32" value="${escapeHtml(profile.restaurantName)}" />
                                 <button class="button button-primary button-sm" type="submit">Save Changes</button>
                                 <button class="button button-muted button-sm" type="button" data-cancel-profile-edit>Cancel</button>
                               </div>
@@ -1375,7 +1380,7 @@
                           <div class="field" style="gap: 6px;">
                             <label class="field-label" for="hero-restaurant-name">Restaurant name</label>
                             <div class="hero-profile-edit-row">
-                              <input class="input hero-profile-input" id="hero-restaurant-name" name="restaurantName" type="text" value="${escapeHtml(profile.restaurantName)}" />
+                              <input class="input hero-profile-input" id="hero-restaurant-name" name="restaurantName" type="text" maxlength="32" value="${escapeHtml(profile.restaurantName)}" />
                               <button class="button button-primary button-sm" type="submit">Save Changes</button>
                               <button class="button button-muted button-sm" type="button" data-cancel-profile-edit>Cancel</button>
                             </div>

@@ -1375,7 +1375,7 @@
                     <div class="field">
                       <label class="field-label save-restaurant-label" for="restaurant-name">Name Your Virtual Restaurant</label>
                       <p class="helper save-restaurant-helper">This is how you will appear on the leaderboards. Make it yours by replacing "${escapeHtml(profile ? profile.restaurantName : "our suggestion")}", or keep that as your restaurant name.</p>
-                      <input class="input save-restaurant-input" id="restaurant-name" name="restaurantName" type="text" placeholder="Tim's Roadhouse" value="${escapeHtml(profile ? profile.restaurantName : "")}" data-suggested-name="${escapeHtml(profile ? profile.restaurantName : "")}" />
+                      <input class="input save-restaurant-input" id="restaurant-name" name="restaurantName" type="text" maxlength="32" placeholder="Tim's Roadhouse" value="${escapeHtml(profile ? profile.restaurantName : "")}" data-suggested-name="${escapeHtml(profile ? profile.restaurantName : "")}" />
                     </div>
                     <div class="field">
                       <label class="field-label" for="player-name">Player name</label>

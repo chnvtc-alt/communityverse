@@ -1054,7 +1054,7 @@ function renderProfiles() {
           <div class="profile-edit-row">
             <label>
               Restaurant name
-              <input class="profile-name-input" data-profile-name type="text" value="${escapeHtml(profile.restaurantName || "")}" maxlength="64" />
+              <input class="profile-name-input" data-profile-name type="text" value="${escapeHtml(profile.restaurantName || "")}" maxlength="32" />
             </label>
             <button class="button button-secondary save-profile-name-button" type="button">Save name</button>
           </div>
@@ -1098,6 +1098,11 @@ async function saveProfileName(profile, card) {
   const restaurantName = input.value.trim();
   if (!restaurantName) {
     showProfileMessage("Restaurant name is required.", true);
+    return;
+  }
+
+  if (restaurantName.length > 32) {
+    showProfileMessage("Restaurant name must be 32 characters or shorter.", true);
     return;
   }
 

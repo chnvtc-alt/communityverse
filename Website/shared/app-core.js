@@ -87,6 +87,7 @@
     "slut",
     "whore",
   ];
+  const RESTAURANT_NAME_MAX_LENGTH = 32;
 
   const GUEST_RESTAURANT_NAME_PARTS = {
     adjectives: [
@@ -3507,7 +3508,8 @@
       const overlapScore = candidateWords.filter((word) => existingWords.has(word)).length;
       const duplicateScore = existingSlugs.has(slugify(candidate)) ? 100 : 0;
       const blockedScore = isRestaurantNameBlocked(candidate) ? 100 : 0;
-      const score = overlapScore + duplicateScore + blockedScore;
+      const lengthScore = candidate.trim().length > RESTAURANT_NAME_MAX_LENGTH ? 100 : 0;
+      const score = overlapScore + duplicateScore + blockedScore + lengthScore;
 
       if (!bestName || score < bestScore) {
         bestName = candidate;
@@ -3519,7 +3521,7 @@
       }
     }
 
-    return bestName || "The Friendly Table";
+    return bestName && bestName.length <= RESTAURANT_NAME_MAX_LENGTH ? bestName : "The Friendly Table";
   }
 
   function updateProfile(updatedProfile) {
@@ -3885,6 +3887,13 @@
       return {
         ok: false,
         message: "Please enter a fictional restaurant name.",
+      };
+    }
+
+    if (String(restaurantName || "").trim().length > RESTAURANT_NAME_MAX_LENGTH) {
+      return {
+        ok: false,
+        message: `Restaurant name must be ${RESTAURANT_NAME_MAX_LENGTH} characters or shorter.`,
       };
     }
 
