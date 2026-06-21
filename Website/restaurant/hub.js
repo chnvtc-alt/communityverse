@@ -9,26 +9,31 @@
     {
       value: "netWorth",
       label: "Net Worth",
+      rankLabel: "Net Worth",
       description: "Restaurant Value plus cash on hand.",
     },
     {
       value: "rating",
       label: "Trivia %",
+      rankLabel: "Trivia %",
       description: "Average trivia score after at least 4 games.",
     },
     {
       value: "collected",
       label: "Customers",
+      rankLabel: "Customer",
       description: "Total customers collected, including regular and occasional customers.",
     },
     {
       value: "estimatedSales",
       label: "Sales",
+      rankLabel: "Sales",
       description: "Total sales from the customers each restaurant has earned.",
     },
     {
       value: "gamesPlayed",
       label: "Games",
+      rankLabel: "Games",
       description: "Total completed games played by each restaurant.",
     },
   ];
@@ -1718,11 +1723,11 @@
     const scopeLabel = state.leaderboardScope === "overall" ? "Overall" : restaurant?.name || "Restaurant";
     const selectedMetric = metricOptions.find((option) => option.value === state.metric) || metricOptions[0];
     const currentRow = profile ? rows.find((row) => row.profileId === profile.id) : null;
-    const currentTriviaRankMarkup =
-      state.metric === "rating" && currentRow
+    const currentRankMarkup =
+      currentRow
         ? `
           <div class="leaderboard-current-rank-card">
-            <p class="kicker">Your Trivia % Rank</p>
+            <p class="kicker">Your ${escapeHtml(selectedMetric.rankLabel || selectedMetric.label)} Rank</p>
             <div class="leaderboard-current-rank-main">
               <div class="leaderboard-current-rank-number">#${currentRow.rank}</div>
               <div>
@@ -1815,7 +1820,7 @@
         <h3 class="kicker">${scopeLabel}</h3>
         <p class="helper">${escapeHtml(selectedMetric.description)}</p>
       </div>
-      ${currentTriviaRankMarkup}
+      ${currentRankMarkup}
       <div class="leaderboard-scroll">
         ${renderRows(
           rows,
