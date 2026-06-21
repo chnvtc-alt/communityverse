@@ -255,23 +255,141 @@
     ],
     concepts: [
       "Bite & Sip",
+      "Biscuit Junction",
       "Brunch Haven",
       "Burger Joint",
+      "Burger & Brew",
+      "Chili Wagon",
       "Chicken Shack",
       "Coffee Counter",
+      "Community Kitchen",
+      "Corner Booth",
+      "Country Cupboard",
       "Cozy Corner",
       "Diner Delight",
       "Fork & Spoon",
+      "Gathering Place",
+      "Grits & Gravy",
       "Grill & Chill",
+      "Hometown Kitchen",
+      "Morning Cup Cafe",
+      "Neighbors Grill",
       "Pasta Corner",
+      "Pie & Coffee",
       "Pizza Place",
       "Rustic Table",
       "Sushi House",
       "Sweet Treats",
       "Taco Loco",
+      "The Bacon Barn",
+      "The Biscuit Basket",
+      "The Breakfast Club",
       "The Green Plate",
       "The Golden Fork",
+      "The Gravy Train",
+      "The Local Table",
+      "The Pancake Depot",
+      "The Saucy Spoon",
       "Urban Eats",
+      "Welcome Home Diner",
+    ],
+    foods: [
+      "Bagel",
+      "Biscuit",
+      "Biscotti",
+      "Brisket",
+      "Brownie",
+      "Burrito",
+      "Casserole",
+      "Chili",
+      "Cornbread",
+      "Cookie",
+      "Cupcake",
+      "Donut",
+      "Dumpling",
+      "Grits",
+      "Gumbo",
+      "Meatball",
+      "Meatloaf",
+      "Muffin",
+      "Pancake",
+      "Pickle",
+      "Popcorn",
+      "Pretzel",
+      "Sundae",
+      "Taco",
+      "Tater",
+      "Waffle",
+    ],
+    animals: [
+      "Badger",
+      "Bear",
+      "Beaver",
+      "Bluebird",
+      "Bobcat",
+      "Buffalo",
+      "Cardinal",
+      "Coyote",
+      "Eagle",
+      "Falcon",
+      "Fox",
+      "Goose",
+      "Hawk",
+      "Hound",
+      "Mockingbird",
+      "Mule",
+      "Otter",
+      "Owl",
+      "Possum",
+      "Rabbit",
+      "Raven",
+      "Robin",
+      "Sparrow",
+      "Turtle",
+    ],
+    nature: [
+      "Aspen",
+      "Birch",
+      "Brook",
+      "Canyon",
+      "Creek",
+      "Creekside",
+      "Lakeside",
+      "Meadow",
+      "Meadowlark",
+      "Moss",
+      "Mountain View",
+      "Orchard",
+      "Pebble",
+      "Pine",
+      "Summit",
+      "Timber",
+      "Valley",
+    ],
+    family: [
+      "Aunt Bea's",
+      "Big Al's",
+      "Cousin Lou's",
+      "Grandma's",
+      "Grandpa's",
+      "Mama's",
+      "Miss Pearl's",
+      "Miss Ruby's",
+      "Nana's",
+      "Papa's",
+      "Uncle Joe's",
+    ],
+    pairs: [
+      "Bacon & Eggs",
+      "Beans & Bacon",
+      "Biscuit & Jam",
+      "Biscuits & Gravy",
+      "Bread & Butter",
+      "Fork & Biscuit",
+      "Maple & Oak",
+      "Pie & Coffee",
+      "Salt & Pepper",
+      "Smoke & Spice",
     ],
   };
 
@@ -3342,21 +3460,28 @@
       const place = pickOne(GUEST_RESTAURANT_NAME_PARTS.places);
       const partner = pickOne(GUEST_RESTAURANT_NAME_PARTS.people.filter((name) => name !== person));
       const concept = pickOne(GUEST_RESTAURANT_NAME_PARTS.concepts);
-      const pattern = attempt % 7;
-      const candidate =
-        pattern === 0
-          ? `The ${adjective} ${noun}`
-          : pattern === 1
-            ? `${adjective} ${noun}`
-            : pattern === 2
-              ? `${person}'s ${noun}`
-              : pattern === 3
-                ? `${place} ${noun}`
-                : pattern === 4
-                  ? `${person} & ${partner}'s ${noun}`
-                  : pattern === 5
-                    ? `${adjective} ${noun} Co.`
-                    : concept;
+      const food = pickOne(GUEST_RESTAURANT_NAME_PARTS.foods);
+      const animal = pickOne(GUEST_RESTAURANT_NAME_PARTS.animals);
+      const nature = pickOne(GUEST_RESTAURANT_NAME_PARTS.nature);
+      const family = pickOne(GUEST_RESTAURANT_NAME_PARTS.family);
+      const pair = pickOne(GUEST_RESTAURANT_NAME_PARTS.pairs);
+      const candidates = [
+        `The ${adjective} ${noun}`,
+        `${adjective} ${noun}`,
+        `${person}'s ${noun}`,
+        `${place} ${noun}`,
+        `${person} & ${partner}'s ${noun}`,
+        `${adjective} ${noun} Co.`,
+        `${food} ${noun}`,
+        `${animal} ${noun}`,
+        `${nature} ${noun}`,
+        `${family} ${noun}`,
+        pair,
+        `The Hungry ${animal}`,
+        `The ${adjective} ${food}`,
+        concept,
+      ];
+      const candidate = candidates[attempt % candidates.length];
       const candidateWords = normalizeText(candidate)
         .split(" ")
         .filter((word) => word && word !== "the");
