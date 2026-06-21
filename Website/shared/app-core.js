@@ -4815,6 +4815,10 @@
       return combinedStats;
     }, buildEmptyStats());
 
+    if (!stats.gamesPlayed && safeProfile.stats?.gamesPlayed) {
+      addStats(stats, safeProfile.stats);
+    }
+
     stats.restaurantValue = getRestaurantValue(safeProfile, stats);
     stats.netWorth = stats.restaurantValue + getRestaurantCashOnHand(safeProfile, safeProfile.stats);
     return stats;
@@ -4873,7 +4877,7 @@
           return right.value - left.value;
         }
 
-        return left.profile.playerName.localeCompare(right.profile.playerName);
+        return left.profile.restaurantName.localeCompare(right.profile.restaurantName);
       })
       .map((entry, index) => ({
         rank: index + 1,
@@ -4960,6 +4964,7 @@
     createGuestProfile,
     generateGuestRestaurantName,
     updateProfile,
+    syncActiveProfile,
     sendEmailSignInLink,
     completeEmailSignInFromUrl,
     getRestaurantBySlug,

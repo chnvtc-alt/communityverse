@@ -381,6 +381,10 @@ function publicOverallStatsFor(profile, publicRestaurantSlugs) {
     return combinedStats;
   }, emptyStats());
 
+  if (!stats.gamesPlayed && safeProfile.stats?.gamesPlayed) {
+    addStats(stats, safeProfile.stats);
+  }
+
   stats.restaurantValue = getRestaurantValue(safeProfile, stats, "", publicRestaurantSlugs);
   stats.netWorth = stats.restaurantValue + getRestaurantCashOnHand(safeProfile, safeProfile.stats);
   return stats;
@@ -476,7 +480,7 @@ export function buildLeaderboard(profiles, metric = "estimatedSales", restaurant
         return right.value - left.value;
       }
 
-      return left.playerName.localeCompare(right.playerName);
+      return left.restaurantName.localeCompare(right.restaurantName);
     })
     .map((entry, index) => ({
       rank: index + 1,

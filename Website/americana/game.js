@@ -1508,6 +1508,11 @@
             isGuest: false,
           });
           core.setActiveProfileId(activeProfile.id);
+          try {
+            await core.syncActiveProfile?.();
+          } catch {
+            // The local save still succeeded; the background sync can retry.
+          }
         } else {
           error.textContent = "Your guest restaurant could not be found. Please play again.";
           error.classList.remove("hidden");

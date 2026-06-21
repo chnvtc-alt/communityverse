@@ -1470,6 +1470,7 @@
           restaurantSlug: core.slugify(restaurantName),
           restaurantNameUpdatedAt: new Date().toISOString(),
         });
+        void core.syncActiveProfile?.();
         state.profileEditMode = false;
         renderHero();
       });
@@ -1546,6 +1547,12 @@
           isGuest: false,
         });
         core.setActiveProfileId(profile.id);
+
+        try {
+          await core.syncActiveProfile?.();
+        } catch {
+          // The local save still succeeded; the background sync can retry.
+        }
 
         if (!email) {
           state.showGuestSaveForm = false;
@@ -1710,6 +1717,22 @@
         : core.getLeaderboard(state.metric, restaurant?.slug || "americana");
     const scopeLabel = state.leaderboardScope === "overall" ? "Overall" : restaurant?.name || "Restaurant";
     const selectedMetric = metricOptions.find((option) => option.value === state.metric) || metricOptions[0];
+    const currentRow = profile ? rows.find((row) => row.profileId === profile.id) : null;
+    const currentTriviaRankMarkup =
+      state.metric === "rating" && currentRow
+        ? `
+          <div class="leaderboard-current-rank">
+            <p class="kicker">Your Trivia % Rank</p>
+            <div class="leaderboard-row leaderboard-row-current">
+              <div class="leaderboard-rank">${currentRow.rank}</div>
+              <div class="leaderboard-main">
+                <p class="leaderboard-name">${escapeHtml(currentRow.restaurantName)}</p>
+              </div>
+              <p class="leaderboard-value">${formatMetricValue(currentRow.value, state.metric)}</p>
+            </div>
+          </div>
+        `
+        : "";
 
     function renderRows(list, emptyMessage) {
       if (!list.length) {
@@ -1791,6 +1814,7 @@
         <h3 class="kicker">${scopeLabel}</h3>
         <p class="helper">${escapeHtml(selectedMetric.description)}</p>
       </div>
+      ${currentTriviaRankMarkup}
       <div class="leaderboard-scroll">
         ${renderRows(
           rows,
