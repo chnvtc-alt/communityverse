@@ -1511,7 +1511,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   display: grid;
   gap: 8px;
   margin: 0 0 16px;
-  padding: 12px 14px;
+  padding: 10px 12px;
   border: 1px solid rgba(213, 138, 43, 0.36);
   border-radius: 14px;
   background: rgba(255, 247, 232, 0.9);
@@ -1524,17 +1524,17 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .leaderboard-current-rank-main {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 12px;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  gap: 10px;
   align-items: center;
 }
 
 .leaderboard-current-rank-number {
   display: inline-grid;
   place-items: center;
-  min-width: 46px;
-  height: 38px;
-  padding: 0 10px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
   border-radius: 12px;
   background: rgba(35, 112, 80, 0.12);
   color: var(--green);
