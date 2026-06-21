@@ -3464,6 +3464,11 @@
         .flat()
         .filter((word) => word && word !== "the")
     );
+    const existingSlugs = new Set(
+      getProfiles()
+        .map((profile) => slugify(profile.restaurantName))
+        .filter(Boolean)
+    );
     let bestName = "";
     let bestScore = Number.POSITIVE_INFINITY;
 
@@ -3491,7 +3496,6 @@
         `${nature} ${noun}`,
         `${family} ${noun}`,
         pair,
-        `The Hungry ${animal}`,
         `The ${adjective} ${food}`,
         concept,
       ];
@@ -3500,8 +3504,9 @@
         .split(" ")
         .filter((word) => word && word !== "the");
       const overlapScore = candidateWords.filter((word) => existingWords.has(word)).length;
+      const duplicateScore = existingSlugs.has(slugify(candidate)) ? 100 : 0;
       const blockedScore = isRestaurantNameBlocked(candidate) ? 100 : 0;
-      const score = overlapScore + blockedScore;
+      const score = overlapScore + duplicateScore + blockedScore;
 
       if (!bestName || score < bestScore) {
         bestName = candidate;
