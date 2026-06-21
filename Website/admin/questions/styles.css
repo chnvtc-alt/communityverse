@@ -629,6 +629,17 @@ dialog::backdrop {
   margin-top: 18px;
 }
 
+.ai-warning {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(138, 75, 35, 0.22);
+  border-radius: 4px;
+  background: rgba(255, 250, 240, 0.72);
+  color: #6f4724;
+  font-size: 0.74rem;
+  line-height: 1.45;
+}
+
 .ai-helper-actions {
   margin-top: 12px;
 }
