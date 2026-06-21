@@ -3471,8 +3471,9 @@
     );
     let bestName = "";
     let bestScore = Number.POSITIVE_INFINITY;
+    const maxAttempts = 160;
 
-    for (let attempt = 0; attempt < 30; attempt += 1) {
+    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
       const adjective = pickOne(GUEST_RESTAURANT_NAME_PARTS.adjectives);
       const noun = pickOne(GUEST_RESTAURANT_NAME_PARTS.nouns);
       const person = pickOne(GUEST_RESTAURANT_NAME_PARTS.people);
