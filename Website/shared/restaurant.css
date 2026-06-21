@@ -936,6 +936,14 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   font-size: clamp(0.56rem, 1.12vw, 0.86rem);
 }
 
+.restaurant-expansion-art-family-restaurant .restaurant-expansion-image-name {
+  left: 31.5%;
+  top: 18.2%;
+  width: 37%;
+  height: 14.8%;
+  font-size: clamp(0.56rem, 1.1vw, 0.86rem);
+}
+
 .restaurant-expansion-preview {
   width: 100%;
   display: grid;
@@ -3589,6 +3597,10 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     width: min(100%, 350px);
   }
 
+  .restaurant-expansion-art-family-restaurant {
+    width: min(100%, 360px);
+  }
+
   .restaurant-expansion-image-name {
     font-size: clamp(0.46rem, 2.55vw, 0.68rem);
   }
@@ -3598,6 +3610,10 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .restaurant-expansion-art-small-diner .restaurant-expansion-image-name {
+    font-size: clamp(0.46rem, 2.55vw, 0.68rem);
+  }
+
+  .restaurant-expansion-art-family-restaurant .restaurant-expansion-image-name {
     font-size: clamp(0.46rem, 2.55vw, 0.68rem);
   }
 

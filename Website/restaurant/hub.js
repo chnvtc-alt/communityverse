@@ -979,6 +979,11 @@
       image: "small-diner.png",
       className: "restaurant-expansion-art-small-diner",
     },
+    "family-restaurant": {
+      label: "Family Restaurant",
+      image: "family-restaurant.png",
+      className: "restaurant-expansion-art-family-restaurant",
+    },
   };
 
   function renderExpansionImageMarkup(profile) {
