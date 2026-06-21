@@ -892,10 +892,11 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .restaurant-food-truck-name {
   position: absolute;
-  left: 15%;
-  top: 33.5%;
-  width: 44.5%;
-  height: 12.5%;
+  left: 14.7%;
+  top: 32.8%;
+  width: 45.5%;
+  height: 14.4%;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
