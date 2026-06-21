@@ -14,7 +14,7 @@
     {
       value: "rating",
       label: "Trivia %",
-      description: "Average trivia score after at least 5 games.",
+      description: "Average trivia score after at least 4 games.",
     },
     {
       value: "collected",
@@ -46,7 +46,7 @@
   }
 
   const state = {
-    metric: "netWorth",
+    metric: metricOptions.some((option) => option.value === query.get("metric")) ? query.get("metric") : "netWorth",
     leaderboardScope: "overall",
     leaderboardRestaurantSlug: "americana",
     selectedDirectorySlug: "",
@@ -1661,7 +1661,7 @@
         ${renderRows(
           rows,
           state.metric === "rating"
-            ? "No Trivia % entries yet. Play 5 games to qualify."
+            ? "No Trivia % entries yet. Play 4 games to qualify."
             : state.leaderboardScope === "overall"
               ? "No leaderboard entries yet."
               : `No ${scopeLabel} scores yet.`

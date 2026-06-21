@@ -9,7 +9,7 @@
   const USE_REMOTE_SYNC = typeof window.fetch === "function";
   const FAVORITE_VISIT_GOAL = 10;
   const FAVORITE_VALUE_MULTIPLIER = 1.2;
-  const TRIVIA_LEADERBOARD_MIN_GAMES = 5;
+  const TRIVIA_LEADERBOARD_MIN_GAMES = 4;
   const CUSTOMER_STATUS_RANK = {
     lost: 0,
     occasional: 1,

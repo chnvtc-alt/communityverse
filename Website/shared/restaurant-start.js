@@ -232,7 +232,7 @@
                 <li>8 correct answers = 80%</li>
                 <li>6 correct answers = 60%</li>
               </ul>
-              <p>A minimum of 5 games played is required before appearing on the Trivia % leaderboard.</p>
+              <p>A minimum of 4 games played is required before appearing on the Trivia % leaderboard.</p>
             </section>
             <section class="how-to-play-topic">
               <h3>STEP 5: BUILD A VIRTUAL RESTAURANT (OPTIONAL)</h3>

@@ -322,7 +322,7 @@
                 <li>8 correct answers = 80%</li>
                 <li>6 correct answers = 60%</li>
               </ul>
-              <p>A minimum of 5 games played is required before appearing on the Trivia % leaderboard.</p>
+              <p>A minimum of 4 games played is required before appearing on the Trivia % leaderboard.</p>
             </section>
             <section class="how-to-play-topic">
               <h3>STEP 5: BUILD A VIRTUAL RESTAURANT (OPTIONAL)</h3>
@@ -1271,6 +1271,19 @@
           </div>
         `
         : "";
+    const triviaLeaderboardMilestoneMarkup =
+      Number(overallSummary?.stats?.gamesPlayed) === 4
+        ? `
+          <div class="hero-card result-followup-card" style="margin-top: 0; padding: 16px;">
+            <p class="kicker" style="margin: 0 0 6px;">Trivia % Leaderboard</p>
+            <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">Congratulations! You completed your 4th game.</h3>
+            <p class="copy" style="margin: 0 0 12px;">You are now eligible for the Trivia % Leaderboard.</p>
+            <div class="button-row">
+              <a class="button button-hot" href="/restaurant/?hub=1&metric=rating#leaderboard-panel">View Trivia % Leaderboard</a>
+            </div>
+          </div>
+        `
+        : "";
 
     elements.result.innerHTML = `
       <div class="result-screen result-screen-${resultLayoutMode}">
@@ -1324,6 +1337,7 @@
         </div>
 
         <div class="divider"></div>
+        ${triviaLeaderboardMilestoneMarkup}
         ${
           isGuest && !state.showProfileForm
             ? `
