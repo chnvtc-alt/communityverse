@@ -3,7 +3,7 @@ import {
   questionFromRecord,
 } from "../_lib/restaurant-data.mjs";
 import { questionRecord } from "../_lib/question-admin.mjs";
-import { hasSupabaseConfig, jsonResponse, supabaseRequest } from "../_lib/supabase.mjs";
+import { hasSupabaseConfig, jsonResponse, supabaseRequest, supabaseRequestAll } from "../_lib/supabase.mjs";
 
 const QUESTION_BANK_URL = new URL("../../shared/restaurant-question-bank.json", import.meta.url);
 const QUESTION_BATCH_SIZE = 50;
@@ -15,7 +15,7 @@ async function readSeedQuestions() {
 }
 
 async function fetchQuestionsFromSupabase() {
-  const rows = await supabaseRequest(
+  const rows = await supabaseRequestAll(
     "questions?select=id,active,scope,restaurant_slug,area_slug,difficulty,tags,customer_ids,sort_order,updated_at,payload_json&active=eq.true&order=sort_order.asc,updated_at.asc"
   );
   return Array.isArray(rows) ? rows.map(questionFromRecord).filter(Boolean) : [];

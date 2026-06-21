@@ -52,6 +52,31 @@ export async function supabaseRequest(path, options = {}) {
   return data;
 }
 
+export async function supabaseRequestAll(path, options = {}) {
+  const rows = [];
+  const batchSize = Number.isFinite(Number(options.batchSize)) ? Number(options.batchSize) : 1000;
+  const { batchSize: _batchSize, ...requestOptions } = options;
+
+  for (let offset = 0; ; offset += batchSize) {
+    const headers = new Headers(requestOptions.headers || {});
+    headers.set("Range", `${offset}-${offset + batchSize - 1}`);
+    headers.set("Range-Unit", "items");
+
+    const batch = await supabaseRequest(path, {
+      ...requestOptions,
+      headers,
+    });
+    const safeBatch = Array.isArray(batch) ? batch : [];
+    rows.push(...safeBatch);
+
+    if (safeBatch.length < batchSize) {
+      break;
+    }
+  }
+
+  return rows;
+}
+
 export async function supabaseAuthRequest(path, options = {}, accessToken = "") {
   const { url, serviceRoleKey } = getSupabaseConfig();
   const headers = new Headers(options.headers || {});

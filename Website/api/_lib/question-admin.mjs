@@ -3,7 +3,7 @@ import {
   questionFromRecord,
   questionToRecord,
 } from "./restaurant-data.mjs";
-import { supabaseRequest } from "./supabase.mjs";
+import { supabaseRequest, supabaseRequestAll } from "./supabase.mjs";
 
 const VALID_SCOPES = new Set(["restaurant", "area", "global", "customer"]);
 const VALID_DIFFICULTIES = new Set(["easy", "medium", "hard"]);
@@ -58,7 +58,7 @@ export function questionRecord(question) {
 }
 
 export async function fetchAdminQuestions() {
-  const rows = await supabaseRequest(
+  const rows = await supabaseRequestAll(
     "questions?select=id,active,scope,restaurant_slug,area_slug,difficulty,tags,customer_ids,sort_order,created_at,updated_at,payload_json&order=updated_at.desc"
   );
   return Array.isArray(rows) ? rows.map(questionFromRecord).filter(Boolean) : [];
