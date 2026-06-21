@@ -947,54 +947,6 @@
     `;
   }
 
-  function getCompactRestaurantName(name, maxLength = 24) {
-    const value = String(name || "Your Restaurant").trim() || "Your Restaurant";
-    if (value.length <= maxLength) {
-      return value;
-    }
-
-    const cutPoint = value.lastIndexOf(" ", maxLength - 3);
-    const slicePoint = cutPoint > 8 ? cutPoint : maxLength - 3;
-    return `${value.slice(0, slicePoint).replace(/[.,;:!?-]+$/, "")}...`;
-  }
-
-  function renderExpansionVisualMarkup(profile) {
-    if (!profile || !core.getRestaurantExpansionPreview) {
-      return "";
-    }
-
-    const preview = core.getRestaurantExpansionPreview(profile);
-    if (!preview?.current) {
-      return "";
-    }
-
-    const levelId = String(preview.current.id || "food-truck").replace(/[^a-z0-9-]/gi, "");
-    const levelLabel = preview.current.label || "Food Truck";
-    const restaurantName = profile.restaurantName || "Your Restaurant";
-    const displayName = getCompactRestaurantName(restaurantName);
-
-    return `
-      <div class="restaurant-expansion-visual restaurant-expansion-visual-${levelId}" role="img" aria-label="${escapeHtml(`${levelLabel} for ${restaurantName}`)}">
-        <div class="restaurant-expansion-visual-copy">
-          <span>Current restaurant</span>
-          <strong>${escapeHtml(levelLabel)}</strong>
-        </div>
-        <div class="restaurant-expansion-art" aria-hidden="true">
-          <div class="restaurant-expansion-structure">
-            <div class="restaurant-expansion-roof"></div>
-            <div class="restaurant-expansion-sign"><span>${escapeHtml(displayName)}</span></div>
-            <div class="restaurant-expansion-awning"></div>
-            <div class="restaurant-expansion-window restaurant-expansion-window-left"></div>
-            <div class="restaurant-expansion-window restaurant-expansion-window-right"></div>
-            <div class="restaurant-expansion-door"></div>
-            <div class="restaurant-expansion-wheel restaurant-expansion-wheel-one"></div>
-            <div class="restaurant-expansion-wheel restaurant-expansion-wheel-two"></div>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
   function getRestaurantCreditForEntry(entry, restaurantSlug) {
     if (!entry || !restaurantSlug) {
       return null;
@@ -1244,7 +1196,6 @@
           </div>
           <p class="hero-profile-rating-note">Your rating is based on your trivia accuracy.</p>
           <p class="hero-profile-rating-note">Cash, sales, customer values, and net worth are virtual game values with no real cash value.</p>
-          ${renderExpansionVisualMarkup(profile)}
           ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
           ${renderExpansionPreviewMarkup(profile, safeSummary.stats)}
           ${renderUpgradePreviewMarkup(profile, safeSummary.stats)}
@@ -1295,7 +1246,6 @@
                         </div>
                     </div>
                     ${!state.profileEditMode && !emailConnected ? renderConnectInfoMarkup(profile) : ``}
-                    ${renderExpansionVisualMarkup(profile)}
                     <div class="hero-profile-meta hero-profile-meta-compact">
                       <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
                       <span class="chip hero-stat-chip">🏦 Value ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
@@ -1361,7 +1311,6 @@
                     </div>
                   </div>
                   ${!state.profileEditMode && !emailConnected ? renderConnectInfoMarkup(profile) : ``}
-                  ${renderExpansionVisualMarkup(profile)}
                   <div class="hero-profile-meta">
                     <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
                     <span class="chip hero-stat-chip">🏦 Value ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
