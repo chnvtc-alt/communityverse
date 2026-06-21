@@ -215,6 +215,67 @@
       "Toast House",
       "Waffle Works",
     ],
+    people: [
+      "Annie",
+      "Benny",
+      "Clara",
+      "Earl",
+      "Gus",
+      "Hank",
+      "Jo",
+      "Lou",
+      "Mabel",
+      "Mae",
+      "Millie",
+      "Nora",
+      "Ollie",
+      "Pearl",
+      "Rosie",
+      "Ruby",
+      "Sam",
+      "Stella",
+      "Theo",
+      "Vic",
+    ],
+    places: [
+      "Broad Street",
+      "County Line",
+      "Depot",
+      "Front Street",
+      "Hilltop",
+      "Lake Road",
+      "Main",
+      "Market Street",
+      "Mill Street",
+      "Oak Street",
+      "Old Highway",
+      "Pine Street",
+      "Ridge Road",
+      "River Road",
+      "The Corner",
+      "Town Square",
+      "Valley Road",
+    ],
+    concepts: [
+      "Bite & Sip",
+      "Brunch Haven",
+      "Burger Joint",
+      "Chicken Shack",
+      "Coffee Counter",
+      "Cozy Corner",
+      "Diner Delight",
+      "Fork & Spoon",
+      "Grill & Chill",
+      "Pasta Corner",
+      "Pizza Place",
+      "Rustic Table",
+      "Sushi House",
+      "Sweet Treats",
+      "Taco Loco",
+      "The Green Plate",
+      "The Golden Fork",
+      "Urban Eats",
+    ],
   };
 
   const restaurants = [
@@ -3280,7 +3341,25 @@
     for (let attempt = 0; attempt < 30; attempt += 1) {
       const adjective = pickOne(GUEST_RESTAURANT_NAME_PARTS.adjectives);
       const noun = pickOne(GUEST_RESTAURANT_NAME_PARTS.nouns);
-      const candidate = `The ${adjective} ${noun}`;
+      const person = pickOne(GUEST_RESTAURANT_NAME_PARTS.people);
+      const place = pickOne(GUEST_RESTAURANT_NAME_PARTS.places);
+      const partner = pickOne(GUEST_RESTAURANT_NAME_PARTS.people.filter((name) => name !== person));
+      const concept = pickOne(GUEST_RESTAURANT_NAME_PARTS.concepts);
+      const pattern = attempt % 7;
+      const candidate =
+        pattern === 0
+          ? `The ${adjective} ${noun}`
+          : pattern === 1
+            ? `${adjective} ${noun}`
+            : pattern === 2
+              ? `${person}'s ${noun}`
+              : pattern === 3
+                ? `${place} ${noun}`
+                : pattern === 4
+                  ? `${person} & ${partner}'s ${noun}`
+                  : pattern === 5
+                    ? `${adjective} ${noun} Co.`
+                    : concept;
       const candidateWords = normalizeText(candidate)
         .split(" ")
         .filter((word) => word && word !== "the");
