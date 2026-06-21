@@ -876,21 +876,21 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   line-height: 1.1;
 }
 
-.restaurant-food-truck-art {
+.restaurant-expansion-art {
   position: relative;
   justify-self: end;
   width: min(100%, 390px);
   aspect-ratio: 2 / 1;
 }
 
-.restaurant-food-truck-art img {
+.restaurant-expansion-art img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: contain;
 }
 
-.restaurant-food-truck-name {
+.restaurant-expansion-image-name {
   position: absolute;
   left: 14.7%;
   top: 32.8%;
@@ -910,7 +910,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   text-transform: uppercase;
 }
 
-.restaurant-food-truck-name span {
+.restaurant-expansion-image-name span {
   display: -webkit-box;
   max-width: 100%;
   overflow: hidden;
@@ -918,6 +918,14 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   -webkit-line-clamp: 2;
   text-overflow: ellipsis;
   white-space: normal;
+}
+
+.restaurant-expansion-art-counter-service .restaurant-expansion-image-name {
+  left: 19%;
+  top: 9%;
+  width: 62%;
+  height: 16%;
+  font-size: clamp(0.62rem, 1.28vw, 1rem);
 }
 
 .restaurant-expansion-preview {
@@ -3560,13 +3568,21 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     text-align: right;
   }
 
-  .restaurant-food-truck-art {
+  .restaurant-expansion-art {
     justify-self: center;
     width: min(100%, 330px);
   }
 
-  .restaurant-food-truck-name {
+  .restaurant-expansion-art-counter-service {
+    width: min(100%, 350px);
+  }
+
+  .restaurant-expansion-image-name {
     font-size: clamp(0.46rem, 2.55vw, 0.68rem);
+  }
+
+  .restaurant-expansion-art-counter-service .restaurant-expansion-image-name {
+    font-size: clamp(0.5rem, 2.9vw, 0.76rem);
   }
 
   .restaurant-expansion-preview {

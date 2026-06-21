@@ -963,13 +963,27 @@
     return compact ? `${compact}...` : `${value.slice(0, maxLength - 3)}...`;
   }
 
-  function renderFoodTruckVisualMarkup(profile) {
+  const expansionImageMap = {
+    "food-truck": {
+      label: "Food Truck",
+      image: "food-truck.png",
+      className: "restaurant-expansion-art-food-truck",
+    },
+    "counter-service": {
+      label: "Counter Service",
+      image: "counter-service.png",
+      className: "restaurant-expansion-art-counter-service",
+    },
+  };
+
+  function renderExpansionImageMarkup(profile) {
     if (!profile || !core.getRestaurantExpansionPreview) {
       return "";
     }
 
     const preview = core.getRestaurantExpansionPreview(profile);
-    if (preview?.current?.id !== "food-truck") {
+    const imageConfig = expansionImageMap[preview?.current?.id || ""];
+    if (!imageConfig) {
       return "";
     }
 
@@ -980,11 +994,11 @@
       <div class="restaurant-expansion-image-card">
         <div class="restaurant-expansion-image-copy">
           <span>Current restaurant</span>
-          <strong>Food Truck</strong>
+          <strong>${escapeHtml(imageConfig.label)}</strong>
         </div>
-        <div class="restaurant-food-truck-art" role="img" aria-label="${escapeHtml(`Food truck for ${restaurantName}`)}">
-          <img src="../assets/restaurant-challenge/expansions/food-truck.png" alt="" aria-hidden="true" />
-          <div class="restaurant-food-truck-name"><span>${escapeHtml(displayName)}</span></div>
+        <div class="restaurant-expansion-art ${imageConfig.className}" role="img" aria-label="${escapeHtml(`${imageConfig.label} for ${restaurantName}`)}">
+          <img src="../assets/restaurant-challenge/expansions/${escapeHtml(imageConfig.image)}" alt="" aria-hidden="true" />
+          <div class="restaurant-expansion-image-name"><span>${escapeHtml(displayName)}</span></div>
         </div>
       </div>
     `;
@@ -1239,7 +1253,7 @@
           </div>
           <p class="hero-profile-rating-note">Your rating is based on your trivia accuracy.</p>
           <p class="hero-profile-rating-note">Cash, sales, customer values, and net worth are virtual game values with no real cash value.</p>
-          ${renderFoodTruckVisualMarkup(profile)}
+          ${renderExpansionImageMarkup(profile)}
           ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
           ${renderExpansionPreviewMarkup(profile, safeSummary.stats)}
           ${renderUpgradePreviewMarkup(profile, safeSummary.stats)}
@@ -1290,7 +1304,7 @@
                         </div>
                     </div>
                     ${!state.profileEditMode && !emailConnected ? renderConnectInfoMarkup(profile) : ``}
-                    ${renderFoodTruckVisualMarkup(profile)}
+                    ${renderExpansionImageMarkup(profile)}
                     <div class="hero-profile-meta hero-profile-meta-compact">
                       <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
                       <span class="chip hero-stat-chip">🏦 Value ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
@@ -1356,7 +1370,7 @@
                     </div>
                   </div>
                   ${!state.profileEditMode && !emailConnected ? renderConnectInfoMarkup(profile) : ``}
-                  ${renderFoodTruckVisualMarkup(profile)}
+                  ${renderExpansionImageMarkup(profile)}
                   <div class="hero-profile-meta">
                     <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
                     <span class="chip hero-stat-chip">🏦 Value ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
