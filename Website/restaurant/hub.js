@@ -58,11 +58,14 @@
     activeMobileTab: getInitialMobileTab(),
     showSignIn: query.get("signin") === "1" || authCallbackMode,
     showConnectEmail: query.get("connect") === "1",
+    showGuestSaveForm: query.get("save") === "1",
     connectInfoExpanded: false,
     authMessage: authCallbackMode ? "Verifying your secure sign-in link..." : "",
     authError: "",
     connectMessage: "",
     connectError: "",
+    guestSaveMessage: "",
+    guestSaveError: "",
     profileEditMode: editMode,
     expansionMessage: "",
     expansionError: "",
@@ -749,6 +752,52 @@
     `;
   }
 
+  function renderGuestSaveMarkup(profile) {
+    if (!profile) {
+      return "";
+    }
+
+    if (!state.showGuestSaveForm) {
+      return `
+        <div class="hub-email-info">
+          <p class="helper" style="margin: 0 0 10px;">Save your restaurant to keep your customers, trivia record, and leaderboard progress. No email required.</p>
+          <button class="button button-primary button-sm" type="button" data-show-guest-save>
+            Save My Restaurant
+          </button>
+        </div>
+      `;
+    }
+
+    return `
+      <form class="hub-sign-in-form" id="hub-guest-save-form">
+        <div class="field">
+          <label class="field-label" for="hub-guest-restaurant-name">Restaurant name</label>
+          <input class="input hero-profile-input" id="hub-guest-restaurant-name" name="restaurantName" type="text" value="${escapeHtml(profile.restaurantName)}" />
+        </div>
+        <div class="field">
+          <label class="field-label" for="hub-guest-player-name">Player name</label>
+          <input class="input hero-profile-input" id="hub-guest-player-name" name="playerName" type="text" value="${escapeHtml(profile.playerName || "Guest Player")}" />
+        </div>
+        <div class="field">
+          <label class="field-label" for="hub-guest-email">Email address <span style="font-weight: 500;">(optional)</span></label>
+          <input class="input hero-profile-input" id="hub-guest-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" />
+        </div>
+        <p class="helper" style="margin: 0;">Other players only see your restaurant name. Email is optional and only helps you recover progress later.</p>
+        <label class="checkbox-row profile-age-confirm" for="hub-guest-age-confirm">
+          <input id="hub-guest-age-confirm" name="ageConfirm" type="checkbox" />
+          <span>I am 13 or older.</span>
+        </label>
+        <p class="helper legal-form-note" style="margin: 0;">By saving, you agree to the <a href="/terms/" target="_blank" rel="noopener">Terms of Use</a> and acknowledge the <a href="/privacy/" target="_blank" rel="noopener">Privacy Policy</a>.</p>
+        <p class="helper ${state.guestSaveMessage ? "" : "hidden"}" id="hub-guest-save-message" aria-live="polite">${escapeHtml(state.guestSaveMessage)}</p>
+        <p class="error ${state.guestSaveError ? "" : "hidden"}" id="hub-guest-save-error" aria-live="polite">${escapeHtml(state.guestSaveError)}</p>
+        <div class="hero-profile-edit-row">
+          <button class="button button-primary button-sm" id="hub-guest-save-submit" type="submit">Save My Restaurant</button>
+          <button class="button button-muted button-sm" id="hub-guest-save-cancel" type="button">Cancel</button>
+        </div>
+      </form>
+    `;
+  }
+
   function renderConnectEmailMarkup(profile) {
     if (!profile || !state.showConnectEmail) {
       return "";
@@ -1302,10 +1351,11 @@
                         <h2 class="hero-profile-name">${hasSavedProgress ? escapeHtml(profile.restaurantName) : "Play first, then register to save your virtual restaurant."}</h2>
                         <p class="copy compact-copy" style="margin: 4px 0 0;">${
                           hasSavedProgress
-                            ? "This virtual restaurant is saved on this device. Add email recovery when you are ready."
+                            ? "This virtual restaurant is saved on this device. Save your restaurant to keep your leaderboard progress."
                             : "You can keep playing as a guest, but registering after your next game keeps your customers and leaderboard progress with you."
                         }</p>
                         ${renderSignInMarkup()}
+                        ${hasSavedProgress ? renderGuestSaveMarkup(profile) : ""}
                       </div>
                       <a class="button button-primary button-sm" href="${playAgainTarget.href}">Play ${escapeHtml(playAgainTarget.name)}</a>
                       ${guestProgressMarkup}
@@ -1433,6 +1483,90 @@
         renderHero();
       });
     });
+
+    elements.hero.querySelectorAll("[data-show-guest-save]").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.showGuestSaveForm = true;
+        state.guestSaveMessage = "";
+        state.guestSaveError = "";
+        renderHero();
+      });
+    });
+
+    const guestSaveCancel = document.getElementById("hub-guest-save-cancel");
+    if (guestSaveCancel) {
+      guestSaveCancel.addEventListener("click", () => {
+        state.showGuestSaveForm = false;
+        state.guestSaveMessage = "";
+        state.guestSaveError = "";
+        renderHero();
+      });
+    }
+
+    const guestSaveForm = document.getElementById("hub-guest-save-form");
+    if (guestSaveForm && profile?.isGuest) {
+      guestSaveForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const restaurantName = document.getElementById("hub-guest-restaurant-name").value.trim();
+        const playerName = document.getElementById("hub-guest-player-name").value.trim();
+        const email = document.getElementById("hub-guest-email").value.trim();
+        const ageConfirmed = document.getElementById("hub-guest-age-confirm").checked;
+        const submitButton = document.getElementById("hub-guest-save-submit");
+        const validation = core.validateProfileInput(playerName, restaurantName);
+
+        state.guestSaveMessage = "";
+        state.guestSaveError = "";
+
+        if (!validation.ok) {
+          state.guestSaveError = validation.message;
+          renderHero();
+          return;
+        }
+
+        if (!ageConfirmed) {
+          state.guestSaveError = "To save progress, you must be 13 or older. If you are under 13, keep playing as a guest and do not enter personal information.";
+          renderHero();
+          return;
+        }
+
+        if (email && !email.includes("@")) {
+          state.guestSaveError = "Enter a valid email address, or leave email blank for now.";
+          renderHero();
+          return;
+        }
+
+        submitButton.disabled = true;
+        submitButton.textContent = email ? "Sending..." : "Saving...";
+        core.updateProfile({
+          ...profile,
+          playerName,
+          restaurantName,
+          restaurantSlug: core.slugify(restaurantName),
+          restaurantNameUpdatedAt: new Date().toISOString(),
+          isGuest: false,
+        });
+        core.setActiveProfileId(profile.id);
+
+        if (!email) {
+          state.showGuestSaveForm = false;
+          state.guestSaveMessage = "";
+          renderAll();
+          return;
+        }
+
+        try {
+          await core.sendEmailSignInLink(email, { profileId: profile.id });
+          state.showGuestSaveForm = false;
+          state.connectMessage = "Check your email and tap the secure link to connect this virtual restaurant.";
+          renderAll();
+        } catch (error) {
+          state.guestSaveError = error instanceof Error ? error.message : "Unable to send the email link.";
+          submitButton.disabled = false;
+          submitButton.textContent = "Save My Restaurant";
+          renderHero();
+        }
+      });
+    }
 
     elements.hero.querySelectorAll("[data-show-connect-email]").forEach((button) => {
       button.addEventListener("click", () => {

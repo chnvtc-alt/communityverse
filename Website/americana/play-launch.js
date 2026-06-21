@@ -1277,9 +1277,13 @@
           <div class="hero-card result-followup-card" style="margin-top: 0; padding: 16px;">
             <p class="kicker" style="margin: 0 0 6px;">Trivia % Leaderboard</p>
             <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">Congratulations! You completed your 4th game.</h3>
-            <p class="copy" style="margin: 0 0 12px;">You are now eligible for the Trivia % Leaderboard.</p>
+            <p class="copy" style="margin: 0 0 12px;">${isGuest ? "Save your restaurant to keep your Trivia % leaderboard progress. No email required." : "You are now eligible for the Trivia % Leaderboard."}</p>
             <div class="button-row">
-              <a class="button button-hot" href="/restaurant/?hub=1&metric=rating#leaderboard-panel">View Trivia % Leaderboard</a>
+              ${
+                isGuest
+                  ? `<button class="button button-hot" id="milestone-save-button" type="button">Save My Restaurant</button>`
+                  : `<a class="button button-hot" href="/restaurant/?hub=1&metric=rating#leaderboard-panel">View Trivia % Leaderboard</a>`
+              }
             </div>
           </div>
         `
@@ -1421,6 +1425,12 @@
     }
 
     if (isGuest && !state.showProfileForm) {
+      document.getElementById("milestone-save-button")?.addEventListener("click", () => {
+        state.showProfileForm = true;
+        state.registrationMessage = "";
+        renderAll();
+      });
+
       document.getElementById("register-now-button").addEventListener("click", () => {
         state.showProfileForm = true;
         state.registrationMessage = "";
