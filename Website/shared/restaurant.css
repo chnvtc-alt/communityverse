@@ -893,9 +893,9 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 .restaurant-expansion-image-name {
   position: absolute;
   left: 14.7%;
-  top: 32.8%;
+  top: 33.7%;
   width: 45.5%;
-  height: 14.4%;
+  height: 13.2%;
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -903,9 +903,9 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   padding: 0 2%;
   color: #1f4639;
   font-family: Arial, sans-serif;
-  font-size: clamp(0.55rem, 1.18vw, 0.9rem);
+  font-size: clamp(0.52rem, 1.08vw, 0.82rem);
   font-weight: 900;
-  line-height: 0.95;
+  line-height: 0.9;
   text-align: center;
   text-transform: uppercase;
 }
