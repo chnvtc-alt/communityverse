@@ -1721,14 +1721,15 @@
     const currentTriviaRankMarkup =
       state.metric === "rating" && currentRow
         ? `
-          <div class="leaderboard-current-rank">
+          <div class="leaderboard-current-rank-card">
             <p class="kicker">Your Trivia % Rank</p>
-            <div class="leaderboard-row leaderboard-row-current">
-              <div class="leaderboard-rank">${currentRow.rank}</div>
-              <div class="leaderboard-main">
-                <p class="leaderboard-name">${escapeHtml(currentRow.restaurantName)}</p>
+            <div class="leaderboard-current-rank-main">
+              <div class="leaderboard-current-rank-number">#${currentRow.rank}</div>
+              <div>
+                <p class="leaderboard-current-rank-name">${escapeHtml(currentRow.restaurantName)}</p>
+                <p class="leaderboard-current-rank-label">Your current position</p>
               </div>
-              <p class="leaderboard-value">${formatMetricValue(currentRow.value, state.metric)}</p>
+              <p class="leaderboard-current-rank-value">${formatMetricValue(currentRow.value, state.metric)}</p>
             </div>
           </div>
         `
