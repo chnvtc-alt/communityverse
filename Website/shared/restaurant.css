@@ -843,6 +843,227 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   white-space: nowrap;
 }
 
+.restaurant-expansion-visual {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(120px, 0.85fr) minmax(220px, 1.15fr);
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(47, 111, 82, 0.14);
+  background: linear-gradient(180deg, rgba(255, 252, 244, 0.96), rgba(240, 247, 240, 0.82));
+  overflow: hidden;
+}
+
+.restaurant-expansion-visual-copy {
+  display: grid;
+  gap: 4px;
+  font-family: Arial, sans-serif;
+}
+
+.restaurant-expansion-visual-copy span {
+  color: var(--green);
+  font-size: 0.74rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.restaurant-expansion-visual-copy strong {
+  color: var(--ink);
+  font-size: 1.05rem;
+  line-height: 1.1;
+}
+
+.restaurant-expansion-art {
+  position: relative;
+  min-height: 108px;
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(126, 174, 169, 0.22), rgba(126, 174, 169, 0.04) 58%),
+    linear-gradient(0deg, rgba(47, 111, 82, 0.12) 0 24px, transparent 24px);
+  overflow: hidden;
+}
+
+.restaurant-expansion-art::before,
+.restaurant-expansion-art::after {
+  content: "";
+  position: absolute;
+  bottom: 22px;
+  width: 46px;
+  height: 38px;
+  border-radius: 20px 20px 4px 4px;
+  background: rgba(47, 111, 82, 0.12);
+}
+
+.restaurant-expansion-art::before {
+  left: 18px;
+}
+
+.restaurant-expansion-art::after {
+  right: 18px;
+}
+
+.restaurant-expansion-structure {
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  width: min(280px, 84%);
+  height: 62px;
+  transform: translateX(-50%);
+  border-radius: 12px 18px 10px 10px;
+  background: #f8f0dc;
+  border: 2px solid rgba(39, 55, 44, 0.24);
+  box-shadow: 0 12px 20px rgba(39, 55, 44, 0.14);
+}
+
+.restaurant-expansion-roof {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  top: -16px;
+  height: 18px;
+  border-radius: 12px 12px 4px 4px;
+  background: #cf7d1e;
+  border: 2px solid rgba(39, 55, 44, 0.2);
+}
+
+.restaurant-expansion-sign {
+  position: absolute;
+  left: 16px;
+  right: 78px;
+  top: 10px;
+  min-width: 0;
+  height: 23px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  border-radius: 7px;
+  background: #1f4639;
+  color: #fff9ea;
+  font-family: Arial, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1;
+}
+
+.restaurant-expansion-sign span {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.restaurant-expansion-awning {
+  position: absolute;
+  left: 16px;
+  right: 78px;
+  top: 37px;
+  height: 8px;
+  border-radius: 0 0 8px 8px;
+  background: repeating-linear-gradient(90deg, #cf0031 0 18px, #fff6df 18px 36px);
+}
+
+.restaurant-expansion-window,
+.restaurant-expansion-door {
+  position: absolute;
+  bottom: 8px;
+  border-radius: 5px 5px 3px 3px;
+  border: 1px solid rgba(39, 55, 44, 0.22);
+  background: rgba(122, 170, 174, 0.42);
+}
+
+.restaurant-expansion-window {
+  width: 24px;
+  height: 19px;
+}
+
+.restaurant-expansion-window-left {
+  left: 22px;
+}
+
+.restaurant-expansion-window-right {
+  right: 54px;
+}
+
+.restaurant-expansion-door {
+  right: 18px;
+  width: 23px;
+  height: 32px;
+  background: #6e4f35;
+}
+
+.restaurant-expansion-wheel {
+  position: absolute;
+  bottom: -10px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #1f2d27;
+  border: 4px solid #f8f0dc;
+}
+
+.restaurant-expansion-wheel-one {
+  left: 34px;
+}
+
+.restaurant-expansion-wheel-two {
+  right: 34px;
+}
+
+.restaurant-expansion-visual-counter-service .restaurant-expansion-wheel,
+.restaurant-expansion-visual-small-diner .restaurant-expansion-wheel,
+.restaurant-expansion-visual-family-restaurant .restaurant-expansion-wheel,
+.restaurant-expansion-visual-regional-favorite .restaurant-expansion-wheel,
+.restaurant-expansion-visual-local-landmark .restaurant-expansion-wheel {
+  display: none;
+}
+
+.restaurant-expansion-visual-counter-service .restaurant-expansion-structure {
+  height: 74px;
+  border-radius: 9px;
+}
+
+.restaurant-expansion-visual-small-diner .restaurant-expansion-structure {
+  height: 82px;
+  width: min(300px, 88%);
+  border-radius: 8px;
+}
+
+.restaurant-expansion-visual-family-restaurant .restaurant-expansion-structure,
+.restaurant-expansion-visual-regional-favorite .restaurant-expansion-structure,
+.restaurant-expansion-visual-local-landmark .restaurant-expansion-structure {
+  height: 88px;
+  width: min(326px, 90%);
+  border-radius: 8px;
+}
+
+.restaurant-expansion-visual-family-restaurant .restaurant-expansion-roof,
+.restaurant-expansion-visual-regional-favorite .restaurant-expansion-roof,
+.restaurant-expansion-visual-local-landmark .restaurant-expansion-roof {
+  left: -8px;
+  right: -8px;
+  top: -20px;
+  height: 22px;
+}
+
+.restaurant-expansion-visual-regional-favorite .restaurant-expansion-structure,
+.restaurant-expansion-visual-local-landmark .restaurant-expansion-structure {
+  background: #fff7e6;
+  box-shadow: 0 14px 22px rgba(39, 55, 44, 0.18);
+}
+
+.restaurant-expansion-visual-local-landmark .restaurant-expansion-sign {
+  left: 34px;
+  right: 34px;
+  top: 9px;
+  height: 27px;
+  font-size: 0.76rem;
+}
+
 .restaurant-expansion-preview {
   width: 100%;
   display: grid;
@@ -3464,6 +3685,35 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   .restaurant-value-breakdown-row {
     min-height: 34px;
     padding: 6px 7px;
+  }
+
+  .restaurant-expansion-visual {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 14px;
+  }
+
+  .restaurant-expansion-visual-copy {
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+  }
+
+  .restaurant-expansion-visual-copy strong {
+    font-size: 0.94rem;
+    text-align: right;
+  }
+
+  .restaurant-expansion-art {
+    min-height: 92px;
+  }
+
+  .restaurant-expansion-structure {
+    width: min(250px, 88%);
+  }
+
+  .restaurant-expansion-sign {
+    font-size: 0.68rem;
   }
 
   .restaurant-expansion-preview {
