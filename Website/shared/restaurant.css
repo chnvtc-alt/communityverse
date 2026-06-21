@@ -905,17 +905,19 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   font-family: Arial, sans-serif;
   font-size: clamp(0.55rem, 1.18vw, 0.9rem);
   font-weight: 900;
-  line-height: 1;
+  line-height: 0.95;
   text-align: center;
   text-transform: uppercase;
 }
 
 .restaurant-food-truck-name span {
-  display: block;
+  display: -webkit-box;
   max-width: 100%;
   overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .restaurant-expansion-preview {
@@ -3564,7 +3566,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .restaurant-food-truck-name {
-    font-size: clamp(0.54rem, 3vw, 0.74rem);
+    font-size: clamp(0.46rem, 2.55vw, 0.68rem);
   }
 
   .restaurant-expansion-preview {
