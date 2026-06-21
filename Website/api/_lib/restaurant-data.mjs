@@ -393,8 +393,9 @@ function publicOverallStatsFor(profile, publicRestaurantSlugs) {
     return combinedStats;
   }, emptyStats());
 
-  if (!stats.gamesPlayed && safeProfile.stats?.gamesPlayed) {
-    addStats(stats, safeProfile.stats);
+  if ((Number(safeProfile.stats?.gamesPlayed) || 0) > stats.gamesPlayed) {
+    stats.gamesPlayed = Number(safeProfile.stats.gamesPlayed) || 0;
+    stats.totalCorrectAnswers = Number(safeProfile.stats.totalCorrectAnswers) || 0;
   }
 
   stats.restaurantValue = getRestaurantValue(safeProfile, stats, "", publicRestaurantSlugs);
