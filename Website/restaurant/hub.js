@@ -984,6 +984,11 @@
       image: "family-restaurant.png",
       className: "restaurant-expansion-art-family-restaurant",
     },
+    "regional-favorite": {
+      label: "Regional Favorite",
+      image: "regional-favorite.png",
+      className: "restaurant-expansion-art-regional-favorite",
+    },
   };
 
   function renderExpansionImageMarkup(profile) {

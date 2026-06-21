@@ -944,6 +944,14 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   font-size: clamp(0.56rem, 1.1vw, 0.86rem);
 }
 
+.restaurant-expansion-art-regional-favorite .restaurant-expansion-image-name {
+  left: 35%;
+  top: 22.8%;
+  width: 30%;
+  height: 13.8%;
+  font-size: clamp(0.5rem, 1vw, 0.78rem);
+}
+
 .restaurant-expansion-preview {
   width: 100%;
   display: grid;
@@ -3601,6 +3609,10 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     width: min(100%, 360px);
   }
 
+  .restaurant-expansion-art-regional-favorite {
+    width: min(100%, 360px);
+  }
+
   .restaurant-expansion-image-name {
     font-size: clamp(0.46rem, 2.55vw, 0.68rem);
   }
@@ -3615,6 +3627,10 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
   .restaurant-expansion-art-family-restaurant .restaurant-expansion-image-name {
     font-size: clamp(0.46rem, 2.55vw, 0.68rem);
+  }
+
+  .restaurant-expansion-art-regional-favorite .restaurant-expansion-image-name {
+    font-size: clamp(0.44rem, 2.4vw, 0.64rem);
   }
 
   .restaurant-expansion-preview {
