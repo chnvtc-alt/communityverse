@@ -947,6 +947,44 @@
     `;
   }
 
+  function getCompactRestaurantName(name, maxLength = 26) {
+    const value = String(name || "Your Restaurant").trim() || "Your Restaurant";
+    if (value.length <= maxLength) {
+      return value;
+    }
+
+    const cutPoint = value.lastIndexOf(" ", maxLength - 3);
+    const slicePoint = cutPoint > 8 ? cutPoint : maxLength - 3;
+    return `${value.slice(0, slicePoint).replace(/[.,;:!?-]+$/, "")}...`;
+  }
+
+  function renderFoodTruckVisualMarkup(profile) {
+    if (!profile || !core.getRestaurantExpansionPreview) {
+      return "";
+    }
+
+    const preview = core.getRestaurantExpansionPreview(profile);
+    if (preview?.current?.id !== "food-truck") {
+      return "";
+    }
+
+    const restaurantName = profile.restaurantName || "Your Restaurant";
+    const displayName = getCompactRestaurantName(restaurantName);
+
+    return `
+      <div class="restaurant-expansion-image-card">
+        <div class="restaurant-expansion-image-copy">
+          <span>Current restaurant</span>
+          <strong>Food Truck</strong>
+        </div>
+        <div class="restaurant-food-truck-art" role="img" aria-label="${escapeHtml(`Food truck for ${restaurantName}`)}">
+          <img src="../assets/restaurant-challenge/expansions/food-truck.png" alt="" aria-hidden="true" />
+          <div class="restaurant-food-truck-name"><span>${escapeHtml(displayName)}</span></div>
+        </div>
+      </div>
+    `;
+  }
+
   function getRestaurantCreditForEntry(entry, restaurantSlug) {
     if (!entry || !restaurantSlug) {
       return null;
@@ -1196,6 +1234,7 @@
           </div>
           <p class="hero-profile-rating-note">Your rating is based on your trivia accuracy.</p>
           <p class="hero-profile-rating-note">Cash, sales, customer values, and net worth are virtual game values with no real cash value.</p>
+          ${renderFoodTruckVisualMarkup(profile)}
           ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
           ${renderExpansionPreviewMarkup(profile, safeSummary.stats)}
           ${renderUpgradePreviewMarkup(profile, safeSummary.stats)}
@@ -1246,6 +1285,7 @@
                         </div>
                     </div>
                     ${!state.profileEditMode && !emailConnected ? renderConnectInfoMarkup(profile) : ``}
+                    ${renderFoodTruckVisualMarkup(profile)}
                     <div class="hero-profile-meta hero-profile-meta-compact">
                       <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
                       <span class="chip hero-stat-chip">🏦 Value ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
@@ -1311,6 +1351,7 @@
                     </div>
                   </div>
                   ${!state.profileEditMode && !emailConnected ? renderConnectInfoMarkup(profile) : ``}
+                  ${renderFoodTruckVisualMarkup(profile)}
                   <div class="hero-profile-meta">
                     <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
                     <span class="chip hero-stat-chip">🏦 Value ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>

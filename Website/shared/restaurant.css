@@ -843,6 +843,80 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   white-space: nowrap;
 }
 
+.restaurant-expansion-image-card {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(120px, 0.7fr) minmax(260px, 1.3fr);
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(47, 111, 82, 0.14);
+  background: linear-gradient(180deg, rgba(255, 252, 244, 0.96), rgba(240, 247, 240, 0.8));
+}
+
+.restaurant-expansion-image-copy {
+  display: grid;
+  gap: 4px;
+  font-family: Arial, sans-serif;
+}
+
+.restaurant-expansion-image-copy span {
+  color: var(--green);
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.restaurant-expansion-image-copy strong {
+  color: var(--ink);
+  font-size: 1.05rem;
+  line-height: 1.1;
+}
+
+.restaurant-food-truck-art {
+  position: relative;
+  justify-self: end;
+  width: min(100%, 390px);
+  aspect-ratio: 2 / 1;
+}
+
+.restaurant-food-truck-art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.restaurant-food-truck-name {
+  position: absolute;
+  left: 15%;
+  top: 33.5%;
+  width: 44.5%;
+  height: 12.5%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 2%;
+  color: #1f4639;
+  font-family: Arial, sans-serif;
+  font-size: clamp(0.55rem, 1.18vw, 0.9rem);
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.restaurant-food-truck-name span {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .restaurant-expansion-preview {
   width: 100%;
   display: grid;
@@ -3464,6 +3538,32 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   .restaurant-value-breakdown-row {
     min-height: 34px;
     padding: 6px 7px;
+  }
+
+  .restaurant-expansion-image-card {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 9px;
+    border-radius: 14px;
+  }
+
+  .restaurant-expansion-image-copy {
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+  }
+
+  .restaurant-expansion-image-copy strong {
+    font-size: 0.94rem;
+    text-align: right;
+  }
+
+  .restaurant-food-truck-art {
+    justify-self: center;
+    width: min(100%, 330px);
+  }
+
+  .restaurant-food-truck-name {
+    font-size: clamp(0.54rem, 3vw, 0.74rem);
   }
 
   .restaurant-expansion-preview {
