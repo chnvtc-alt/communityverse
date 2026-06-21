@@ -767,7 +767,7 @@
         <div class="hub-email-info">
           <p class="helper" style="margin: 0 0 10px;">Save your restaurant to keep your customers, trivia record, and leaderboard progress. No email required.</p>
           <button class="button button-primary button-sm" type="button" data-show-guest-save>
-            Save My Restaurant
+            Name &amp; Save My Restaurant
           </button>
         </div>
       `;
@@ -796,7 +796,7 @@
         <p class="helper ${state.guestSaveMessage ? "" : "hidden"}" id="hub-guest-save-message" aria-live="polite">${escapeHtml(state.guestSaveMessage)}</p>
         <p class="error ${state.guestSaveError ? "" : "hidden"}" id="hub-guest-save-error" aria-live="polite">${escapeHtml(state.guestSaveError)}</p>
         <div class="hero-profile-edit-row">
-          <button class="button button-primary button-sm" id="hub-guest-save-submit" type="submit">Save My Restaurant</button>
+          <button class="button button-primary button-sm" id="hub-guest-save-submit" type="submit">Name &amp; Save My Restaurant</button>
           <button class="button button-muted button-sm" id="hub-guest-save-cancel" type="button">Cancel</button>
         </div>
       </form>
@@ -1574,7 +1574,7 @@
         } catch (error) {
           state.guestSaveError = error instanceof Error ? error.message : "Unable to send the email link.";
           submitButton.disabled = false;
-          submitButton.textContent = "Save My Restaurant";
+          submitButton.textContent = "Name & Save My Restaurant";
           renderHero();
         }
       });
