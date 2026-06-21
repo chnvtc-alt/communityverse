@@ -928,6 +928,14 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   font-size: clamp(0.62rem, 1.28vw, 1rem);
 }
 
+.restaurant-expansion-art-small-diner .restaurant-expansion-image-name {
+  left: 29.5%;
+  top: 15%;
+  width: 41%;
+  height: 14.5%;
+  font-size: clamp(0.56rem, 1.12vw, 0.86rem);
+}
+
 .restaurant-expansion-preview {
   width: 100%;
   display: grid;
@@ -3577,12 +3585,20 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     width: min(100%, 350px);
   }
 
+  .restaurant-expansion-art-small-diner {
+    width: min(100%, 350px);
+  }
+
   .restaurant-expansion-image-name {
     font-size: clamp(0.46rem, 2.55vw, 0.68rem);
   }
 
   .restaurant-expansion-art-counter-service .restaurant-expansion-image-name {
     font-size: clamp(0.5rem, 2.9vw, 0.76rem);
+  }
+
+  .restaurant-expansion-art-small-diner .restaurant-expansion-image-name {
+    font-size: clamp(0.46rem, 2.55vw, 0.68rem);
   }
 
   .restaurant-expansion-preview {

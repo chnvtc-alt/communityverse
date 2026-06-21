@@ -974,6 +974,11 @@
       image: "counter-service.png",
       className: "restaurant-expansion-art-counter-service",
     },
+    "small-diner": {
+      label: "Small Diner",
+      image: "small-diner.png",
+      className: "restaurant-expansion-art-small-diner",
+    },
   };
 
   function renderExpansionImageMarkup(profile) {
