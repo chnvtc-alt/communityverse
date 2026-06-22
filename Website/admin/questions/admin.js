@@ -31,6 +31,7 @@ const elements = {
   questionsPanel: document.querySelector("#questions-panel"),
   restaurantsPanel: document.querySelector("#restaurants-panel"),
   profilesPanel: document.querySelector("#profiles-panel"),
+  statsPanel: document.querySelector("#stats-panel"),
   newCustomerButton: document.querySelector("#new-customer-button"),
   refreshCustomersButton: document.querySelector("#refresh-customers-button"),
   clearCustomerFiltersButton: document.querySelector("#clear-customer-filters-button"),
@@ -107,6 +108,10 @@ const elements = {
   profileFilterQuery: document.querySelector("#profile-filter-query"),
   profileFilterType: document.querySelector("#profile-filter-type"),
   profileFilterActivity: document.querySelector("#profile-filter-activity"),
+  refreshStatsButton: document.querySelector("#refresh-stats-button"),
+  statsCount: document.querySelector("#stats-count"),
+  statsDashboard: document.querySelector("#stats-dashboard"),
+  statsMessage: document.querySelector("#stats-message"),
   login: document.querySelector("#login-dialog"),
   loginForm: document.querySelector("#login-form"),
   loginError: document.querySelector("#login-error"),
@@ -146,6 +151,7 @@ let customers = [];
 let customerSortMode = "recent";
 let restaurants = [];
 let profiles = [];
+let statsProfiles = [];
 let filterTimer = 0;
 let customerFilterTimer = 0;
 let restaurantFilterTimer = 0;
@@ -443,6 +449,7 @@ function setActiveTab(tabName) {
   elements.customersPanel.hidden = tabName !== "customers";
   elements.restaurantsPanel.hidden = tabName !== "restaurants";
   elements.profilesPanel.hidden = tabName !== "profiles";
+  elements.statsPanel.hidden = tabName !== "stats";
 }
 
 function populateDatalist(id, values) {
@@ -561,6 +568,12 @@ function showProfileMessage(text, isError = false) {
   elements.profileMessage.textContent = text;
   elements.profileMessage.classList.toggle("message-error", isError);
   elements.profileMessage.hidden = !text;
+}
+
+function showStatsMessage(text, isError = false) {
+  elements.statsMessage.textContent = text;
+  elements.statsMessage.classList.toggle("message-error", isError);
+  elements.statsMessage.hidden = !text;
 }
 
 function createCustomerId(name) {
@@ -1215,6 +1228,279 @@ async function saveProfileName(profile, card) {
   }
 }
 
+function formatWholeNumber(value) {
+  return Number(value || 0).toLocaleString();
+}
+
+function formatPercent(part, total) {
+  if (!total) {
+    return "0%";
+  }
+  return `${Math.round((Number(part || 0) / total) * 100)}%`;
+}
+
+function profileSessions(profile) {
+  return Array.isArray(profile?.recentSessions) ? profile.recentSessions : [];
+}
+
+function profileSessionDates(profile) {
+  return profileSessions(profile)
+    .map((session) => session?.playedAt)
+    .filter(Boolean);
+}
+
+function profileRestaurantName(slug) {
+  const normalizedSlug = slugify(slug || "");
+  const restaurant = restaurants.find((item) => item.slug === normalizedSlug);
+  if (restaurant) {
+    return restaurant.name || restaurant.publicGameName || normalizedSlug;
+  }
+  return normalizedSlug
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function addMapCount(map, key, count = 1) {
+  const safeKey = String(key || "").trim();
+  if (!safeKey) return;
+  map.set(safeKey, (map.get(safeKey) || 0) + count);
+}
+
+function mostRecentIso(values) {
+  const timestamps = values
+    .map((value) => Date.parse(value || ""))
+    .filter((value) => Number.isFinite(value));
+  return timestamps.length ? new Date(Math.max(...timestamps)).toISOString() : "";
+}
+
+function buildLastDayKeys(dayCount = 14) {
+  const today = new Date();
+  return Array.from({ length: dayCount }, (_, index) => {
+    const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() - (dayCount - 1 - index));
+    return dateKey(date.toISOString());
+  });
+}
+
+function getStatsSummary(list) {
+  const profilesWithGames = list.filter((profile) => (Number(profile.stats?.gamesPlayed) || 0) > 0);
+  const savedCount = list.filter((profile) => !profile.isGuest).length;
+  const emailConnectedCount = list.filter((profile) => profile.emailConnected).length;
+  const returnedCount = list.filter((profile) => getProfileActivity(profile).returned).length;
+  const oneDayCount = profilesWithGames.filter((profile) => !getProfileActivity(profile).returned).length;
+  const playedTodayCount = profilesWithGames.filter((profile) => getProfileActivity(profile).daysSinceLast === 0).length;
+  const quietCount = profilesWithGames.filter((profile) => {
+    const days = getProfileActivity(profile).daysSinceLast;
+    return days !== null && days >= 7;
+  }).length;
+  const fourGameCount = profilesWithGames.filter((profile) => (Number(profile.stats?.gamesPlayed) || 0) >= 4).length;
+  const totalGames = list.reduce((total, profile) => total + (Number(profile.stats?.gamesPlayed) || 0), 0);
+  const totalSessionsTracked = list.reduce((total, profile) => total + profileSessions(profile).length, 0);
+  const lastPlayedAt = mostRecentIso(list.map((profile) => profile.lastPlayedAt));
+
+  return {
+    totalProfiles: list.length,
+    profilesWithGames: profilesWithGames.length,
+    savedCount,
+    guestCount: list.length - savedCount,
+    emailConnectedCount,
+    returnedCount,
+    oneDayCount,
+    playedTodayCount,
+    quietCount,
+    fourGameCount,
+    totalGames,
+    totalSessionsTracked,
+    lastPlayedAt,
+  };
+}
+
+function getDailyPlayRows(list, dayCount = 14) {
+  const dayCounts = new Map(buildLastDayKeys(dayCount).map((key) => [key, 0]));
+  list.forEach((profile) => {
+    profileSessionDates(profile).forEach((playedAt) => {
+      const key = dateKey(playedAt);
+      if (dayCounts.has(key)) {
+        dayCounts.set(key, (dayCounts.get(key) || 0) + 1);
+      }
+    });
+  });
+
+  return [...dayCounts.entries()].reverse().map(([key, games]) => ({
+    label: formatShortDate(`${key}T12:00:00`),
+    games,
+  }));
+}
+
+function getNewRestaurantRows(list, dayCount = 14) {
+  const dayCounts = new Map(buildLastDayKeys(dayCount).map((key) => [key, 0]));
+  list.forEach((profile) => {
+    const key = dateKey(profile.createdAt);
+    if (dayCounts.has(key)) {
+      dayCounts.set(key, (dayCounts.get(key) || 0) + 1);
+    }
+  });
+
+  return [...dayCounts.entries()].reverse().map(([key, created]) => ({
+    label: formatShortDate(`${key}T12:00:00`),
+    created,
+  }));
+}
+
+function getTopPublicGameRows(list) {
+  const gamesBySlug = new Map();
+  const playersBySlug = new Map();
+
+  list.forEach((profile) => {
+    const restaurantStats = profile.restaurantStats && typeof profile.restaurantStats === "object"
+      ? profile.restaurantStats
+      : {};
+    Object.entries(restaurantStats).forEach(([slug, stats]) => {
+      const games = Number(stats?.gamesPlayed) || 0;
+      if (!slug || !games) return;
+      addMapCount(gamesBySlug, slug, games);
+      addMapCount(playersBySlug, slug, 1);
+    });
+  });
+
+  return [...gamesBySlug.entries()]
+    .map(([slug, games]) => ({
+      name: profileRestaurantName(slug),
+      games,
+      players: playersBySlug.get(slug) || 0,
+    }))
+    .sort((left, right) => right.games - left.games || left.name.localeCompare(right.name))
+    .slice(0, 8);
+}
+
+function getMostActiveProfileRows(list) {
+  return [...list]
+    .filter((profile) => (Number(profile.stats?.gamesPlayed) || 0) > 0)
+    .sort((left, right) => (Number(right.stats?.gamesPlayed) || 0) - (Number(left.stats?.gamesPlayed) || 0))
+    .slice(0, 8)
+    .map((profile) => ({
+      name: profile.restaurantName || "Unnamed Restaurant",
+      games: Number(profile.stats?.gamesPlayed) || 0,
+      activeDays: getProfileActivity(profile).activeDays,
+      saved: !profile.isGuest,
+    }));
+}
+
+function statsCard(label, value, note = "") {
+  return `
+    <article class="stats-card">
+      <p class="stats-label">${escapeHtml(label)}</p>
+      <p class="stats-value">${escapeHtml(value)}</p>
+      ${note ? `<p class="stats-note">${escapeHtml(note)}</p>` : ""}
+    </article>
+  `;
+}
+
+function statsList(title, rows, emptyText, rowTemplate) {
+  return `
+    <section class="stats-section">
+      <h2>${escapeHtml(title)}</h2>
+      <div class="stats-list">
+        ${
+          rows.length
+            ? rows.map(rowTemplate).join("")
+            : `<p class="empty-state">${escapeHtml(emptyText)}</p>`
+        }
+      </div>
+    </section>
+  `;
+}
+
+function renderStats() {
+  const summary = getStatsSummary(statsProfiles);
+  elements.statsCount.textContent = `${formatWholeNumber(summary.totalProfiles)} restaurant profile${summary.totalProfiles === 1 ? "" : "s"}`;
+
+  if (!statsProfiles.length) {
+    elements.statsDashboard.innerHTML = '<div class="empty-state">No player stats are available yet.</div>';
+    return;
+  }
+
+  const dailyRows = getDailyPlayRows(statsProfiles);
+  const createdRows = getNewRestaurantRows(statsProfiles);
+  const topPublicGames = getTopPublicGameRows(statsProfiles);
+  const activeProfiles = getMostActiveProfileRows(statsProfiles);
+
+  elements.statsDashboard.innerHTML = `
+    <section class="stats-grid">
+      ${statsCard("Saved restaurants", formatWholeNumber(summary.savedCount), `${formatPercent(summary.savedCount, summary.totalProfiles)} of all profiles`)}
+      ${statsCard("Still guest-only", formatWholeNumber(summary.guestCount), `${formatPercent(summary.guestCount, summary.totalProfiles)} of all profiles`)}
+      ${statsCard("Returning players", formatWholeNumber(summary.returnedCount), `${formatPercent(summary.returnedCount, summary.profilesWithGames)} of players with games`)}
+      ${statsCard("One-day players", formatWholeNumber(summary.oneDayCount), `${formatPercent(summary.oneDayCount, summary.profilesWithGames)} of players with games`)}
+      ${statsCard("Total games", formatWholeNumber(summary.totalGames), `${formatWholeNumber(summary.totalSessionsTracked)} recent sessions tracked`)}
+      ${statsCard("Played today", formatWholeNumber(summary.playedTodayCount), "Restaurant profiles active today")}
+      ${statsCard("Reached 4 games", formatWholeNumber(summary.fourGameCount), `${formatPercent(summary.fourGameCount, summary.profilesWithGames)} of players with games`)}
+      ${statsCard("Email recovery", formatWholeNumber(summary.emailConnectedCount), `${formatPercent(summary.emailConnectedCount, summary.totalProfiles)} of all profiles`)}
+    </section>
+
+    <section class="stats-grid stats-grid-wide">
+      ${statsList("Plays By Day", dailyRows, "No recent plays found.", (row) => `
+        <div class="stats-row">
+          <span>${escapeHtml(row.label)}</span>
+          <strong>${formatWholeNumber(row.games)}</strong>
+        </div>
+      `)}
+      ${statsList("New Restaurants By Day", createdRows, "No recent restaurants found.", (row) => `
+        <div class="stats-row">
+          <span>${escapeHtml(row.label)}</span>
+          <strong>${formatWholeNumber(row.created)}</strong>
+        </div>
+      `)}
+    </section>
+
+    <section class="stats-grid stats-grid-wide">
+      ${statsList("Most Played Public Games", topPublicGames, "No public game activity found.", (row) => `
+        <div class="stats-row">
+          <span>${escapeHtml(row.name)} <small>${formatWholeNumber(row.players)} player${row.players === 1 ? "" : "s"}</small></span>
+          <strong>${formatWholeNumber(row.games)}</strong>
+        </div>
+      `)}
+      ${statsList("Most Active Player Restaurants", activeProfiles, "No active player restaurants found.", (row) => `
+        <div class="stats-row">
+          <span>${escapeHtml(row.name)} <small>${row.saved ? "Saved" : "Guest"} · ${formatWholeNumber(row.activeDays)} active day${row.activeDays === 1 ? "" : "s"}</small></span>
+          <strong>${formatWholeNumber(row.games)}</strong>
+        </div>
+      `)}
+    </section>
+
+    <p class="stats-footnote">Last recorded play: ${escapeHtml(summary.lastPlayedAt ? formatShortDate(summary.lastPlayedAt) : "not available")}. Daily counts use recent session history; total games use each restaurant profile's all-time game count.</p>
+  `;
+}
+
+async function loadStats({ quiet = false } = {}) {
+  if (!adminKey) {
+    if (!elements.login.open) {
+      elements.login.showModal();
+    }
+    return;
+  }
+
+  if (!quiet) showStatsMessage("Loading player stats...");
+
+  try {
+    const data = await profileApiRequest("");
+    statsProfiles = data.profiles || [];
+    renderStats();
+    showStatsMessage("");
+    if (elements.login.open) elements.login.close();
+  } catch (error) {
+    if (error.status === 401) {
+      adminKey = "";
+      sessionStorage.removeItem(KEY_STORAGE);
+      elements.loginError.textContent = "That admin key was not accepted.";
+      elements.loginError.hidden = false;
+      if (!elements.login.open) elements.login.showModal();
+      return;
+    }
+    showStatsMessage(error.message, true);
+  }
+}
+
 function updateRestaurantHeroPreview(source) {
   const raw = String(source || "").trim();
   if (!raw) {
@@ -1856,6 +2142,7 @@ elements.loginForm.addEventListener("submit", async (event) => {
   await loadCustomers();
   await loadRestaurants();
   await loadProfiles();
+  await loadStats();
 });
 
 elements.lockButton.addEventListener("click", () => {
@@ -1865,10 +2152,12 @@ elements.lockButton.addEventListener("click", () => {
   customers = [];
   restaurants = [];
   profiles = [];
+  statsProfiles = [];
   renderQuestions();
   renderCustomers();
   renderRestaurants();
   renderProfiles();
+  renderStats();
   setConnected(false);
   elements.adminKey.value = "";
   elements.login.showModal();
@@ -1897,6 +2186,7 @@ elements.refreshButton.addEventListener("click", () => loadQuestions());
 elements.refreshCustomersButton.addEventListener("click", () => loadCustomers());
 elements.refreshRestaurantsButton.addEventListener("click", () => loadRestaurants());
 elements.refreshProfilesButton.addEventListener("click", () => loadProfiles());
+elements.refreshStatsButton.addEventListener("click", () => loadStats());
 elements.clearFiltersButton.addEventListener("click", () => {
   filterIds.forEach((id) => {
     const input = document.querySelector(`#${id}`);
@@ -2186,6 +2476,9 @@ elements.tabs.forEach((button) => {
     if (button.dataset.tab === "profiles") {
       loadProfiles({ quiet: true });
     }
+    if (button.dataset.tab === "stats") {
+      loadStats({ quiet: true });
+    }
   });
 });
 
@@ -2193,8 +2486,10 @@ renderQuestions();
 renderCustomers();
 renderRestaurants();
 renderProfiles();
+renderStats();
 setActiveTab("questions");
 loadQuestions();
 loadCustomers();
 loadRestaurants();
 loadProfiles();
+loadStats();

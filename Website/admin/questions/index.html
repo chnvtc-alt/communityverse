@@ -32,6 +32,7 @@
       <button class="workshop-tab" type="button" data-tab="customers">Customers</button>
       <button class="workshop-tab" type="button" data-tab="restaurants">Restaurants</button>
       <button class="workshop-tab" type="button" data-tab="profiles">Guest Restaurants</button>
+      <button class="workshop-tab" type="button" data-tab="stats">Stats</button>
     </nav>
 
     <main id="questions-panel" class="layout admin-panel">
@@ -301,6 +302,30 @@
 
         <div id="profile-message" class="message" role="status" hidden></div>
         <div id="profile-list" class="question-list" aria-live="polite"></div>
+      </section>
+    </section>
+
+    <section id="stats-panel" class="layout admin-panel" hidden>
+      <aside class="sidebar">
+        <section class="help-card">
+          <h2>What This Tracks</h2>
+          <p>Saved means the player changed from guest to registered. Email can still be optional.</p>
+          <p>Returned means the same restaurant profile played on at least two different days.</p>
+          <p>Daily plays use recent session history, so older activity may be undercounted.</p>
+        </section>
+      </aside>
+
+      <section class="content">
+        <div class="list-heading">
+          <div>
+            <p id="stats-count" class="count">Player stats</p>
+            <p class="subtle">A read-only snapshot of player activity and retention.</p>
+          </div>
+          <button id="refresh-stats-button" class="button button-secondary" type="button">Refresh</button>
+        </div>
+
+        <div id="stats-message" class="message" role="status" hidden></div>
+        <div id="stats-dashboard" class="stats-dashboard" aria-live="polite"></div>
       </section>
     </section>
 
