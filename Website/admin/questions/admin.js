@@ -1127,6 +1127,14 @@ function getFirstPlayedRestaurant(profile) {
     };
   }
 
+  const baseSlug = slugify(profile?.baseRestaurantSlug || "");
+  if (baseSlug) {
+    return {
+      slug: baseSlug,
+      name: profile.baseRestaurantName || profileRestaurantName(baseSlug),
+    };
+  }
+
   const firstSession = profileSessions(profile)
     .filter((session) => session?.restaurantSlug)
     .sort((left, right) => {
@@ -1147,10 +1155,10 @@ function getFirstPlayedRestaurant(profile) {
 }
 
 function getProfileEntryLabel(profile) {
-  const entryPoint = profile?.entryPoint || "Unknown";
+  const entryPoint = profile?.entryPoint || "not tracked yet";
   const firstRestaurant = getFirstPlayedRestaurant(profile);
   if (!firstRestaurant) {
-    return `Entry ${entryPoint}`;
+    return profile?.entryPoint ? `Entry ${entryPoint}` : "Entry not tracked yet";
   }
   return `Entry ${entryPoint} -> First game ${firstRestaurant.name}`;
 }
