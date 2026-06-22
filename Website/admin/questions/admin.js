@@ -1093,6 +1093,18 @@ function formatShortDate(value) {
   return date.toLocaleDateString();
 }
 
+function formatCompactDate(value) {
+  const date = new Date(value || "");
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+  return date.toLocaleDateString(undefined, {
+    month: "numeric",
+    day: "numeric",
+    year: "2-digit",
+  });
+}
+
 function startOfLocalDay(date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
 }
@@ -1218,6 +1230,21 @@ function getProfilePlayHistoryLabel(profile) {
     : "";
 }
 
+function getProfileActivityLabel(activity) {
+  const firstPlayedAt = formatCompactDate(activity.firstPlayedAt);
+  const lastPlayedAt = formatCompactDate(activity.lastPlayedAt);
+  if (!firstPlayedAt && !lastPlayedAt) {
+    return "";
+  }
+  if (!firstPlayedAt || firstPlayedAt === lastPlayedAt) {
+    return `Activity • ${lastPlayedAt || firstPlayedAt}`;
+  }
+  if (!lastPlayedAt) {
+    return `Activity • ${firstPlayedAt}`;
+  }
+  return `Activity • ${firstPlayedAt} - ${lastPlayedAt}`;
+}
+
 function profileMatchesActivity(profile, activityFilter) {
   const activity = getProfileActivity(profile);
   if (activityFilter === "returned") {
@@ -1257,6 +1284,7 @@ function renderProfiles() {
       const stats = profile.stats || {};
       const activity = getProfileActivity(profile);
       const playHistoryLabel = getProfilePlayHistoryLabel(profile);
+      const activityLabel = getProfileActivityLabel(activity);
       const chips = [
         getProfileStatus(profile),
         getPlayerTypeLabel(profile),
@@ -1266,8 +1294,7 @@ function renderProfiles() {
         `${Number(stats.gamesPlayed) || 0} games`,
         `${activity.activeDays || 0} active day${activity.activeDays === 1 ? "" : "s"}`,
         activity.returned ? "Returned" : Number(stats.gamesPlayed) ? "One-day player" : "No plays yet",
-        activity.firstPlayedAt ? `First played ${formatShortDate(activity.firstPlayedAt)}` : "",
-        activity.lastPlayedAt ? `Last played ${formatShortDate(activity.lastPlayedAt)}` : "",
+        activityLabel,
       ].filter(Boolean);
 
       return `
