@@ -1285,6 +1285,34 @@ function filterProfilesByActivity(list) {
   return list.filter((profile) => profileMatchesActivity(profile, activityFilter));
 }
 
+function profileActivitySortTime(profile) {
+  const activity = getProfileActivity(profile);
+  return (
+    Date.parse(activity.lastPlayedAt || "") ||
+    Date.parse(profile?.lastPlayedAt || "") ||
+    Date.parse(profile?.updatedAt || "") ||
+    Date.parse(profile?.createdAt || "") ||
+    0
+  );
+}
+
+function sortProfilesForDisplay(list) {
+  return [...list].sort((left, right) => {
+    const leftIsAdmin = normalizePlayerType(left?.playerType) === "admin";
+    const rightIsAdmin = normalizePlayerType(right?.playerType) === "admin";
+    if (leftIsAdmin !== rightIsAdmin) {
+      return leftIsAdmin ? 1 : -1;
+    }
+
+    const timeDifference = profileActivitySortTime(right) - profileActivitySortTime(left);
+    if (timeDifference) {
+      return timeDifference;
+    }
+
+    return String(left?.restaurantName || "").localeCompare(String(right?.restaurantName || ""));
+  });
+}
+
 function renderProfiles() {
   const returnedCount = profiles.filter((profile) => getProfileActivity(profile).returned).length;
   elements.profileCount.textContent = `${profiles.length} restaurant name${profiles.length === 1 ? "" : "s"} · ${returnedCount} returned`;
@@ -1294,7 +1322,7 @@ function renderProfiles() {
     return;
   }
 
-  elements.profileList.innerHTML = profiles
+  elements.profileList.innerHTML = sortProfilesForDisplay(profiles)
     .map((profile) => {
       const stats = profile.stats || {};
       const activity = getProfileActivity(profile);
