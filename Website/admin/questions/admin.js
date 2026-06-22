@@ -287,6 +287,24 @@ async function restaurantApiRequest(path = "", options = {}) {
   return data;
 }
 
+async function readApiJson(response) {
+  const text = await response.text();
+  if (!text) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    const serverText = text.replace(/\s+/g, " ").trim();
+    return {
+      error: response.ok
+        ? "The server returned a temporary unreadable response. Please refresh and try again."
+        : `The server returned a temporary error${serverText ? `: ${serverText.slice(0, 80)}` : "."}`,
+    };
+  }
+}
+
 async function profileApiRequest(path = "", options = {}) {
   const response = await fetch(`${PROFILE_API_URL}${path}`, {
     ...options,
@@ -296,13 +314,17 @@ async function profileApiRequest(path = "", options = {}) {
       ...(options.headers || {}),
     },
   });
-  const data = await response.json().catch(() => ({}));
+  const data = await readApiJson(response);
 
   if (!response.ok) {
     const error = new Error(data.error || data.errors?.join(" ") || `Request failed (${response.status}).`);
     error.status = response.status;
     error.details = data.errors;
     throw error;
+  }
+
+  if (data.error) {
+    throw new Error(data.error);
   }
 
   return data;
@@ -316,13 +338,17 @@ async function sessionApiRequest(path = "", options = {}) {
       ...(options.headers || {}),
     },
   });
-  const data = await response.json().catch(() => ({}));
+  const data = await readApiJson(response);
 
   if (!response.ok) {
     const error = new Error(data.error || data.errors?.join(" ") || `Request failed (${response.status}).`);
     error.status = response.status;
     error.details = data.errors;
     throw error;
+  }
+
+  if (data.error) {
+    throw new Error(data.error);
   }
 
   return data;
