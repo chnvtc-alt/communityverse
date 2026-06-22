@@ -324,7 +324,15 @@
             <p id="stats-count" class="count">Player stats</p>
             <p class="subtle">A read-only snapshot of player activity and retention.</p>
           </div>
-          <button id="refresh-stats-button" class="button button-secondary" type="button">Refresh</button>
+          <div class="list-actions">
+            <label class="inline-control">
+              Plays by day
+              <select id="stats-restaurant-filter">
+                <option value="overall">Overall</option>
+              </select>
+            </label>
+            <button id="refresh-stats-button" class="button button-secondary" type="button">Refresh</button>
+          </div>
         </div>
 
         <div id="stats-message" class="message" role="status" hidden></div>

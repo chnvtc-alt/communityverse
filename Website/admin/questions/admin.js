@@ -121,6 +121,7 @@ const elements = {
   statsCount: document.querySelector("#stats-count"),
   statsDashboard: document.querySelector("#stats-dashboard"),
   statsMessage: document.querySelector("#stats-message"),
+  statsRestaurantFilter: document.querySelector("#stats-restaurant-filter"),
   login: document.querySelector("#login-dialog"),
   loginForm: document.querySelector("#login-form"),
   loginError: document.querySelector("#login-error"),
@@ -162,6 +163,7 @@ let restaurants = [];
 let profiles = [];
 let statsProfiles = [];
 let profileSessionHistory = new Map();
+let statsRestaurantScope = "overall";
 let filterTimer = 0;
 let customerFilterTimer = 0;
 let restaurantFilterTimer = 0;
@@ -1626,7 +1628,12 @@ function isNormalPlayerProfile(profile) {
 function getDailyPlayRows(list, dayCount = 14) {
   const dayCounts = new Map(buildLastDayKeys(dayCount).map((key) => [key, 0]));
   list.forEach((profile) => {
-    profileSessionDates(profile).forEach((playedAt) => {
+    profileSessions(profile).forEach((session) => {
+      const restaurantSlug = slugify(session?.restaurantSlug || "");
+      if (statsRestaurantScope !== "overall" && restaurantSlug !== statsRestaurantScope) {
+        return;
+      }
+      const playedAt = getSessionPlayedAt(session);
       const key = dateKey(playedAt);
       if (dayCounts.has(key)) {
         dayCounts.set(key, (dayCounts.get(key) || 0) + 1);
@@ -1638,6 +1645,46 @@ function getDailyPlayRows(list, dayCount = 14) {
     label: formatShortDate(`${key}T12:00:00`),
     games,
   }));
+}
+
+function getStatsRestaurantOptions(list) {
+  const slugs = new Set();
+  list.forEach((profile) => {
+    profileSessions(profile).forEach((session) => {
+      const slug = slugify(session?.restaurantSlug || "");
+      if (slug) {
+        slugs.add(slug);
+      }
+    });
+
+    Object.keys(profile?.restaurantStats || {}).forEach((slug) => {
+      const normalizedSlug = slugify(slug || "");
+      if (normalizedSlug) {
+        slugs.add(normalizedSlug);
+      }
+    });
+  });
+
+  return ["overall", ...[...slugs].sort((left, right) => left.localeCompare(right))];
+}
+
+function renderStatsRestaurantFilter(list) {
+  if (!elements.statsRestaurantFilter) {
+    return;
+  }
+
+  const options = getStatsRestaurantOptions(list);
+  if (!options.includes(statsRestaurantScope)) {
+    statsRestaurantScope = "overall";
+  }
+
+  elements.statsRestaurantFilter.innerHTML = options
+    .map((slug) => `
+      <option value="${escapeHtml(slug)}"${slug === statsRestaurantScope ? " selected" : ""}>
+        ${escapeHtml(slug === "overall" ? "Overall" : slug)}
+      </option>
+    `)
+    .join("");
 }
 
 function getNewRestaurantRows(list, dayCount = 14) {
@@ -1726,6 +1773,7 @@ function renderStats() {
   const testerProfiles = statsProfiles.filter((profile) => normalizePlayerType(profile.playerType) === "tester");
   const summary = getStatsSummary(normalProfiles);
   elements.statsCount.textContent = `${formatWholeNumber(summary.totalProfiles)} normal player profile${summary.totalProfiles === 1 ? "" : "s"}`;
+  renderStatsRestaurantFilter(normalProfiles);
 
   if (!statsProfiles.length) {
     elements.statsDashboard.innerHTML = '<div class="empty-state">No player stats are available yet.</div>';
@@ -1733,6 +1781,9 @@ function renderStats() {
   }
 
   const dailyRows = getDailyPlayRows(normalProfiles);
+  const dailyTitle = statsRestaurantScope === "overall"
+    ? "Plays By Day"
+    : `Plays By Day: ${statsRestaurantScope}`;
   const createdRows = getNewRestaurantRows(normalProfiles);
   const topPublicGames = getTopPublicGameRows(normalProfiles);
   const activeProfiles = getMostActiveProfileRows(normalProfiles);
@@ -1751,7 +1802,7 @@ function renderStats() {
     </section>
 
     <section class="stats-grid stats-grid-wide">
-      ${statsList("Plays By Day", dailyRows, "No recent plays found.", (row) => `
+      ${statsList(dailyTitle, dailyRows, "No recent plays found.", (row) => `
         <div class="stats-row">
           <span>${escapeHtml(row.label)}</span>
           <strong>${formatWholeNumber(row.games)}</strong>
@@ -1796,6 +1847,12 @@ async function loadStats({ quiet = false } = {}) {
 
   try {
     const data = await profileApiRequest("");
+    try {
+      const sessionData = await sessionApiRequest("");
+      profileSessionHistory = buildProfileSessionHistory(sessionData.sessions || []);
+    } catch (error) {
+      profileSessionHistory = new Map();
+    }
     statsProfiles = data.profiles || [];
     renderStats();
     showStatsMessage("");
@@ -2499,6 +2556,10 @@ elements.refreshCustomersButton.addEventListener("click", () => loadCustomers())
 elements.refreshRestaurantsButton.addEventListener("click", () => loadRestaurants());
 elements.refreshProfilesButton.addEventListener("click", () => loadProfiles());
 elements.refreshStatsButton.addEventListener("click", () => loadStats());
+elements.statsRestaurantFilter.addEventListener("change", () => {
+  statsRestaurantScope = elements.statsRestaurantFilter.value || "overall";
+  renderStats();
+});
 elements.clearFiltersButton.addEventListener("click", () => {
   filterIds.forEach((id) => {
     const input = document.querySelector(`#${id}`);
