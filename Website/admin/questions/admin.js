@@ -186,6 +186,16 @@ let selectedRestaurantHeroPreviewUrl = "";
 let selectedRestaurantLogoFile = null;
 let selectedRestaurantLogoPreviewUrl = "";
 
+function getValidTabName(value) {
+  const tabName = String(value || "").trim();
+  return elements.tabs.some((button) => button.dataset.tab === tabName) ? tabName : "questions";
+}
+
+function getInitialTabName() {
+  const url = new URL(window.location.href);
+  return getValidTabName(url.searchParams.get("tab") || window.location.hash.replace(/^#/, ""));
+}
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -505,16 +515,27 @@ function setConnected(connected) {
   elements.connectionStatus.classList.toggle("connected", connected);
 }
 
-function setActiveTab(tabName) {
+function setActiveTab(tabName, options = {}) {
+  const safeTabName = getValidTabName(tabName);
   elements.tabs.forEach((button) => {
-    const isActive = button.dataset.tab === tabName;
+    const isActive = button.dataset.tab === safeTabName;
     button.classList.toggle("is-active", isActive);
   });
-  elements.questionsPanel.hidden = tabName !== "questions";
-  elements.customersPanel.hidden = tabName !== "customers";
-  elements.restaurantsPanel.hidden = tabName !== "restaurants";
-  elements.profilesPanel.hidden = tabName !== "profiles";
-  elements.statsPanel.hidden = tabName !== "stats";
+  elements.questionsPanel.hidden = safeTabName !== "questions";
+  elements.customersPanel.hidden = safeTabName !== "customers";
+  elements.restaurantsPanel.hidden = safeTabName !== "restaurants";
+  elements.profilesPanel.hidden = safeTabName !== "profiles";
+  elements.statsPanel.hidden = safeTabName !== "stats";
+
+  if (!options.skipUrlUpdate) {
+    const url = new URL(window.location.href);
+    if (safeTabName === "questions") {
+      url.searchParams.delete("tab");
+    } else {
+      url.searchParams.set("tab", safeTabName);
+    }
+    window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+  }
 }
 
 function populateDatalist(id, values) {
@@ -2928,7 +2949,7 @@ renderCustomers();
 renderRestaurants();
 renderProfiles();
 renderStats();
-setActiveTab("questions");
+setActiveTab(getInitialTabName(), { skipUrlUpdate: true });
 loadQuestions();
 loadCustomers();
 loadRestaurants();
