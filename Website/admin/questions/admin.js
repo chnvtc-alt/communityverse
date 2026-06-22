@@ -106,6 +106,7 @@ const elements = {
   profileMessage: document.querySelector("#profile-message"),
   profileFilterQuery: document.querySelector("#profile-filter-query"),
   profileFilterType: document.querySelector("#profile-filter-type"),
+  profileFilterActivity: document.querySelector("#profile-filter-activity"),
   login: document.querySelector("#login-dialog"),
   loginForm: document.querySelector("#login-form"),
   loginError: document.querySelector("#login-error"),
@@ -1023,8 +1024,101 @@ function getProfileStatus(profile) {
   return profile.isGuest ? "Guest" : "Registered";
 }
 
+function dateKey(value) {
+  const date = new Date(value || "");
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
+function formatShortDate(value) {
+  const date = new Date(value || "");
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+  return date.toLocaleDateString();
+}
+
+function startOfLocalDay(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+}
+
+function daysSince(value) {
+  const date = new Date(value || "");
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+  return Math.max(0, Math.floor((startOfLocalDay(new Date()) - startOfLocalDay(date)) / 86400000));
+}
+
+function getProfileActivity(profile) {
+  const sessions = Array.isArray(profile.recentSessions) ? profile.recentSessions : [];
+  const playedDates = sessions
+    .map((session) => session?.playedAt)
+    .filter(Boolean);
+  const gamesPlayed = Number(profile.stats?.gamesPlayed) || 0;
+  const fallbackPlayedAt = profile.lastPlayedAt || profile.updatedAt || (gamesPlayed ? profile.createdAt : "");
+  if (!playedDates.length && fallbackPlayedAt) {
+    playedDates.push(fallbackPlayedAt);
+  }
+
+  const timestamps = playedDates
+    .map((value) => Date.parse(value))
+    .filter((value) => Number.isFinite(value));
+  const dayKeys = new Set(
+    playedDates
+      .map(dateKey)
+      .filter(Boolean)
+  );
+  const firstPlayedAt = timestamps.length ? new Date(Math.min(...timestamps)).toISOString() : "";
+  const lastPlayedAt = timestamps.length
+    ? new Date(Math.max(...timestamps)).toISOString()
+    : profile.lastPlayedAt || "";
+  const activeDays = dayKeys.size;
+
+  return {
+    activeDays,
+    firstPlayedAt,
+    lastPlayedAt,
+    returned: activeDays >= 2,
+    daysSinceLast: daysSince(lastPlayedAt),
+    gamesPlayed,
+  };
+}
+
+function profileMatchesActivity(profile, activityFilter) {
+  const activity = getProfileActivity(profile);
+  if (activityFilter === "returned") {
+    return activity.returned;
+  }
+  if (activityFilter === "one-day") {
+    return activity.gamesPlayed > 0 && activity.activeDays <= 1;
+  }
+  if (activityFilter === "today") {
+    return activity.daysSinceLast === 0;
+  }
+  if (activityFilter === "quiet") {
+    return activity.gamesPlayed > 0 && activity.daysSinceLast !== null && activity.daysSinceLast >= 7;
+  }
+  return true;
+}
+
+function filterProfilesByActivity(list) {
+  const activityFilter = elements.profileFilterActivity.value.trim();
+  if (!activityFilter || activityFilter === "all") {
+    return list;
+  }
+  return list.filter((profile) => profileMatchesActivity(profile, activityFilter));
+}
+
 function renderProfiles() {
-  elements.profileCount.textContent = `${profiles.length} restaurant name${profiles.length === 1 ? "" : "s"}`;
+  const returnedCount = profiles.filter((profile) => getProfileActivity(profile).returned).length;
+  elements.profileCount.textContent = `${profiles.length} restaurant name${profiles.length === 1 ? "" : "s"} · ${returnedCount} returned`;
 
   if (!profiles.length) {
     elements.profileList.innerHTML = '<div class="empty-state">No guest restaurants match these filters.</div>';
@@ -1034,12 +1128,15 @@ function renderProfiles() {
   elements.profileList.innerHTML = profiles
     .map((profile) => {
       const stats = profile.stats || {};
-      const updatedAt = profile.updatedAt || profile.lastPlayedAt || profile.createdAt || "";
+      const activity = getProfileActivity(profile);
       const chips = [
         getProfileStatus(profile),
         profile.restaurantSlug,
         `${Number(stats.gamesPlayed) || 0} games`,
-        updatedAt ? `Updated ${new Date(updatedAt).toLocaleDateString()}` : "",
+        `${activity.activeDays || 0} active day${activity.activeDays === 1 ? "" : "s"}`,
+        activity.returned ? "Returned" : Number(stats.gamesPlayed) ? "One-day player" : "No plays yet",
+        activity.firstPlayedAt ? `First played ${formatShortDate(activity.firstPlayedAt)}` : "",
+        activity.lastPlayedAt ? `Last played ${formatShortDate(activity.lastPlayedAt)}` : "",
       ].filter(Boolean);
 
       return `
@@ -1076,7 +1173,7 @@ async function loadProfiles({ quiet = false } = {}) {
 
   try {
     const data = await profileApiRequest(`?${profileFilterParams().toString()}`);
-    profiles = data.profiles || [];
+    profiles = filterProfilesByActivity(data.profiles || []);
     renderProfiles();
     showProfileMessage("");
     if (elements.login.open) elements.login.close();
@@ -1836,6 +1933,7 @@ elements.clearRestaurantFiltersButton.addEventListener("click", () => {
 elements.clearProfileFiltersButton.addEventListener("click", () => {
   elements.profileFilterQuery.value = "";
   elements.profileFilterType.value = "all";
+  elements.profileFilterActivity.value = "all";
   loadProfiles();
 });
 
@@ -1880,6 +1978,7 @@ filterIds.forEach((id) => {
 [
   elements.profileFilterQuery,
   elements.profileFilterType,
+  elements.profileFilterActivity,
 ].forEach((input) => {
   ["input", "change"].forEach((eventName) => {
     input.addEventListener(eventName, () => {
