@@ -872,6 +872,21 @@ dialog::backdrop {
   margin: 22px 0 18px;
 }
 
+.login-dialog .login-show-key {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: -6px 0 18px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.login-dialog .login-show-key input {
+  width: auto;
+}
+
 @media (max-width: 900px) {
   .layout {
     grid-template-columns: 1fr;

@@ -132,6 +132,7 @@ const elements = {
   loginForm: document.querySelector("#login-form"),
   loginError: document.querySelector("#login-error"),
   adminKey: document.querySelector("#admin-key"),
+  showAdminKey: document.querySelector("#show-admin-key"),
   scope: document.querySelector("#question-scope"),
   restaurantField: document.querySelector("#restaurant-field"),
   areaField: document.querySelector("#area-field"),
@@ -2575,6 +2576,10 @@ elements.loginForm.addEventListener("submit", async (event) => {
   await loadRestaurants();
   await loadProfiles();
   await loadStats();
+});
+
+elements.showAdminKey.addEventListener("change", () => {
+  elements.adminKey.type = elements.showAdminKey.checked ? "text" : "password";
 });
 
 elements.lockButton.addEventListener("click", () => {
