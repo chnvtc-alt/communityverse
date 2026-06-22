@@ -1499,6 +1499,7 @@
         submitButton.textContent = email ? "Sending..." : "Saving...";
         const activeProfile = getProfile();
         if (activeProfile) {
+          const previousProfile = activeProfile;
           core.updateProfile({
             ...activeProfile,
             playerName,
@@ -1510,8 +1511,14 @@
           core.setActiveProfileId(activeProfile.id);
           try {
             await core.syncActiveProfile?.();
-          } catch {
-            // The local save still succeeded; the background sync can retry.
+          } catch (syncError) {
+            core.updateProfile(previousProfile);
+            core.setActiveProfileId(previousProfile.id);
+            error.textContent = syncError instanceof Error ? syncError.message : "Unable to save that restaurant name.";
+            error.classList.remove("hidden");
+            submitButton.disabled = false;
+            submitButton.textContent = "Save My Collection";
+            return;
           }
         } else {
           error.textContent = "Your guest restaurant could not be found. Please play again.";

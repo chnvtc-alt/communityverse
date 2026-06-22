@@ -56,6 +56,29 @@ export async function fetchProfile(id) {
   return record ? profileFromRecord(record) : null;
 }
 
+export async function findProfileByRestaurantSlug(restaurantSlug) {
+  const slug = String(restaurantSlug || "").trim();
+  if (!slug) {
+    return null;
+  }
+
+  const rows = await supabaseRequest(
+    `profiles?select=id,player_name,restaurant_name,restaurant_slug,is_guest,created_at,updated_at,payload_json&restaurant_slug=eq.${encodeURIComponent(slug)}&limit=1`
+  );
+  return Array.isArray(rows) && rows.length ? profileFromRecord(rows[0]) : null;
+}
+
+export async function validateRestaurantSlugAvailable(restaurantSlug, profileId = "") {
+  const existing = await findProfileByRestaurantSlug(restaurantSlug);
+  if (!existing || existing.id === profileId) {
+    return;
+  }
+
+  const error = new Error("That restaurant name is already taken. Please choose a different name.");
+  error.status = 409;
+  throw error;
+}
+
 export function buildStoredProfile(profile, privateFields = {}) {
   const normalized = normalizeProfile({
     ...profile,

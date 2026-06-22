@@ -11,6 +11,7 @@ import {
   readClaimState,
   sanitizeProfile,
   storeProfile,
+  validateRestaurantSlugAvailable,
 } from "../_lib/profile-security.mjs";
 import {
   hasSupabaseConfig,
@@ -236,6 +237,11 @@ export async function POST(request) {
       return jsonResponse({ ok: false, error: "This restaurant belongs to another player." }, 403);
     }
 
+    const profileToStore = preserveNewerRestaurantName(existing, body);
+    if (!existing || existing.restaurantSlug !== profileToStore.restaurantSlug) {
+      await validateRestaurantSlugAvailable(profileToStore.restaurantSlug, profileToStore.id);
+    }
+
     const privateFields = existing
       ? {
           profileAccessTokenHash: existing.profileAccessTokenHash,
@@ -246,11 +252,12 @@ export async function POST(request) {
       : {
           profileAccessTokenHash: hashProfileAccessToken(token),
         };
-    return jsonResponse(await storeProfile(preserveNewerRestaurantName(existing, body), privateFields), existing ? 200 : 201);
+    return jsonResponse(await storeProfile(profileToStore, privateFields), existing ? 200 : 201);
   } catch (error) {
+    const status = Number(error?.status) || 500;
     return jsonResponse(
       { ok: false, error: error instanceof Error ? error.message : String(error) },
-      500
+      status >= 400 && status < 600 ? status : 500
     );
   }
 }

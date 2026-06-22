@@ -1637,6 +1637,7 @@
 
         submitButton.disabled = true;
         submitButton.textContent = email ? "Sending..." : "Saving...";
+        const previousProfile = profile;
         core.updateProfile({
           ...profile,
           playerName,
@@ -1649,8 +1650,14 @@
 
         try {
           await core.syncActiveProfile?.();
-        } catch {
-          // The local save still succeeded; the background sync can retry.
+        } catch (error) {
+          core.updateProfile(previousProfile);
+          core.setActiveProfileId(previousProfile.id);
+          state.guestSaveError = error instanceof Error ? error.message : "Unable to save that restaurant name.";
+          submitButton.disabled = false;
+          submitButton.textContent = "Name & Save My Restaurant";
+          renderHero();
+          return;
         }
 
         if (!email) {

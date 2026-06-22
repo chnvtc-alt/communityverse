@@ -1,6 +1,6 @@
 import { requireQuestionsAdmin } from "../../_lib/admin-auth.mjs";
 import { validateRestaurantProfileName } from "../../_lib/restaurant-name-rules.mjs";
-import { fetchProfile, storeProfile } from "../../_lib/profile-security.mjs";
+import { fetchProfile, storeProfile, validateRestaurantSlugAvailable } from "../../_lib/profile-security.mjs";
 import { hasSupabaseConfig, jsonResponse, readJsonBody } from "../../_lib/supabase.mjs";
 
 function getProfileIdFromRequest(request) {
@@ -54,11 +54,16 @@ export async function PUT(request) {
       return jsonResponse({ ok: false, error: "Profile not found." }, 404);
     }
 
+    const restaurantSlug = slugify(restaurantName);
+    if (existing.restaurantSlug !== restaurantSlug) {
+      await validateRestaurantSlugAvailable(restaurantSlug, existing.id);
+    }
+
     const profile = await storeProfile(
       {
         ...existing,
         restaurantName,
-        restaurantSlug: slugify(restaurantName),
+        restaurantSlug,
         restaurantNameUpdatedAt: new Date().toISOString(),
         playerType,
       },
@@ -74,6 +79,10 @@ export async function PUT(request) {
 
     return jsonResponse({ ok: true, profile });
   } catch (error) {
-    return jsonResponse({ ok: false, error: error instanceof Error ? error.message : String(error) }, 500);
+    const status = Number(error?.status) || 500;
+    return jsonResponse(
+      { ok: false, error: error instanceof Error ? error.message : String(error) },
+      status >= 400 && status < 600 ? status : 500
+    );
   }
 }
