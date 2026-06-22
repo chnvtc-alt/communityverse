@@ -325,17 +325,23 @@
             <p class="subtle">A read-only snapshot of player activity and retention.</p>
           </div>
           <div class="list-actions">
-            <label class="inline-control">
-              Plays by day
-              <select id="stats-restaurant-filter">
-                <option value="overall">Overall</option>
-              </select>
-            </label>
             <button id="refresh-stats-button" class="button button-secondary" type="button">Refresh</button>
           </div>
         </div>
 
         <div id="stats-message" class="message" role="status" hidden></div>
+        <section class="stats-scope-card" aria-label="Stats view">
+          <div>
+            <p class="stats-label">Stats view</p>
+            <p class="stats-note">Choose Overall or one restaurant game.</p>
+          </div>
+          <label class="inline-control">
+            Restaurant
+            <select id="stats-restaurant-filter">
+              <option value="overall">Overall</option>
+            </select>
+          </label>
+        </section>
         <div id="stats-dashboard" class="stats-dashboard" aria-live="polite"></div>
       </section>
     </section>

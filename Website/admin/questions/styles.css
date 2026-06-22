@@ -333,6 +333,23 @@ textarea {
   margin-top: 22px;
 }
 
+.stats-scope-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: end;
+  margin-top: 22px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: rgba(235, 249, 236, 0.72);
+  box-shadow: 0 7px 20px rgba(53, 43, 27, 0.06);
+}
+
+.stats-scope-card .inline-control {
+  min-width: min(360px, 100%);
+}
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

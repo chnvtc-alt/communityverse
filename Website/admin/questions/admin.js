@@ -17,6 +17,12 @@ const EXPANSION_LEVELS = [
   { id: "regional-favorite", label: "Regional Favorite" },
   { id: "local-landmark", label: "Local Landmark" },
 ];
+const RESTAURANT_NAME_FALLBACKS = {
+  americana: "Americana Diner",
+  hudsons: "Hudson's Hickory House",
+  marcossp: "Marco's Pizza - South Paulding",
+  wafflemaster: "Waffle Master",
+};
 
 const elements = {
   tabs: [...document.querySelectorAll(".workshop-tab")],
@@ -1560,6 +1566,9 @@ function profileRestaurantName(slug) {
   if (restaurant) {
     return restaurant.name || restaurant.publicGameName || normalizedSlug;
   }
+  if (RESTAURANT_NAME_FALLBACKS[normalizedSlug]) {
+    return RESTAURANT_NAME_FALLBACKS[normalizedSlug];
+  }
   return normalizedSlug
     .split("-")
     .filter(Boolean)
@@ -1589,26 +1598,27 @@ function buildLastDayKeys(dayCount = 14) {
 }
 
 function getStatsSummary(list) {
-  const profilesWithGames = list.filter((profile) => (Number(profile.stats?.gamesPlayed) || 0) > 0);
-  const savedCount = list.filter((profile) => !profile.isGuest).length;
-  const emailConnectedCount = list.filter((profile) => profile.emailConnected).length;
-  const returnedCount = list.filter((profile) => getProfileActivity(profile).returned).length;
-  const oneDayCount = profilesWithGames.filter((profile) => !getProfileActivity(profile).returned).length;
-  const playedTodayCount = profilesWithGames.filter((profile) => getProfileActivity(profile).daysSinceLast === 0).length;
+  const scopedProfiles = getStatsScopedProfiles(list);
+  const profilesWithGames = scopedProfiles.filter((profile) => getStatsProfileGameCount(profile) > 0);
+  const savedCount = scopedProfiles.filter((profile) => !profile.isGuest).length;
+  const emailConnectedCount = scopedProfiles.filter((profile) => profile.emailConnected).length;
+  const returnedCount = scopedProfiles.filter((profile) => getStatsProfileActivity(profile).returned).length;
+  const oneDayCount = profilesWithGames.filter((profile) => !getStatsProfileActivity(profile).returned).length;
+  const playedTodayCount = profilesWithGames.filter((profile) => getStatsProfileActivity(profile).daysSinceLast === 0).length;
   const quietCount = profilesWithGames.filter((profile) => {
-    const days = getProfileActivity(profile).daysSinceLast;
+    const days = getStatsProfileActivity(profile).daysSinceLast;
     return days !== null && days >= 7;
   }).length;
-  const fourGameCount = profilesWithGames.filter((profile) => (Number(profile.stats?.gamesPlayed) || 0) >= 4).length;
-  const totalGames = list.reduce((total, profile) => total + (Number(profile.stats?.gamesPlayed) || 0), 0);
-  const totalSessionsTracked = list.reduce((total, profile) => total + profileSessions(profile).length, 0);
-  const lastPlayedAt = mostRecentIso(list.map((profile) => profile.lastPlayedAt));
+  const fourGameCount = profilesWithGames.filter((profile) => getStatsProfileGameCount(profile) >= 4).length;
+  const totalGames = scopedProfiles.reduce((total, profile) => total + getStatsProfileGameCount(profile), 0);
+  const totalSessionsTracked = scopedProfiles.reduce((total, profile) => total + getStatsProfileSessions(profile).length, 0);
+  const lastPlayedAt = mostRecentIso(scopedProfiles.map((profile) => getStatsProfileActivity(profile).lastPlayedAt));
 
   return {
-    totalProfiles: list.length,
+    totalProfiles: scopedProfiles.length,
     profilesWithGames: profilesWithGames.length,
     savedCount,
-    guestCount: list.length - savedCount,
+    guestCount: scopedProfiles.length - savedCount,
     emailConnectedCount,
     returnedCount,
     oneDayCount,
@@ -1625,14 +1635,63 @@ function isNormalPlayerProfile(profile) {
   return normalizePlayerType(profile?.playerType) === "normal";
 }
 
+function isOverallStatsScope() {
+  return statsRestaurantScope === "overall";
+}
+
+function getStatsProfileSessions(profile) {
+  const sessions = profileSessions(profile);
+  if (isOverallStatsScope()) {
+    return sessions;
+  }
+  return sessions.filter((session) => slugify(session?.restaurantSlug || "") === statsRestaurantScope);
+}
+
+function getStatsProfileGameCount(profile) {
+  if (isOverallStatsScope()) {
+    return getProfileGameCount(profile);
+  }
+
+  const sessionCount = getStatsProfileSessions(profile).length;
+  const restaurantStats = profile?.restaurantStats?.[statsRestaurantScope] || {};
+  return Math.max(sessionCount, Number(restaurantStats.gamesPlayed) || 0);
+}
+
+function getStatsProfileActivity(profile) {
+  if (isOverallStatsScope()) {
+    return getProfileActivity(profile);
+  }
+
+  const playedDates = getStatsProfileSessions(profile)
+    .map(getSessionPlayedAt)
+    .filter(Boolean);
+  const timestamps = playedDates
+    .map((value) => Date.parse(value))
+    .filter((value) => Number.isFinite(value));
+  const dayKeys = new Set(playedDates.map(dateKey).filter(Boolean));
+  const firstPlayedAt = timestamps.length ? new Date(Math.min(...timestamps)).toISOString() : "";
+  const lastPlayedAt = timestamps.length ? new Date(Math.max(...timestamps)).toISOString() : "";
+
+  return {
+    activeDays: dayKeys.size,
+    firstPlayedAt,
+    lastPlayedAt,
+    returned: dayKeys.size >= 2,
+    daysSinceLast: daysSince(lastPlayedAt),
+    gamesPlayed: getStatsProfileGameCount(profile),
+  };
+}
+
+function getStatsScopedProfiles(list) {
+  return isOverallStatsScope()
+    ? list
+    : list.filter((profile) => getStatsProfileGameCount(profile) > 0);
+}
+
 function getDailyPlayRows(list, dayCount = 14) {
   const dayCounts = new Map(buildLastDayKeys(dayCount).map((key) => [key, 0]));
   list.forEach((profile) => {
-    profileSessions(profile).forEach((session) => {
-      const restaurantSlug = slugify(session?.restaurantSlug || "");
-      if (statsRestaurantScope !== "overall" && restaurantSlug !== statsRestaurantScope) {
-        return;
-      }
+    getStatsProfileSessions(profile).forEach((session) => {
       const playedAt = getSessionPlayedAt(session);
       const key = dateKey(playedAt);
       if (dayCounts.has(key)) {
@@ -1681,7 +1740,7 @@ function renderStatsRestaurantFilter(list) {
   elements.statsRestaurantFilter.innerHTML = options
     .map((slug) => `
       <option value="${escapeHtml(slug)}"${slug === statsRestaurantScope ? " selected" : ""}>
-        ${escapeHtml(slug === "overall" ? "Overall" : slug)}
+        ${escapeHtml(slug === "overall" ? "Overall" : profileRestaurantName(slug))}
       </option>
     `)
     .join("");
@@ -1689,7 +1748,7 @@ function renderStatsRestaurantFilter(list) {
 
 function getNewRestaurantRows(list, dayCount = 14) {
   const dayCounts = new Map(buildLastDayKeys(dayCount).map((key) => [key, 0]));
-  list.forEach((profile) => {
+  getStatsScopedProfiles(list).forEach((profile) => {
     const key = dateKey(profile.createdAt);
     if (dayCounts.has(key)) {
       dayCounts.set(key, (dayCounts.get(key) || 0) + 1);
@@ -1711,6 +1770,9 @@ function getTopPublicGameRows(list) {
       ? profile.restaurantStats
       : {};
     Object.entries(restaurantStats).forEach(([slug, stats]) => {
+      if (!isOverallStatsScope() && slugify(slug || "") !== statsRestaurantScope) {
+        return;
+      }
       const games = Number(stats?.gamesPlayed) || 0;
       if (!slug || !games) return;
       addMapCount(gamesBySlug, slug, games);
@@ -1729,14 +1791,14 @@ function getTopPublicGameRows(list) {
 }
 
 function getMostActiveProfileRows(list) {
-  return [...list]
-    .filter((profile) => (Number(profile.stats?.gamesPlayed) || 0) > 0)
-    .sort((left, right) => (Number(right.stats?.gamesPlayed) || 0) - (Number(left.stats?.gamesPlayed) || 0))
+  return [...getStatsScopedProfiles(list)]
+    .filter((profile) => getStatsProfileGameCount(profile) > 0)
+    .sort((left, right) => getStatsProfileGameCount(right) - getStatsProfileGameCount(left))
     .slice(0, 8)
     .map((profile) => ({
       name: profile.restaurantName || "Unnamed Restaurant",
-      games: Number(profile.stats?.gamesPlayed) || 0,
-      activeDays: getProfileActivity(profile).activeDays,
+      games: getStatsProfileGameCount(profile),
+      activeDays: getStatsProfileActivity(profile).activeDays,
       saved: !profile.isGuest,
     }));
 }
@@ -1772,7 +1834,8 @@ function renderStats() {
   const adminProfiles = statsProfiles.filter((profile) => normalizePlayerType(profile.playerType) === "admin");
   const testerProfiles = statsProfiles.filter((profile) => normalizePlayerType(profile.playerType) === "tester");
   const summary = getStatsSummary(normalProfiles);
-  elements.statsCount.textContent = `${formatWholeNumber(summary.totalProfiles)} normal player profile${summary.totalProfiles === 1 ? "" : "s"}`;
+  const selectedRestaurantName = isOverallStatsScope() ? "Overall" : profileRestaurantName(statsRestaurantScope);
+  elements.statsCount.textContent = `${formatWholeNumber(summary.totalProfiles)} normal player profile${summary.totalProfiles === 1 ? "" : "s"}${isOverallStatsScope() ? "" : ` for ${selectedRestaurantName}`}`;
   renderStatsRestaurantFilter(normalProfiles);
 
   if (!statsProfiles.length) {
@@ -1783,7 +1846,7 @@ function renderStats() {
   const dailyRows = getDailyPlayRows(normalProfiles);
   const dailyTitle = statsRestaurantScope === "overall"
     ? "Plays By Day"
-    : `Plays By Day: ${statsRestaurantScope}`;
+    : `Plays By Day: ${selectedRestaurantName}`;
   const createdRows = getNewRestaurantRows(normalProfiles);
   const topPublicGames = getTopPublicGameRows(normalProfiles);
   const activeProfiles = getMostActiveProfileRows(normalProfiles);
@@ -1794,8 +1857,8 @@ function renderStats() {
       ${statsCard("Still guest-only", formatWholeNumber(summary.guestCount), `${formatPercent(summary.guestCount, summary.totalProfiles)} of normal profiles`)}
       ${statsCard("Returning players", formatWholeNumber(summary.returnedCount), `${formatPercent(summary.returnedCount, summary.profilesWithGames)} of players with games`)}
       ${statsCard("One-day players", formatWholeNumber(summary.oneDayCount), `${formatPercent(summary.oneDayCount, summary.profilesWithGames)} of players with games`)}
-      ${statsCard("Total games", formatWholeNumber(summary.totalGames), `${formatWholeNumber(summary.totalSessionsTracked)} recent sessions tracked`)}
-      ${statsCard("Played today", formatWholeNumber(summary.playedTodayCount), "Restaurant profiles active today")}
+      ${statsCard("Total games", formatWholeNumber(summary.totalGames), `${formatWholeNumber(summary.totalSessionsTracked)} tracked session${summary.totalSessionsTracked === 1 ? "" : "s"}`)}
+      ${statsCard("Played today", formatWholeNumber(summary.playedTodayCount), isOverallStatsScope() ? "Restaurant profiles active today" : `${selectedRestaurantName} profiles active today`)}
       ${statsCard("Reached 4 games", formatWholeNumber(summary.fourGameCount), `${formatPercent(summary.fourGameCount, summary.profilesWithGames)} of players with games`)}
       ${statsCard("Email recovery", formatWholeNumber(summary.emailConnectedCount), `${formatPercent(summary.emailConnectedCount, summary.totalProfiles)} of normal profiles`)}
       ${statsCard("Excluded from stats", formatWholeNumber(excludedProfiles.length), `${formatWholeNumber(adminProfiles.length)} admin · ${formatWholeNumber(testerProfiles.length)} tester`)}
@@ -1831,7 +1894,7 @@ function renderStats() {
       `)}
     </section>
 
-    <p class="stats-footnote">Main stats count Normal Player profiles only. Admin and Tester profiles are excluded. Last normal-player recorded play: ${escapeHtml(summary.lastPlayedAt ? formatShortDate(summary.lastPlayedAt) : "not available")}. Daily counts use recent session history; total games use each restaurant profile's all-time game count.</p>
+    <p class="stats-footnote">Main stats count Normal Player profiles only. Admin and Tester profiles are excluded. Current view: ${escapeHtml(isOverallStatsScope() ? "Overall" : selectedRestaurantName)}. Last normal-player recorded play: ${escapeHtml(summary.lastPlayedAt ? formatShortDate(summary.lastPlayedAt) : "not available")}.</p>
   `;
 }
 
