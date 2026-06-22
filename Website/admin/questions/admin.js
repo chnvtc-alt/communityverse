@@ -1137,7 +1137,7 @@ function getProfileActivity(profile) {
   const playedDates = sessions
     .map(getSessionPlayedAt)
     .filter(Boolean);
-  const gamesPlayed = Number(profile.stats?.gamesPlayed) || 0;
+  const gamesPlayed = getProfileGameCount(profile);
   const fallbackPlayedAt = profile.lastPlayedAt || profile.updatedAt || (gamesPlayed ? profile.createdAt : "");
   if (!playedDates.length && fallbackPlayedAt) {
     playedDates.push(fallbackPlayedAt);
@@ -1169,6 +1169,10 @@ function getProfileActivity(profile) {
 
 function getSessionPlayedAt(session) {
   return session?.playedAt || session?.completedAt || "";
+}
+
+function getProfileGameCount(profile) {
+  return Math.max(Number(profile?.stats?.gamesPlayed) || 0, profileSessions(profile).length);
 }
 
 function getFirstPlayedRestaurant(profile) {
@@ -1296,8 +1300,24 @@ function profileActivitySortTime(profile) {
   );
 }
 
+function isStaleZeroPlayProfile(profile) {
+  if (getProfileGameCount(profile) > 0) {
+    return false;
+  }
+
+  const firstSeenAt = profile?.createdAt || profile?.updatedAt || profileActivitySortTime(profile);
+  const ageInDays = daysSince(firstSeenAt);
+  return ageInDays !== null && ageInDays >= 1;
+}
+
 function sortProfilesForDisplay(list) {
   return [...list].sort((left, right) => {
+    const leftIsStaleZeroPlay = isStaleZeroPlayProfile(left);
+    const rightIsStaleZeroPlay = isStaleZeroPlayProfile(right);
+    if (leftIsStaleZeroPlay !== rightIsStaleZeroPlay) {
+      return leftIsStaleZeroPlay ? 1 : -1;
+    }
+
     const leftIsAdmin = normalizePlayerType(left?.playerType) === "admin";
     const rightIsAdmin = normalizePlayerType(right?.playerType) === "admin";
     if (leftIsAdmin !== rightIsAdmin) {
@@ -1324,8 +1344,8 @@ function renderProfiles() {
 
   elements.profileList.innerHTML = sortProfilesForDisplay(profiles)
     .map((profile) => {
-      const stats = profile.stats || {};
       const activity = getProfileActivity(profile);
+      const gamesPlayed = getProfileGameCount(profile);
       const playHistoryLabel = getProfilePlayHistoryLabel(profile);
       const activityLabel = getProfileActivityLabel(activity);
       const chips = [
@@ -1335,9 +1355,9 @@ function renderProfiles() {
         playHistoryLabel,
         profile.restaurantSlug,
         getExpansionLevelLabel(profile),
-        `${Number(stats.gamesPlayed) || 0} games`,
+        `${gamesPlayed} game${gamesPlayed === 1 ? "" : "s"}`,
         `${activity.activeDays || 0} active day${activity.activeDays === 1 ? "" : "s"}`,
-        activity.returned ? "Returned" : Number(stats.gamesPlayed) ? "One-day player" : "No plays yet",
+        activity.returned ? "Returned" : gamesPlayed ? "One-day player" : "No plays yet",
         activityLabel,
       ].filter(Boolean);
 
