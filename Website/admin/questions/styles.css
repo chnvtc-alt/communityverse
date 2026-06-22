@@ -548,7 +548,7 @@ textarea {
 
 .profile-edit-row {
   display: grid;
-  grid-template-columns: minmax(220px, 320px) auto;
+  grid-template-columns: minmax(220px, 320px) minmax(160px, 210px) auto;
   align-items: end;
   gap: 10px;
 }

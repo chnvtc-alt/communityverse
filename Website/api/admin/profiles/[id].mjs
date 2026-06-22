@@ -19,6 +19,11 @@ function slugify(value) {
     .replace(/-{2,}/g, "-");
 }
 
+function normalizePlayerType(value) {
+  const playerType = String(value || "").trim().toLowerCase();
+  return ["admin", "tester"].includes(playerType) ? playerType : "normal";
+}
+
 function preflight(request) {
   const denied = requireQuestionsAdmin(request);
   if (denied) return denied;
@@ -38,6 +43,7 @@ export async function PUT(request) {
 
     const body = await readJsonBody(request);
     const restaurantName = String(body?.restaurantName || "").trim();
+    const playerType = normalizePlayerType(body?.playerType);
     const nameError = validateRestaurantProfileName(restaurantName);
     if (nameError) {
       return jsonResponse({ ok: false, error: nameError }, 400);
@@ -54,6 +60,7 @@ export async function PUT(request) {
         restaurantName,
         restaurantSlug: slugify(restaurantName),
         restaurantNameUpdatedAt: new Date().toISOString(),
+        playerType,
       },
       {
         profileAccessTokenHash: existing.profileAccessTokenHash,

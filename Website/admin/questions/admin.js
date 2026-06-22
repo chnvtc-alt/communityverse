@@ -1037,6 +1037,20 @@ function getProfileStatus(profile) {
   return profile.isGuest ? "Guest" : "Registered";
 }
 
+function normalizePlayerType(value) {
+  const playerType = String(value || "").trim().toLowerCase();
+  return ["admin", "tester"].includes(playerType) ? playerType : "normal";
+}
+
+function getPlayerTypeLabel(profile) {
+  const labels = {
+    admin: "Admin",
+    tester: "Tester",
+    normal: "Normal Player",
+  };
+  return labels[normalizePlayerType(profile?.playerType)] || labels.normal;
+}
+
 function dateKey(value) {
   const date = new Date(value || "");
   if (Number.isNaN(date.getTime())) {
@@ -1144,6 +1158,7 @@ function renderProfiles() {
       const activity = getProfileActivity(profile);
       const chips = [
         getProfileStatus(profile),
+        getPlayerTypeLabel(profile),
         profile.restaurantSlug,
         `${Number(stats.gamesPlayed) || 0} games`,
         `${activity.activeDays || 0} active day${activity.activeDays === 1 ? "" : "s"}`,
@@ -1166,7 +1181,15 @@ function renderProfiles() {
               Restaurant name
               <input class="profile-name-input" data-profile-name type="text" value="${escapeHtml(profile.restaurantName || "")}" maxlength="32" />
             </label>
-            <button class="button button-secondary save-profile-name-button" type="button">Save name</button>
+            <label>
+              Player type
+              <select data-player-type>
+                <option value="normal"${normalizePlayerType(profile.playerType) === "normal" ? " selected" : ""}>Normal Player</option>
+                <option value="tester"${normalizePlayerType(profile.playerType) === "tester" ? " selected" : ""}>Tester</option>
+                <option value="admin"${normalizePlayerType(profile.playerType) === "admin" ? " selected" : ""}>Admin</option>
+              </select>
+            </label>
+            <button class="button button-secondary save-profile-name-button" type="button">Save</button>
           </div>
         </article>
       `;
@@ -1205,7 +1228,9 @@ async function loadProfiles({ quiet = false } = {}) {
 
 async function saveProfileName(profile, card) {
   const input = card.querySelector("[data-profile-name]");
+  const playerTypeInput = card.querySelector("[data-player-type]");
   const restaurantName = input.value.trim();
+  const playerType = normalizePlayerType(playerTypeInput?.value);
   if (!restaurantName) {
     showProfileMessage("Restaurant name is required.", true);
     return;
@@ -1219,10 +1244,11 @@ async function saveProfileName(profile, card) {
   try {
     await profileApiRequest(`/${encodeURIComponent(profile.id)}`, {
       method: "PUT",
-      body: JSON.stringify({ restaurantName }),
+      body: JSON.stringify({ restaurantName, playerType }),
     });
-    showProfileMessage("Restaurant name updated.");
+    showProfileMessage("Restaurant profile updated.");
     await loadProfiles({ quiet: true });
+    await loadStats({ quiet: true });
   } catch (error) {
     showProfileMessage(error.message, true);
   }
@@ -1314,6 +1340,10 @@ function getStatsSummary(list) {
     totalSessionsTracked,
     lastPlayedAt,
   };
+}
+
+function isNormalPlayerProfile(profile) {
+  return normalizePlayerType(profile?.playerType) === "normal";
 }
 
 function getDailyPlayRows(list, dayCount = 14) {
@@ -1413,29 +1443,34 @@ function statsList(title, rows, emptyText, rowTemplate) {
 }
 
 function renderStats() {
-  const summary = getStatsSummary(statsProfiles);
-  elements.statsCount.textContent = `${formatWholeNumber(summary.totalProfiles)} restaurant profile${summary.totalProfiles === 1 ? "" : "s"}`;
+  const normalProfiles = statsProfiles.filter(isNormalPlayerProfile);
+  const excludedProfiles = statsProfiles.filter((profile) => !isNormalPlayerProfile(profile));
+  const adminProfiles = statsProfiles.filter((profile) => normalizePlayerType(profile.playerType) === "admin");
+  const testerProfiles = statsProfiles.filter((profile) => normalizePlayerType(profile.playerType) === "tester");
+  const summary = getStatsSummary(normalProfiles);
+  elements.statsCount.textContent = `${formatWholeNumber(summary.totalProfiles)} normal player profile${summary.totalProfiles === 1 ? "" : "s"}`;
 
   if (!statsProfiles.length) {
     elements.statsDashboard.innerHTML = '<div class="empty-state">No player stats are available yet.</div>';
     return;
   }
 
-  const dailyRows = getDailyPlayRows(statsProfiles);
-  const createdRows = getNewRestaurantRows(statsProfiles);
-  const topPublicGames = getTopPublicGameRows(statsProfiles);
-  const activeProfiles = getMostActiveProfileRows(statsProfiles);
+  const dailyRows = getDailyPlayRows(normalProfiles);
+  const createdRows = getNewRestaurantRows(normalProfiles);
+  const topPublicGames = getTopPublicGameRows(normalProfiles);
+  const activeProfiles = getMostActiveProfileRows(normalProfiles);
 
   elements.statsDashboard.innerHTML = `
     <section class="stats-grid">
-      ${statsCard("Saved restaurants", formatWholeNumber(summary.savedCount), `${formatPercent(summary.savedCount, summary.totalProfiles)} of all profiles`)}
-      ${statsCard("Still guest-only", formatWholeNumber(summary.guestCount), `${formatPercent(summary.guestCount, summary.totalProfiles)} of all profiles`)}
+      ${statsCard("Saved restaurants", formatWholeNumber(summary.savedCount), `${formatPercent(summary.savedCount, summary.totalProfiles)} of normal profiles`)}
+      ${statsCard("Still guest-only", formatWholeNumber(summary.guestCount), `${formatPercent(summary.guestCount, summary.totalProfiles)} of normal profiles`)}
       ${statsCard("Returning players", formatWholeNumber(summary.returnedCount), `${formatPercent(summary.returnedCount, summary.profilesWithGames)} of players with games`)}
       ${statsCard("One-day players", formatWholeNumber(summary.oneDayCount), `${formatPercent(summary.oneDayCount, summary.profilesWithGames)} of players with games`)}
       ${statsCard("Total games", formatWholeNumber(summary.totalGames), `${formatWholeNumber(summary.totalSessionsTracked)} recent sessions tracked`)}
       ${statsCard("Played today", formatWholeNumber(summary.playedTodayCount), "Restaurant profiles active today")}
       ${statsCard("Reached 4 games", formatWholeNumber(summary.fourGameCount), `${formatPercent(summary.fourGameCount, summary.profilesWithGames)} of players with games`)}
-      ${statsCard("Email recovery", formatWholeNumber(summary.emailConnectedCount), `${formatPercent(summary.emailConnectedCount, summary.totalProfiles)} of all profiles`)}
+      ${statsCard("Email recovery", formatWholeNumber(summary.emailConnectedCount), `${formatPercent(summary.emailConnectedCount, summary.totalProfiles)} of normal profiles`)}
+      ${statsCard("Excluded from stats", formatWholeNumber(excludedProfiles.length), `${formatWholeNumber(adminProfiles.length)} admin · ${formatWholeNumber(testerProfiles.length)} tester`)}
     </section>
 
     <section class="stats-grid stats-grid-wide">
@@ -1468,7 +1503,7 @@ function renderStats() {
       `)}
     </section>
 
-    <p class="stats-footnote">Last recorded play: ${escapeHtml(summary.lastPlayedAt ? formatShortDate(summary.lastPlayedAt) : "not available")}. Daily counts use recent session history; total games use each restaurant profile's all-time game count.</p>
+    <p class="stats-footnote">Main stats count Normal Player profiles only. Admin and Tester profiles are excluded. Last normal-player recorded play: ${escapeHtml(summary.lastPlayedAt ? formatShortDate(summary.lastPlayedAt) : "not available")}. Daily counts use recent session history; total games use each restaurant profile's all-time game count.</p>
   `;
 }
 

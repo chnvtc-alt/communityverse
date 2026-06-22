@@ -91,25 +91,30 @@ export async function storeProfile(profile, privateFields = {}) {
 }
 
 export function preserveNewerRestaurantName(existingProfile, incomingProfile) {
+  const profileWithAdminFields = {
+    ...incomingProfile,
+    playerType: existingProfile?.playerType || "normal",
+  };
+
   if (!existingProfile) {
-    return incomingProfile;
+    return profileWithAdminFields;
   }
 
   const existingNameTime = Date.parse(existingProfile.restaurantNameUpdatedAt || "") || 0;
-  const incomingNameTime = Date.parse(incomingProfile?.restaurantNameUpdatedAt || "") || 0;
+  const incomingNameTime = Date.parse(profileWithAdminFields?.restaurantNameUpdatedAt || "") || 0;
   const existingName = String(existingProfile.restaurantName || "").trim();
-  const incomingName = String(incomingProfile?.restaurantName || "").trim();
+  const incomingName = String(profileWithAdminFields?.restaurantName || "").trim();
 
   if (existingNameTime && existingNameTime > incomingNameTime && existingName && existingName !== incomingName) {
     return {
-      ...incomingProfile,
+      ...profileWithAdminFields,
       restaurantName: existingProfile.restaurantName,
       restaurantSlug: existingProfile.restaurantSlug,
       restaurantNameUpdatedAt: existingProfile.restaurantNameUpdatedAt,
     };
   }
 
-  return incomingProfile;
+  return profileWithAdminFields;
 }
 
 function stateSecret() {
