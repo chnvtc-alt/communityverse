@@ -1114,6 +1114,14 @@ function getExpansionLevelLabel(profile) {
   return `Expansion ${levelNumber}`;
 }
 
+function getUpgradeCountLabel(profile) {
+  const upgrades = profile?.restaurantEconomy?.upgrades;
+  const count = upgrades && typeof upgrades === "object" && !Array.isArray(upgrades)
+    ? Object.keys(upgrades).length
+    : 0;
+  return `Upgrades ${count}`;
+}
+
 function dateKey(value) {
   const date = new Date(value || "");
   if (Number.isNaN(date.getTime())) {
@@ -1390,6 +1398,7 @@ function renderProfiles() {
         playHistory.label,
         profile.restaurantSlug,
         getExpansionLevelLabel(profile),
+        getUpgradeCountLabel(profile),
         `${gamesPlayed} game${gamesPlayed === 1 ? "" : "s"}`,
         `${activity.activeDays || 0} active day${activity.activeDays === 1 ? "" : "s"}`,
         activity.returned ? "Returned" : gamesPlayed ? "One-day player" : "No plays yet",
