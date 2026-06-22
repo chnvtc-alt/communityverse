@@ -9,6 +9,14 @@ const CUSTOMER_PHOTO_API_URL = "/api/admin/customer-photo";
 const QUESTION_IMAGE_API_URL = "/api/admin/questions";
 const BACKUP_API_URL = "/api/admin/backup";
 const KEY_STORAGE = "communityverseQuestionsAdminKey";
+const EXPANSION_LEVELS = [
+  { id: "food-truck", label: "Food Truck" },
+  { id: "counter-service", label: "Counter Service" },
+  { id: "small-diner", label: "Small Diner" },
+  { id: "family-restaurant", label: "Family Restaurant" },
+  { id: "regional-favorite", label: "Regional Favorite" },
+  { id: "local-landmark", label: "Local Landmark" },
+];
 
 const elements = {
   tabs: [...document.querySelectorAll(".workshop-tab")],
@@ -1073,6 +1081,13 @@ function getPlayerTypeLabel(profile) {
   return labels[normalizePlayerType(profile?.playerType)] || labels.normal;
 }
 
+function getExpansionLevelLabel(profile) {
+  const expansionLevelId = String(profile?.restaurantEconomy?.expansionLevel || "food-truck").trim();
+  const index = EXPANSION_LEVELS.findIndex((level) => level.id === expansionLevelId);
+  const levelNumber = index >= 0 ? index + 1 : 1;
+  return `Expansion ${levelNumber}`;
+}
+
 function dateKey(value) {
   const date = new Date(value || "");
   if (Number.isNaN(date.getTime())) {
@@ -1291,6 +1306,7 @@ function renderProfiles() {
         getProfileEntryLabel(profile),
         playHistoryLabel,
         profile.restaurantSlug,
+        getExpansionLevelLabel(profile),
         `${Number(stats.gamesPlayed) || 0} games`,
         `${activity.activeDays || 0} active day${activity.activeDays === 1 ? "" : "s"}`,
         activity.returned ? "Returned" : Number(stats.gamesPlayed) ? "One-day player" : "No plays yet",
