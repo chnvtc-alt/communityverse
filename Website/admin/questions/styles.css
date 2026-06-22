@@ -567,6 +567,23 @@ textarea {
   padding: 4px 7px;
 }
 
+.profile-history-details {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.profile-history-details summary {
+  cursor: pointer;
+  color: var(--green);
+  font-weight: 700;
+}
+
+.profile-history-details p {
+  margin: 6px 0 0;
+  line-height: 1.5;
+}
+
 .profile-edit-row {
   display: grid;
   grid-template-columns: minmax(260px, 1fr) minmax(160px, 210px) auto;

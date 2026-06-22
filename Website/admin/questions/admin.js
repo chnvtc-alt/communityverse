@@ -1244,10 +1244,13 @@ function getProfileEntryLabel(profile) {
   return `Entry ${entryPoint} -> First game ${firstRestaurant.slug}`;
 }
 
-function getProfilePlayHistoryLabel(profile) {
+function getProfilePlayHistory(profile) {
   const sessions = profileSessions(profile);
   if (!sessions.length) {
-    return "";
+    return {
+      label: "",
+      detail: "",
+    };
   }
 
   const counts = new Map();
@@ -1264,15 +1267,21 @@ function getProfilePlayHistoryLabel(profile) {
     counts.set(slug, current);
   });
 
-  const parts = [...counts.entries()]
-    .sort((left, right) => right[1].count - left[1].count || left[1].name.localeCompare(right[1].name))
-    .slice(0, 3)
+  const sortedCounts = [...counts.entries()]
+    .sort((left, right) => right[1].count - left[1].count || left[1].name.localeCompare(right[1].name));
+  const top = sortedCounts[0]?.[1] || null;
+  const detail = sortedCounts
     .map(([, item]) => `${item.name} ${item.count} play${item.count === 1 ? "" : "s"}`);
 
-  const extraCount = Math.max(0, counts.size - parts.length);
-  return parts.length
-    ? `History: ${parts.join(", ")}${extraCount ? `, +${extraCount} more` : ""}`
-    : "";
+  return top
+    ? {
+        label: `History: top ${top.name} • ${counts.size} game${counts.size === 1 ? "" : "s"}`,
+        detail: detail.join(", "),
+      }
+    : {
+        label: "",
+        detail: "",
+      };
 }
 
 function getProfileActivityLabel(activity) {
@@ -1372,13 +1381,13 @@ function renderProfiles() {
     .map((profile) => {
       const activity = getProfileActivity(profile);
       const gamesPlayed = getProfileGameCount(profile);
-      const playHistoryLabel = getProfilePlayHistoryLabel(profile);
+      const playHistory = getProfilePlayHistory(profile);
       const activityLabel = getProfileActivityLabel(activity);
       const chips = [
         getProfileStatus(profile),
         getPlayerTypeLabel(profile),
         getProfileEntryLabel(profile),
-        playHistoryLabel,
+        playHistory.label,
         profile.restaurantSlug,
         getExpansionLevelLabel(profile),
         `${gamesPlayed} game${gamesPlayed === 1 ? "" : "s"}`,
@@ -1395,6 +1404,12 @@ function renderProfiles() {
             <div class="question-meta">
               ${chips.map((chip) => `<span class="meta-chip">${escapeHtml(chip)}</span>`).join("")}
             </div>
+            ${playHistory.detail ? `
+              <details class="profile-history-details">
+                <summary>Restaurant plays</summary>
+                <p>${escapeHtml(playHistory.detail)}</p>
+              </details>
+            ` : ""}
           </div>
           <div class="profile-edit-row">
             <label>
