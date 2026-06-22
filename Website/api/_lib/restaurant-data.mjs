@@ -205,6 +205,7 @@ export function normalizeProfile(profile) {
   safeProfile.restaurantName = String(safeProfile.restaurantName || "").trim();
   safeProfile.restaurantSlug = String(safeProfile.restaurantSlug || "").trim();
   safeProfile.restaurantNameUpdatedAt = String(safeProfile.restaurantNameUpdatedAt || "").trim();
+  safeProfile.entryPoint = String(safeProfile.entryPoint || "").trim();
   safeProfile.createdAt = String(safeProfile.createdAt || "");
   safeProfile.updatedAt = String(safeProfile.updatedAt || "");
   safeProfile.lastPlayedAt = String(safeProfile.lastPlayedAt || "");

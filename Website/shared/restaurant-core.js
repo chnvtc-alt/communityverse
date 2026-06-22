@@ -2170,6 +2170,25 @@
     return normalizeText(value).replace(/\s/g, "-");
   }
 
+  function normalizeEntryPoint(value) {
+    const text = String(value || "").trim();
+    if (!text) {
+      return "";
+    }
+
+    try {
+      const url = new URL(text, window.location.origin);
+      return url.pathname || "";
+    } catch (error) {
+      return text.startsWith("/") ? text.split("?")[0].split("#")[0] : "";
+    }
+  }
+
+  function getCurrentEntryPoint(fallback = "") {
+    const queryEntryPoint = new URLSearchParams(window.location.search).get("entry");
+    return normalizeEntryPoint(queryEntryPoint || fallback || window.location.pathname);
+  }
+
   function readJson(key, fallback) {
     try {
       const raw = window.localStorage?.getItem(key);
@@ -3058,6 +3077,7 @@
       : [];
     safeProfile.baseRestaurantSlug = normalizeRestaurant(safeProfile.baseRestaurantSlug || "");
     safeProfile.baseRestaurantName = String(safeProfile.baseRestaurantName || "").trim();
+    safeProfile.entryPoint = normalizeEntryPoint(safeProfile.entryPoint || "");
     safeProfile.restaurantEconomy = normalizeRestaurantEconomy(safeProfile.restaurantEconomy);
     safeProfile.isGuest = Boolean(safeProfile.isGuest);
     safeProfile.customerCollection = dedupeCustomerCollection(
@@ -3405,7 +3425,7 @@
     return safeProfile;
   }
 
-  function createProfile(playerName, restaurantName) {
+  function createProfile(playerName, restaurantName, options = {}) {
     const timestamp = nowIso();
     const profile = {
       id: makeId("player"),
@@ -3413,6 +3433,7 @@
       restaurantName: String(restaurantName || "").trim(),
       restaurantSlug: slugify(restaurantName || ""),
       restaurantNameUpdatedAt: timestamp,
+      entryPoint: getCurrentEntryPoint(options.entryPoint),
       createdAt: timestamp,
       lastPlayedAt: null,
       isGuest: false,
@@ -3431,7 +3452,7 @@
     return ensureProfileShape(profile);
   }
 
-  function createGuestProfile() {
+  function createGuestProfile(options = {}) {
     const restaurantName = generateGuestRestaurantName();
     const timestamp = nowIso();
     const profile = {
@@ -3440,6 +3461,7 @@
       restaurantName,
       restaurantSlug: slugify(restaurantName),
       restaurantNameUpdatedAt: timestamp,
+      entryPoint: getCurrentEntryPoint(options.entryPoint),
       createdAt: timestamp,
       lastPlayedAt: null,
       isGuest: true,

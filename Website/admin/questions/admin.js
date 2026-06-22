@@ -1159,6 +1159,7 @@ function renderProfiles() {
       const chips = [
         getProfileStatus(profile),
         getPlayerTypeLabel(profile),
+        `Entry ${profile.entryPoint || "Unknown"}`,
         profile.restaurantSlug,
         `${Number(stats.gamesPlayed) || 0} games`,
         `${activity.activeDays || 0} active day${activity.activeDays === 1 ? "" : "s"}`,

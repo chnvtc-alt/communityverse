@@ -95,6 +95,18 @@
     return `${path}${separator}hub=1${hash ? `#${hash}` : ""}`;
   }
 
+  function withEntryPoint(url) {
+    const stringUrl = String(url || "");
+    if (!stringUrl || stringUrl === "#" || stringUrl.includes("entry=")) {
+      return stringUrl;
+    }
+
+    const [pathAndQuery, hash = ""] = stringUrl.split("#");
+    const separator = pathAndQuery.includes("?") ? "&" : "?";
+    const entryPoint = window.location.pathname || "/restaurant/";
+    return `${pathAndQuery}${separator}entry=${encodeURIComponent(entryPoint)}${hash ? `#${hash}` : ""}`;
+  }
+
   const elements = {
     tabs: null,
     mobileHeader: null,
@@ -238,7 +250,9 @@
 
     elements.splashPlayButton.setAttribute("aria-disabled", selectedRestaurant?.available ? "false" : "true");
     elements.splashPlayButton.classList.toggle("is-disabled", !selectedRestaurant?.available);
-    elements.splashPlayButton.href = selectedRestaurant?.available && selectedRestaurant.href ? selectedRestaurant.href : "#splash-chooser";
+    elements.splashPlayButton.href = selectedRestaurant?.available && selectedRestaurant.href
+      ? withEntryPoint(selectedRestaurant.href)
+      : "#splash-chooser";
     elements.splashPlayButton.textContent = selectedRestaurant?.available ? "Start Playing" : "Coming Soon";
     if (elements.splashMyRestaurantButton) {
       elements.splashMyRestaurantButton.href = "/restaurant/?hub=1#hero-panel";

@@ -601,7 +601,7 @@
       return existingProfile;
     }
 
-    return core.createGuestProfile();
+    return core.createGuestProfile({ entryPoint: query.get("entry") });
   }
 
   async function initializeRestaurantPage() {
