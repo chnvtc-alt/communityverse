@@ -3,6 +3,7 @@ const GENERATOR_API_URL = "/api/admin/question-generator";
 const CUSTOMER_API_URL = "/api/admin/customers";
 const RESTAURANT_API_URL = "/api/admin/restaurants";
 const PROFILE_API_URL = "/api/admin/profiles";
+const SESSION_API_URL = "/api/admin/sessions";
 const RESTAURANT_IMAGE_API_URL = "/api/admin/restaurant-image";
 const CUSTOMER_PHOTO_API_URL = "/api/admin/customer-photo";
 const QUESTION_IMAGE_API_URL = "/api/admin/questions";
@@ -152,6 +153,7 @@ let customerSortMode = "recent";
 let restaurants = [];
 let profiles = [];
 let statsProfiles = [];
+let profileSessionHistory = new Map();
 let filterTimer = 0;
 let customerFilterTimer = 0;
 let restaurantFilterTimer = 0;
@@ -282,6 +284,26 @@ async function profileApiRequest(path = "", options = {}) {
     ...options,
     headers: {
       ...(options.body ? { "Content-Type": "application/json" } : {}),
+      Authorization: `Bearer ${adminKey}`,
+      ...(options.headers || {}),
+    },
+  });
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const error = new Error(data.error || data.errors?.join(" ") || `Request failed (${response.status}).`);
+    error.status = response.status;
+    error.details = data.errors;
+    throw error;
+  }
+
+  return data;
+}
+
+async function sessionApiRequest(path = "", options = {}) {
+  const response = await fetch(`${SESSION_API_URL}${path}`, {
+    ...options,
+    headers: {
       Authorization: `Bearer ${adminKey}`,
       ...(options.headers || {}),
     },
@@ -1084,9 +1106,9 @@ function daysSince(value) {
 }
 
 function getProfileActivity(profile) {
-  const sessions = Array.isArray(profile.recentSessions) ? profile.recentSessions : [];
+  const sessions = profileSessions(profile);
   const playedDates = sessions
-    .map((session) => session?.playedAt)
+    .map(getSessionPlayedAt)
     .filter(Boolean);
   const gamesPlayed = Number(profile.stats?.gamesPlayed) || 0;
   const fallbackPlayedAt = profile.lastPlayedAt || profile.updatedAt || (gamesPlayed ? profile.createdAt : "");
@@ -1118,6 +1140,10 @@ function getProfileActivity(profile) {
   };
 }
 
+function getSessionPlayedAt(session) {
+  return session?.playedAt || session?.completedAt || "";
+}
+
 function getFirstPlayedRestaurant(profile) {
   const storedSlug = slugify(profile?.firstRestaurantSlug || "");
   if (storedSlug) {
@@ -1127,24 +1153,22 @@ function getFirstPlayedRestaurant(profile) {
     };
   }
 
-  const baseSlug = slugify(profile?.baseRestaurantSlug || "");
-  if (baseSlug) {
-    return {
-      slug: baseSlug,
-      name: profile.baseRestaurantName || profileRestaurantName(baseSlug),
-    };
-  }
-
   const firstSession = profileSessions(profile)
     .filter((session) => session?.restaurantSlug)
     .sort((left, right) => {
-      const leftTime = Date.parse(left?.playedAt || "") || 0;
-      const rightTime = Date.parse(right?.playedAt || "") || 0;
+      const leftTime = Date.parse(getSessionPlayedAt(left)) || 0;
+      const rightTime = Date.parse(getSessionPlayedAt(right)) || 0;
       return leftTime - rightTime;
     })[0];
 
   if (!firstSession) {
-    return null;
+    const baseSlug = slugify(profile?.baseRestaurantSlug || "");
+    return baseSlug
+      ? {
+          slug: baseSlug,
+          name: profile.baseRestaurantName || profileRestaurantName(baseSlug),
+        }
+      : null;
   }
 
   const slug = slugify(firstSession.restaurantSlug || "");
@@ -1161,6 +1185,37 @@ function getProfileEntryLabel(profile) {
     return profile?.entryPoint ? `Entry ${entryPoint}` : "Entry not tracked yet";
   }
   return `Entry ${entryPoint} -> First game ${firstRestaurant.name}`;
+}
+
+function getProfilePlayHistoryLabel(profile) {
+  const sessions = profileSessions(profile);
+  if (!sessions.length) {
+    return "";
+  }
+
+  const counts = new Map();
+  sessions.forEach((session) => {
+    const slug = slugify(session?.restaurantSlug || "");
+    if (!slug) {
+      return;
+    }
+    const current = counts.get(slug) || {
+      name: session.restaurantName || profileRestaurantName(slug),
+      count: 0,
+    };
+    current.count += 1;
+    counts.set(slug, current);
+  });
+
+  const parts = [...counts.entries()]
+    .sort((left, right) => right[1].count - left[1].count || left[1].name.localeCompare(right[1].name))
+    .slice(0, 3)
+    .map(([, item]) => `${item.name} ${item.count} play${item.count === 1 ? "" : "s"}`);
+
+  const extraCount = Math.max(0, counts.size - parts.length);
+  return parts.length
+    ? `History: ${parts.join(", ")}${extraCount ? `, +${extraCount} more` : ""}`
+    : "";
 }
 
 function profileMatchesActivity(profile, activityFilter) {
@@ -1201,10 +1256,12 @@ function renderProfiles() {
     .map((profile) => {
       const stats = profile.stats || {};
       const activity = getProfileActivity(profile);
+      const playHistoryLabel = getProfilePlayHistoryLabel(profile);
       const chips = [
         getProfileStatus(profile),
         getPlayerTypeLabel(profile),
         getProfileEntryLabel(profile),
+        playHistoryLabel,
         profile.restaurantSlug,
         `${Number(stats.gamesPlayed) || 0} games`,
         `${activity.activeDays || 0} active day${activity.activeDays === 1 ? "" : "s"}`,
@@ -1255,6 +1312,12 @@ async function loadProfiles({ quiet = false } = {}) {
 
   try {
     const data = await profileApiRequest(`?${profileFilterParams().toString()}`);
+    try {
+      const sessionData = await sessionApiRequest("");
+      profileSessionHistory = buildProfileSessionHistory(sessionData.sessions || []);
+    } catch (error) {
+      profileSessionHistory = new Map();
+    }
     profiles = filterProfilesByActivity(data.profiles || []);
     renderProfiles();
     showProfileMessage("");
@@ -1312,13 +1375,40 @@ function formatPercent(part, total) {
 }
 
 function profileSessions(profile) {
+  const history = profileSessionHistory.get(profile?.id);
+  if (history && history.length) {
+    return history;
+  }
   return Array.isArray(profile?.recentSessions) ? profile.recentSessions : [];
 }
 
 function profileSessionDates(profile) {
   return profileSessions(profile)
-    .map((session) => session?.playedAt)
+    .map(getSessionPlayedAt)
     .filter(Boolean);
+}
+
+function buildProfileSessionHistory(sessions) {
+  const history = new Map();
+  (Array.isArray(sessions) ? sessions : []).forEach((session) => {
+    const profileId = String(session?.profileId || "").trim();
+    if (!profileId) {
+      return;
+    }
+    const list = history.get(profileId) || [];
+    list.push(session);
+    history.set(profileId, list);
+  });
+
+  history.forEach((list) => {
+    list.sort((left, right) => {
+      const rightTime = Date.parse(getSessionPlayedAt(right)) || 0;
+      const leftTime = Date.parse(getSessionPlayedAt(left)) || 0;
+      return rightTime - leftTime;
+    });
+  });
+
+  return history;
 }
 
 function profileRestaurantName(slug) {
