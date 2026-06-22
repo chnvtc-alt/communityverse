@@ -1184,7 +1184,7 @@ function getProfileEntryLabel(profile) {
   if (!firstRestaurant) {
     return profile?.entryPoint ? `Entry ${entryPoint}` : "Entry not tracked yet";
   }
-  return `Entry ${entryPoint} -> First game ${firstRestaurant.name}`;
+  return `Entry ${entryPoint} -> First game ${firstRestaurant.slug}`;
 }
 
 function getProfilePlayHistoryLabel(profile) {
@@ -1200,7 +1200,7 @@ function getProfilePlayHistoryLabel(profile) {
       return;
     }
     const current = counts.get(slug) || {
-      name: session.restaurantName || profileRestaurantName(slug),
+      name: slug,
       count: 0,
     };
     current.count += 1;
