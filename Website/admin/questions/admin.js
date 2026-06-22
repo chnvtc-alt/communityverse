@@ -1179,8 +1179,8 @@ function getFirstPlayedRestaurant(profile) {
 }
 
 function getProfileEntryLabel(profile) {
-  const entryPoint = profile?.entryPoint || "not tracked yet";
   const firstRestaurant = getFirstPlayedRestaurant(profile);
+  const entryPoint = profile?.entryPoint || (firstRestaurant?.slug ? `/${firstRestaurant.slug}/` : "");
   if (!firstRestaurant) {
     return profile?.entryPoint ? `Entry ${entryPoint}` : "Entry not tracked yet";
   }
