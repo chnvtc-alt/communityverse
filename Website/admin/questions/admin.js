@@ -1118,6 +1118,43 @@ function getProfileActivity(profile) {
   };
 }
 
+function getFirstPlayedRestaurant(profile) {
+  const storedSlug = slugify(profile?.firstRestaurantSlug || "");
+  if (storedSlug) {
+    return {
+      slug: storedSlug,
+      name: profile.firstRestaurantName || profileRestaurantName(storedSlug),
+    };
+  }
+
+  const firstSession = profileSessions(profile)
+    .filter((session) => session?.restaurantSlug)
+    .sort((left, right) => {
+      const leftTime = Date.parse(left?.playedAt || "") || 0;
+      const rightTime = Date.parse(right?.playedAt || "") || 0;
+      return leftTime - rightTime;
+    })[0];
+
+  if (!firstSession) {
+    return null;
+  }
+
+  const slug = slugify(firstSession.restaurantSlug || "");
+  return {
+    slug,
+    name: firstSession.restaurantName || profileRestaurantName(slug),
+  };
+}
+
+function getProfileEntryLabel(profile) {
+  const entryPoint = profile?.entryPoint || "Unknown";
+  const firstRestaurant = getFirstPlayedRestaurant(profile);
+  if (!firstRestaurant) {
+    return `Entry ${entryPoint}`;
+  }
+  return `Entry ${entryPoint} -> First game ${firstRestaurant.name}`;
+}
+
 function profileMatchesActivity(profile, activityFilter) {
   const activity = getProfileActivity(profile);
   if (activityFilter === "returned") {
@@ -1159,7 +1196,7 @@ function renderProfiles() {
       const chips = [
         getProfileStatus(profile),
         getPlayerTypeLabel(profile),
-        `Entry ${profile.entryPoint || "Unknown"}`,
+        getProfileEntryLabel(profile),
         profile.restaurantSlug,
         `${Number(stats.gamesPlayed) || 0} games`,
         `${activity.activeDays || 0} active day${activity.activeDays === 1 ? "" : "s"}`,

@@ -3078,6 +3078,8 @@
     safeProfile.baseRestaurantSlug = normalizeRestaurant(safeProfile.baseRestaurantSlug || "");
     safeProfile.baseRestaurantName = String(safeProfile.baseRestaurantName || "").trim();
     safeProfile.entryPoint = normalizeEntryPoint(safeProfile.entryPoint || "");
+    safeProfile.firstRestaurantSlug = normalizeRestaurant(safeProfile.firstRestaurantSlug || "");
+    safeProfile.firstRestaurantName = String(safeProfile.firstRestaurantName || "").trim();
     safeProfile.restaurantEconomy = normalizeRestaurantEconomy(safeProfile.restaurantEconomy);
     safeProfile.isGuest = Boolean(safeProfile.isGuest);
     safeProfile.customerCollection = dedupeCustomerCollection(
@@ -3434,6 +3436,8 @@
       restaurantSlug: slugify(restaurantName || ""),
       restaurantNameUpdatedAt: timestamp,
       entryPoint: getCurrentEntryPoint(options.entryPoint),
+      firstRestaurantSlug: "",
+      firstRestaurantName: "",
       createdAt: timestamp,
       lastPlayedAt: null,
       isGuest: false,
@@ -3462,6 +3466,8 @@
       restaurantSlug: slugify(restaurantName),
       restaurantNameUpdatedAt: timestamp,
       entryPoint: getCurrentEntryPoint(options.entryPoint),
+      firstRestaurantSlug: "",
+      firstRestaurantName: "",
       createdAt: timestamp,
       lastPlayedAt: null,
       isGuest: true,
@@ -4571,6 +4577,10 @@
       ];
 
       nextProfile.lastPlayedAt = nowIso();
+      if (!String(nextProfile.firstRestaurantSlug || "").trim()) {
+        nextProfile.firstRestaurantSlug = String(session.restaurantSlug || "").trim();
+        nextProfile.firstRestaurantName = String(session.restaurantName || "").trim();
+      }
       if (!String(nextProfile.baseRestaurantSlug || "").trim()) {
         const previousRecentSession = Array.isArray(nextProfile.recentSessions)
           ? nextProfile.recentSessions[0]
