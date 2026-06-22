@@ -1334,7 +1334,7 @@
                       </div>
                         <div class="hero-profile-actions hero-profile-actions-top">
                           ${!emailConnected ? `<button class="button button-primary button-sm" type="button" data-show-connect-email>Save With Email</button>` : ""}
-                          <button class="button button-muted button-sm" type="button" data-edit-profile>Edit My Profile</button>
+                          <button class="button button-muted button-sm" type="button" data-edit-profile>Change Restaurant Name</button>
                         </div>
                     </div>
                     ${!state.profileEditMode && !emailConnected ? renderConnectInfoMarkup(profile) : ``}
@@ -1400,7 +1400,7 @@
                     </div>
                     <div class="hero-profile-actions hero-profile-actions-top">
                       ${!emailConnected ? `<button class="button button-primary button-sm" type="button" data-show-connect-email>Save With Email</button>` : ""}
-                      <button class="button button-muted button-sm" type="button" data-edit-profile>Edit My Profile</button>
+                      <button class="button button-muted button-sm" type="button" data-edit-profile>Change Restaurant Name</button>
                     </div>
                   </div>
                   ${!state.profileEditMode && !emailConnected ? renderConnectInfoMarkup(profile) : ``}
