@@ -546,9 +546,30 @@ textarea {
   gap: 8px;
 }
 
+.profile-card {
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.profile-card .question-prompt {
+  overflow: hidden;
+  margin-bottom: 6px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-card .question-meta {
+  gap: 5px;
+  margin-top: 11px;
+}
+
+.profile-card .meta-chip {
+  padding: 4px 7px;
+}
+
 .profile-edit-row {
   display: grid;
-  grid-template-columns: minmax(220px, 320px) minmax(160px, 210px) auto;
+  grid-template-columns: minmax(260px, 1fr) minmax(160px, 210px) auto;
   align-items: end;
   gap: 10px;
 }

@@ -1168,7 +1168,7 @@ function renderProfiles() {
       ].filter(Boolean);
 
       return `
-        <article class="question-card" data-id="${escapeHtml(profile.id)}">
+        <article class="question-card profile-card" data-id="${escapeHtml(profile.id)}">
           <div>
             <p class="question-prompt">${escapeHtml(profile.restaurantName || "Unnamed Restaurant")}</p>
             <p class="question-answer">${escapeHtml(profile.playerName || "Guest Player")}</p>
