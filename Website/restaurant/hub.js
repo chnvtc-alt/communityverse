@@ -1638,6 +1638,19 @@
         submitButton.disabled = true;
         submitButton.textContent = email ? "Sending..." : "Saving...";
         const previousProfile = profile;
+
+        if (email) {
+          try {
+            await core.checkEmailCanConnectProfile?.(email, profile.id);
+          } catch (error) {
+            state.guestSaveError = error instanceof Error ? error.message : "That email could not be connected.";
+            submitButton.disabled = false;
+            submitButton.textContent = "Name & Save My Restaurant";
+            renderHero();
+            return;
+          }
+        }
+
         core.updateProfile({
           ...profile,
           playerName,

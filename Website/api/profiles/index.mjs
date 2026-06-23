@@ -62,6 +62,54 @@ async function findPendingProfileForEmail(email) {
   return profiles.find((profile) => normalizedEmail(profile.pendingOwnerEmail) === normalized) || null;
 }
 
+async function findProfilesForEmail(email) {
+  const normalized = normalizedEmail(email);
+  if (!normalized) {
+    return [];
+  }
+  const rows = await supabaseRequest(
+    "profiles?select=id,player_name,restaurant_name,restaurant_slug,is_guest,created_at,updated_at,payload_json&order=updated_at.desc"
+  );
+  const profiles = Array.isArray(rows) ? rows.map(profileFromRecord).filter(Boolean) : [];
+  return profiles.filter((profile) => {
+    return normalizedEmail(profile.ownerEmail) === normalized ||
+      normalizedEmail(profile.pendingOwnerEmail) === normalized;
+  });
+}
+
+async function validateEmailCanConnectToProfile(email, profileId) {
+  const normalized = normalizedEmail(email);
+  if (!normalized || !profileId) {
+    return;
+  }
+  const matches = await findProfilesForEmail(normalized);
+  const otherProfile = matches.find((profile) => profile.id !== profileId);
+  if (!otherProfile) {
+    return;
+  }
+  const error = new Error("That email is already connected to another saved restaurant. Use Email Sign-In to restore that restaurant instead of creating a new one.");
+  error.status = 409;
+  throw error;
+}
+
+async function checkEmailForProfile(request, body) {
+  const email = normalizedEmail(body.email);
+  const profileId = String(body.profileId || "").trim();
+  if (!email || !email.includes("@")) {
+    return jsonResponse({ ok: false, error: "Enter a valid email address." }, 400);
+  }
+  if (!profileId) {
+    return jsonResponse({ ok: false, error: "Profile id is required." }, 400);
+  }
+  const profile = await fetchProfile(profileId);
+  const token = getProfileAccessToken(request);
+  if (!profile || !token || !profileTokenMatches(profile, token)) {
+    return jsonResponse({ ok: false, error: "Unable to verify this restaurant." }, 403);
+  }
+  await validateEmailCanConnectToProfile(email, profileId);
+  return jsonResponse({ ok: true });
+}
+
 async function sendMagicLink(request, body) {
   const email = normalizedEmail(body.email);
   if (!email || !email.includes("@")) {
@@ -79,6 +127,7 @@ async function sendMagicLink(request, body) {
     if (profile.ownerUserId) {
       return jsonResponse({ ok: false, error: "This restaurant is already registered." }, 409);
     }
+    await validateEmailCanConnectToProfile(email, profileId);
     claimState = createClaimState(profileId);
     await storeProfile(profile, {
       profileAccessTokenHash: profile.profileAccessTokenHash,
@@ -205,6 +254,9 @@ export async function POST(request) {
   try {
     if (body.action === "send") {
       return await sendMagicLink(request, body);
+    }
+    if (body.action === "check-email") {
+      return await checkEmailForProfile(request, body);
     }
     if (body.action === "complete") {
       return await completeMagicLink(body);

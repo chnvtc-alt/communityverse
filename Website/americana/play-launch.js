@@ -1500,6 +1500,17 @@
         const activeProfile = getProfile();
         if (activeProfile) {
           const previousProfile = activeProfile;
+          if (email) {
+            try {
+              await core.checkEmailCanConnectProfile?.(email, activeProfile.id);
+            } catch (checkError) {
+              error.textContent = checkError instanceof Error ? checkError.message : "That email could not be connected.";
+              error.classList.remove("hidden");
+              submitButton.disabled = false;
+              submitButton.textContent = "Save My Collection";
+              return;
+            }
+          }
           core.updateProfile({
             ...activeProfile,
             playerName,

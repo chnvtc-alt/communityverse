@@ -2934,6 +2934,25 @@
     });
   }
 
+  async function checkEmailCanConnectProfile(email, profileId) {
+    const safeProfileId = String(profileId || "");
+    if (!safeProfileId) {
+      return { ok: true };
+    }
+    await syncActiveProfile();
+    return requestJson("/profiles", {
+      method: "POST",
+      headers: {
+        "X-Profile-Token": ensureProfileAccessToken(safeProfileId),
+      },
+      body: JSON.stringify({
+        action: "check-email",
+        email: String(email || "").trim(),
+        profileId: safeProfileId,
+      }),
+    });
+  }
+
   function mergeRecoveredProfile(profile, profileAccessToken) {
     if (!profile?.id) {
       return null;
@@ -5028,6 +5047,7 @@
     updateProfile,
     syncActiveProfile,
     sendEmailSignInLink,
+    checkEmailCanConnectProfile,
     completeEmailSignInFromUrl,
     getRestaurantBySlug,
     getCustomerById,
