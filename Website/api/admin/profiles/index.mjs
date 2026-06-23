@@ -29,6 +29,16 @@ function profileMatchesSearch(profile, query) {
     .some((value) => value.includes(normalizedQuery));
 }
 
+function sanitizeAdminProfile(profile) {
+  const safeProfile = sanitizeProfile(profile);
+  const ownerEmail = String(profile?.ownerEmail || "").trim().toLowerCase();
+  if (ownerEmail) {
+    safeProfile.ownerEmail = ownerEmail;
+    safeProfile.emailConnected = true;
+  }
+  return safeProfile;
+}
+
 function filterProfiles(profiles, searchParams) {
   const query = searchParams.get("q") || "";
   const type = searchParams.get("type") || "all";
@@ -38,7 +48,7 @@ function filterProfiles(profiles, searchParams) {
       if (type === "registered" && profile.isGuest) return false;
       return profileMatchesSearch(profile, query);
     })
-    .map(sanitizeProfile);
+    .map(sanitizeAdminProfile);
 }
 
 export async function GET(request) {

@@ -1299,10 +1299,6 @@ function slugFromPath(value) {
   return slugify(parts[0] || cleanValue);
 }
 
-function getProfileEmailLabel(profile) {
-  return profile?.emailConnected ? "Email saved" : "";
-}
-
 function getProfilePlayHistory(profile) {
   const sessions = profileSessions(profile);
   const gamesPlayed = getProfileGameCount(profile);
@@ -1373,6 +1369,14 @@ function getProfileReturnLabel(activity) {
     return "Returned";
   }
   return "1 tracked day";
+}
+
+function getProfileEmailText(profile) {
+  const ownerEmail = String(profile?.ownerEmail || "").trim();
+  if (ownerEmail) {
+    return ownerEmail;
+  }
+  return profile?.emailConnected ? "email saved" : "";
 }
 
 function profileMatchesActivity(profile, activityFilter) {
@@ -1459,8 +1463,8 @@ function renderProfiles() {
       const gamesPlayed = getProfileGameCount(profile);
       const playHistory = getProfilePlayHistory(profile);
       const activityLabel = getProfileActivityLabel(activity);
+      const emailText = getProfileEmailText(profile);
       const chips = [
-        getProfileEmailLabel(profile),
         getProfileEntryLabel(profile),
         getExpansionLevelLabel(profile),
         getUpgradeCountLabel(profile),
@@ -1474,7 +1478,10 @@ function renderProfiles() {
         <article class="question-card profile-card" data-id="${escapeHtml(profile.id)}">
           <div>
             <p class="question-prompt">${escapeHtml(profile.restaurantName || "Unnamed Restaurant")}</p>
-            <p class="question-answer">${escapeHtml(profile.playerName || "Guest Player")}</p>
+            <p class="question-answer">
+              <span>${escapeHtml(profile.playerName || "Guest Player")}</span>
+              ${emailText ? `<span class="profile-email">${escapeHtml(emailText)}</span>` : ""}
+            </p>
             <div class="question-meta">
               ${chips.map((chip) => `<span class="meta-chip">${escapeHtml(chip)}</span>`).join("")}
             </div>

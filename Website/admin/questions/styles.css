@@ -532,6 +532,21 @@ textarea {
   font-size: 0.78rem;
 }
 
+.profile-card .question-answer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: baseline;
+}
+
+.profile-email {
+  color: var(--muted);
+}
+
+.profile-email::before {
+  content: "• ";
+}
+
 .question-meta {
   display: flex;
   flex-wrap: wrap;
