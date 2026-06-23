@@ -1171,6 +1171,59 @@
     return `${session.customer.name} was not impressed and will not be coming back.`;
   }
 
+  function renderResultNetWorthPrompt(profile, stats = null) {
+    if (!profile || profile.isGuest || !core.getRestaurantExpansionPreview) {
+      return "";
+    }
+
+    const gamesPlayed = Math.max(0, Number((stats || profile.stats)?.gamesPlayed) || 0);
+    if (gamesPlayed < 3) {
+      return "";
+    }
+
+    const preview = core.getRestaurantExpansionPreview(profile);
+    if (!preview?.next) {
+      return "";
+    }
+
+    const currentId = String(preview.current?.id || "");
+    if (!["food-truck", "counter-service", "small-diner"].includes(currentId)) {
+      return "";
+    }
+
+    const cashOnHand = core.getRestaurantCashOnHand
+      ? core.getRestaurantCashOnHand(profile, stats || profile.stats)
+      : Math.max(0, Number((stats || profile.stats)?.estimatedSales) || 0);
+    const nextCost = Math.max(0, Number(preview.next.cost) || 0);
+    const shortfall = Math.max(0, nextCost - cashOnHand);
+    const closeEnough = nextCost > 0 && cashOnHand >= nextCost * 0.6;
+    const upgrades = core.getRestaurantUpgradePreview ? core.getRestaurantUpgradePreview(profile, 3) : [];
+    const affordableUpgrade = upgrades.find((upgrade) => {
+      return currentId !== "food-truck" && cashOnHand >= Math.max(0, Number(upgrade.cost) || 0);
+    });
+
+    if (!affordableUpgrade && !closeEnough && cashOnHand < nextCost) {
+      return "";
+    }
+
+    const message = cashOnHand >= nextCost
+      ? `You can expand to ${preview.next.label} now and add ${core.formatCurrency(preview.valueAdded)} to your restaurant value.`
+      : affordableUpgrade
+        ? `${affordableUpgrade.label} is available now. Upgrades add value and can boost future sales.`
+        : `You are ${core.formatCurrency(shortfall)} away from ${preview.next.label}. A few more customers could help you expand.`;
+
+    return `
+      <div class="hero-card result-followup-card result-net-worth-prompt">
+        <p class="kicker">Grow Your Net Worth</p>
+        <h3 class="section-title">Your restaurant can grow from here.</h3>
+        <p class="copy">${escapeHtml(message)} Visit My Virtual Restaurant to expand or buy upgrades.</p>
+        <div class="button-row">
+          <a class="button button-hot" href="/restaurant/?hub=1#hero-panel">View My Virtual Restaurant</a>
+        </div>
+      </div>
+    `;
+  }
+
   function getBioPreview(bio, maxLength = 170) {
     const text = String(bio || "").trim();
     if (text.length <= maxLength) {
@@ -1288,6 +1341,7 @@
           </div>
         `
         : "";
+    const netWorthPromptMarkup = renderResultNetWorthPrompt(profile, overallSummary?.stats || profile?.stats);
 
     elements.result.innerHTML = `
       <div class="result-screen result-screen-${resultLayoutMode}">
@@ -1342,6 +1396,7 @@
 
         <div class="divider"></div>
         ${triviaLeaderboardMilestoneMarkup}
+        ${!isGuest && !state.showProfileForm ? netWorthPromptMarkup : ""}
         ${
           isGuest && !state.showProfileForm
             ? `

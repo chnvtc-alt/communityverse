@@ -3060,6 +3060,23 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   margin-top: 0;
 }
 
+.result-net-worth-prompt {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border-color: rgba(47, 111, 82, 0.18);
+  background: rgba(47, 111, 82, 0.08);
+}
+
+.result-net-worth-prompt .section-title {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.result-net-worth-prompt .copy {
+  margin: 0;
+}
+
 .result-bio-toggle {
   margin-top: 8px;
   padding: 0;
