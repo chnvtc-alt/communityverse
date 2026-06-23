@@ -8,6 +8,7 @@
     showFeedbackRewardForm: false,
     feedbackRewardMessage: "",
     feedbackRewardError: "",
+    feedbackSurveyAnswers: [],
   };
 
   function escapeHtml(value) {
@@ -485,6 +486,7 @@
 
     return surveyQuestions.map((question) => {
       const requiredText = question.required === false ? "" : " required";
+      const currentValue = getFeedbackSurveyAnswerValue(question.id);
       const label = `<label class="field-label" for="feedback-question-${escapeHtml(question.id)}">${escapeHtml(question.prompt)}${requiredText}</label>`;
       if (question.type === "rating") {
         return `
@@ -492,11 +494,11 @@
             ${label}
             <select class="input feedback-survey-answer" id="feedback-question-${escapeHtml(question.id)}">
               <option value="">Choose a rating</option>
-              <option value="5">5 - Great</option>
-              <option value="4">4 - Good</option>
-              <option value="3">3 - Okay</option>
-              <option value="2">2 - Not great</option>
-              <option value="1">1 - Poor</option>
+              <option value="5" ${currentValue === "5" ? "selected" : ""}>5 - Great</option>
+              <option value="4" ${currentValue === "4" ? "selected" : ""}>4 - Good</option>
+              <option value="3" ${currentValue === "3" ? "selected" : ""}>3 - Okay</option>
+              <option value="2" ${currentValue === "2" ? "selected" : ""}>2 - Not great</option>
+              <option value="1" ${currentValue === "1" ? "selected" : ""}>1 - Poor</option>
             </select>
           </div>
         `;
@@ -507,8 +509,8 @@
             ${label}
             <select class="input feedback-survey-answer" id="feedback-question-${escapeHtml(question.id)}">
               <option value="">Choose one</option>
-              <option value="Yes">Yes</option>
-              <option value="No">No</option>
+              <option value="Yes" ${currentValue === "Yes" ? "selected" : ""}>Yes</option>
+              <option value="No" ${currentValue === "No" ? "selected" : ""}>No</option>
             </select>
           </div>
         `;
@@ -519,7 +521,7 @@
             ${label}
             <select class="input feedback-survey-answer" id="feedback-question-${escapeHtml(question.id)}">
               <option value="">Choose one</option>
-              ${(question.choices || []).map((choice) => `<option value="${escapeHtml(choice)}">${escapeHtml(choice)}</option>`).join("")}
+              ${(question.choices || []).map((choice) => `<option value="${escapeHtml(choice)}" ${currentValue === String(choice) ? "selected" : ""}>${escapeHtml(choice)}</option>`).join("")}
             </select>
           </div>
         `;
@@ -527,10 +529,17 @@
       return `
         <div class="feedback-survey-question" data-question-id="${escapeHtml(question.id)}" data-question-type="text" data-question-text="${escapeHtml(question.prompt)}">
           ${label}
-          <textarea class="input feedback-reward-textarea feedback-survey-answer" id="feedback-question-${escapeHtml(question.id)}" maxlength="1000" rows="4" placeholder="Write your answer"></textarea>
+          <textarea class="input feedback-reward-textarea feedback-survey-answer" id="feedback-question-${escapeHtml(question.id)}" maxlength="1000" rows="4" placeholder="Write your answer">${escapeHtml(currentValue)}</textarea>
         </div>
       `;
     }).join("");
+  }
+
+  function getFeedbackSurveyAnswerValue(questionId) {
+    const answer = state.feedbackSurveyAnswers.find(
+      (item) => String(item.questionId || "") === String(questionId || "")
+    );
+    return String(answer?.value || "");
   }
 
   function collectFeedbackSurveyAnswers() {
@@ -558,6 +567,7 @@
         state.showFeedbackRewardForm = true;
         state.feedbackRewardError = "";
         state.feedbackRewardMessage = "";
+        state.feedbackSurveyAnswers = [];
         renderRestaurantStart(restaurant);
       });
     }
@@ -567,6 +577,7 @@
       cancelButton.addEventListener("click", () => {
         state.showFeedbackRewardForm = false;
         state.feedbackRewardError = "";
+        state.feedbackSurveyAnswers = [];
         renderRestaurantStart(restaurant);
       });
     }
@@ -580,6 +591,7 @@
       event.preventDefault();
       const submitButton = document.getElementById("feedback-reward-submit");
       const answers = collectFeedbackSurveyAnswers();
+      state.feedbackSurveyAnswers = answers;
       if (!answers.some((answer) => answer.value)) {
         state.feedbackRewardError = "Please answer the survey before claiming this reward.";
         renderRestaurantStart(restaurant);
@@ -617,6 +629,7 @@
 
       state.showFeedbackRewardForm = false;
       state.feedbackRewardError = "";
+      state.feedbackSurveyAnswers = [];
       state.feedbackRewardMessage = outcome.message || `${outcome.customer?.name || "This customer"} has joined your collection.`;
       renderRestaurantStart(restaurant);
     });
