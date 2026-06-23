@@ -1676,6 +1676,7 @@ function getStatsSummary(list) {
   const fourGameCount = profilesWithGames.filter((profile) => getStatsProfileGameCount(profile) >= 4).length;
   const totalGames = scopedProfiles.reduce((total, profile) => total + getStatsProfileGameCount(profile), 0);
   const totalSessionsTracked = scopedProfiles.reduce((total, profile) => total + getStatsProfileSessions(profile).length, 0);
+  const gamesTodayCount = getDailyPlayRows(list, 1)[0]?.games || 0;
   const lastPlayedAt = mostRecentIso(scopedProfiles.map((profile) => getStatsProfileActivity(profile).lastPlayedAt));
 
   return {
@@ -1691,6 +1692,7 @@ function getStatsSummary(list) {
     fourGameCount,
     totalGames,
     totalSessionsTracked,
+    gamesTodayCount,
     lastPlayedAt,
   };
 }
@@ -1926,10 +1928,10 @@ function renderStats() {
       ${statsCard("Returning players", formatWholeNumber(summary.returnedCount), `${formatPercent(summary.returnedCount, summary.profilesWithGames)} of players with games`)}
       ${statsCard("One tracked day", formatWholeNumber(summary.oneDayCount), `${formatPercent(summary.oneDayCount, summary.profilesWithGames)} of players with games`)}
       ${statsCard("Total games", formatWholeNumber(summary.totalGames), `${formatWholeNumber(summary.totalSessionsTracked)} tracked session${summary.totalSessionsTracked === 1 ? "" : "s"}`)}
-      ${statsCard("Played today", formatWholeNumber(summary.playedTodayCount), isOverallStatsScope() ? "Restaurant profiles active today" : `${selectedRestaurantName} profiles active today`)}
+      ${statsCard("Players today", formatWholeNumber(summary.playedTodayCount), isOverallStatsScope() ? "Restaurant profiles active today" : `${selectedRestaurantName} profiles active today`)}
+      ${statsCard("Games today", formatWholeNumber(summary.gamesTodayCount), `${selectedRestaurantName} plays recorded today`)}
       ${statsCard("Reached 4 games", formatWholeNumber(summary.fourGameCount), `${formatPercent(summary.fourGameCount, summary.profilesWithGames)} of players with games`)}
       ${statsCard("Email recovery", formatWholeNumber(summary.emailConnectedCount), `${formatPercent(summary.emailConnectedCount, summary.totalProfiles)} of normal profiles`)}
-      ${statsCard("Excluded from stats", formatWholeNumber(excludedProfiles.length), `${formatWholeNumber(adminProfiles.length)} admin · ${formatWholeNumber(testerProfiles.length)} tester`)}
     </section>
 
     <section class="stats-grid stats-grid-wide">
@@ -1962,7 +1964,7 @@ function renderStats() {
       `)}
     </section>
 
-    <p class="stats-footnote">Main stats count Normal Player profiles only. Admin and Tester profiles are excluded. Current view: ${escapeHtml(isOverallStatsScope() ? "Overall" : selectedRestaurantName)}. Last normal-player recorded play: ${escapeHtml(summary.lastPlayedAt ? formatShortDate(summary.lastPlayedAt) : "not available")}.</p>
+    <p class="stats-footnote">Main stats count Normal Player profiles only. Excluded from stats: ${formatWholeNumber(excludedProfiles.length)} (${formatWholeNumber(adminProfiles.length)} admin · ${formatWholeNumber(testerProfiles.length)} tester). Current view: ${escapeHtml(isOverallStatsScope() ? "Overall" : selectedRestaurantName)}. Last normal-player recorded play: ${escapeHtml(summary.lastPlayedAt ? formatShortDate(summary.lastPlayedAt) : "not available")}.</p>
   `;
 }
 
