@@ -52,8 +52,8 @@
 
   const state = {
     metric: metricOptions.some((option) => option.value === query.get("metric")) ? query.get("metric") : "netWorth",
-    leaderboardScope: "overall",
-    leaderboardRestaurantSlug: "americana",
+    leaderboardScope: query.get("scope") === "restaurant" ? "restaurant" : "overall",
+    leaderboardRestaurantSlug: core.slugify(query.get("restaurant") || "") || "americana",
     selectedDirectorySlug: "",
     splashStatsScope: "overall",
     collectionFilter: "all",
@@ -620,6 +620,13 @@
   }
 
   function getSelectedLeaderboardRestaurant() {
+    const selectedRestaurant = getPlayableRestaurants().find(
+      (restaurant) => restaurant.slug === state.leaderboardRestaurantSlug
+    );
+    if (selectedRestaurant) {
+      return selectedRestaurant;
+    }
+
     return (
       getPlayableRestaurants({ publicOnly: true }).find(
         (restaurant) => restaurant.slug === state.leaderboardRestaurantSlug
@@ -1972,7 +1979,13 @@
                 <label class="field" style="gap: 6px;">
                   <span class="field-label">Restaurant</span>
                   <select class="select leaderboard-select" data-control="restaurant" aria-label="Restaurant leaderboard">
-                    ${getPlayableRestaurants({ publicOnly: true })
+                    ${[
+                      ...getPlayableRestaurants({ publicOnly: true }),
+                      ...(restaurant && restaurant.visibleInList === false ? [restaurant] : []),
+                    ]
+                      .filter((restaurantOption, index, list) =>
+                        list.findIndex((item) => item.slug === restaurantOption.slug) === index
+                      )
                       .map(
                         (restaurantOption) => `
                           <option value="${restaurantOption.slug}" ${restaurantOption.slug === (restaurant?.slug || "americana") ? "selected" : ""}>

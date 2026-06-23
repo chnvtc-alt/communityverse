@@ -1335,7 +1335,7 @@
               ${
                 isGuest
                   ? `<button class="button button-hot" id="milestone-save-button" type="button">Save My Restaurant</button>`
-                  : `<a class="button button-hot" href="/restaurant/?hub=1&metric=rating#leaderboard-panel">View Trivia % Leaderboard</a>`
+                  : `<a class="button button-hot" href="/restaurant/?hub=1&metric=rating&scope=restaurant&restaurant=${encodeURIComponent(restaurantSlug)}#leaderboard-panel">View Trivia % Leaderboard</a>`
               }
             </div>
           </div>

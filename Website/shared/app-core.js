@@ -4868,6 +4868,11 @@
     );
   }
 
+  function isPlayableLeaderboardRestaurant(restaurantSlug) {
+    const restaurant = getRestaurantBySlug(restaurantSlug);
+    return Boolean(restaurant && restaurant.active !== false && restaurant.playable !== false);
+  }
+
   function addStats(target, source) {
     target.gamesPlayed += Number(source.gamesPlayed) || 0;
     target.totalCorrectAnswers += Number(source.totalCorrectAnswers) || 0;
@@ -4887,6 +4892,7 @@
       return safeProfile.stats;
     }
 
+    const hasPrivateRestaurantStats = entries.some(([restaurantSlug]) => !isPublicLeaderboardRestaurant(restaurantSlug));
     const stats = entries.reduce((combinedStats, [restaurantSlug, restaurantStats]) => {
       if (isPublicLeaderboardRestaurant(restaurantSlug)) {
         addStats(combinedStats, restaurantStats);
@@ -4895,7 +4901,7 @@
       return combinedStats;
     }, buildEmptyStats());
 
-    if ((Number(safeProfile.stats?.gamesPlayed) || 0) > stats.gamesPlayed) {
+    if (!hasPrivateRestaurantStats && (Number(safeProfile.stats?.gamesPlayed) || 0) > stats.gamesPlayed) {
       stats.gamesPlayed = Number(safeProfile.stats.gamesPlayed) || 0;
       stats.totalCorrectAnswers = Number(safeProfile.stats.totalCorrectAnswers) || 0;
     }
@@ -4909,7 +4915,7 @@
     const profiles = getProfiles().map((profile) => {
       const safeProfile = ensureProfileShape(profile);
       const stats = restaurantSlug
-        ? isPublicLeaderboardRestaurant(restaurantSlug)
+        ? isPlayableLeaderboardRestaurant(restaurantSlug)
           ? safeProfile.restaurantStats[restaurantSlug] || buildEmptyStats()
           : buildEmptyStats()
         : getPublicLeaderboardStats(safeProfile);
