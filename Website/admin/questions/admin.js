@@ -1202,12 +1202,13 @@ function getProfileActivity(profile) {
     .map(getSessionPlayedAt)
     .filter(Boolean);
   const gamesPlayed = getProfileGameCount(profile);
+  const trackedRestaurantPlays = getTrackedRestaurantPlayCount(profile, sessions);
 
   if (gamesPlayed > 0 && profile.lastPlayedAt) {
     playedDates.push(profile.lastPlayedAt);
   }
 
-  if (gamesPlayed > sessions.length && profile.createdAt) {
+  if (gamesPlayed > 1 && profile.createdAt) {
     playedDates.push(profile.createdAt);
   }
 
@@ -1229,7 +1230,7 @@ function getProfileActivity(profile) {
     ? new Date(Math.max(...timestamps)).toISOString()
     : profile.lastPlayedAt || "";
   const activeDays = dayKeys.size;
-  const hasUndatedEarlierPlays = sessions.length > 0 && gamesPlayed > sessions.length && gamesPlayed > 1;
+  const hasUndatedEarlierPlays = trackedRestaurantPlays > 0 && gamesPlayed > trackedRestaurantPlays && gamesPlayed > 1;
   const returned = activeDays >= 2 || hasUndatedEarlierPlays;
 
   return {
@@ -1238,6 +1239,7 @@ function getProfileActivity(profile) {
     lastPlayedAt,
     returned,
     hasUndatedEarlierPlays,
+    undatedEarlierPlayCount: hasUndatedEarlierPlays ? gamesPlayed - trackedRestaurantPlays : 0,
     daysSinceLast: daysSince(lastPlayedAt),
     gamesPlayed,
   };
@@ -1249,6 +1251,12 @@ function getSessionPlayedAt(session) {
 
 function getProfileGameCount(profile) {
   return Math.max(Number(profile?.stats?.gamesPlayed) || 0, profileSessions(profile).length);
+}
+
+function getTrackedRestaurantPlayCount(profile, sessions = profileSessions(profile)) {
+  return (Array.isArray(sessions) ? sessions : []).filter((session) => {
+    return slugify(session?.restaurantSlug || "") && getSessionPlayedAt(session);
+  }).length;
 }
 
 function getFirstPlayedRestaurant(profile) {
@@ -1296,6 +1304,9 @@ function getProfileEntryLabel(profile) {
 
 function getProfilePlayHistory(profile) {
   const sessions = profileSessions(profile);
+  const gamesPlayed = getProfileGameCount(profile);
+  const trackedRestaurantPlays = getTrackedRestaurantPlayCount(profile, sessions);
+  const missingPlayCount = Math.max(0, gamesPlayed - trackedRestaurantPlays);
   if (!sessions.length) {
     return {
       label: "",
@@ -1322,10 +1333,13 @@ function getProfilePlayHistory(profile) {
   const top = sortedCounts[0]?.[1] || null;
   const detail = sortedCounts
     .map(([, item]) => `${item.name} ${item.count} play${item.count === 1 ? "" : "s"}`);
+  if (missingPlayCount) {
+    detail.push(`${missingPlayCount} earlier play${missingPlayCount === 1 ? "" : "s"} not dated`);
+  }
 
   return top
     ? {
-        label: `History: top ${top.name} • ${counts.size} game${counts.size === 1 ? "" : "s"}`,
+        label: `History: top ${top.name} • ${counts.size} restaurant${counts.size === 1 ? "" : "s"}`,
         detail: detail.join(", "),
       }
     : {
