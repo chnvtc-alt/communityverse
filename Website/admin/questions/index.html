@@ -313,8 +313,8 @@
           <h2>What This Tracks</h2>
           <p>Main stats count Normal Player profiles only. Admin and Tester profiles are excluded.</p>
           <p>Saved means the player changed from guest to registered. Email can still be optional.</p>
-          <p>Returned means the same restaurant profile played on at least two different days.</p>
-          <p>Daily plays use recent session history. If older sessions are missing, the profile's first-seen date may help identify returning players.</p>
+          <p>Returned means the same restaurant profile played on at least two different days, or has older games without exact dated sessions.</p>
+          <p>Daily plays use recent session history, so older activity may be counted without a specific play date.</p>
         </section>
       </aside>
 
@@ -734,6 +734,6 @@
         </div>
       </form>
     </dialog>
-    <script type="module" src="/admin/questions/admin.js?v=returned-activity-fallback"></script>
+    <script type="module" src="/admin/questions/admin.js?v=undated-return-plays"></script>
   </body>
 </html>

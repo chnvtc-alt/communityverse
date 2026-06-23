@@ -1229,12 +1229,15 @@ function getProfileActivity(profile) {
     ? new Date(Math.max(...timestamps)).toISOString()
     : profile.lastPlayedAt || "";
   const activeDays = dayKeys.size;
+  const hasUndatedEarlierPlays = sessions.length > 0 && gamesPlayed > sessions.length && gamesPlayed > 1;
+  const returned = activeDays >= 2 || hasUndatedEarlierPlays;
 
   return {
     activeDays,
     firstPlayedAt,
     lastPlayedAt,
-    returned: activeDays >= 2,
+    returned,
+    hasUndatedEarlierPlays,
     daysSinceLast: daysSince(lastPlayedAt),
     gamesPlayed,
   };
@@ -1334,16 +1337,17 @@ function getProfilePlayHistory(profile) {
 function getProfileActivityLabel(activity) {
   const firstPlayedAt = formatCompactDate(activity.firstPlayedAt);
   const lastPlayedAt = formatCompactDate(activity.lastPlayedAt);
+  const prefix = activity.hasUndatedEarlierPlays ? "Activity • earlier plays + " : "Activity • ";
   if (!firstPlayedAt && !lastPlayedAt) {
-    return "";
+    return activity.hasUndatedEarlierPlays ? "Activity • earlier plays" : "";
   }
   if (!firstPlayedAt || firstPlayedAt === lastPlayedAt) {
-    return `Activity • ${lastPlayedAt || firstPlayedAt}`;
+    return `${prefix}${lastPlayedAt || firstPlayedAt}`;
   }
   if (!lastPlayedAt) {
-    return `Activity • ${firstPlayedAt}`;
+    return `${prefix}${firstPlayedAt}`;
   }
-  return `Activity • ${firstPlayedAt} - ${lastPlayedAt}`;
+  return `${prefix}${firstPlayedAt} - ${lastPlayedAt}`;
 }
 
 function profileMatchesActivity(profile, activityFilter) {
@@ -1440,6 +1444,7 @@ function renderProfiles() {
         getUpgradeCountLabel(profile),
         `${gamesPlayed} game${gamesPlayed === 1 ? "" : "s"}`,
         `${activity.activeDays || 0} active day${activity.activeDays === 1 ? "" : "s"}`,
+        activity.hasUndatedEarlierPlays ? "Earlier plays not dated" : "",
         activity.returned ? "Returned" : gamesPlayed ? "One-day player" : "No plays yet",
         activityLabel,
       ].filter(Boolean);
@@ -1702,14 +1707,18 @@ function getStatsProfileActivity(profile) {
   const dayKeys = new Set(playedDates.map(dateKey).filter(Boolean));
   const firstPlayedAt = timestamps.length ? new Date(Math.min(...timestamps)).toISOString() : "";
   const lastPlayedAt = timestamps.length ? new Date(Math.max(...timestamps)).toISOString() : "";
+  const gamesPlayed = getStatsProfileGameCount(profile);
+  const scopedSessions = getStatsProfileSessions(profile);
+  const hasUndatedEarlierPlays = scopedSessions.length > 0 && gamesPlayed > scopedSessions.length && gamesPlayed > 1;
 
   return {
     activeDays: dayKeys.size,
     firstPlayedAt,
     lastPlayedAt,
-    returned: dayKeys.size >= 2,
+    returned: dayKeys.size >= 2 || hasUndatedEarlierPlays,
+    hasUndatedEarlierPlays,
     daysSinceLast: daysSince(lastPlayedAt),
-    gamesPlayed: getStatsProfileGameCount(profile),
+    gamesPlayed,
   };
 }
 
