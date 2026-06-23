@@ -1374,11 +1374,6 @@ function getProfileReturnLabel(activity) {
   return "1 tracked day";
 }
 
-function getProfileFirstSeenLabel(profile) {
-  const firstSeen = formatCompactDate(profile?.createdAt);
-  return firstSeen ? `First seen ${firstSeen}` : "";
-}
-
 function profileMatchesActivity(profile, activityFilter) {
   const activity = getProfileActivity(profile);
   if (activityFilter === "returned") {
@@ -1469,7 +1464,6 @@ function renderProfiles() {
         getProfileEntryLabel(profile),
         playHistory.label,
         profile.restaurantSlug,
-        getProfileFirstSeenLabel(profile),
         getExpansionLevelLabel(profile),
         getUpgradeCountLabel(profile),
         `${gamesPlayed} game${gamesPlayed === 1 ? "" : "s"}`,
