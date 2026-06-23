@@ -2688,7 +2688,7 @@
       if (restaurantSlug && sessionRestaurantSlug !== restaurantSlug) {
         return total;
       }
-      if (!restaurantSlug && sessionRestaurantSlug && !isPublicLeaderboardRestaurant(sessionRestaurantSlug)) {
+      if (!restaurantSlug && sessionRestaurantSlug && !isPlayableLeaderboardRestaurant(sessionRestaurantSlug)) {
         return total;
       }
 
@@ -4892,16 +4892,15 @@
       return safeProfile.stats;
     }
 
-    const hasPrivateRestaurantStats = entries.some(([restaurantSlug]) => !isPublicLeaderboardRestaurant(restaurantSlug));
     const stats = entries.reduce((combinedStats, [restaurantSlug, restaurantStats]) => {
-      if (isPublicLeaderboardRestaurant(restaurantSlug)) {
+      if (isPlayableLeaderboardRestaurant(restaurantSlug)) {
         addStats(combinedStats, restaurantStats);
       }
 
       return combinedStats;
     }, buildEmptyStats());
 
-    if (!hasPrivateRestaurantStats && (Number(safeProfile.stats?.gamesPlayed) || 0) > stats.gamesPlayed) {
+    if ((Number(safeProfile.stats?.gamesPlayed) || 0) > stats.gamesPlayed) {
       stats.gamesPlayed = Number(safeProfile.stats.gamesPlayed) || 0;
       stats.totalCorrectAnswers = Number(safeProfile.stats.totalCorrectAnswers) || 0;
     }
