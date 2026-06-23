@@ -1330,7 +1330,7 @@
             <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
             <span class="chip hero-stat-chip">${bestRankLabel}</span>
           </div>
-          <p class="hero-profile-rating-note hero-profile-rating-note-full">Your rating is based on your trivia accuracy.</p>
+          <p class="hero-profile-rating-note hero-profile-rating-note-full">Rating based on trivia accuracy.</p>
           <p class="hero-profile-rating-note hero-profile-rating-note-full">Game values have no cash value.</p>
           <p class="hero-profile-rating-note hero-profile-rating-note-compact">Game values have no cash value.</p>
           ${renderExpansionImageMarkup(profile)}
@@ -1370,7 +1370,7 @@
                           <span class="hero-profile-subline-sep">·</span>
                           <span>${safeSummary.stats.gamesPlayed} plays</span>
                         </p>
-                        <p class="hero-profile-rating-note hero-profile-rating-note-full">Your rating is based on your trivia accuracy.</p>
+                        <p class="hero-profile-rating-note hero-profile-rating-note-full">Rating based on trivia accuracy.</p>
                         <p class="hero-profile-rating-note hero-profile-rating-note-full">Game values have no cash value.</p>
                         <p class="hero-profile-rating-note hero-profile-rating-note-compact">Game values have no cash value.</p>
                       </div>
@@ -1433,7 +1433,7 @@
                         <span class="hero-profile-subline-sep">·</span>
                         <span>${safeSummary.stats.gamesPlayed} plays</span>
                       </p>
-                      <p class="hero-profile-rating-note hero-profile-rating-note-full">Your rating is based on your trivia accuracy.</p>
+                      <p class="hero-profile-rating-note hero-profile-rating-note-full">Rating based on trivia accuracy.</p>
                       <p class="hero-profile-rating-note hero-profile-rating-note-full">Game values have no cash value.</p>
                       <p class="hero-profile-rating-note hero-profile-rating-note-compact">Game values have no cash value.</p>
                     </div>
