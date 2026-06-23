@@ -1121,9 +1121,44 @@
     const nextCost = Math.max(0, Number(preview.next?.cost) || 0);
     const canBuyNext = Boolean(preview.next && core.buyNextRestaurantExpansion && cashOnHand >= nextCost);
     const shortfall = preview.next ? Math.max(0, nextCost - cashOnHand) : 0;
-    const cashNote = cashOnHand > 0
-      ? `You have ${core.formatCurrency(cashOnHand)} cash on hand. You can use it to expand your virtual restaurant or buy upgrades.`
-      : `Cash on hand: ${core.formatCurrency(0)}. Earn more customers to unlock expansions and upgrades.`;
+    const expansionPreview = core.getRestaurantExpansionPreview
+      ? core.getRestaurantExpansionPreview(profile)
+      : null;
+    const upgradesLocked = expansionPreview?.current?.id === "food-truck";
+    const upgrades = core.getRestaurantUpgradePreview && !upgradesLocked
+      ? core.getRestaurantUpgradePreview(profile, 3)
+      : [];
+    const affordableUpgrade = upgrades.find((upgrade) => {
+      return cashOnHand >= Math.max(0, Number(upgrade.cost) || 0);
+    });
+    const nextUpgradeCost = upgrades.reduce((lowest, upgrade) => {
+      const cost = Math.max(0, Number(upgrade.cost) || 0);
+      return lowest === null || cost < lowest ? cost : lowest;
+    }, null);
+    const nextUpgradeShortfall = nextUpgradeCost === null ? 0 : Math.max(0, nextUpgradeCost - cashOnHand);
+    const cashNote = (() => {
+      if (cashOnHand <= 0) {
+        return `Cash on hand: ${core.formatCurrency(0)}. Earn more customers to unlock expansions and upgrades.`;
+      }
+      if (canBuyNext && affordableUpgrade) {
+        return `You have ${core.formatCurrency(cashOnHand)} cash on hand. You can expand or buy an upgrade now.`;
+      }
+      if (canBuyNext) {
+        return `You have ${core.formatCurrency(cashOnHand)} cash on hand. You can expand your virtual restaurant now.`;
+      }
+      if (affordableUpgrade) {
+        return preview.next
+          ? `You have ${core.formatCurrency(cashOnHand)} cash on hand. You can buy an upgrade now, or save ${core.formatCurrency(shortfall)} more to expand.`
+          : `You have ${core.formatCurrency(cashOnHand)} cash on hand. You can buy an upgrade now.`;
+      }
+      if (preview.next) {
+        const upgradeText = nextUpgradeShortfall > 0
+          ? ` or ${core.formatCurrency(nextUpgradeShortfall)} more for your next upgrade`
+          : "";
+        return `You have ${core.formatCurrency(cashOnHand)} cash on hand. Save ${core.formatCurrency(shortfall)} more to expand${upgradeText}.`;
+      }
+      return `You have ${core.formatCurrency(cashOnHand)} cash on hand. Keep collecting customers to buy upgrades.`;
+    })();
 
     return `
       <p class="restaurant-cash-note">${escapeHtml(cashNote)}</p>
