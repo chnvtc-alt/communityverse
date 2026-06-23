@@ -4190,6 +4190,10 @@
       return false;
     }
 
+    if (question.scope === "restaurant" || question.restaurantSlug) {
+      return true;
+    }
+
     const tags = Array.isArray(question.tags) ? question.tags.map(slugify) : [];
     if (tags.some((tag) => ["food", "menu", "menu-item", "dish", "drink", "dessert"].includes(tag))) {
       return true;
@@ -4204,7 +4208,7 @@
         ...(question.wrongAnswers || []),
       ].filter(Boolean).join(" ")
     );
-    return /menu|food|dish|drink|dessert|breakfast|burger|pizza|pie|platter|sandwich|steak|cobbler|coffee|meal/.test(searchable);
+    return /menu|food|dish|drink|dessert|breakfast|burger|pizza|pie|platter|sandwich|steak|cobbler|coffee|meal|burrito|taco|quesadilla|nacho|salsa|chili|chilis/.test(searchable);
   }
 
   function prepareQuestion(question) {
