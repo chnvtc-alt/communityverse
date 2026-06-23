@@ -1314,10 +1314,6 @@
     const baseRestaurantSlug = String(profile?.baseRestaurantSlug || "").trim();
     const recentRestaurantSlug = String(profile?.recentSessions?.[0]?.restaurantSlug || "").trim();
     const playAgainTarget = getPlayAgainTarget(profile);
-    const latestCustomerEntry = profile && Array.isArray(profile.customerCollection)
-      ? profile.customerCollection.find((entry) => entry && entry.status !== "lost")
-      : null;
-    const latestCustomerName = latestCustomerEntry ? latestCustomerEntry.customerName || "Customer" : "";
     const emailConnected = Boolean(profile && profile.emailConnected);
     const hasSavedProgress = Boolean(
       profile && (safeSummary.stats.gamesPlayed || collectedCustomers || safeSummary.stats.estimatedSales)
@@ -1335,7 +1331,7 @@
             <span class="chip hero-stat-chip">${bestRankLabel}</span>
           </div>
           <p class="hero-profile-rating-note hero-profile-rating-note-full">Your rating is based on your trivia accuracy.</p>
-          <p class="hero-profile-rating-note hero-profile-rating-note-full">Cash, sales, customer values, and net worth are virtual game values with no real cash value.</p>
+          <p class="hero-profile-rating-note hero-profile-rating-note-full">Game values have no cash value.</p>
           <p class="hero-profile-rating-note hero-profile-rating-note-compact">Game values have no cash value.</p>
           ${renderExpansionImageMarkup(profile)}
           ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
@@ -1375,13 +1371,8 @@
                           <span>${safeSummary.stats.gamesPlayed} plays</span>
                         </p>
                         <p class="hero-profile-rating-note hero-profile-rating-note-full">Your rating is based on your trivia accuracy.</p>
-                        <p class="hero-profile-rating-note hero-profile-rating-note-full">Cash, sales, customer values, and net worth are virtual game values with no real cash value.</p>
+                        <p class="hero-profile-rating-note hero-profile-rating-note-full">Game values have no cash value.</p>
                         <p class="hero-profile-rating-note hero-profile-rating-note-compact">Game values have no cash value.</p>
-                        ${
-                          latestCustomerName
-                            ? `<p class="hero-profile-detailline hero-profile-detailline-compact">Latest customer: <strong>${escapeHtml(latestCustomerName)}</strong></p>`
-                            : ""
-                        }
                       </div>
                         <div class="hero-profile-actions hero-profile-actions-top">
                           ${!emailConnected ? `<button class="button button-primary button-sm" type="button" data-show-connect-email>Save With Email</button>` : ""}
@@ -1443,13 +1434,8 @@
                         <span>${safeSummary.stats.gamesPlayed} plays</span>
                       </p>
                       <p class="hero-profile-rating-note hero-profile-rating-note-full">Your rating is based on your trivia accuracy.</p>
-                      <p class="hero-profile-rating-note hero-profile-rating-note-full">Cash, sales, customer values, and net worth are virtual game values with no real cash value.</p>
+                      <p class="hero-profile-rating-note hero-profile-rating-note-full">Game values have no cash value.</p>
                       <p class="hero-profile-rating-note hero-profile-rating-note-compact">Game values have no cash value.</p>
-                      ${
-                        latestCustomerName && !compactMobile
-                          ? `<p class="hero-profile-detailline">Latest customer: <strong>${escapeHtml(latestCustomerName)}</strong></p>`
-                          : ""
-                      }
                     </div>
                     <div class="hero-profile-actions hero-profile-actions-top">
                       ${!emailConnected ? `<button class="button button-primary button-sm" type="button" data-show-connect-email>Save With Email</button>` : ""}
