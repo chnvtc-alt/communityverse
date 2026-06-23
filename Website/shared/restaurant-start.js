@@ -4,6 +4,11 @@
   const customerId = String(query.get("customerId") || "").trim();
   let howToPlayReturnFocus = null;
   let howToPlayKeydownBound = false;
+  const state = {
+    showFeedbackRewardForm: false,
+    feedbackRewardMessage: "",
+    feedbackRewardError: "",
+  };
 
   function escapeHtml(value) {
     return String(value || "")
@@ -396,6 +401,144 @@
     return selectedCustomers.slice(0, count);
   }
 
+  function renderFeedbackRewardCard(restaurant) {
+    const profile = core.getActiveProfile?.() || null;
+    const reward = core.getFeedbackRewardConfig?.(profile, restaurant.slug);
+    if (!reward?.enabled || !reward.customer) {
+      return "";
+    }
+
+    const statusMarkup = state.feedbackRewardMessage
+      ? `<p class="helper feedback-reward-status" aria-live="polite">${escapeHtml(state.feedbackRewardMessage)}</p>`
+      : reward.alreadyAwarded
+        ? `<p class="helper feedback-reward-status">${escapeHtml(reward.customer.name)} is already in your collection.</p>`
+        : "";
+    const errorMarkup = state.feedbackRewardError
+      ? `<p class="error feedback-reward-error" aria-live="polite">${escapeHtml(state.feedbackRewardError)}</p>`
+      : "";
+
+    if (reward.alreadyAwarded && !state.feedbackRewardMessage) {
+      return `
+        <div class="hero-card feedback-reward-card">
+          <div class="feedback-reward-copy">
+            <p class="kicker">Feedback Reward</p>
+            <h3 class="section-title">${escapeHtml(reward.customer.name)} is in your collection.</h3>
+            ${statusMarkup}
+          </div>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="hero-card feedback-reward-card">
+        <div class="feedback-reward-copy">
+          <p class="kicker">Optional Feedback Reward</p>
+          <h3 class="section-title">Share quick feedback for ${escapeHtml(restaurant.name)}.</h3>
+          <p class="copy">${escapeHtml(reward.prompt)}</p>
+        </div>
+        <div class="feedback-reward-customer">
+          <img class="feedback-reward-photo" src="${escapeHtml(reward.customer.image)}" alt="${escapeHtml(reward.customer.name)}" />
+          <div>
+            <p class="customer-reveal-rarity">${escapeHtml(reward.customer.rarity || "Special")} customer</p>
+            <strong>${escapeHtml(reward.customer.name)}</strong>
+          </div>
+        </div>
+        ${
+          state.showFeedbackRewardForm || state.feedbackRewardError
+            ? `
+              <form class="feedback-reward-form" id="feedback-reward-form">
+                <label class="field-label" for="feedback-reward-message">Your feedback</label>
+                <textarea class="input feedback-reward-textarea" id="feedback-reward-message" name="feedbackMessage" maxlength="1000" rows="4" placeholder="What should the restaurant know?"></textarea>
+                ${errorMarkup}
+                ${statusMarkup}
+                <div class="button-row">
+                  <button class="button button-hot" id="feedback-reward-submit" type="submit">Send Feedback & Claim Customer</button>
+                  <button class="button button-muted" id="feedback-reward-cancel" type="button">Maybe Later</button>
+                </div>
+              </form>
+            `
+            : `
+              ${statusMarkup}
+              <div class="button-row">
+                <button class="button button-muted" id="feedback-reward-open" type="button">Give Feedback</button>
+              </div>
+            `
+        }
+      </div>
+    `;
+  }
+
+  function ensureFeedbackProfile() {
+    const activeProfile = core.getActiveProfile?.();
+    if (activeProfile) {
+      core.setActiveProfileId?.(activeProfile.id);
+      return activeProfile;
+    }
+    return core.createGuestProfile?.({ entryPoint: query.get("entry") }) || null;
+  }
+
+  function bindFeedbackRewardCard(restaurant) {
+    const openButton = document.getElementById("feedback-reward-open");
+    if (openButton) {
+      openButton.addEventListener("click", () => {
+        state.showFeedbackRewardForm = true;
+        state.feedbackRewardError = "";
+        state.feedbackRewardMessage = "";
+        renderRestaurantStart(restaurant);
+      });
+    }
+
+    const cancelButton = document.getElementById("feedback-reward-cancel");
+    if (cancelButton) {
+      cancelButton.addEventListener("click", () => {
+        state.showFeedbackRewardForm = false;
+        state.feedbackRewardError = "";
+        renderRestaurantStart(restaurant);
+      });
+    }
+
+    const form = document.getElementById("feedback-reward-form");
+    if (!form) {
+      return;
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const messageInput = document.getElementById("feedback-reward-message");
+      const submitButton = document.getElementById("feedback-reward-submit");
+      const message = String(messageInput?.value || "").trim();
+      if (!message) {
+        state.feedbackRewardError = "Please write a quick note before claiming this reward.";
+        renderRestaurantStart(restaurant);
+        return;
+      }
+
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = "Sending...";
+      }
+
+      ensureFeedbackProfile();
+      const outcome = core.awardFeedbackReward?.(restaurant.slug, { message });
+      if (!outcome?.ok) {
+        state.feedbackRewardError = outcome?.message || "Unable to claim this reward right now.";
+        renderRestaurantStart(restaurant);
+        return;
+      }
+
+      try {
+        await core.syncActiveProfile?.();
+      } catch {
+        // The normal profile sync path will try again later.
+      }
+
+      state.showFeedbackRewardForm = false;
+      state.feedbackRewardError = "";
+      state.feedbackRewardMessage = outcome.message || `${outcome.customer?.name || "This customer"} has joined your collection.`;
+      renderRestaurantStart(restaurant);
+    });
+  }
+
   function renderUnavailable(slug) {
     const panel = document.querySelector(".opening-start-panel");
     if (!panel) {
@@ -494,11 +637,13 @@
           }
           <button class="button button-muted" id="start-how-to-play-button" type="button">How to Play</button>
         </div>
+        ${renderFeedbackRewardCard(restaurant)}
       </div>
       ${howToPlayModalHtml()}
     `;
     panel.classList.remove("hidden");
     bindHowToPlay();
+    bindFeedbackRewardCard(restaurant);
 
     const canonical = document.querySelector('link[rel="canonical"]');
     if (canonical) {

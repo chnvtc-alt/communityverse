@@ -36,6 +36,9 @@
     registrationMessage: "",
     emailInfoExpanded: false,
     resultBioExpanded: false,
+    showFeedbackRewardForm: false,
+    feedbackRewardMessage: "",
+    feedbackRewardError: "",
     showGame: false,
   };
 
@@ -688,6 +691,134 @@
     `;
   }
 
+  function renderFeedbackRewardCard() {
+    const profile = getProfile();
+    const reward = core.getFeedbackRewardConfig?.(profile, restaurantSlug);
+    if (!reward?.enabled || !reward.customer) {
+      return "";
+    }
+
+    const statusMarkup = state.feedbackRewardMessage
+      ? `<p class="helper feedback-reward-status" aria-live="polite">${escapeHtml(state.feedbackRewardMessage)}</p>`
+      : reward.alreadyAwarded
+        ? `<p class="helper feedback-reward-status">${escapeHtml(reward.customer.name)} is already in your collection.</p>`
+        : "";
+    const errorMarkup = state.feedbackRewardError
+      ? `<p class="error feedback-reward-error" aria-live="polite">${escapeHtml(state.feedbackRewardError)}</p>`
+      : "";
+
+    if (reward.alreadyAwarded && !state.feedbackRewardMessage) {
+      return `
+        <div class="hero-card feedback-reward-card">
+          <div class="feedback-reward-copy">
+            <p class="kicker">Feedback Reward</p>
+            <h3 class="section-title">${escapeHtml(reward.customer.name)} is in your collection.</h3>
+            ${statusMarkup}
+          </div>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="hero-card feedback-reward-card">
+        <div class="feedback-reward-copy">
+          <p class="kicker">Optional Feedback Reward</p>
+          <h3 class="section-title">Share quick feedback for ${escapeHtml(restaurant?.name || "this restaurant")}.</h3>
+          <p class="copy">${escapeHtml(reward.prompt)}</p>
+        </div>
+        <div class="feedback-reward-customer">
+          <img class="feedback-reward-photo" src="${reward.customer.image}" alt="${escapeHtml(reward.customer.name)}" />
+          <div>
+            <p class="customer-reveal-rarity">${escapeHtml(reward.customer.rarity || "Special")} customer</p>
+            <strong>${escapeHtml(reward.customer.name)}</strong>
+          </div>
+        </div>
+        ${
+          state.showFeedbackRewardForm || state.feedbackRewardError
+            ? `
+              <form class="feedback-reward-form" id="feedback-reward-form">
+                <label class="field-label" for="feedback-reward-message">Your feedback</label>
+                <textarea class="input feedback-reward-textarea" id="feedback-reward-message" name="feedbackMessage" maxlength="1000" rows="4" placeholder="What should the restaurant know?"></textarea>
+                ${errorMarkup}
+                ${statusMarkup}
+                <div class="button-row">
+                  <button class="button button-hot" id="feedback-reward-submit" type="submit">Send Feedback & Claim Customer</button>
+                  <button class="button button-muted" id="feedback-reward-cancel" type="button">Maybe Later</button>
+                </div>
+              </form>
+            `
+            : `
+              ${statusMarkup}
+              <div class="button-row">
+                <button class="button button-muted" id="feedback-reward-open" type="button">Give Feedback</button>
+              </div>
+            `
+        }
+      </div>
+    `;
+  }
+
+  function bindFeedbackRewardCard() {
+    const openButton = document.getElementById("feedback-reward-open");
+    if (openButton) {
+      openButton.addEventListener("click", () => {
+        state.showFeedbackRewardForm = true;
+        state.feedbackRewardError = "";
+        state.feedbackRewardMessage = "";
+        renderAll();
+      });
+    }
+
+    const cancelButton = document.getElementById("feedback-reward-cancel");
+    if (cancelButton) {
+      cancelButton.addEventListener("click", () => {
+        state.showFeedbackRewardForm = false;
+        state.feedbackRewardError = "";
+        renderAll();
+      });
+    }
+
+    const form = document.getElementById("feedback-reward-form");
+    if (!form) {
+      return;
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const messageInput = document.getElementById("feedback-reward-message");
+      const submitButton = document.getElementById("feedback-reward-submit");
+      const message = String(messageInput?.value || "").trim();
+      if (!message) {
+        state.feedbackRewardError = "Please write a quick note before claiming this reward.";
+        renderAll();
+        return;
+      }
+
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = "Sending...";
+      }
+
+      const outcome = core.awardFeedbackReward?.(restaurantSlug, { message });
+      if (!outcome?.ok) {
+        state.feedbackRewardError = outcome?.message || "Unable to claim this reward right now.";
+        renderAll();
+        return;
+      }
+
+      try {
+        await core.syncActiveProfile?.();
+      } catch {
+        // The profile is still saved locally; the normal sync path will retry on later changes.
+      }
+
+      state.showFeedbackRewardForm = false;
+      state.feedbackRewardError = "";
+      state.feedbackRewardMessage = outcome.message || `${outcome.customer?.name || "This customer"} has joined your collection.`;
+      renderAll();
+    });
+  }
+
   function renderSetup() {
     const profile = getProfile();
     const session = getSession();
@@ -771,7 +902,9 @@
               : ""
           }
         </div>
+        ${renderFeedbackRewardCard()}
       </div>`;
+    bindFeedbackRewardCard();
 
     const resumeButton = document.getElementById("resume-game-button");
     if (resumeButton) {
@@ -835,7 +968,9 @@
               : ""
           }
         </div>
+        ${renderFeedbackRewardCard()}
       </div>`;
+    bindFeedbackRewardCard();
 
   }
 
@@ -1339,6 +1474,7 @@
         `
         : "";
     const netWorthPromptMarkup = renderResultNetWorthPrompt(profile, overallSummary?.stats || profile?.stats);
+    const feedbackRewardMarkup = renderFeedbackRewardCard();
 
     elements.result.innerHTML = `
       <div class="result-screen result-screen-${resultLayoutMode}">
@@ -1394,6 +1530,7 @@
         <div class="divider"></div>
         ${triviaLeaderboardMilestoneMarkup}
         ${!isGuest && !state.showProfileForm ? netWorthPromptMarkup : ""}
+        ${!state.showProfileForm ? feedbackRewardMarkup : ""}
         ${
           isGuest && !state.showProfileForm
             ? `
@@ -1467,6 +1604,7 @@
       </div>
     `;
     bindHowToPlay();
+    bindFeedbackRewardCard();
 
     const toggleBioButton = document.getElementById("toggle-bio-button");
     if (toggleBioButton) {

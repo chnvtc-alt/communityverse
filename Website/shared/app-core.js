@@ -3270,6 +3270,153 @@
     return restaurantCredits;
   }
 
+  function getFeedbackRewardConfig(profile, restaurantSlug) {
+    const restaurant = getRestaurantBySlug(restaurantSlug);
+    if (!restaurant || !restaurant.feedbackEnabled || !restaurant.feedbackRewardCustomerId) {
+      return {
+        enabled: false,
+        restaurant: restaurant || null,
+        customer: null,
+        alreadyAwarded: false,
+        prompt: "",
+      };
+    }
+
+    const customer = getCustomerById(restaurant.feedbackRewardCustomerId);
+    if (!customer || customer.active === false) {
+      return {
+        enabled: false,
+        restaurant,
+        customer: null,
+        alreadyAwarded: false,
+        prompt: "",
+      };
+    }
+
+    return {
+      enabled: true,
+      restaurant,
+      customer,
+      alreadyAwarded: Boolean(getCustomerCollectionEntry(profile, customer.id, restaurant.slug)),
+      prompt: restaurant.feedbackPrompt || `Tell ${restaurant.name} what you thought about your visit.`,
+    };
+  }
+
+  function awardFeedbackReward(restaurantSlug, options = {}) {
+    const activeProfile = getActiveProfile();
+    const config = getFeedbackRewardConfig(activeProfile, restaurantSlug);
+    if (!activeProfile || !config.enabled || !config.restaurant || !config.customer) {
+      return {
+        ok: false,
+        alreadyAwarded: false,
+        profile: activeProfile || null,
+        customer: null,
+        message: "This feedback reward is not available right now.",
+      };
+    }
+
+    const nextProfile = ensureProfileShape(activeProfile);
+    const submittedAt = nowIso();
+    const customer = config.customer;
+    const restaurant = config.restaurant;
+    const feedbackMessage = String(options.message || "").trim().slice(0, 1000);
+    const feedbackEntry = {
+      id: makeId("feedback"),
+      restaurantSlug: restaurant.slug,
+      restaurantName: restaurant.name,
+      customerId: customer.id,
+      customerName: customer.name,
+      prompt: config.prompt,
+      message: feedbackMessage,
+      submittedAt,
+    };
+
+    nextProfile.feedbackSubmissions = [
+      feedbackEntry,
+      ...(Array.isArray(nextProfile.feedbackSubmissions) ? nextProfile.feedbackSubmissions : []),
+    ].slice(0, 20);
+
+    if (!String(nextProfile.firstRestaurantSlug || "").trim()) {
+      nextProfile.firstRestaurantSlug = restaurant.slug;
+      nextProfile.firstRestaurantName = restaurant.name;
+    }
+    if (!String(nextProfile.baseRestaurantSlug || "").trim()) {
+      nextProfile.baseRestaurantSlug = restaurant.slug;
+      nextProfile.baseRestaurantName = restaurant.name;
+    }
+    nextProfile.lastPlayedAt = submittedAt;
+
+    if (config.alreadyAwarded) {
+      const savedProfile = updateProfile(nextProfile);
+      return {
+        ok: true,
+        alreadyAwarded: true,
+        profile: savedProfile,
+        customer,
+        message: `${customer.name} is already in your collection.`,
+      };
+    }
+
+    const previousEstimatedSales = Math.max(0, Number(nextProfile.stats?.estimatedSales) || 0);
+    const rewardSession = {
+      restaurantSlug: restaurant.slug,
+      restaurantName: restaurant.name,
+      result: "regular",
+      customer,
+      salesBoostPercent: 0,
+      completedAt: submittedAt,
+    };
+
+    nextProfile.customerCollection.unshift({
+      id: makeId("collection"),
+      customerId: customer.id,
+      customerName: customer.name,
+      status: "regular",
+      restaurantSlug: restaurant.slug,
+      restaurantName: restaurant.name,
+      rarity: customer.rarity,
+      regularValue: customer.regularValue,
+      occasionalValue: customer.occasionalValue,
+      salesBoostPercent: 0,
+      favoriteVisits: 0,
+      restaurantCredits: addRestaurantCreditToEntry({
+        restaurantSlug: restaurant.slug,
+        restaurantName: restaurant.name,
+        status: "regular",
+        regularValue: customer.regularValue,
+        occasionalValue: customer.occasionalValue,
+        dateWon: submittedAt,
+      }, rewardSession),
+      image: customer.image,
+      bio: getCustomerBio(customer),
+      dateWon: submittedAt,
+      source: "feedback",
+    });
+
+    const rebuiltProfile = rebuildCollectionDerivedStats(nextProfile);
+    const cashEarned = Math.max(
+      0,
+      (Number(rebuiltProfile.stats?.estimatedSales) || 0) - previousEstimatedSales
+    );
+    const economy = normalizeRestaurantEconomy(rebuiltProfile.restaurantEconomy);
+    if (cashEarned > 0 && hasTrackedRestaurantEconomy(economy)) {
+      rebuiltProfile.restaurantEconomy = {
+        ...economy,
+        cashOnHand: economy.cashOnHand + cashEarned,
+        lifetimeCashEarned: Math.max(economy.lifetimeCashEarned, previousEstimatedSales) + cashEarned,
+      };
+    }
+
+    const savedProfile = updateProfile(rebuiltProfile);
+    return {
+      ok: true,
+      alreadyAwarded: false,
+      profile: savedProfile,
+      customer,
+      message: `${customer.name} has joined your customer collection.`,
+    };
+  }
+
   function getCustomerStatusRank(status) {
     return CUSTOMER_STATUS_RANK[status] ?? 0;
   }
@@ -5080,6 +5227,8 @@
     buyRestaurantUpgrade,
     buyNextRestaurantExpansion,
     getCustomersForRestaurant,
+    getFeedbackRewardConfig,
+    awardFeedbackReward,
     getPhotoReadyCustomersForRestaurant,
     getFeaturedGuestLineup,
     getQuestionPoolForSession,

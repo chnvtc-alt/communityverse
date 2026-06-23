@@ -2946,6 +2946,55 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   font-weight: 700;
 }
 
+.feedback-reward-card {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 18px;
+  text-align: left;
+}
+
+.feedback-reward-copy {
+  display: grid;
+  gap: 6px;
+}
+
+.feedback-reward-copy .section-title {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.feedback-reward-copy .copy,
+.feedback-reward-status,
+.feedback-reward-error {
+  margin: 0;
+}
+
+.feedback-reward-customer {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.feedback-reward-photo {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  object-fit: cover;
+  box-shadow: var(--shadow-soft);
+}
+
+.feedback-reward-form {
+  display: grid;
+  gap: 10px;
+}
+
+.feedback-reward-textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
 .result-banner {
   display: grid;
   gap: 14px;
