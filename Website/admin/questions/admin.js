@@ -2391,6 +2391,32 @@ function splitCommaList(value) {
   return [...new Set(String(value || "").split(",").map((item) => item.trim()).filter(Boolean))];
 }
 
+function syncFoodPhotoTag() {
+  const tagsInput = document.querySelector("#question-tags");
+  const foodPhotoInput = document.querySelector("#question-food-photo");
+  if (!tagsInput || !foodPhotoInput) {
+    return;
+  }
+
+  const tags = splitCommaList(tagsInput.value).filter((tag) => tag.toLowerCase() !== "food");
+  if (foodPhotoInput.checked) {
+    tags.push("food");
+  }
+  tagsInput.value = tags.join(", ");
+}
+
+function updateFoodPhotoCheckboxFromTags() {
+  const tagsInput = document.querySelector("#question-tags");
+  const foodPhotoInput = document.querySelector("#question-food-photo");
+  if (!tagsInput || !foodPhotoInput) {
+    return;
+  }
+
+  foodPhotoInput.checked = splitCommaList(tagsInput.value)
+    .map((tag) => tag.toLowerCase())
+    .includes("food");
+}
+
 function updateScopeFields() {
   const scope = elements.scope.value;
   elements.restaurantField.hidden = scope !== "restaurant";
@@ -2418,6 +2444,7 @@ function fillQuestionDraft(question, index) {
   });
   document.querySelector("#question-difficulty").value = question.difficulty || "medium";
   document.querySelector("#question-tags").value = (question.tags || []).join(", ");
+  updateFoodPhotoCheckboxFromTags();
   showAiStatus("Draft placed in the form. Review it, then save when you are happy.");
 }
 
@@ -2494,6 +2521,9 @@ function resetEditor(question = null) {
   document.querySelector("#area-slug").value = question?.areaSlug || "";
   document.querySelector("#customer-ids").value = (question?.customerIds || []).join(", ");
   document.querySelector("#question-tags").value = (question?.tags || []).join(", ");
+  document.querySelector("#question-food-photo").checked = (question?.tags || [])
+    .map((tag) => String(tag || "").toLowerCase())
+    .includes("food");
   document.querySelector("#sort-order").value = question?.sortOrder || 0;
   document.querySelector("#question-active").checked = question?.active !== false;
   document.querySelector("#question-image").value = question?.image || "";
@@ -2582,6 +2612,7 @@ async function suggestWrongAnswers() {
 function questionFromForm() {
   const scope = elements.scope.value;
   const restaurantSlug = document.querySelector("#restaurant-slug").value.trim();
+  syncFoodPhotoTag();
   return {
     id: document.querySelector("#question-id").value.trim(),
     prompt: document.querySelector("#question-prompt").value.trim(),
@@ -2878,6 +2909,8 @@ elements.profileList.addEventListener("click", (event) => {
 });
 
 elements.scope.addEventListener("change", updateScopeFields);
+document.querySelector("#question-tags").addEventListener("input", updateFoodPhotoCheckboxFromTags);
+document.querySelector("#question-food-photo").addEventListener("change", syncFoodPhotoTag);
 elements.generateQuestionsButton.addEventListener("click", generateQuestionDrafts);
 elements.suggestWrongAnswersButton.addEventListener("click", suggestWrongAnswers);
 elements.aiResults.addEventListener("click", (event) => {
