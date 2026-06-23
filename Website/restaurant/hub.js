@@ -1106,6 +1106,15 @@
     return `/${encodeURIComponent(restaurantSlug)}/?customerId=${encodeURIComponent(entry?.customerId || "")}`;
   }
 
+  function isFeedbackRewardCustomerEntry(entry) {
+    if (!entry) {
+      return false;
+    }
+
+    const liveCustomer = core.getCustomerById(entry.customerId);
+    return entry.source === "feedback" || liveCustomer?.feedbackRewardOnly === true;
+  }
+
   function renderCustomerCollectionCompleteMarkup(profile, restaurant) {
     if (!profile || !restaurant?.slug || !core.getCustomersForRestaurant) {
       return "";
@@ -2192,14 +2201,17 @@
     const selectedFavoriteVisits = selectedCustomer
       ? Math.max(0, Math.min(favoriteGoal, Number(selectedCustomer.favoriteVisits) || 0))
       : 0;
+    const selectedIsFeedbackReward = isFeedbackRewardCustomerEntry(selectedCustomer);
     const selectedFavoriteProgress =
-      selectedCustomer?.status === "favorite"
+      selectedIsFeedbackReward
+        ? `<p class="customer-favorite-progress">Special feedback reward. Cannot be invited back.</p>`
+        : selectedCustomer?.status === "favorite"
         ? `<p class="customer-favorite-progress">Favorite Customer. Value: ${core.formatCurrency(selectedValue)}</p>`
         : selectedCustomer?.status === "regular"
           ? `<p class="customer-favorite-progress">Favorite Progress: ${selectedFavoriteVisits} / ${favoriteGoal} successful visits</p>`
           : "";
     const selectedDirectoryRestaurant = getSelectedDirectoryRestaurant(profile);
-    const selectedInviteBackHref = selectedCustomer
+    const selectedInviteBackHref = selectedCustomer && !selectedIsFeedbackReward
       ? getCustomerInviteBackHref(selectedCustomer, selectedDirectoryRestaurant)
       : "";
       elements.collection.innerHTML = `
@@ -2235,7 +2247,7 @@
                   <div class="collection-selected-mobile-actions">
                     <span class="collection-selected-value">${core.formatCurrency(selectedValue)}</span>
                     <span class="chip collection-selected-rarity-chip">${selectedCustomer.rarity}</span>
-                    <a class="button button-primary" id="selected-invite-back-button" href="${selectedInviteBackHref}">Invite Back</a>
+                    ${selectedInviteBackHref ? `<a class="button button-primary" id="selected-invite-back-button" href="${selectedInviteBackHref}">Invite Back</a>` : ""}
                   </div>
                 </div>
               </div>
@@ -2264,7 +2276,7 @@
                   <span class="chip">${core.formatCurrency(selectedValue)}</span>
                 </div>
                 <div class="button-row" style="margin-top: 10px;">
-                  <a class="button button-primary" id="selected-invite-back-button" href="${selectedInviteBackHref}">Invite Back</a>
+                  ${selectedInviteBackHref ? `<a class="button button-primary" id="selected-invite-back-button" href="${selectedInviteBackHref}">Invite Back</a>` : ""}
                 </div>
               </div>
             `
@@ -2292,8 +2304,11 @@
                             ? "Regular Customer"
                             : "Occasional Customer";
                     const entryFavoriteVisits = Math.max(0, Math.min(favoriteGoal, Number(entry.favoriteVisits) || 0));
+                    const entryIsFeedbackReward = isFeedbackRewardCustomerEntry(entry);
                     const entryProgress =
-                      entry.status === "favorite"
+                      entryIsFeedbackReward
+                        ? "Special feedback reward"
+                        : entry.status === "favorite"
                         ? `Value: ${core.formatCurrency(entryValue)}`
                         : entry.status === "regular"
                           ? `Favorite Progress: ${entryFavoriteVisits}/${favoriteGoal}`
