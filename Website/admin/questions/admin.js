@@ -1202,6 +1202,15 @@ function getProfileActivity(profile) {
     .map(getSessionPlayedAt)
     .filter(Boolean);
   const gamesPlayed = getProfileGameCount(profile);
+
+  if (gamesPlayed > 0 && profile.lastPlayedAt) {
+    playedDates.push(profile.lastPlayedAt);
+  }
+
+  if (gamesPlayed > sessions.length && profile.createdAt) {
+    playedDates.push(profile.createdAt);
+  }
+
   const fallbackPlayedAt = profile.lastPlayedAt || profile.updatedAt || (gamesPlayed ? profile.createdAt : "");
   if (!playedDates.length && fallbackPlayedAt) {
     playedDates.push(fallbackPlayedAt);
