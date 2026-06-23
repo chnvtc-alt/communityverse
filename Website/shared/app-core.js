@@ -1239,6 +1239,33 @@
     return path.replace(/^(?:\.\.\/)+assets\//, "/assets/").replace(/^\.\/assets\//, "/assets/");
   }
 
+  function normalizeSurveyQuestion(question, index = 0) {
+    const safeQuestion = typeof question === "object" && question ? structuredClone(question) : {};
+    const type = ["rating", "yesno", "choice", "text"].includes(safeQuestion.type)
+      ? safeQuestion.type
+      : "rating";
+    const choices = Array.isArray(safeQuestion.choices)
+      ? safeQuestion.choices.map((choice) => String(choice || "").trim()).filter(Boolean)
+      : [];
+
+    return {
+      id: String(safeQuestion.id || "").trim() || `survey-question-${index + 1}`,
+      type,
+      prompt: String(safeQuestion.prompt || "").trim(),
+      choices: type === "choice" ? choices.slice(0, 8) : [],
+      required: safeQuestion.required !== false,
+      active: safeQuestion.active !== false,
+      sortOrder: Number.isFinite(Number(safeQuestion.sortOrder)) ? Number(safeQuestion.sortOrder) : index,
+    };
+  }
+
+  function normalizeSurveyQuestions(questions = []) {
+    return (Array.isArray(questions) ? questions : [])
+      .map(normalizeSurveyQuestion)
+      .filter((question) => question.prompt)
+      .sort((left, right) => (Number(left.sortOrder) || 0) - (Number(right.sortOrder) || 0));
+  }
+
   function normalizeRestaurantRecord(restaurant) {
     const safeRestaurant = typeof restaurant === "object" && restaurant ? structuredClone(restaurant) : {};
     const slug = slugify(safeRestaurant.slug || safeRestaurant.name);
@@ -1268,6 +1295,7 @@
     safeRestaurant.feedbackEnabled = safeRestaurant.feedbackEnabled === true;
     safeRestaurant.feedbackPrompt = String(safeRestaurant.feedbackPrompt || "").trim();
     safeRestaurant.feedbackRewardCustomerId = String(safeRestaurant.feedbackRewardCustomerId || "").trim();
+    safeRestaurant.feedbackSurveyQuestions = normalizeSurveyQuestions(safeRestaurant.feedbackSurveyQuestions);
     safeRestaurant.sortOrder = Number(safeRestaurant.sortOrder) || 0;
     return safeRestaurant;
   }
@@ -3417,6 +3445,65 @@
     };
   }
 
+  async function submitFeedbackSurveyResponse(restaurantSlug, answers = [], options = {}) {
+    const activeProfile = getActiveProfile();
+    const config = getFeedbackRewardConfig(activeProfile, restaurantSlug);
+    if (!config.enabled || !config.restaurant || !config.customer) {
+      throw new Error("This feedback survey is not available right now.");
+    }
+
+    let activeQuestions = (config.restaurant.feedbackSurveyQuestions || []).filter(
+      (question) => question.active !== false
+    );
+    if (!activeQuestions.length) {
+      activeQuestions = [{
+        id: "quick-feedback",
+        type: "text",
+        prompt: config.prompt || "What should the restaurant know?",
+        required: true,
+      }];
+    }
+    const answerMap = new Map(
+      (Array.isArray(answers) ? answers : []).map((answer) => [
+        String(answer?.questionId || "").trim(),
+        String(answer?.value || "").trim(),
+      ])
+    );
+    const normalizedAnswers = activeQuestions.map((question) => ({
+      questionId: question.id,
+      questionText: question.prompt,
+      type: question.type,
+      value: answerMap.get(question.id) || "",
+    }));
+    const missingRequired = activeQuestions.find(
+      (question) => question.required !== false && !String(answerMap.get(question.id) || "").trim()
+    );
+
+    if (missingRequired) {
+      throw new Error(`Please answer: ${missingRequired.prompt}`);
+    }
+
+    if (!normalizedAnswers.some((answer) => answer.value)) {
+      throw new Error("Please answer the survey before claiming this reward.");
+    }
+
+    const result = await requestJson("/feedback-responses", {
+      method: "POST",
+      body: JSON.stringify({
+        restaurantSlug: config.restaurant.slug,
+        restaurantName: config.restaurant.name,
+        profileId: activeProfile?.id || "",
+        rewardCustomerId: config.customer.id,
+        rewardCustomerName: config.customer.name,
+        rewardAwarded: Boolean(options.rewardAwarded),
+        answers: normalizedAnswers,
+        submittedAt: nowIso(),
+      }),
+    });
+
+    return result?.response || null;
+  }
+
   function getCustomerStatusRank(status) {
     return CUSTOMER_STATUS_RANK[status] ?? 0;
   }
@@ -5228,6 +5315,7 @@
     buyNextRestaurantExpansion,
     getCustomersForRestaurant,
     getFeedbackRewardConfig,
+    submitFeedbackSurveyResponse,
     awardFeedbackReward,
     getPhotoReadyCustomersForRestaurant,
     getFeaturedGuestLineup,

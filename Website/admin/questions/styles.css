@@ -902,6 +902,67 @@ dialog::backdrop {
   width: auto;
 }
 
+.survey-editor-panel {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.survey-editor-heading,
+.survey-question-row-top {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.survey-editor-heading h3 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.survey-question-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.survey-question-row {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--paper);
+}
+
+.survey-question-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.survey-question-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.survey-question-check {
+  min-height: 44px;
+  align-items: center;
+}
+
+.compact-empty-state {
+  margin: 0;
+  padding: 12px;
+}
+
 @media (max-width: 900px) {
   .layout {
     grid-template-columns: 1fr;
@@ -977,6 +1038,16 @@ dialog::backdrop {
   .ai-helper-actions {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .survey-editor-heading,
+  .survey-question-row-top {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .survey-question-grid {
+    grid-template-columns: 1fr;
   }
 
   .ai-helper-actions label {

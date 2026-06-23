@@ -23,6 +23,19 @@ create table if not exists sessions (
 create index if not exists idx_sessions_profile_id on sessions (profile_id);
 create index if not exists idx_sessions_completed_at on sessions (completed_at desc);
 
+create table if not exists feedback_responses (
+  id text primary key,
+  restaurant_slug text not null,
+  profile_id text,
+  reward_customer_id text not null default '',
+  submitted_at timestamptz not null default now(),
+  payload_json jsonb not null
+);
+
+create index if not exists idx_feedback_responses_restaurant_slug on feedback_responses (restaurant_slug, submitted_at desc);
+create index if not exists idx_feedback_responses_profile_id on feedback_responses (profile_id);
+create index if not exists idx_feedback_responses_submitted_at on feedback_responses (submitted_at desc);
+
 create table if not exists questions (
   id text primary key,
   active boolean not null default true,

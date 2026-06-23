@@ -706,6 +706,7 @@
     const errorMarkup = state.feedbackRewardError
       ? `<p class="error feedback-reward-error" aria-live="polite">${escapeHtml(state.feedbackRewardError)}</p>`
       : "";
+    const surveyQuestions = (restaurant?.feedbackSurveyQuestions || []).filter((question) => question.active !== false);
 
     if (reward.alreadyAwarded && !state.feedbackRewardMessage) {
       return `
@@ -737,8 +738,7 @@
           state.showFeedbackRewardForm || state.feedbackRewardError
             ? `
               <form class="feedback-reward-form" id="feedback-reward-form">
-                <label class="field-label" for="feedback-reward-message">Your feedback</label>
-                <textarea class="input feedback-reward-textarea" id="feedback-reward-message" name="feedbackMessage" maxlength="1000" rows="4" placeholder="What should the restaurant know?"></textarea>
+                ${renderFeedbackSurveyFields(surveyQuestions)}
                 ${errorMarkup}
                 ${statusMarkup}
                 <div class="button-row">
@@ -756,6 +756,77 @@
         }
       </div>
     `;
+  }
+
+  function renderFeedbackSurveyFields(questions) {
+    const surveyQuestions = Array.isArray(questions) && questions.length
+      ? questions
+      : [{
+          id: "quick-feedback",
+          type: "text",
+          prompt: "What should the restaurant know?",
+          required: true,
+          choices: [],
+        }];
+
+    return surveyQuestions.map((question) => {
+      const requiredText = question.required === false ? "" : " required";
+      const fieldId = `feedback-question-${question.id}`;
+      const label = `<label class="field-label" for="${escapeHtml(fieldId)}">${escapeHtml(question.prompt)}${requiredText}</label>`;
+      if (question.type === "rating") {
+        return `
+          <div class="feedback-survey-question" data-question-id="${escapeHtml(question.id)}" data-question-type="rating" data-question-text="${escapeHtml(question.prompt)}">
+            ${label}
+            <select class="input feedback-survey-answer" id="${escapeHtml(fieldId)}">
+              <option value="">Choose a rating</option>
+              <option value="5">5 - Great</option>
+              <option value="4">4 - Good</option>
+              <option value="3">3 - Okay</option>
+              <option value="2">2 - Not great</option>
+              <option value="1">1 - Poor</option>
+            </select>
+          </div>
+        `;
+      }
+      if (question.type === "yesno") {
+        return `
+          <div class="feedback-survey-question" data-question-id="${escapeHtml(question.id)}" data-question-type="yesno" data-question-text="${escapeHtml(question.prompt)}">
+            ${label}
+            <select class="input feedback-survey-answer" id="${escapeHtml(fieldId)}">
+              <option value="">Choose one</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+        `;
+      }
+      if (question.type === "choice") {
+        return `
+          <div class="feedback-survey-question" data-question-id="${escapeHtml(question.id)}" data-question-type="choice" data-question-text="${escapeHtml(question.prompt)}">
+            ${label}
+            <select class="input feedback-survey-answer" id="${escapeHtml(fieldId)}">
+              <option value="">Choose one</option>
+              ${(question.choices || []).map((choice) => `<option value="${escapeHtml(choice)}">${escapeHtml(choice)}</option>`).join("")}
+            </select>
+          </div>
+        `;
+      }
+      return `
+        <div class="feedback-survey-question" data-question-id="${escapeHtml(question.id)}" data-question-type="text" data-question-text="${escapeHtml(question.prompt)}">
+          ${label}
+          <textarea class="input feedback-reward-textarea feedback-survey-answer" id="${escapeHtml(fieldId)}" maxlength="1000" rows="4" placeholder="Write your answer"></textarea>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function collectFeedbackSurveyAnswers() {
+    return [...document.querySelectorAll(".feedback-survey-question")].map((row) => ({
+      questionId: row.dataset.questionId || "",
+      questionText: row.dataset.questionText || "",
+      type: row.dataset.questionType || "text",
+      value: row.querySelector(".feedback-survey-answer")?.value.trim() || "",
+    }));
   }
 
   function bindFeedbackRewardCard() {
@@ -785,11 +856,10 @@
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
-      const messageInput = document.getElementById("feedback-reward-message");
       const submitButton = document.getElementById("feedback-reward-submit");
-      const message = String(messageInput?.value || "").trim();
-      if (!message) {
-        state.feedbackRewardError = "Please write a quick note before claiming this reward.";
+      const answers = collectFeedbackSurveyAnswers();
+      if (!answers.some((answer) => answer.value)) {
+        state.feedbackRewardError = "Please answer the survey before claiming this reward.";
         renderAll();
         return;
       }
@@ -799,7 +869,17 @@
         submitButton.textContent = "Sending...";
       }
 
-      const outcome = core.awardFeedbackReward?.(restaurantSlug, { message });
+      try {
+        await core.submitFeedbackSurveyResponse?.(restaurantSlug, answers);
+      } catch (submitError) {
+        state.feedbackRewardError = submitError instanceof Error ? submitError.message : "Unable to save that survey right now.";
+        renderAll();
+        return;
+      }
+
+      const outcome = core.awardFeedbackReward?.(restaurantSlug, {
+        message: answers.map((answer) => `${answer.questionText}: ${answer.value}`).join("\n"),
+      });
       if (!outcome?.ok) {
         state.feedbackRewardError = outcome?.message || "Unable to claim this reward right now.";
         renderAll();

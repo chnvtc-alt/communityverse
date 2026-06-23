@@ -29,6 +29,33 @@ export function slugifyRestaurant(value) {
     .slice(0, 64);
 }
 
+function normalizeSurveyQuestion(question, index = 0) {
+  const safeQuestion = typeof question === "object" && question ? structuredClone(question) : {};
+  const type = ["rating", "yesno", "choice", "text"].includes(safeQuestion.type)
+    ? safeQuestion.type
+    : "rating";
+  const choices = Array.isArray(safeQuestion.choices)
+    ? safeQuestion.choices.map((choice) => String(choice || "").trim()).filter(Boolean)
+    : [];
+
+  return {
+    id: String(safeQuestion.id || "").trim() || `survey-question-${index + 1}`,
+    type,
+    prompt: String(safeQuestion.prompt || "").trim(),
+    choices: type === "choice" ? choices.slice(0, 8) : [],
+    required: safeQuestion.required !== false,
+    active: safeQuestion.active !== false,
+    sortOrder: Number.isFinite(Number(safeQuestion.sortOrder)) ? Number(safeQuestion.sortOrder) : index,
+  };
+}
+
+function normalizeSurveyQuestions(questions = []) {
+  return (Array.isArray(questions) ? questions : [])
+    .map(normalizeSurveyQuestion)
+    .filter((question) => question.prompt)
+    .sort((left, right) => (Number(left.sortOrder) || 0) - (Number(right.sortOrder) || 0));
+}
+
 export function normalizeRestaurant(restaurant) {
   const safeRestaurant = typeof restaurant === "object" && restaurant ? structuredClone(restaurant) : {};
   const slug = slugifyRestaurant(safeRestaurant.slug || safeRestaurant.name);
@@ -55,6 +82,7 @@ export function normalizeRestaurant(restaurant) {
   safeRestaurant.feedbackEnabled = safeRestaurant.feedbackEnabled === true;
   safeRestaurant.feedbackPrompt = String(safeRestaurant.feedbackPrompt || "").trim();
   safeRestaurant.feedbackRewardCustomerId = String(safeRestaurant.feedbackRewardCustomerId || "").trim();
+  safeRestaurant.feedbackSurveyQuestions = normalizeSurveyQuestions(safeRestaurant.feedbackSurveyQuestions);
   safeRestaurant.active = safeRestaurant.active !== false;
   safeRestaurant.playable = safeRestaurant.playable !== false;
   safeRestaurant.visibleInList = safeRestaurant.visibleInList ?? safeRestaurant.visible_in_list;

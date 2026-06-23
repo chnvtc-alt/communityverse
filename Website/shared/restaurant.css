@@ -2990,6 +2990,11 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   gap: 10px;
 }
 
+.feedback-survey-question {
+  display: grid;
+  gap: 6px;
+}
+
 .feedback-reward-textarea {
   min-height: 110px;
   resize: vertical;

@@ -103,6 +103,8 @@ const elements = {
   restaurantFeedbackEnabled: document.querySelector("#restaurant-feedback-enabled"),
   restaurantFeedbackPrompt: document.querySelector("#restaurant-feedback-prompt"),
   restaurantFeedbackRewardCustomerId: document.querySelector("#restaurant-feedback-reward-customer-id"),
+  addSurveyQuestionButton: document.querySelector("#add-survey-question-button"),
+  restaurantSurveyQuestionList: document.querySelector("#restaurant-survey-question-list"),
   restaurantHeroImage: document.querySelector("#restaurant-hero-image"),
   restaurantHeroFile: document.querySelector("#restaurant-hero-file"),
   restaurantLogoSquare: document.querySelector("#restaurant-logo-square"),
@@ -689,6 +691,42 @@ function createRestaurantId(name) {
   return `${slug || "restaurant"}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+function createSurveyQuestionId(prompt = "") {
+  const slug = slugify(prompt).slice(0, 40);
+  return `${slug || "survey-question"}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function normalizeSurveyQuestion(question, index = 0) {
+  const safeQuestion = typeof question === "object" && question ? structuredClone(question) : {};
+  const type = ["rating", "yesno", "choice", "text"].includes(safeQuestion.type)
+    ? safeQuestion.type
+    : "rating";
+  const prompt = String(safeQuestion.prompt || "").trim();
+  const choices = Array.isArray(safeQuestion.choices)
+    ? safeQuestion.choices.map((choice) => String(choice || "").trim()).filter(Boolean)
+    : String(safeQuestion.choices || "")
+      .split(/\n|,/)
+      .map((choice) => choice.trim())
+      .filter(Boolean);
+
+  return {
+    id: String(safeQuestion.id || "").trim() || createSurveyQuestionId(prompt),
+    type,
+    prompt,
+    choices: type === "choice" ? choices.slice(0, 8) : [],
+    required: safeQuestion.required !== false,
+    active: safeQuestion.active !== false,
+    sortOrder: Number.isFinite(Number(safeQuestion.sortOrder)) ? Number(safeQuestion.sortOrder) : index,
+  };
+}
+
+function normalizeSurveyQuestions(questions = []) {
+  return (Array.isArray(questions) ? questions : [])
+    .map(normalizeSurveyQuestion)
+    .filter((question) => question.prompt || question.id)
+    .sort((left, right) => (Number(left.sortOrder) || 0) - (Number(right.sortOrder) || 0));
+}
+
 function normalizeCustomer(customer) {
   const safeCustomer = typeof customer === "object" && customer ? structuredClone(customer) : {};
   safeCustomer.id = String(safeCustomer.id || "").trim();
@@ -736,6 +774,7 @@ function normalizeRestaurantRecord(restaurant) {
   safeRestaurant.feedbackEnabled = safeRestaurant.feedbackEnabled === true;
   safeRestaurant.feedbackPrompt = String(safeRestaurant.feedbackPrompt || "").trim();
   safeRestaurant.feedbackRewardCustomerId = String(safeRestaurant.feedbackRewardCustomerId || "").trim();
+  safeRestaurant.feedbackSurveyQuestions = normalizeSurveyQuestions(safeRestaurant.feedbackSurveyQuestions);
   safeRestaurant.heroImage = String(safeRestaurant.heroImage || "").trim();
   safeRestaurant.logoSquare = String(safeRestaurant.logoSquare || "").trim();
   safeRestaurant.logoHorizontal = String(safeRestaurant.logoHorizontal || safeRestaurant.logoSquare || "").trim();
@@ -2083,6 +2122,119 @@ function updateRestaurantLogoPreview(source) {
   }
 }
 
+function surveyQuestionRow(question, index) {
+  const safeQuestion = normalizeSurveyQuestion(question, index);
+  const choicesValue = safeQuestion.choices.join("\n");
+  return `
+    <article class="survey-question-row" data-survey-question-index="${index}">
+      <div class="survey-question-row-top">
+        <strong>Question ${index + 1}</strong>
+        <div class="survey-question-actions">
+          <button class="text-button move-survey-question-button" type="button" data-survey-action="up">Move up</button>
+          <button class="text-button move-survey-question-button" type="button" data-survey-action="down">Move down</button>
+          <button class="text-button remove-survey-question-button" type="button">Remove</button>
+        </div>
+      </div>
+      <input class="survey-question-id" type="hidden" value="${escapeHtml(safeQuestion.id)}" />
+      <label>
+        Question text
+        <input class="survey-question-prompt" value="${escapeHtml(safeQuestion.prompt)}" placeholder="How was your food today?" />
+      </label>
+      <div class="survey-question-grid">
+        <label>
+          Answer type
+          <select class="survey-question-type">
+            <option value="rating" ${safeQuestion.type === "rating" ? "selected" : ""}>Rating 1 to 5</option>
+            <option value="yesno" ${safeQuestion.type === "yesno" ? "selected" : ""}>Yes / No</option>
+            <option value="choice" ${safeQuestion.type === "choice" ? "selected" : ""}>Multiple choice</option>
+            <option value="text" ${safeQuestion.type === "text" ? "selected" : ""}>Written answer</option>
+          </select>
+        </label>
+        <label class="checkbox-label survey-question-check">
+          <input class="survey-question-required" type="checkbox" ${safeQuestion.required ? "checked" : ""} />
+          Required
+        </label>
+        <label class="checkbox-label survey-question-check">
+          <input class="survey-question-active" type="checkbox" ${safeQuestion.active ? "checked" : ""} />
+          Active
+        </label>
+      </div>
+      <label class="survey-question-choices-wrap ${safeQuestion.type === "choice" ? "" : "hidden"}">
+        Choices
+        <textarea class="survey-question-choices" rows="3" placeholder="One choice per line">${escapeHtml(choicesValue)}</textarea>
+        <span class="optional">Only used for multiple choice questions.</span>
+      </label>
+    </article>
+  `;
+}
+
+function renderSurveyQuestions(questions = []) {
+  if (!elements.restaurantSurveyQuestionList) {
+    return;
+  }
+
+  const normalized = normalizeSurveyQuestions(questions);
+  elements.restaurantSurveyQuestionList.innerHTML = normalized.length
+    ? normalized.map(surveyQuestionRow).join("")
+    : '<p class="empty-state compact-empty-state">No survey questions yet.</p>';
+}
+
+function surveyQuestionsFromForm() {
+  if (!elements.restaurantSurveyQuestionList) {
+    return [];
+  }
+
+  return [...elements.restaurantSurveyQuestionList.querySelectorAll(".survey-question-row")]
+    .map((row, index) => {
+      const prompt = row.querySelector(".survey-question-prompt")?.value.trim() || "";
+      const type = row.querySelector(".survey-question-type")?.value || "rating";
+      const choices = String(row.querySelector(".survey-question-choices")?.value || "")
+        .split(/\n|,/)
+        .map((choice) => choice.trim())
+        .filter(Boolean);
+      return normalizeSurveyQuestion({
+        id: row.querySelector(".survey-question-id")?.value || createSurveyQuestionId(prompt),
+        prompt,
+        type,
+        choices,
+        required: row.querySelector(".survey-question-required")?.checked !== false,
+        active: row.querySelector(".survey-question-active")?.checked !== false,
+        sortOrder: index,
+      }, index);
+    })
+    .filter((question) => question.prompt);
+}
+
+function addSurveyQuestion() {
+  const questions = surveyQuestionsFromForm();
+  questions.push(normalizeSurveyQuestion({
+    id: createSurveyQuestionId(""),
+    type: "rating",
+    prompt: "",
+    required: true,
+    active: true,
+    sortOrder: questions.length,
+  }, questions.length));
+  renderSurveyQuestions(questions);
+}
+
+function moveSurveyQuestion(index, direction) {
+  const questions = surveyQuestionsFromForm();
+  const nextIndex = direction === "up" ? index - 1 : index + 1;
+  if (nextIndex < 0 || nextIndex >= questions.length) {
+    return;
+  }
+  const [question] = questions.splice(index, 1);
+  questions.splice(nextIndex, 0, question);
+  renderSurveyQuestions(questions);
+}
+
+function removeSurveyQuestion(index) {
+  const questions = surveyQuestionsFromForm();
+  questions.splice(index, 1);
+  renderSurveyQuestions(questions);
+}
+
 function resetRestaurantEditor(restaurant = null) {
   elements.restaurantForm.reset();
   showRestaurantFormErrors([]);
@@ -2110,6 +2262,7 @@ function resetRestaurantEditor(restaurant = null) {
   elements.restaurantFeedbackEnabled.checked = restaurant?.feedbackEnabled === true;
   elements.restaurantFeedbackPrompt.value = restaurant?.feedbackPrompt || "";
   elements.restaurantFeedbackRewardCustomerId.value = restaurant?.feedbackRewardCustomerId || "";
+  renderSurveyQuestions(restaurant?.feedbackSurveyQuestions || []);
   elements.restaurantHeroImage.value = restaurant?.heroImage || "";
   elements.restaurantLogoSquare.value = restaurant?.logoSquare || "";
   elements.restaurantPrimaryColor.value = restaurant?.primaryColor || "";
@@ -2139,6 +2292,7 @@ function restaurantFromForm() {
     feedbackEnabled: elements.restaurantFeedbackEnabled.checked,
     feedbackPrompt: elements.restaurantFeedbackPrompt.value.trim(),
     feedbackRewardCustomerId: elements.restaurantFeedbackRewardCustomerId.value.trim(),
+    feedbackSurveyQuestions: surveyQuestionsFromForm(),
     heroImage: elements.restaurantHeroImage.value.trim(),
     logoSquare: elements.restaurantLogoSquare.value.trim(),
     logoHorizontal: elements.restaurantLogoSquare.value.trim(),
@@ -2948,6 +3102,31 @@ elements.restaurantForm.addEventListener("submit", saveRestaurantEditor);
 elements.deleteRestaurantButton.addEventListener("click", deleteCurrentRestaurant);
 elements.closeRestaurantEditorButton.addEventListener("click", () => elements.restaurantDialog.close());
 elements.cancelRestaurantButton.addEventListener("click", () => elements.restaurantDialog.close());
+elements.addSurveyQuestionButton.addEventListener("click", addSurveyQuestion);
+elements.restaurantSurveyQuestionList.addEventListener("click", (event) => {
+  const row = event.target.closest(".survey-question-row");
+  if (!row) return;
+  const index = Number(row.dataset.surveyQuestionIndex) || 0;
+
+  if (event.target.closest(".remove-survey-question-button")) {
+    removeSurveyQuestion(index);
+  }
+
+  const moveButton = event.target.closest(".move-survey-question-button");
+  if (moveButton) {
+    moveSurveyQuestion(index, moveButton.dataset.surveyAction);
+  }
+});
+elements.restaurantSurveyQuestionList.addEventListener("change", (event) => {
+  if (!event.target.classList.contains("survey-question-type")) {
+    return;
+  }
+  const row = event.target.closest(".survey-question-row");
+  const choices = row?.querySelector(".survey-question-choices-wrap");
+  if (choices) {
+    choices.classList.toggle("hidden", event.target.value !== "choice");
+  }
+});
 elements.restaurantName.addEventListener("input", () => {
   if (!elements.restaurantPageSlug.value.trim()) {
     elements.restaurantPageSlug.value = slugify(elements.restaurantName.value);
