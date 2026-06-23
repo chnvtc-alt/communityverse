@@ -52,6 +52,9 @@ export function normalizeRestaurant(restaurant) {
   safeRestaurant.secondaryColor = String(safeRestaurant.secondaryColor || safeRestaurant.secondary_color || "").trim();
   safeRestaurant.accentColor = String(safeRestaurant.accentColor || safeRestaurant.accent_color || "").trim();
   safeRestaurant.openingCopy = String(safeRestaurant.openingCopy || safeRestaurant.opening_copy || "").trim();
+  safeRestaurant.feedbackEnabled = safeRestaurant.feedbackEnabled === true;
+  safeRestaurant.feedbackPrompt = String(safeRestaurant.feedbackPrompt || "").trim();
+  safeRestaurant.feedbackRewardCustomerId = String(safeRestaurant.feedbackRewardCustomerId || "").trim();
   safeRestaurant.active = safeRestaurant.active !== false;
   safeRestaurant.playable = safeRestaurant.playable !== false;
   safeRestaurant.visibleInList = safeRestaurant.visibleInList ?? safeRestaurant.visible_in_list;

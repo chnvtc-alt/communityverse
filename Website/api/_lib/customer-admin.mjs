@@ -82,6 +82,7 @@ export function normalizeCustomer(customer) {
   safeCustomer.questionPlace = String(safeCustomer.questionPlace || "").trim();
   safeCustomer.questionFact = String(safeCustomer.questionFact || "").trim();
   safeCustomer.active = safeCustomer.active !== false;
+  safeCustomer.feedbackRewardOnly = safeCustomer.feedbackRewardOnly === true;
   safeCustomer.sortOrder = Number(safeCustomer.sortOrder) || 0;
   safeCustomer.createdAt = String(safeCustomer.createdAt || safeCustomer.created_at || "").trim();
   safeCustomer.updatedAt = String(safeCustomer.updatedAt || safeCustomer.updated_at || "").trim();

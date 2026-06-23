@@ -592,6 +592,11 @@
             <input id="customer-active" type="checkbox" checked />
             Active in the game
           </label>
+          <label class="checkbox-label">
+            <input id="customer-feedback-reward-only" type="checkbox" />
+            Feedback reward only
+            <span class="optional">Use this for a special customer earned by giving feedback, not by normal trivia.</span>
+          </label>
           <label class="form-span">
             Bio
             <textarea id="customer-bio" rows="3"></textarea>
@@ -679,6 +684,20 @@
             Opening text
             <textarea id="restaurant-opening-copy" rows="2" placeholder="Play a quick game, win a customer, and climb the leaderboard."></textarea>
           </label>
+          <label class="checkbox-label form-span">
+            <input id="restaurant-feedback-enabled" type="checkbox" />
+            Enable quick feedback reward
+            <span class="optional">Shows a small optional feedback offer for this restaurant once the full feedback feature is turned on.</span>
+          </label>
+          <label class="form-span">
+            Feedback prompt
+            <input id="restaurant-feedback-prompt" placeholder="Share quick feedback about your most recent visit." />
+          </label>
+          <label class="form-span">
+            Feedback reward customer ID
+            <input id="restaurant-feedback-reward-customer-id" list="customer-options" placeholder="marcos-feedback-fan" />
+            <span class="optional">This customer will be reserved for the feedback reward.</span>
+          </label>
           <label class="form-span">
             Hero image path / URL
             <input id="restaurant-hero-image" placeholder="/assets/restaurant-challenge/restaurants/example/hero.jpg" />
@@ -739,6 +758,6 @@
         </div>
       </form>
     </dialog>
-    <script type="module" src="/admin/questions/admin.js?v=food-photo-checkbox"></script>
+    <script type="module" src="/admin/questions/admin.js?v=restaurant-feedback-settings"></script>
   </body>
 </html>

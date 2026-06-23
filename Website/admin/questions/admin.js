@@ -70,6 +70,7 @@ const elements = {
   customerFocusTag: document.querySelector("#customer-focus-tag"),
   customerSortOrder: document.querySelector("#customer-sort-order"),
   customerActive: document.querySelector("#customer-active"),
+  customerFeedbackRewardOnly: document.querySelector("#customer-feedback-reward-only"),
   customerBio: document.querySelector("#customer-bio"),
   customerQuestionPlace: document.querySelector("#customer-question-place"),
   customerAreaSlugs: document.querySelector("#customer-area-slugs"),
@@ -99,6 +100,9 @@ const elements = {
   restaurantIncludeAreaQuestions: document.querySelector("#restaurant-include-area-questions"),
   restaurantDescription: document.querySelector("#restaurant-description"),
   restaurantOpeningCopy: document.querySelector("#restaurant-opening-copy"),
+  restaurantFeedbackEnabled: document.querySelector("#restaurant-feedback-enabled"),
+  restaurantFeedbackPrompt: document.querySelector("#restaurant-feedback-prompt"),
+  restaurantFeedbackRewardCustomerId: document.querySelector("#restaurant-feedback-reward-customer-id"),
   restaurantHeroImage: document.querySelector("#restaurant-hero-image"),
   restaurantHeroFile: document.querySelector("#restaurant-hero-file"),
   restaurantLogoSquare: document.querySelector("#restaurant-logo-square"),
@@ -712,6 +716,7 @@ function normalizeCustomer(customer) {
   safeCustomer.questionPlace = String(safeCustomer.questionPlace || "").trim();
   safeCustomer.questionFact = String(safeCustomer.questionFact || "").trim();
   safeCustomer.active = safeCustomer.active !== false;
+  safeCustomer.feedbackRewardOnly = safeCustomer.feedbackRewardOnly === true;
   safeCustomer.sortOrder = Number(safeCustomer.sortOrder) || 0;
   safeCustomer.createdAt = String(safeCustomer.createdAt || safeCustomer.created_at || "").trim();
   safeCustomer.updatedAt = String(safeCustomer.updatedAt || safeCustomer.updated_at || "").trim();
@@ -728,6 +733,9 @@ function normalizeRestaurantRecord(restaurant) {
   safeRestaurant.areaSlug = slugify(safeRestaurant.areaSlug || "");
   safeRestaurant.description = String(safeRestaurant.description || "").trim();
   safeRestaurant.openingCopy = String(safeRestaurant.openingCopy || "").trim();
+  safeRestaurant.feedbackEnabled = safeRestaurant.feedbackEnabled === true;
+  safeRestaurant.feedbackPrompt = String(safeRestaurant.feedbackPrompt || "").trim();
+  safeRestaurant.feedbackRewardCustomerId = String(safeRestaurant.feedbackRewardCustomerId || "").trim();
   safeRestaurant.heroImage = String(safeRestaurant.heroImage || "").trim();
   safeRestaurant.logoSquare = String(safeRestaurant.logoSquare || "").trim();
   safeRestaurant.logoHorizontal = String(safeRestaurant.logoHorizontal || safeRestaurant.logoSquare || "").trim();
@@ -2099,6 +2107,9 @@ function resetRestaurantEditor(restaurant = null) {
   elements.restaurantIncludeAreaQuestions.checked = restaurant?.includeAreaQuestions !== false;
   elements.restaurantDescription.value = restaurant?.description || "";
   elements.restaurantOpeningCopy.value = restaurant?.openingCopy || "";
+  elements.restaurantFeedbackEnabled.checked = restaurant?.feedbackEnabled === true;
+  elements.restaurantFeedbackPrompt.value = restaurant?.feedbackPrompt || "";
+  elements.restaurantFeedbackRewardCustomerId.value = restaurant?.feedbackRewardCustomerId || "";
   elements.restaurantHeroImage.value = restaurant?.heroImage || "";
   elements.restaurantLogoSquare.value = restaurant?.logoSquare || "";
   elements.restaurantPrimaryColor.value = restaurant?.primaryColor || "";
@@ -2125,6 +2136,9 @@ function restaurantFromForm() {
     includeAreaQuestions: elements.restaurantIncludeAreaQuestions.checked,
     description: elements.restaurantDescription.value.trim(),
     openingCopy: elements.restaurantOpeningCopy.value.trim(),
+    feedbackEnabled: elements.restaurantFeedbackEnabled.checked,
+    feedbackPrompt: elements.restaurantFeedbackPrompt.value.trim(),
+    feedbackRewardCustomerId: elements.restaurantFeedbackRewardCustomerId.value.trim(),
     heroImage: elements.restaurantHeroImage.value.trim(),
     logoSquare: elements.restaurantLogoSquare.value.trim(),
     logoHorizontal: elements.restaurantLogoSquare.value.trim(),
@@ -2268,6 +2282,7 @@ function resetCustomerEditor(customer = null) {
   renderCustomerRestaurantChoices(customer?.restaurant || customer?.focusTag || "shared");
   elements.customerSortOrder.value = customer?.sortOrder || 0;
   elements.customerActive.checked = customer?.active !== false;
+  elements.customerFeedbackRewardOnly.checked = customer?.feedbackRewardOnly === true;
   elements.customerBio.value = customer?.bio || "";
   elements.customerQuestionPlace.value = customer?.questionPlace || "";
   elements.customerAreaSlugs.value = Array.isArray(customer?.areaSlugs)
@@ -2293,6 +2308,7 @@ function customerFromForm() {
     focusTag: elements.customerFocusTag.value.trim(),
     sortOrder: Number(elements.customerSortOrder.value) || 0,
     active: elements.customerActive.checked,
+    feedbackRewardOnly: elements.customerFeedbackRewardOnly.checked,
     bio: elements.customerBio.value.trim(),
     questionPlace: elements.customerQuestionPlace.value.trim(),
     areaSlugs: elements.customerAreaSlugs.value

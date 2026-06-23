@@ -1265,6 +1265,9 @@
       safeRestaurant.include_area_questions ??
       !["americana", "wafflemaster"].includes(safeRestaurant.slug);
     safeRestaurant.includeAreaQuestions = safeRestaurant.includeAreaQuestions !== false;
+    safeRestaurant.feedbackEnabled = safeRestaurant.feedbackEnabled === true;
+    safeRestaurant.feedbackPrompt = String(safeRestaurant.feedbackPrompt || "").trim();
+    safeRestaurant.feedbackRewardCustomerId = String(safeRestaurant.feedbackRewardCustomerId || "").trim();
     safeRestaurant.sortOrder = Number(safeRestaurant.sortOrder) || 0;
     return safeRestaurant;
   }
@@ -1327,6 +1330,7 @@
     safeCustomer.questionPlace = String(safeCustomer.questionPlace || "").trim();
     safeCustomer.questionFact = String(safeCustomer.questionFact || "").trim();
     safeCustomer.active = safeCustomer.active !== false;
+    safeCustomer.feedbackRewardOnly = safeCustomer.feedbackRewardOnly === true;
     safeCustomer.sortOrder = Number(safeCustomer.sortOrder) || 0;
     safeCustomer.customQuestions = Array.isArray(safeCustomer.customQuestions)
       ? safeCustomer.customQuestions.map((question) => ({
@@ -3891,9 +3895,10 @@
 
     return customers.filter(
       (customer) =>
-        customer.restaurant === restaurant.slug ||
-        (customer.restaurant === "shared" &&
-          customerAreaSlugsMatchRestaurant(customer, restaurantAreaSlugs))
+        !customer.feedbackRewardOnly &&
+        (customer.restaurant === restaurant.slug ||
+          (customer.restaurant === "shared" &&
+            customerAreaSlugsMatchRestaurant(customer, restaurantAreaSlugs)))
     );
   }
 
