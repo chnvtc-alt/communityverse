@@ -1873,6 +1873,34 @@ function getMostActiveProfileRows(list) {
     }));
 }
 
+function getReturningPlayerRows(list) {
+  return [...getStatsScopedProfiles(list)]
+    .filter((profile) => getStatsProfileActivity(profile).returned)
+    .sort((left, right) => {
+      const rightActivity = getStatsProfileActivity(right);
+      const leftActivity = getStatsProfileActivity(left);
+      const rightTime = Date.parse(rightActivity.lastPlayedAt || "") || 0;
+      const leftTime = Date.parse(leftActivity.lastPlayedAt || "") || 0;
+      return rightTime - leftTime || getStatsProfileGameCount(right) - getStatsProfileGameCount(left);
+    })
+    .map((profile) => {
+      const activity = getStatsProfileActivity(profile);
+      return {
+        name: profile.restaurantName || "Unnamed Restaurant",
+        playerName: profile.playerName || (profile.isGuest ? "Guest Player" : "Saved player"),
+        games: getStatsProfileGameCount(profile),
+        activeDays: activity.activeDays,
+        dayText: activity.activeDays >= 2
+          ? `${formatWholeNumber(activity.activeDays)} active days`
+          : activity.hasUndatedEarlierPlays
+            ? "earlier plays tracked"
+            : `${formatWholeNumber(activity.activeDays)} active day`,
+        lastPlayedAt: activity.lastPlayedAt,
+        saved: !profile.isGuest,
+      };
+    });
+}
+
 function statsCard(label, value, note = "") {
   return `
     <article class="stats-card">
@@ -1920,6 +1948,7 @@ function renderStats() {
   const createdRows = getNewRestaurantRows(normalProfiles);
   const topPublicGames = getTopPublicGameRows(normalProfiles);
   const activeProfiles = getMostActiveProfileRows(normalProfiles);
+  const returningPlayers = getReturningPlayerRows(normalProfiles);
 
   elements.statsDashboard.innerHTML = `
     <section class="stats-grid">
@@ -1950,15 +1979,24 @@ function renderStats() {
     </section>
 
     <section class="stats-grid stats-grid-wide">
-      ${statsList("Most Played Public Games", topPublicGames, "No public game activity found.", (row) => `
+      ${statsList("Returning Players", returningPlayers, "No returning players found for this view.", (row) => `
         <div class="stats-row">
-          <span>${escapeHtml(row.name)} <small>${formatWholeNumber(row.players)} player${row.players === 1 ? "" : "s"}</small></span>
-          <strong>${formatWholeNumber(row.games)}</strong>
+          <span>${escapeHtml(row.name)} <small>${escapeHtml(row.playerName)} · ${row.saved ? "Saved" : "Guest"} · ${escapeHtml(row.dayText)} · Last ${escapeHtml(row.lastPlayedAt ? formatShortDate(row.lastPlayedAt) : "unknown")}</small></span>
+          <strong>${formatWholeNumber(row.games)} game${row.games === 1 ? "" : "s"}</strong>
         </div>
       `)}
       ${statsList("Most Active Player Restaurants", activeProfiles, "No active player restaurants found.", (row) => `
         <div class="stats-row">
           <span>${escapeHtml(row.name)} <small>${row.saved ? "Saved" : "Guest"} · ${formatWholeNumber(row.activeDays)} active day${row.activeDays === 1 ? "" : "s"}</small></span>
+          <strong>${formatWholeNumber(row.games)}</strong>
+        </div>
+      `)}
+    </section>
+
+    <section class="stats-grid stats-grid-wide">
+      ${statsList("Most Played Public Games", topPublicGames, "No public game activity found.", (row) => `
+        <div class="stats-row">
+          <span>${escapeHtml(row.name)} <small>${formatWholeNumber(row.players)} player${row.players === 1 ? "" : "s"}</small></span>
           <strong>${formatWholeNumber(row.games)}</strong>
         </div>
       `)}
