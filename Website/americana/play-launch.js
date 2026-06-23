@@ -1251,6 +1251,7 @@
         ? core.getPublicLeaderboardStats(profile)
         : overallSummary?.stats;
     const isGuest = Boolean(profile && profile.isGuest);
+    const isFourthGame = Number(overallSummary?.stats?.gamesPlayed) === 4;
     const resultLayoutMode = isGuest
       ? (state.showProfileForm ? "register-form" : "guest-prompt")
       : "return-actions";
@@ -1325,18 +1326,14 @@
         `
         : "";
     const triviaLeaderboardMilestoneMarkup =
-      Number(overallSummary?.stats?.gamesPlayed) === 4
+      isFourthGame && !isGuest
         ? `
           <div class="hero-card result-followup-card" style="margin-top: 0; padding: 16px;">
             <p class="kicker" style="margin: 0 0 6px;">Trivia % Leaderboard</p>
             <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">Congratulations! You completed your 4th game.</h3>
-            <p class="copy" style="margin: 0 0 12px;">${isGuest ? "Save your restaurant to keep your Trivia % leaderboard progress. No email required." : "You are now eligible for the Trivia % Leaderboard."}</p>
+            <p class="copy" style="margin: 0 0 12px;">You are now eligible for the Trivia % Leaderboard.</p>
             <div class="button-row">
-              ${
-                isGuest
-                  ? `<button class="button button-hot" id="milestone-save-button" type="button">Save My Restaurant</button>`
-                  : `<a class="button button-hot" href="/restaurant/?hub=1&metric=rating&scope=restaurant&restaurant=${encodeURIComponent(restaurantSlug)}#leaderboard-panel">View Trivia % Leaderboard</a>`
-              }
+              <a class="button button-hot" href="/restaurant/?hub=1&metric=rating#leaderboard-panel">View Trivia % Leaderboard</a>
             </div>
           </div>
         `
@@ -1401,12 +1398,12 @@
           isGuest && !state.showProfileForm
             ? `
               <div class="hero-card result-followup-card result-followup-card-guest" style="margin-top: 0; padding: 16px;">
-                <p class="kicker" style="margin: 0 0 6px;">Save Your Customer Collection</p>
-                <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">You just earned ${escapeHtml(session.customer.name)}.</h3>
-                <p class="copy" style="margin: 0 0 12px;">Save your collection to keep customers, track your trivia progress, and compete on the leaderboards.</p>
+                <p class="kicker" style="margin: 0 0 6px;">${isFourthGame ? "Trivia % Leaderboard" : "Save Your Customer Collection"}</p>
+                <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${isFourthGame ? "Congratulations! You completed your 4th game." : `You just earned ${escapeHtml(session.customer.name)}.`}</h3>
+                <p class="copy" style="margin: 0 0 12px;">${isFourthGame ? "Save your restaurant to keep your Trivia % leaderboard progress. No email required." : "Save your collection to keep customers, track your trivia progress, and compete on the leaderboards."}</p>
                 <div class="button-row">
                   <button class="button button-hot result-save-progress-button" id="register-now-button" type="button">
-                    <span>Save My Customer Collection</span>
+                    <span>${isFourthGame ? "Save My Restaurant" : "Save My Customer Collection"}</span>
                     <small>No email required</small>
                   </button>
                   <button class="button button-muted" id="guest-continue-button" type="button">Keep Playing as Guest</button>
@@ -1480,12 +1477,6 @@
     }
 
     if (isGuest && !state.showProfileForm) {
-      document.getElementById("milestone-save-button")?.addEventListener("click", () => {
-        state.showProfileForm = true;
-        state.registrationMessage = "";
-        renderAll();
-      });
-
       document.getElementById("register-now-button").addEventListener("click", () => {
         state.showProfileForm = true;
         state.registrationMessage = "";
