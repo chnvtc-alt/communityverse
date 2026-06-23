@@ -62,6 +62,7 @@ const elements = {
   customerForm: document.querySelector("#customer-form"),
   customerFormErrors: document.querySelector("#customer-form-errors"),
   customerId: document.querySelector("#customer-id"),
+  customerIdDisplay: document.querySelector("#customer-id-display"),
   customerName: document.querySelector("#customer-name"),
   customerGroup: document.querySelector("#customer-group"),
   customerRarity: document.querySelector("#customer-rarity"),
@@ -991,9 +992,11 @@ function renderCustomers() {
   elements.customerList.innerHTML = sortedCustomersForDisplay()
     .map((customer) => {
       const chips = [
+        customer.id,
         formatRestaurantLabel(customer.restaurant),
         formatCharacterTypeLabel(customer.characterType),
         customer.rarity,
+        customer.feedbackRewardOnly ? "feedback reward only" : "",
         customer.active ? "" : "inactive",
       ].filter(Boolean);
 
@@ -2428,6 +2431,7 @@ function resetCustomerEditor(customer = null) {
   selectedCustomerPhotoFile = null;
   elements.customerPhotoFile.value = "";
   elements.customerId.value = customer?.id || "";
+  elements.customerIdDisplay.value = customer?.id || "Will be created when you save.";
   elements.customerName.value = customer?.name || "";
   elements.customerGroup.value = customer?.characterType || customer?.group || "";
   elements.customerRarity.value = customer?.rarity || "Common";
@@ -2502,6 +2506,7 @@ async function saveCustomerEditor(event) {
   if (!customer.id) {
     customer.id = createCustomerId(customer.name);
     elements.customerId.value = customer.id;
+    elements.customerIdDisplay.value = customer.id;
   }
 
   if (!customer.name) {

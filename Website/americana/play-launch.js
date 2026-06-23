@@ -446,6 +446,9 @@
         if (selectedCustomers.length >= count || !isPhotoReadyCustomer(customer) || selectedIds.has(customer.id)) {
           return;
         }
+        if (customer.feedbackRewardOnly) {
+          return;
+        }
         if (skipOwned && ownedCustomerIds.has(customer.id)) {
           return;
         }
