@@ -1169,6 +1169,55 @@
     `;
   }
 
+  function renderNetWorthGrowthPrompt(profile, stats = null) {
+    if (!profile || !core.getRestaurantExpansionPreview) {
+      return "";
+    }
+
+    const gamesPlayed = Math.max(0, Number((stats || profile.stats)?.gamesPlayed) || 0);
+    if (gamesPlayed < 3) {
+      return "";
+    }
+
+    const preview = core.getRestaurantExpansionPreview(profile);
+    if (!preview?.next) {
+      return "";
+    }
+
+    const currentId = String(preview.current?.id || "");
+    if (!["food-truck", "counter-service", "small-diner"].includes(currentId)) {
+      return "";
+    }
+
+    const cashOnHand = core.getRestaurantCashOnHand
+      ? core.getRestaurantCashOnHand(profile, stats || profile.stats)
+      : Math.max(0, Number((stats || profile.stats)?.estimatedSales) || 0);
+    const nextCost = Math.max(0, Number(preview.next.cost) || 0);
+    const shortfall = Math.max(0, nextCost - cashOnHand);
+    const closeEnough = nextCost > 0 && cashOnHand >= nextCost * 0.6;
+    const upgrades = core.getRestaurantUpgradePreview ? core.getRestaurantUpgradePreview(profile, 3) : [];
+    const affordableUpgrade = upgrades.find((upgrade) => {
+      return currentId !== "food-truck" && cashOnHand >= Math.max(0, Number(upgrade.cost) || 0);
+    });
+
+    if (!affordableUpgrade && !closeEnough && cashOnHand < nextCost) {
+      return "";
+    }
+
+    const message = cashOnHand >= nextCost
+      ? `You can expand to ${preview.next.label} now. Expanding adds ${core.formatCurrency(preview.valueAdded)} to your restaurant value and grows your Net Worth.`
+      : affordableUpgrade
+        ? `${affordableUpgrade.label} is available now. Upgrades add value, boost future sales, and grow your Net Worth.`
+        : `You are ${core.formatCurrency(shortfall)} away from ${preview.next.label}. A few more customers could help you expand and grow your Net Worth.`;
+
+    return `
+      <div class="restaurant-growth-prompt">
+        <strong>Ready to grow your Net Worth?</strong>
+        <span>${escapeHtml(message)}</span>
+      </div>
+    `;
+  }
+
   function renderUpgradePreviewMarkup(profile, stats = null) {
     if (!profile || !core.getRestaurantUpgradePreview) {
       return "";
@@ -1350,6 +1399,7 @@
                     </div>
                     ${customerCompleteMarkup}
                     ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
+                    ${renderNetWorthGrowthPrompt(profile, safeSummary.stats)}
                     ${renderExpansionPreviewMarkup(profile, safeSummary.stats)}
                     ${renderUpgradePreviewMarkup(profile, safeSummary.stats)}
                     ${
@@ -1416,6 +1466,7 @@
                   </div>
                   ${customerCompleteMarkup}
                   ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
+                  ${renderNetWorthGrowthPrompt(profile, safeSummary.stats)}
                   ${renderExpansionPreviewMarkup(profile, safeSummary.stats)}
                   ${renderUpgradePreviewMarkup(profile, safeSummary.stats)}
                   ${
