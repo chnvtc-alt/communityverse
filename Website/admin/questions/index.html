@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600;9..144,750&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/admin/questions/styles.css?v=feedback-customer-picker" />
+    <link rel="stylesheet" href="/admin/questions/styles.css?v=feedback-results-viewer" />
   </head>
   <body>
     <div class="grain" aria-hidden="true"></div>
@@ -33,6 +33,7 @@
       <button class="workshop-tab" type="button" data-tab="profiles">Guest Restaurants</button>
       <button class="workshop-tab" type="button" data-tab="customers">Customers</button>
       <button class="workshop-tab" type="button" data-tab="restaurants">Restaurants</button>
+      <button class="workshop-tab" type="button" data-tab="feedback">Feedback</button>
     </nav>
 
     <main id="questions-panel" class="layout admin-panel">
@@ -343,6 +344,44 @@
           </label>
         </section>
         <div id="stats-dashboard" class="stats-dashboard" aria-live="polite"></div>
+      </section>
+    </section>
+
+    <section id="feedback-panel" class="layout admin-panel" hidden>
+      <aside class="sidebar">
+        <section class="filter-card" aria-labelledby="feedback-filter-title">
+          <div class="section-heading">
+            <h2 id="feedback-filter-title">Find feedback</h2>
+            <button id="clear-feedback-filters-button" class="text-button" type="button">Clear</button>
+          </div>
+
+          <label>
+            Restaurant
+            <select id="feedback-restaurant-filter">
+              <option value="">All restaurants</option>
+            </select>
+          </label>
+        </section>
+
+        <section class="help-card">
+          <h2>Restaurant links</h2>
+          <p>Each restaurant can have a private feedback results link.</p>
+          <p>Set the access code in that restaurant's settings, then share the link shown there.</p>
+          <p>This tab shows all feedback for you.</p>
+        </section>
+      </aside>
+
+      <section class="content">
+        <div class="list-heading">
+          <div>
+            <p id="feedback-count" class="count">0 responses</p>
+            <p class="subtle">Newest feedback appears first. These responses are saved in Supabase.</p>
+          </div>
+          <button id="refresh-feedback-button" class="button button-secondary" type="button">Refresh</button>
+        </div>
+
+        <div id="feedback-message" class="message" role="status" hidden></div>
+        <div id="feedback-list" class="question-list" aria-live="polite"></div>
       </section>
     </section>
 
@@ -703,6 +742,16 @@
             <select id="restaurant-feedback-reward-customer-id"></select>
             <span class="optional">Pick an active feedback-only customer for this restaurant. Control Room saves the exact ID automatically.</span>
           </label>
+          <label class="form-span">
+            Feedback results access code
+            <input id="restaurant-feedback-results-access-code" placeholder="short-private-code" />
+            <span class="optional">Use this to make a private results link for the restaurant owner.</span>
+          </label>
+          <label class="form-span">
+            Feedback results link
+            <input id="restaurant-feedback-results-link" readonly placeholder="Save an access code to create this link." />
+            <span class="optional">Give this link to the restaurant so they can see their own feedback at any time.</span>
+          </label>
           <section class="form-span survey-editor-panel" aria-labelledby="restaurant-survey-title">
             <div class="survey-editor-heading">
               <div>
@@ -774,6 +823,6 @@
         </div>
       </form>
     </dialog>
-    <script type="module" src="/admin/questions/admin.js?v=feedback-customer-picker"></script>
+    <script type="module" src="/admin/questions/admin.js?v=feedback-results-viewer"></script>
   </body>
 </html>

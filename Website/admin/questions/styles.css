@@ -539,6 +539,40 @@ textarea {
   align-items: baseline;
 }
 
+.feedback-card {
+  grid-template-columns: 1fr;
+}
+
+.feedback-card-main {
+  display: grid;
+  gap: 16px;
+}
+
+.feedback-answer-list {
+  display: grid;
+  gap: 8px;
+}
+
+.feedback-answer-row {
+  display: grid;
+  gap: 5px;
+  padding: 11px 12px;
+  border: 1px solid rgba(30, 41, 37, 0.09);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.42);
+}
+
+.feedback-answer-row strong {
+  font-size: 0.78rem;
+}
+
+.feedback-answer-row span {
+  color: var(--green);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
 .profile-email {
   color: var(--muted);
 }

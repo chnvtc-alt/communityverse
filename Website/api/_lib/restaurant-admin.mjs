@@ -83,6 +83,7 @@ export function normalizeRestaurant(restaurant) {
   safeRestaurant.feedbackPrompt = String(safeRestaurant.feedbackPrompt || "").trim();
   safeRestaurant.feedbackRewardCustomerId = String(safeRestaurant.feedbackRewardCustomerId || "").trim();
   safeRestaurant.feedbackSurveyQuestions = normalizeSurveyQuestions(safeRestaurant.feedbackSurveyQuestions);
+  safeRestaurant.feedbackResultsAccessCode = String(safeRestaurant.feedbackResultsAccessCode || "").trim();
   safeRestaurant.active = safeRestaurant.active !== false;
   safeRestaurant.playable = safeRestaurant.playable !== false;
   safeRestaurant.visibleInList = safeRestaurant.visibleInList ?? safeRestaurant.visible_in_list;

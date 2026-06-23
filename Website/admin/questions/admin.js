@@ -2,6 +2,7 @@ const API_URL = "/api/admin/questions";
 const GENERATOR_API_URL = "/api/admin/question-generator";
 const CUSTOMER_API_URL = "/api/admin/customers";
 const RESTAURANT_API_URL = "/api/admin/restaurants";
+const FEEDBACK_API_URL = "/api/admin/feedback-responses";
 const PROFILE_API_URL = "/api/admin/profiles";
 const SESSION_API_URL = "/api/admin/sessions";
 const RESTAURANT_IMAGE_API_URL = "/api/admin/restaurant-image";
@@ -45,6 +46,7 @@ const elements = {
   customersPanel: document.querySelector("#customers-panel"),
   questionsPanel: document.querySelector("#questions-panel"),
   restaurantsPanel: document.querySelector("#restaurants-panel"),
+  feedbackPanel: document.querySelector("#feedback-panel"),
   profilesPanel: document.querySelector("#profiles-panel"),
   statsPanel: document.querySelector("#stats-panel"),
   newCustomerButton: document.querySelector("#new-customer-button"),
@@ -104,6 +106,8 @@ const elements = {
   restaurantFeedbackEnabled: document.querySelector("#restaurant-feedback-enabled"),
   restaurantFeedbackPrompt: document.querySelector("#restaurant-feedback-prompt"),
   restaurantFeedbackRewardCustomerId: document.querySelector("#restaurant-feedback-reward-customer-id"),
+  restaurantFeedbackResultsAccessCode: document.querySelector("#restaurant-feedback-results-access-code"),
+  restaurantFeedbackResultsLink: document.querySelector("#restaurant-feedback-results-link"),
   addSurveyQuestionButton: document.querySelector("#add-survey-question-button"),
   restaurantSurveyQuestionList: document.querySelector("#restaurant-survey-question-list"),
   restaurantHeroImage: document.querySelector("#restaurant-hero-image"),
@@ -135,6 +139,12 @@ const elements = {
   statsDashboard: document.querySelector("#stats-dashboard"),
   statsMessage: document.querySelector("#stats-message"),
   statsRestaurantFilter: document.querySelector("#stats-restaurant-filter"),
+  refreshFeedbackButton: document.querySelector("#refresh-feedback-button"),
+  clearFeedbackFiltersButton: document.querySelector("#clear-feedback-filters-button"),
+  feedbackCount: document.querySelector("#feedback-count"),
+  feedbackList: document.querySelector("#feedback-list"),
+  feedbackMessage: document.querySelector("#feedback-message"),
+  feedbackRestaurantFilter: document.querySelector("#feedback-restaurant-filter"),
   login: document.querySelector("#login-dialog"),
   loginForm: document.querySelector("#login-form"),
   loginError: document.querySelector("#login-error"),
@@ -174,6 +184,7 @@ let questions = [];
 let customers = [];
 let customerSortMode = "recent";
 let restaurants = [];
+let feedbackResponses = [];
 let profiles = [];
 let statsProfiles = [];
 let profileSessionHistory = new Map();
@@ -182,6 +193,7 @@ let filterTimer = 0;
 let customerFilterTimer = 0;
 let restaurantFilterTimer = 0;
 let profileFilterTimer = 0;
+let feedbackFilterTimer = 0;
 let aiDrafts = [];
 let selectedAiDraftIndex = -1;
 let selectedQuestionImageFile = null;
@@ -294,6 +306,27 @@ async function customerApiRequest(path = "", options = {}) {
 
 async function restaurantApiRequest(path = "", options = {}) {
   const response = await fetch(`${RESTAURANT_API_URL}${path}`, {
+    ...options,
+    headers: {
+      ...(options.body ? { "Content-Type": "application/json" } : {}),
+      Authorization: `Bearer ${adminKey}`,
+      ...(options.headers || {}),
+    },
+  });
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const error = new Error(data.error || data.errors?.join(" ") || `Request failed (${response.status}).`);
+    error.status = response.status;
+    error.details = data.errors;
+    throw error;
+  }
+
+  return data;
+}
+
+async function feedbackApiRequest(path = "", options = {}) {
+  const response = await fetch(`${FEEDBACK_API_URL}${path}`, {
     ...options,
     headers: {
       ...(options.body ? { "Content-Type": "application/json" } : {}),
@@ -531,6 +564,7 @@ function setActiveTab(tabName, options = {}) {
   elements.questionsPanel.hidden = safeTabName !== "questions";
   elements.customersPanel.hidden = safeTabName !== "customers";
   elements.restaurantsPanel.hidden = safeTabName !== "restaurants";
+  elements.feedbackPanel.hidden = safeTabName !== "feedback";
   elements.profilesPanel.hidden = safeTabName !== "profiles";
   elements.statsPanel.hidden = safeTabName !== "stats";
 
@@ -592,6 +626,28 @@ function normalizeCharacterType(value) {
 
 function slugify(value) {
   return String(value || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+function feedbackResultsUrl(restaurantSlug, accessCode) {
+  const slug = slugify(restaurantSlug);
+  const code = String(accessCode || "").trim();
+  if (!slug || !code) {
+    return "";
+  }
+
+  const url = new URL("/feedback/", window.location.origin);
+  url.searchParams.set("restaurant", slug);
+  url.searchParams.set("code", code);
+  return url.href;
+}
+
+function updateFeedbackResultsLink() {
+  if (!elements.restaurantFeedbackResultsLink) return;
+  const url = feedbackResultsUrl(
+    elements.restaurantPageSlug?.value || "",
+    elements.restaurantFeedbackResultsAccessCode?.value || ""
+  );
+  elements.restaurantFeedbackResultsLink.value = url;
 }
 
 function formatRestaurantLabel(value) {
@@ -667,6 +723,12 @@ function showStatsMessage(text, isError = false) {
   elements.statsMessage.textContent = text;
   elements.statsMessage.classList.toggle("message-error", isError);
   elements.statsMessage.hidden = !text;
+}
+
+function showFeedbackMessage(text, isError = false) {
+  elements.feedbackMessage.textContent = text;
+  elements.feedbackMessage.classList.toggle("message-error", isError);
+  elements.feedbackMessage.hidden = !text;
 }
 
 function createCustomerId(name) {
@@ -776,6 +838,7 @@ function normalizeRestaurantRecord(restaurant) {
   safeRestaurant.feedbackPrompt = String(safeRestaurant.feedbackPrompt || "").trim();
   safeRestaurant.feedbackRewardCustomerId = String(safeRestaurant.feedbackRewardCustomerId || "").trim();
   safeRestaurant.feedbackSurveyQuestions = normalizeSurveyQuestions(safeRestaurant.feedbackSurveyQuestions);
+  safeRestaurant.feedbackResultsAccessCode = String(safeRestaurant.feedbackResultsAccessCode || "").trim();
   safeRestaurant.heroImage = String(safeRestaurant.heroImage || "").trim();
   safeRestaurant.logoSquare = String(safeRestaurant.logoSquare || "").trim();
   safeRestaurant.logoHorizontal = String(safeRestaurant.logoHorizontal || safeRestaurant.logoSquare || "").trim();
@@ -1126,6 +1189,7 @@ function renderRestaurants() {
   elements.restaurantCount.textContent = `${restaurants.length} restaurant${restaurants.length === 1 ? "" : "s"}`;
   updateSuggestions();
   populateCustomerSuggestions();
+  renderFeedbackRestaurantFilter();
 
   if (!restaurants.length) {
     elements.restaurantList.innerHTML = '<div class="empty-state">No restaurants match these filters.</div>';
@@ -1201,6 +1265,121 @@ async function loadRestaurants({ quiet = false } = {}) {
       return;
     }
     showRestaurantMessage(error.message, true);
+  }
+}
+
+function feedbackFilterParams() {
+  const params = new URLSearchParams();
+  const restaurantSlug = elements.feedbackRestaurantFilter.value.trim();
+  if (restaurantSlug) params.set("restaurantSlug", restaurantSlug);
+  return params;
+}
+
+function renderFeedbackRestaurantFilter() {
+  if (!elements.feedbackRestaurantFilter) return;
+  const selectedValue = elements.feedbackRestaurantFilter.value.trim();
+  const options = [
+    '<option value="">All restaurants</option>',
+    ...restaurants.map(
+      (restaurant) => `
+        <option value="${escapeHtml(restaurant.slug)}" ${restaurant.slug === selectedValue ? "selected" : ""}>
+          ${escapeHtml(restaurant.name || restaurant.slug)}
+        </option>
+      `
+    ),
+  ];
+  elements.feedbackRestaurantFilter.innerHTML = options.join("");
+  elements.feedbackRestaurantFilter.value = selectedValue;
+}
+
+function formatSubmittedAt(value) {
+  const date = new Date(value || "");
+  if (Number.isNaN(date.getTime())) {
+    return "Unknown time";
+  }
+  return date.toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function renderFeedbackResponses() {
+  elements.feedbackCount.textContent = `${feedbackResponses.length} response${feedbackResponses.length === 1 ? "" : "s"}`;
+
+  if (!feedbackResponses.length) {
+    elements.feedbackList.innerHTML = '<div class="empty-state">No feedback responses match this view yet.</div>';
+    return;
+  }
+
+  elements.feedbackList.innerHTML = feedbackResponses
+    .map((response) => {
+      const answers = Array.isArray(response.answers) ? response.answers : [];
+      const reward = response.rewardCustomerName || response.rewardCustomerId || "No reward customer saved";
+      const restaurantName = response.restaurantName || formatRestaurantLabel(response.restaurantSlug);
+      return `
+        <article class="question-card feedback-card" data-id="${escapeHtml(response.id)}">
+          <div class="feedback-card-main">
+            <div>
+              <p class="question-prompt">${escapeHtml(restaurantName)}</p>
+              <p class="question-answer">Submitted ${escapeHtml(formatSubmittedAt(response.submittedAt))}</p>
+              <div class="question-meta">
+                <span class="meta-chip">${escapeHtml(response.restaurantSlug || "unknown restaurant")}</span>
+                <span class="meta-chip">Reward: ${escapeHtml(reward)}</span>
+                ${response.rewardAwarded ? '<span class="meta-chip">reward awarded</span>' : ""}
+              </div>
+            </div>
+            <div class="feedback-answer-list">
+              ${
+                answers.length
+                  ? answers
+                    .map(
+                      (answer) => `
+                        <div class="feedback-answer-row">
+                          <strong>${escapeHtml(answer.questionText)}</strong>
+                          <span>${escapeHtml(answer.value || "No answer")}</span>
+                        </div>
+                      `
+                    )
+                    .join("")
+                  : '<p class="subtle">No answers were saved with this response.</p>'
+              }
+            </div>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+async function loadFeedbackResponses({ quiet = false } = {}) {
+  if (!adminKey) {
+    if (!elements.login.open) {
+      elements.login.showModal();
+    }
+    return;
+  }
+
+  if (!quiet) showFeedbackMessage("Loading feedback...");
+
+  try {
+    const data = await feedbackApiRequest(`?${feedbackFilterParams().toString()}`);
+    feedbackResponses = data.responses || [];
+    renderFeedbackResponses();
+    showFeedbackMessage("");
+    if (elements.login.open) elements.login.close();
+  } catch (error) {
+    if (error.status === 401) {
+      adminKey = "";
+      sessionStorage.removeItem(KEY_STORAGE);
+      elements.loginError.textContent = "That admin key was not accepted.";
+      elements.loginError.hidden = false;
+      if (!elements.login.open) elements.login.showModal();
+      return;
+    }
+    showFeedbackMessage(error.message, true);
   }
 }
 
@@ -2309,6 +2488,8 @@ function resetRestaurantEditor(restaurant = null) {
   elements.restaurantFeedbackEnabled.checked = restaurant?.feedbackEnabled === true;
   elements.restaurantFeedbackPrompt.value = restaurant?.feedbackPrompt || "";
   renderFeedbackRewardCustomerChoices(restaurant?.feedbackRewardCustomerId || "");
+  elements.restaurantFeedbackResultsAccessCode.value = restaurant?.feedbackResultsAccessCode || "";
+  updateFeedbackResultsLink();
   renderSurveyQuestions(restaurant?.feedbackSurveyQuestions || []);
   elements.restaurantHeroImage.value = restaurant?.heroImage || "";
   elements.restaurantLogoSquare.value = restaurant?.logoSquare || "";
@@ -2339,6 +2520,7 @@ function restaurantFromForm() {
     feedbackEnabled: elements.restaurantFeedbackEnabled.checked,
     feedbackPrompt: elements.restaurantFeedbackPrompt.value.trim(),
     feedbackRewardCustomerId: elements.restaurantFeedbackRewardCustomerId.value.trim(),
+    feedbackResultsAccessCode: elements.restaurantFeedbackResultsAccessCode.value.trim(),
     feedbackSurveyQuestions: surveyQuestionsFromForm(),
     heroImage: elements.restaurantHeroImage.value.trim(),
     logoSquare: elements.restaurantLogoSquare.value.trim(),
@@ -2931,6 +3113,7 @@ elements.loginForm.addEventListener("submit", async (event) => {
   await loadQuestions();
   await loadCustomers();
   await loadRestaurants();
+  await loadFeedbackResponses();
   await loadProfiles();
   await loadStats();
 });
@@ -2945,11 +3128,13 @@ elements.lockButton.addEventListener("click", () => {
   questions = [];
   customers = [];
   restaurants = [];
+  feedbackResponses = [];
   profiles = [];
   statsProfiles = [];
   renderQuestions();
   renderCustomers();
   renderRestaurants();
+  renderFeedbackResponses();
   renderProfiles();
   renderStats();
   setConnected(false);
@@ -2979,6 +3164,7 @@ elements.newRestaurantButton.addEventListener("click", () => {
 elements.refreshButton.addEventListener("click", () => loadQuestions());
 elements.refreshCustomersButton.addEventListener("click", () => loadCustomers());
 elements.refreshRestaurantsButton.addEventListener("click", () => loadRestaurants());
+elements.refreshFeedbackButton.addEventListener("click", () => loadFeedbackResponses());
 elements.refreshProfilesButton.addEventListener("click", () => loadProfiles());
 elements.refreshStatsButton.addEventListener("click", () => loadStats());
 elements.statsRestaurantFilter.addEventListener("change", () => {
@@ -3016,6 +3202,11 @@ elements.clearRestaurantFiltersButton.addEventListener("click", () => {
   elements.restaurantFilterStatus.value = "all";
   elements.restaurantFilterArea.value = "";
   loadRestaurants();
+});
+
+elements.clearFeedbackFiltersButton.addEventListener("click", () => {
+  elements.feedbackRestaurantFilter.value = "";
+  loadFeedbackResponses();
 });
 
 elements.clearProfileFiltersButton.addEventListener("click", () => {
@@ -3061,6 +3252,11 @@ filterIds.forEach((id) => {
       restaurantFilterTimer = window.setTimeout(() => loadRestaurants({ quiet: true }), 250);
     });
   });
+});
+
+elements.feedbackRestaurantFilter.addEventListener("change", () => {
+  window.clearTimeout(feedbackFilterTimer);
+  feedbackFilterTimer = window.setTimeout(() => loadFeedbackResponses({ quiet: true }), 150);
 });
 
 [
@@ -3180,12 +3376,15 @@ elements.restaurantName.addEventListener("input", () => {
   if (!elements.restaurantPageSlug.value.trim()) {
     elements.restaurantPageSlug.value = slugify(elements.restaurantName.value);
     renderFeedbackRewardCustomerChoices();
+    updateFeedbackResultsLink();
   }
   if (!elements.restaurantPublicGameName.value.trim()) {
     elements.restaurantPublicGameName.value = `${elements.restaurantName.value.trim()} Game`.trim();
   }
 });
 elements.restaurantPageSlug.addEventListener("input", () => renderFeedbackRewardCustomerChoices());
+elements.restaurantPageSlug.addEventListener("input", updateFeedbackResultsLink);
+elements.restaurantFeedbackResultsAccessCode.addEventListener("input", updateFeedbackResultsLink);
 elements.restaurantHeroImage.addEventListener("input", () => {
   if (selectedRestaurantHeroFile) {
     selectedRestaurantHeroFile = null;
@@ -3300,6 +3499,9 @@ elements.tabs.forEach((button) => {
     if (button.dataset.tab === "restaurants") {
       loadRestaurants({ quiet: true });
     }
+    if (button.dataset.tab === "feedback") {
+      loadFeedbackResponses({ quiet: true });
+    }
     if (button.dataset.tab === "profiles") {
       loadProfiles({ quiet: true });
     }
@@ -3312,11 +3514,13 @@ elements.tabs.forEach((button) => {
 renderQuestions();
 renderCustomers();
 renderRestaurants();
+renderFeedbackResponses();
 renderProfiles();
 renderStats();
 setActiveTab(getInitialTabName(), { skipUrlUpdate: true });
 loadQuestions();
 loadCustomers();
 loadRestaurants();
+loadFeedbackResponses();
 loadProfiles();
 loadStats();

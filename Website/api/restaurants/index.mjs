@@ -1,6 +1,11 @@
 import { fetchRestaurantsFromSupabase } from "../_lib/restaurant-admin.mjs";
 import { hasSupabaseConfig, jsonResponse } from "../_lib/supabase.mjs";
 
+function publicRestaurant(restaurant) {
+  const { feedbackResultsAccessCode, ...safeRestaurant } = restaurant || {};
+  return safeRestaurant;
+}
+
 export async function GET() {
   if (!hasSupabaseConfig()) {
     return jsonResponse([]);
@@ -8,7 +13,7 @@ export async function GET() {
 
   try {
     const restaurants = await fetchRestaurantsFromSupabase();
-    return jsonResponse(restaurants);
+    return jsonResponse(restaurants.map(publicRestaurant));
   } catch (error) {
     return jsonResponse({ ok: false, error: error instanceof Error ? error.message : String(error) }, 500);
   }

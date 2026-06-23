@@ -572,6 +572,7 @@ const server = createServer(async (request, response) => {
       "cm-pepperville",
       "cm-pepperville-game.html",
       "empty-suit",
+      "feedback",
       "index.html",
       "privacy",
       "restaurant",

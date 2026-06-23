@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Feedback Results | CommunityVerse Games</title>
+    <link rel="stylesheet" href="/shared/restaurant.css?v=feedback-results-viewer" />
+  </head>
+  <body class="feedback-results-page">
+    <main class="app-shell feedback-results-shell">
+      <header class="topbar">
+        <a class="brand" href="/">CommunityVerse Games</a>
+      </header>
+
+      <section class="panel panel-pad feedback-results-hero">
+        <p class="kicker">Restaurant feedback</p>
+        <h1 id="feedback-results-title" class="page-title">Feedback Results</h1>
+        <p id="feedback-results-summary" class="subtitle">Loading feedback...</p>
+      </section>
+
+      <div id="feedback-results-message" class="panel panel-pad feedback-results-message" role="status" hidden></div>
+      <section id="feedback-results-list" class="feedback-results-list" aria-live="polite"></section>
+    </main>
+
+    <script type="module" src="/feedback/results.js?v=feedback-results-viewer"></script>
+  </body>
+</html>
