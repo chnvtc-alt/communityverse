@@ -749,6 +749,38 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   color: var(--muted);
 }
 
+.hero-profile-rating-note-compact {
+  display: none;
+}
+
+@media (max-width: 1180px) {
+  .hero-profile-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .hero-profile-head > div:first-child {
+    width: 100%;
+  }
+
+  .hero-profile-actions-top {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .hero-profile-rating-note-full {
+    display: none;
+  }
+
+  .hero-profile-rating-note-compact {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.78rem;
+    line-height: 1.18;
+  }
+}
+
 .hero-profile-detailline strong {
   color: var(--ink);
 }
@@ -3580,8 +3612,8 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .hero-profile-strip-compact {
-    padding: 14px 14px 16px;
-    gap: 12px;
+    padding: 12px 14px 14px;
+    gap: 9px;
   }
 
   .hero-profile-head {
@@ -3609,7 +3641,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     display: flex;
     align-items: center;
     gap: 6px;
-    margin: 6px 0 0;
+    margin: 5px 0 0;
     font-size: 0.74rem;
     line-height: 1.08;
   }

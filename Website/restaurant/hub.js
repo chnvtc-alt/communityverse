@@ -1334,8 +1334,9 @@
             <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
             <span class="chip hero-stat-chip">${bestRankLabel}</span>
           </div>
-          <p class="hero-profile-rating-note">Your rating is based on your trivia accuracy.</p>
-          <p class="hero-profile-rating-note">Cash, sales, customer values, and net worth are virtual game values with no real cash value.</p>
+          <p class="hero-profile-rating-note hero-profile-rating-note-full">Your rating is based on your trivia accuracy.</p>
+          <p class="hero-profile-rating-note hero-profile-rating-note-full">Cash, sales, customer values, and net worth are virtual game values with no real cash value.</p>
+          <p class="hero-profile-rating-note hero-profile-rating-note-compact">Game values have no cash value.</p>
           ${renderExpansionImageMarkup(profile)}
           ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
           ${renderExpansionPreviewMarkup(profile, safeSummary.stats)}
@@ -1373,8 +1374,9 @@
                           <span class="hero-profile-subline-sep">·</span>
                           <span>${safeSummary.stats.gamesPlayed} plays</span>
                         </p>
-                        <p class="hero-profile-rating-note">Your rating is based on your trivia accuracy.</p>
-                        <p class="hero-profile-rating-note">Cash, sales, customer values, and net worth are virtual game values with no real cash value.</p>
+                        <p class="hero-profile-rating-note hero-profile-rating-note-full">Your rating is based on your trivia accuracy.</p>
+                        <p class="hero-profile-rating-note hero-profile-rating-note-full">Cash, sales, customer values, and net worth are virtual game values with no real cash value.</p>
+                        <p class="hero-profile-rating-note hero-profile-rating-note-compact">Game values have no cash value.</p>
                         ${
                           latestCustomerName
                             ? `<p class="hero-profile-detailline hero-profile-detailline-compact">Latest customer: <strong>${escapeHtml(latestCustomerName)}</strong></p>`
@@ -1440,8 +1442,9 @@
                         <span class="hero-profile-subline-sep">·</span>
                         <span>${safeSummary.stats.gamesPlayed} plays</span>
                       </p>
-                      <p class="hero-profile-rating-note">Your rating is based on your trivia accuracy.</p>
-                      <p class="hero-profile-rating-note">Cash, sales, customer values, and net worth are virtual game values with no real cash value.</p>
+                      <p class="hero-profile-rating-note hero-profile-rating-note-full">Your rating is based on your trivia accuracy.</p>
+                      <p class="hero-profile-rating-note hero-profile-rating-note-full">Cash, sales, customer values, and net worth are virtual game values with no real cash value.</p>
+                      <p class="hero-profile-rating-note hero-profile-rating-note-compact">Game values have no cash value.</p>
                       ${
                         latestCustomerName && !compactMobile
                           ? `<p class="hero-profile-detailline">Latest customer: <strong>${escapeHtml(latestCustomerName)}</strong></p>`
