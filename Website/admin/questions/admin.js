@@ -1119,22 +1119,9 @@ function profileFilterParams() {
   return params;
 }
 
-function getProfileStatus(profile) {
-  return profile.isGuest ? "Guest" : "Registered";
-}
-
 function normalizePlayerType(value) {
   const playerType = String(value || "").trim().toLowerCase();
   return ["admin", "tester"].includes(playerType) ? playerType : "normal";
-}
-
-function getPlayerTypeLabel(profile) {
-  const labels = {
-    admin: "Admin",
-    tester: "Tester",
-    normal: "Normal Player",
-  };
-  return labels[normalizePlayerType(profile?.playerType)] || labels.normal;
 }
 
 function getExpansionLevelLabel(profile) {
@@ -1295,11 +1282,25 @@ function getFirstPlayedRestaurant(profile) {
 
 function getProfileEntryLabel(profile) {
   const firstRestaurant = getFirstPlayedRestaurant(profile);
-  const entryPoint = profile?.entryPoint || (firstRestaurant?.slug ? `/${firstRestaurant.slug}/` : "");
-  if (!firstRestaurant) {
-    return profile?.entryPoint ? `Entry ${entryPoint}` : "Entry not tracked yet";
+  const entryPoint = slugFromPath(profile?.entryPoint || "");
+  const entrySlug = entryPoint || firstRestaurant?.slug || "";
+  if (!entrySlug) {
+    return "Entry not tracked";
   }
-  return `Entry ${entryPoint} -> First game ${firstRestaurant.slug}`;
+  return `Entry: ${entrySlug}`;
+}
+
+function slugFromPath(value) {
+  const cleanValue = String(value || "").trim();
+  if (!cleanValue) {
+    return "";
+  }
+  const parts = cleanValue.split(/[/?#]/).filter(Boolean);
+  return slugify(parts[0] || cleanValue);
+}
+
+function getProfileEmailLabel(profile) {
+  return profile?.emailConnected ? "Email saved" : "";
 }
 
 function getProfilePlayHistory(profile) {
@@ -1339,7 +1340,7 @@ function getProfilePlayHistory(profile) {
 
   return top
     ? {
-        label: `History: top ${top.name} • ${counts.size} restaurant${counts.size === 1 ? "" : "s"}`,
+        label: `top ${top.name} • ${counts.size} restaurant${counts.size === 1 ? "" : "s"}`,
         detail: detail.join(", "),
       }
     : {
@@ -1459,15 +1460,11 @@ function renderProfiles() {
       const playHistory = getProfilePlayHistory(profile);
       const activityLabel = getProfileActivityLabel(activity);
       const chips = [
-        getProfileStatus(profile),
-        getPlayerTypeLabel(profile),
+        getProfileEmailLabel(profile),
         getProfileEntryLabel(profile),
-        playHistory.label,
-        profile.restaurantSlug,
         getExpansionLevelLabel(profile),
         getUpgradeCountLabel(profile),
         `${gamesPlayed} game${gamesPlayed === 1 ? "" : "s"}`,
-        `${activity.activeDays || 0} active day${activity.activeDays === 1 ? "" : "s"}`,
         activity.hasUndatedEarlierPlays ? "Earlier plays not dated" : "",
         getProfileReturnLabel(activity),
         activityLabel,
@@ -1483,7 +1480,7 @@ function renderProfiles() {
             </div>
             ${playHistory.detail ? `
               <details class="profile-history-details">
-                <summary>Restaurant plays</summary>
+                <summary>Restaurant plays${playHistory.label ? ` • ${escapeHtml(playHistory.label)}` : ""}</summary>
                 <p>${escapeHtml(playHistory.detail)}</p>
               </details>
             ` : ""}
