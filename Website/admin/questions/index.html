@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600;9..144,750&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/admin/questions/styles.css?v=customer-id-feedback-fix" />
+    <link rel="stylesheet" href="/admin/questions/styles.css?v=feedback-customer-picker" />
   </head>
   <body>
     <div class="grain" aria-hidden="true"></div>
@@ -699,9 +699,9 @@
             <input id="restaurant-feedback-prompt" placeholder="Share quick feedback about your most recent visit." />
           </label>
           <label class="form-span">
-            Feedback reward customer ID
-            <input id="restaurant-feedback-reward-customer-id" list="customer-options" placeholder="marcos-feedback-fan" />
-            <span class="optional">This customer will be reserved for the feedback reward.</span>
+            Feedback reward customer
+            <select id="restaurant-feedback-reward-customer-id"></select>
+            <span class="optional">Pick an active feedback-only customer for this restaurant. Control Room saves the exact ID automatically.</span>
           </label>
           <section class="form-span survey-editor-panel" aria-labelledby="restaurant-survey-title">
             <div class="survey-editor-heading">
@@ -774,6 +774,6 @@
         </div>
       </form>
     </dialog>
-    <script type="module" src="/admin/questions/admin.js?v=customer-id-feedback-fix"></script>
+    <script type="module" src="/admin/questions/admin.js?v=feedback-customer-picker"></script>
   </body>
 </html>

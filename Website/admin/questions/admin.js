@@ -799,6 +799,7 @@ function populateCustomerSuggestions() {
   populateDatalist("customer-focus-options", getCustomerRestaurantChoices().map((choice) => choice.value));
   populateDatalist("customer-rarity-options", customers.map((customer) => customer.rarity));
   renderCustomerRestaurantChoices();
+  renderFeedbackRewardCustomerChoices();
 }
 
 function updateSuggestions() {
@@ -854,6 +855,49 @@ function renderCustomerRestaurantChoices(selectedValue = elements.customerFocusT
     )
     .join("");
   elements.customerFocusTag.value = value;
+}
+
+function getFeedbackRewardCustomerChoices(restaurantSlug, selectedValue = "") {
+  const safeRestaurantSlug = normalizeRestaurant(restaurantSlug);
+  const selectedId = String(selectedValue || "").trim();
+  const choices = customers
+    .filter((customer) => {
+      const customerRestaurant = normalizeRestaurant(customer.restaurant || customer.focusTag || "");
+      return (
+        customer.active !== false &&
+        customer.feedbackRewardOnly === true &&
+        customerRestaurant === safeRestaurantSlug
+      );
+    })
+    .map((customer) => ({
+      value: customer.id,
+      label: `${customer.name} (${customer.id})`,
+    }));
+
+  if (selectedId && !choices.some((choice) => choice.value === selectedId)) {
+    choices.push({ value: selectedId, label: `${selectedId} (not found in active feedback-only customers)` });
+  }
+
+  return choices;
+}
+
+function renderFeedbackRewardCustomerChoices(selectedValue = elements.restaurantFeedbackRewardCustomerId?.value || "") {
+  if (!elements.restaurantFeedbackRewardCustomerId) return;
+  const value = String(selectedValue || "").trim();
+  const restaurantSlug = elements.restaurantPageSlug?.value || "";
+  const choices = getFeedbackRewardCustomerChoices(restaurantSlug, value);
+
+  elements.restaurantFeedbackRewardCustomerId.innerHTML = [
+    '<option value="">No feedback reward customer selected</option>',
+    ...choices.map(
+      (choice) => `
+        <option value="${escapeHtml(choice.value)}" ${choice.value === value ? "selected" : ""}>
+          ${escapeHtml(choice.label)}
+        </option>
+      `
+    ),
+  ].join("");
+  elements.restaurantFeedbackRewardCustomerId.value = value;
 }
 
 function renderQuestions() {
@@ -2264,7 +2308,7 @@ function resetRestaurantEditor(restaurant = null) {
   elements.restaurantOpeningCopy.value = restaurant?.openingCopy || "";
   elements.restaurantFeedbackEnabled.checked = restaurant?.feedbackEnabled === true;
   elements.restaurantFeedbackPrompt.value = restaurant?.feedbackPrompt || "";
-  elements.restaurantFeedbackRewardCustomerId.value = restaurant?.feedbackRewardCustomerId || "";
+  renderFeedbackRewardCustomerChoices(restaurant?.feedbackRewardCustomerId || "");
   renderSurveyQuestions(restaurant?.feedbackSurveyQuestions || []);
   elements.restaurantHeroImage.value = restaurant?.heroImage || "";
   elements.restaurantLogoSquare.value = restaurant?.logoSquare || "";
@@ -3135,11 +3179,13 @@ elements.restaurantSurveyQuestionList.addEventListener("change", (event) => {
 elements.restaurantName.addEventListener("input", () => {
   if (!elements.restaurantPageSlug.value.trim()) {
     elements.restaurantPageSlug.value = slugify(elements.restaurantName.value);
+    renderFeedbackRewardCustomerChoices();
   }
   if (!elements.restaurantPublicGameName.value.trim()) {
     elements.restaurantPublicGameName.value = `${elements.restaurantName.value.trim()} Game`.trim();
   }
 });
+elements.restaurantPageSlug.addEventListener("input", () => renderFeedbackRewardCustomerChoices());
 elements.restaurantHeroImage.addEventListener("input", () => {
   if (selectedRestaurantHeroFile) {
     selectedRestaurantHeroFile = null;
