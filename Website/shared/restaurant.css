@@ -177,7 +177,8 @@ img {
   background: radial-gradient(circle, rgba(47, 111, 82, 0.14), transparent 68%);
 }
 
-html.restaurant-hub-mode .challenge-splash {
+html.restaurant-hub-mode .challenge-splash,
+html.restaurant-hub-mode .challenge-owner-section {
   display: none;
 }
 
@@ -349,6 +350,27 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 .challenge-splash-secondary {
   min-width: 150px;
   background: rgba(255, 255, 255, 0.92);
+}
+
+.challenge-owner-section {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.challenge-owner-section .section-title {
+  max-width: 760px;
+}
+
+.challenge-owner-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  max-width: 980px;
+}
+
+.challenge-owner-grid .copy {
+  margin: 0;
 }
 
 .how-to-play-open,
@@ -3404,6 +3426,10 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   .challenge-splash-steps {
     grid-template-columns: 1fr;
     gap: 8px;
+  }
+
+  .challenge-owner-grid {
+    grid-template-columns: 1fr;
   }
 
   .challenge-splash-step {

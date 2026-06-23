@@ -3,20 +3,73 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Restaurant Challenge | CommunityVerse Games</title>
+    <title>Restaurant Challenge Trivia | 1,000+ Questions & Customer Collection Game</title>
     <meta
       name="description"
-      content="Restaurant Challenge is the CommunityVerse browser game where you choose a restaurant, play quick trivia rounds, collect customers, and climb a shared leaderboard."
+      content="Play Restaurant Challenge Trivia, a free 3-minute trivia game with 1,000+ questions. Win customers for your restaurant and climb local leaderboards."
     />
     <link rel="canonical" href="https://communityversegames.com/restaurant" />
-    <meta property="og:title" content="Restaurant Challenge | CommunityVerse Games" />
+    <meta property="og:title" content="Restaurant Challenge Trivia | CommunityVerse Games" />
     <meta
       property="og:description"
-      content="Choose a restaurant, jump into fast trivia rounds, win customers, and climb a shared leaderboard that updates across devices."
+      content="Choose a restaurant, play a quick 3-minute trivia game from a 1,000+ question pool, win customers for your collection, and climb a shared leaderboard."
     />
     <meta property="og:url" content="https://communityversegames.com/restaurant" />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Restaurant Challenge Trivia",
+        "applicationCategory": "GameApplication",
+        "operatingSystem": "Any",
+        "url": "https://communityversegames.com/restaurant",
+        "description": "Restaurant Challenge Trivia is a free 3-minute browser trivia game with more than 1,000 questions. Players answer quick trivia rounds, win customers for their virtual restaurant, and compete on local leaderboards.",
+        "genre": "Trivia",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "CommunityVerse Games"
+        }
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is Restaurant Challenge Trivia?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Restaurant Challenge Trivia is a free 3-minute browser trivia game where players choose a restaurant, answer quick trivia rounds, win collectible customers, and build a virtual restaurant."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How many questions are in Restaurant Challenge Trivia?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Restaurant Challenge Trivia includes more than 1,000 questions across general trivia, local trivia, state and national trivia, and restaurant-themed questions."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can restaurants use Restaurant Challenge to promote their restaurant?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. A restaurant can use Restaurant Challenge as a local promotion by sending guests to a restaurant-branded trivia game where they can play, win virtual customers, and return to improve their collection and leaderboard position."
+            }
+          }
+        ]
+      }
+    </script>
     <script>
       (() => {
         const params = new URLSearchParams(window.location.search);
@@ -41,16 +94,17 @@
       <section class="panel challenge-splash">
         <div class="challenge-splash-grid">
           <div class="challenge-splash-copy">
-            <p class="kicker">Restaurant Challenge</p>
-            <h1 class="page-title challenge-splash-title">Restaurant Challenge</h1>
+            <p class="kicker">Restaurant Challenge Trivia</p>
+            <h1 class="page-title challenge-splash-title">Restaurant Challenge Trivia</h1>
+            <p class="challenge-splash-lead">Play a free 3-minute trivia game with more than 1,000 questions, win customers for your restaurant, and grow your customer collection.</p>
             <div class="challenge-splash-steps" aria-label="Restaurant Challenge overview">
               <section class="challenge-splash-step">
                 <h2>Test Your Trivia Knowledge</h2>
-                <p>Answer 10 questions in about 3 minutes.</p>
+                <p>Answer 10 questions in about 3 minutes from a 1,000+ question pool.</p>
               </section>
               <section class="challenge-splash-step">
-                <h2>Earn Customers</h2>
-                <p>Good scores earn valuable customers for your collection.</p>
+                <h2>Win Customers</h2>
+                <p>Good scores can bring valuable customers into your collection.</p>
               </section>
               <section class="challenge-splash-step">
                 <h2>Create a Virtual Restaurant</h2>
@@ -74,6 +128,19 @@
               <button class="button button-muted challenge-splash-secondary" id="splash-how-to-play-button" type="button" data-how-to-play-button>How to Play</button>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section class="panel panel-pad challenge-owner-section" aria-labelledby="restaurant-owner-title">
+        <p class="kicker">For Restaurant Owners</p>
+        <h2 class="section-title" id="restaurant-owner-title">A local trivia game that can help promote your restaurant</h2>
+        <div class="challenge-owner-grid">
+          <p class="copy">
+            Restaurant Challenge gives guests a playful reason to scan a QR code, answer trivia, win virtual customers, and come back to improve their collection.
+          </p>
+          <p class="copy">
+            Each restaurant can have its own game page, local leaderboard, customer collection, and trivia mix, making it a simple way to turn restaurant promotion into repeat play.
+          </p>
         </div>
       </section>
 

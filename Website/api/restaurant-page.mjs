@@ -102,8 +102,8 @@ export async function GET(request) {
   const title = restaurant.publicGameName || `${restaurant.name} Game`;
   const description =
     page === "play"
-      ? `Play ${title}, answer 10 questions, win a customer, and progress on the leaderboard.`
-      : `Start ${title}, answer 10 questions, win a customer, and progress on the leaderboard.`;
+      ? `Play ${title} in Restaurant Challenge Trivia, a free 3-minute trivia game. Answer quick rounds from a 1,000+ question pool, win customers, and climb the leaderboard.`
+      : `Start ${title} in Restaurant Challenge Trivia, a free 3-minute trivia game. Answer quick rounds from a 1,000+ question pool, win customers, and climb the leaderboard.`;
   const imageUrl = absoluteUrl(origin, restaurant.heroImage || restaurant.logoSquare || "");
 
   let html = await loadTemplate(page);
