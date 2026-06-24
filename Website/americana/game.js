@@ -1210,12 +1210,12 @@
     const rarity = customer.rarity || "Rare";
     const salesDemoMode = isSalesDemoMode();
     const revealKicker = salesDemoMode ? "Collectible Character Demo" : "Play Trivia To Earn This Customer";
-    const revealBio = salesDemoMode
-      ? `${customer.name} is an exclusive collectible character available only in your restaurant's game. Players will come back to build their collection and unlock new characters.`
-      : customerBio;
+    const revealBioMarkup = salesDemoMode
+      ? `${escapeHtml(customer.name)} is an exclusive collectible character available only in your restaurant's game.<br />Players will come back to build their collection and unlock new characters.`
+      : escapeHtml(customerBio);
     const revealType = salesDemoMode ? "collectible character" : "customer";
-    const regularValueLabel = salesDemoMode ? "Regular Character Value" : "Regular Customer Value";
-    const occasionalValueLabel = salesDemoMode ? "Occasional Character Value" : "Occasional Customer Value";
+    const regularValueLabel = salesDemoMode ? "Regular Value" : "Regular Customer Value";
+    const occasionalValueLabel = salesDemoMode ? "Occasional Value" : "Occasional Customer Value";
     const howToPlayText = salesDemoMode ? "See the Benefits" : "How to Play";
     const collectionEntry = getCollectionEntryForSession(session);
     const favoriteGoal = core.getFavoriteVisitGoal();
@@ -1241,14 +1241,14 @@
           : "";
 
     elements.start.innerHTML = `
-      <div class="customer-reveal-shell">
+      <div class="customer-reveal-shell ${salesDemoMode ? "customer-reveal-shell-demo" : ""}">
         <div class="customer-reveal-copy">
           <p class="kicker">${escapeHtml(revealKicker)}</p>
           <h2 class="opening-title">You're playing for ${escapeHtml(customer.name)}</h2>
-          <p class="copy opening-title-copy">${escapeHtml(revealBio)}</p>
+          <p class="copy opening-title-copy">${revealBioMarkup}</p>
         </div>
 
-        <div class="customer-reveal-card">
+        <div class="customer-reveal-card ${salesDemoMode ? "customer-reveal-card-demo" : ""}">
           <img class="customer-reveal-photo" src="${customer.image}" alt="${escapeHtml(customer.name)}" />
           <div class="customer-reveal-details">
             <div>
@@ -1283,11 +1283,11 @@
             </div>
             <div class="customer-reveal-mobile-summary">
               <div class="customer-reveal-combo">
-                <span class="customer-reveal-label">${escapeHtml(salesDemoMode ? "Regular Character Value" : "Regular Customer")}</span>
+                <span class="customer-reveal-label">${escapeHtml(salesDemoMode ? "Regular Value" : "Regular Customer")}</span>
                 <strong>${escapeHtml(salesDemoMode ? core.formatCurrency(customer.regularValue) : `Need ${thresholds.regular}/10 Correct - Value ${core.formatCurrency(customer.regularValue)}`)}</strong>
               </div>
               <div class="customer-reveal-combo">
-                <span class="customer-reveal-label">${escapeHtml(salesDemoMode ? "Occasional Character Value" : "Occasional Customer")}</span>
+                <span class="customer-reveal-label">${escapeHtml(salesDemoMode ? "Occasional Value" : "Occasional Customer")}</span>
                 <strong>${escapeHtml(salesDemoMode ? core.formatCurrency(customer.occasionalValue) : `Need ${thresholds.occasional}/10 Correct - Value ${core.formatCurrency(customer.occasionalValue)}`)}</strong>
               </div>
             </div>
