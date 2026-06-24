@@ -220,6 +220,8 @@
                 <ul>
                   <li>Menu photo questions that make featured items memorable.</li>
                   <li>Restaurant trivia that teaches people about your story, specials, and events.</li>
+                  <li>Quick entertainment for guests while they wait for food.</li>
+                  <li>Your own custom URL and branded game page.</li>
                   <li>Collectible characters that make the game feel personal and repeatable.</li>
                   <li>Feedback rewards that give people a reason to complete your survey.</li>
                 </ul>
