@@ -20,6 +20,25 @@
       .replace(/'/g, "&#39;");
   }
 
+  function isSalesDemoRestaurant(restaurant) {
+    return restaurant?.salesDemoMode === true;
+  }
+
+  function salesDemoCustomerCaption(customer) {
+    const name = String(customer?.name || "").toLowerCase();
+    if (name.includes("staff")) return "Build personal connections.";
+    if (name.includes("owner") || name.includes("management")) return "Introduce the people behind your restaurant.";
+    if (name.includes("superfan")) return "Encourage repeat visits.";
+    if (name.includes("weekend") || name.includes("regular")) return "Reward loyal customers.";
+    return "";
+  }
+
+  function openingCustomerCopyClass(customer, restaurant) {
+    return isSalesDemoRestaurant(restaurant) && salesDemoCustomerCaption(customer)
+      ? "opening-guest-copy opening-guest-copy-demo"
+      : "opening-guest-copy";
+  }
+
   function restaurantSlugFromPath() {
     const parts = window.location.pathname.split("/").map((part) => part.trim()).filter(Boolean);
     return parts[0] || "americana";
@@ -434,12 +453,18 @@
     }
 
     const surveyQuestions = (restaurant.feedbackSurveyQuestions || []).filter((question) => question.active !== false);
+    const salesDemoMode = isSalesDemoRestaurant(restaurant);
+    const feedbackKicker = salesDemoMode ? "Customer Feedback Demo" : "Optional Feedback Reward";
+    const feedbackTitle = salesDemoMode
+      ? "Show how feedback rewards work."
+      : `Share quick feedback for ${restaurant.name}.`;
+    const feedbackButtonText = salesDemoMode ? "Try Feedback Demo" : "Give Feedback";
 
     return `
       <div class="hero-card feedback-reward-card">
         <div class="feedback-reward-copy">
-          <p class="kicker">Optional Feedback Reward</p>
-          <h3 class="section-title">Share quick feedback for ${escapeHtml(restaurant.name)}.</h3>
+          <p class="kicker">${escapeHtml(feedbackKicker)}</p>
+          <h3 class="section-title">${escapeHtml(feedbackTitle)}</h3>
           <p class="copy">${escapeHtml(reward.prompt)}</p>
         </div>
         <div class="feedback-reward-customer">
@@ -465,7 +490,7 @@
             : `
               ${statusMarkup}
               <div class="button-row">
-                <button class="button button-muted" id="feedback-reward-open" type="button">Give Feedback</button>
+                <button class="button button-muted" id="feedback-reward-open" type="button">${escapeHtml(feedbackButtonText)}</button>
               </div>
             `
         }
@@ -673,6 +698,17 @@
     const openerCopy =
       restaurant.openingCopy ||
       "Play a quick game of trivia, win a customer, and progress on the leaderboard!";
+    const salesDemoMode = isSalesDemoRestaurant(restaurant);
+    const demoIntroLine = "In about 3 minutes, you'll experience the same game your customers would play for your restaurant.";
+    const openingQuestion = salesDemoMode
+      ? "See How This Game Can Help Your Restaurant Grow"
+      : "Can You Add A New Customer To Your Collection?";
+    const startButtonText = customerId
+      ? "INVITE BACK"
+      : salesDemoMode
+        ? "PLAY THE DEMO"
+        : "START THE GAME";
+    const howToPlayText = salesDemoMode ? "What This Shows" : "How to Play";
 
     document.title = `${restaurant.publicGameName || `${restaurant.name} Game`} | CommunityVerse Games`;
 
@@ -710,8 +746,13 @@
                     (customer) => `
                       <article class="opening-guest-card">
                         <img class="opening-guest-photo" src="${escapeHtml(customer.image)}" alt="${escapeHtml(customer.name)}" />
-                        <div class="opening-guest-copy">
+                        <div class="${openingCustomerCopyClass(customer, restaurant)}">
                           <p class="opening-guest-name">${escapeHtml(customer.name)}</p>
+                          ${
+                            salesDemoMode && salesDemoCustomerCaption(customer)
+                              ? `<p class="opening-guest-caption">${escapeHtml(salesDemoCustomerCaption(customer))}</p>`
+                              : ""
+                          }
                         </div>
                       </article>
                     `
@@ -722,16 +763,17 @@
           </div>
         </div>
 
-        <p class="opening-title-small opening-title-small-bottom">Can You Add A New Customer To Your Collection?</p>
+        <p class="opening-title-small opening-title-small-bottom">${escapeHtml(openingQuestion)}</p>
+        ${salesDemoMode ? `<p class="helper opening-start-helper opening-title-helper">${escapeHtml(demoIntroLine)}</p>` : ""}
 
         <div class="button-row opening-start-actions opening-start-actions-bottom">
-          <a class="button button-hot" id="start-game-button" href="${escapeHtml(playHref)}">${customerId ? "INVITE BACK" : "START THE GAME"}</a>
+          <a class="button button-hot" id="start-game-button" href="${escapeHtml(playHref)}">${escapeHtml(startButtonText)}</a>
           ${
             showMyRestaurantButton
               ? `<a class="button button-muted" href="/restaurant/?hub=1">View My Restaurant</a>`
               : ""
           }
-          <button class="button button-muted" id="start-how-to-play-button" type="button">How to Play</button>
+          <button class="button button-muted" id="start-how-to-play-button" type="button">${escapeHtml(howToPlayText)}</button>
         </div>
         ${renderFeedbackRewardCard(restaurant)}
       </div>

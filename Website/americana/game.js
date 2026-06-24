@@ -114,6 +114,25 @@
     return `${escapeHtml(parts.slice(0, -1).join(" "))}<br />${escapeHtml(parts[parts.length - 1])}`;
   }
 
+  function isSalesDemoMode() {
+    return restaurant?.salesDemoMode === true;
+  }
+
+  function salesDemoCustomerCaption(customer) {
+    const name = String(customer?.name || "").toLowerCase();
+    if (name.includes("staff")) return "Build personal connections.";
+    if (name.includes("owner") || name.includes("management")) return "Introduce the people behind your restaurant.";
+    if (name.includes("superfan")) return "Encourage repeat visits.";
+    if (name.includes("weekend") || name.includes("regular")) return "Reward loyal customers.";
+    return "";
+  }
+
+  function openingCustomerCopyClass(customer) {
+    return isSalesDemoMode() && salesDemoCustomerCaption(customer)
+      ? "opening-guest-copy opening-guest-copy-demo"
+      : "opening-guest-copy";
+  }
+
   function getOwnedCustomerIds(profile, targetRestaurantSlug) {
     const collection = Array.isArray(profile?.customerCollection) ? profile.customerCollection : [];
     return new Set(
@@ -727,8 +746,8 @@
     return `
       <div class="hero-card feedback-reward-card">
         <div class="feedback-reward-copy">
-          <p class="kicker">Optional Feedback Reward</p>
-          <h3 class="section-title">Share quick feedback for ${escapeHtml(restaurant?.name || "this restaurant")}.</h3>
+          <p class="kicker">${escapeHtml(isSalesDemoMode() ? "Customer Feedback Demo" : "Optional Feedback Reward")}</p>
+          <h3 class="section-title">${escapeHtml(isSalesDemoMode() ? "Show how feedback rewards work." : `Share quick feedback for ${restaurant?.name || "this restaurant"}.`)}</h3>
           <p class="copy">${escapeHtml(reward.prompt)}</p>
         </div>
         <div class="feedback-reward-customer">
@@ -754,7 +773,7 @@
             : `
               ${statusMarkup}
               <div class="button-row">
-                <button class="button button-muted" id="feedback-reward-open" type="button">Give Feedback</button>
+                <button class="button button-muted" id="feedback-reward-open" type="button">${escapeHtml(isSalesDemoMode() ? "Try Feedback Demo" : "Give Feedback")}</button>
               </div>
             `
         }
@@ -929,6 +948,15 @@
     const introCopyMarkup = introCopy
       ? `<p class="copy opening-title-copy">${escapeHtml(introCopy)}</p>`
       : "";
+    const openingQuestion = isSalesDemoMode()
+      ? "See How This Game Can Help Your Restaurant Grow"
+      : "Can You Add A New Customer To Your Collection?";
+    const demoIntroLine = "In about 3 minutes, you'll experience the same game your customers would play for your restaurant.";
+    const startButtonText = replayCustomer
+      ? "INVITE BACK"
+      : isSalesDemoMode()
+        ? "PLAY THE DEMO"
+        : "START THE GAME";
     elements.start.innerHTML = `
       <div class="opening-start-shell">
         <div class="opening-start-heading">
@@ -962,8 +990,13 @@
                     (customer) => `
                       <article class="opening-guest-card">
                         <img class="opening-guest-photo" src="${customer.image}" alt="${escapeHtml(customer.name)}" />
-                        <div class="opening-guest-copy">
+                        <div class="${openingCustomerCopyClass(customer)}">
                           <p class="opening-guest-name">${formatGuestDisplayName(customer.name)}</p>
+                          ${
+                            isSalesDemoMode() && salesDemoCustomerCaption(customer)
+                              ? `<p class="opening-guest-caption">${escapeHtml(salesDemoCustomerCaption(customer))}</p>`
+                              : ""
+                          }
                         </div>
                       </article>
                     `
@@ -974,10 +1007,11 @@
           </div>
         </div>
 
-        <p class="opening-title-small opening-title-small-bottom">Can You Add A New Customer To Your Collection?</p>
+        <p class="opening-title-small opening-title-small-bottom">${escapeHtml(openingQuestion)}</p>
+        ${isSalesDemoMode() ? `<p class="helper opening-start-helper opening-title-helper">${escapeHtml(demoIntroLine)}</p>` : ""}
 
         <div class="button-row opening-start-actions opening-start-actions-bottom">
-          <a class="button button-hot" id="start-game-button" href="${startHref}">${replayCustomer ? "INVITE BACK" : "START THE GAME"}</a>
+          <a class="button button-hot" id="start-game-button" href="${startHref}">${escapeHtml(startButtonText)}</a>
           ${
             replayCustomer
               ? `
@@ -1016,6 +1050,11 @@
     const startHref = replayCustomer
       ? `${restaurantBasePath()}?play=1&customerId=${encodeURIComponent(replayCustomer.id)}`
       : `${restaurantBasePath()}?play=1`;
+    const openingQuestion = isSalesDemoMode()
+      ? "See How This Game Can Help Your Restaurant Grow"
+      : "Can You Add A New Customer To Your Collection?";
+    const demoIntroLine = "In about 3 minutes, you'll experience the same game your customers would play for your restaurant.";
+    const startButtonText = isSalesDemoMode() ? "PLAY THE DEMO" : "START THE GAME";
     elements.start.innerHTML = `
       <div class="opening-start-shell">
         <div class="opening-start-heading">
@@ -1042,8 +1081,13 @@
                     (customer) => `
                       <article class="opening-guest-card">
                         <img class="opening-guest-photo" src="${customer.image}" alt="${escapeHtml(customer.name)}" />
-                        <div class="opening-guest-copy">
+                        <div class="${openingCustomerCopyClass(customer)}">
                           <p class="opening-guest-name">${formatGuestDisplayName(customer.name)}</p>
+                          ${
+                            isSalesDemoMode() && salesDemoCustomerCaption(customer)
+                              ? `<p class="opening-guest-caption">${escapeHtml(salesDemoCustomerCaption(customer))}</p>`
+                              : ""
+                          }
                         </div>
                       </article>
                     `
@@ -1054,10 +1098,11 @@
           </div>
         </div>
 
-        <p class="opening-title-small opening-title-small-bottom">Can You Add A New Customer To Your Collection?</p>
+        <p class="opening-title-small opening-title-small-bottom">${escapeHtml(openingQuestion)}</p>
+        ${isSalesDemoMode() ? `<p class="helper opening-start-helper opening-title-helper">${escapeHtml(demoIntroLine)}</p>` : ""}
 
         <div class="button-row opening-start-actions opening-start-actions-bottom">
-          <a class="button button-hot" id="start-game-button" href="${startHref}">START THE GAME</a>
+          <a class="button button-hot" id="start-game-button" href="${startHref}">${escapeHtml(startButtonText)}</a>
           ${
             profile
               ? `<a class="button button-muted" href="/restaurant/?hub=1">View My Virtual Restaurant</a>`

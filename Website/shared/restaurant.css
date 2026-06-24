@@ -2598,6 +2598,21 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   text-align: center;
 }
 
+.opening-guest-copy-demo {
+  flex-direction: column;
+  gap: 5px;
+}
+
+.opening-guest-caption {
+  margin: 0;
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+}
+
 .opening-guest-kicker {
   margin: 0;
   color: #a25b13;
