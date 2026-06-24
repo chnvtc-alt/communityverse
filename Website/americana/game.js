@@ -1208,6 +1208,15 @@
     const customerBio = core.getCustomerBio(customer);
     const thresholds = core.getCustomerWinThresholds(customer);
     const rarity = customer.rarity || "Rare";
+    const salesDemoMode = isSalesDemoMode();
+    const revealKicker = salesDemoMode ? "Collectible Character Demo" : "Play Trivia To Earn This Customer";
+    const revealBio = salesDemoMode
+      ? `${customer.name} is an exclusive collectible character available only in your restaurant's game. Players will come back to build their collection and unlock new characters.`
+      : customerBio;
+    const revealType = salesDemoMode ? "collectible character" : "customer";
+    const regularValueLabel = salesDemoMode ? "Regular Character Value" : "Regular Customer Value";
+    const occasionalValueLabel = salesDemoMode ? "Occasional Character Value" : "Occasional Customer Value";
+    const howToPlayText = salesDemoMode ? "See the Benefits" : "How to Play";
     const collectionEntry = getCollectionEntryForSession(session);
     const favoriteGoal = core.getFavoriteVisitGoal();
     const favoriteVisits = Math.max(0, Math.min(favoriteGoal, Number(collectionEntry?.favoriteVisits) || 0));
@@ -1234,53 +1243,59 @@
     elements.start.innerHTML = `
       <div class="customer-reveal-shell">
         <div class="customer-reveal-copy">
-          <p class="kicker">Play Trivia To Earn This Customer</p>
+          <p class="kicker">${escapeHtml(revealKicker)}</p>
           <h2 class="opening-title">You're playing for ${escapeHtml(customer.name)}</h2>
-          <p class="copy opening-title-copy">${escapeHtml(customerBio)}</p>
+          <p class="copy opening-title-copy">${escapeHtml(revealBio)}</p>
         </div>
 
         <div class="customer-reveal-card">
           <img class="customer-reveal-photo" src="${customer.image}" alt="${escapeHtml(customer.name)}" />
           <div class="customer-reveal-details">
             <div>
-              <p class="customer-reveal-rarity">${escapeHtml(rarity)} customer</p>
+              <p class="customer-reveal-rarity">${escapeHtml(rarity)} ${escapeHtml(revealType)}</p>
               <h3 class="customer-reveal-name">${escapeHtml(customer.name)}</h3>
             </div>
-            <div class="customer-reveal-goals">
-              <div class="customer-reveal-goal">
-                <span class="customer-reveal-label">Regular Customer</span>
-                <strong>Need ${thresholds.regular}/10 Correct</strong>
-              </div>
-              <div class="customer-reveal-goal">
-                <span class="customer-reveal-label">Occasional Customer</span>
-                <strong>Need ${thresholds.occasional}/10 Correct</strong>
-              </div>
-            </div>
+            ${
+              salesDemoMode
+                ? ""
+                : `
+                  <div class="customer-reveal-goals">
+                    <div class="customer-reveal-goal">
+                      <span class="customer-reveal-label">Regular Customer</span>
+                      <strong>Need ${thresholds.regular}/10 Correct</strong>
+                    </div>
+                    <div class="customer-reveal-goal">
+                      <span class="customer-reveal-label">Occasional Customer</span>
+                      <strong>Need ${thresholds.occasional}/10 Correct</strong>
+                    </div>
+                  </div>
+                `
+            }
             <div class="customer-reveal-values">
               <div class="customer-reveal-value">
-                <span class="customer-reveal-label">Regular Customer Value</span>
+                <span class="customer-reveal-label">${escapeHtml(regularValueLabel)}</span>
                 <strong>${core.formatCurrency(customer.regularValue)}</strong>
               </div>
               <div class="customer-reveal-value">
-                <span class="customer-reveal-label">Occasional Customer Value</span>
+                <span class="customer-reveal-label">${escapeHtml(occasionalValueLabel)}</span>
                 <strong>${core.formatCurrency(customer.occasionalValue)}</strong>
               </div>
             </div>
             <div class="customer-reveal-mobile-summary">
               <div class="customer-reveal-combo">
-                <span class="customer-reveal-label">Regular Customer</span>
-                <strong>Need ${thresholds.regular}/10 Correct &bull; Value ${core.formatCurrency(customer.regularValue)}</strong>
+                <span class="customer-reveal-label">${escapeHtml(salesDemoMode ? "Regular Character Value" : "Regular Customer")}</span>
+                <strong>${escapeHtml(salesDemoMode ? core.formatCurrency(customer.regularValue) : `Need ${thresholds.regular}/10 Correct - Value ${core.formatCurrency(customer.regularValue)}`)}</strong>
               </div>
               <div class="customer-reveal-combo">
-                <span class="customer-reveal-label">Occasional Customer</span>
-                <strong>Need ${thresholds.occasional}/10 Correct &bull; Value ${core.formatCurrency(customer.occasionalValue)}</strong>
+                <span class="customer-reveal-label">${escapeHtml(salesDemoMode ? "Occasional Character Value" : "Occasional Customer")}</span>
+                <strong>${escapeHtml(salesDemoMode ? core.formatCurrency(customer.occasionalValue) : `Need ${thresholds.occasional}/10 Correct - Value ${core.formatCurrency(customer.occasionalValue)}`)}</strong>
               </div>
             </div>
             ${favoriteBonusMarkup}
             <div class="button-row customer-reveal-actions">
               <button class="button button-hot" id="begin-questions-button" type="button">Begin Questions</button>
-              <a class="button button-muted" href="/restaurant/?hub=1">View My Collection / Leaderboard</a>
-              <button class="button button-muted" id="reveal-how-to-play-button" type="button" data-how-to-play-button>How to Play</button>
+              ${salesDemoMode ? "" : `<a class="button button-muted" href="/restaurant/?hub=1">View My Collection / Leaderboard</a>`}
+              <button class="button button-muted" id="reveal-how-to-play-button" type="button" data-how-to-play-button>${escapeHtml(howToPlayText)}</button>
             </div>
           </div>
         </div>
