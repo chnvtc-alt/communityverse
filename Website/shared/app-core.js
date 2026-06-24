@@ -4006,12 +4006,21 @@
 
   function getPhotoReadyCustomersForRestaurant(slug, profile = null) {
     const ownedCustomerIds = getOwnedCustomerIdsForRestaurant(profile, slug);
-    return getCustomersForRestaurant(slug).filter(
-      (customer) =>
-        customer.image &&
-        !customer.image.includes("customer-placeholder") &&
-        !ownedCustomerIds.has(customer.id)
-    );
+    return getCustomersForRestaurant(slug)
+      .filter(
+        (customer) =>
+          customer.image &&
+          !customer.image.includes("customer-placeholder") &&
+          !ownedCustomerIds.has(customer.id)
+      )
+      .sort((left, right) => {
+        const leftExclusive = left.restaurant === slug ? 0 : 1;
+        const rightExclusive = right.restaurant === slug ? 0 : 1;
+        if (leftExclusive !== rightExclusive) {
+          return leftExclusive - rightExclusive;
+        }
+        return (Number(left.sortOrder) || 0) - (Number(right.sortOrder) || 0);
+      });
   }
 
   function getFeaturedGuestLineup(profile, restaurantSlug, count = 4) {
