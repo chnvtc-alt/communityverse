@@ -1626,7 +1626,6 @@
         <div class="divider"></div>
         ${triviaLeaderboardMilestoneMarkup}
         ${!isGuest && !state.showProfileForm ? netWorthPromptMarkup : ""}
-        ${!state.showProfileForm ? feedbackRewardMarkup : ""}
         ${
           isGuest && !state.showProfileForm
             ? `
@@ -1696,6 +1695,7 @@
                 </div>
               `
         }
+        ${!state.showProfileForm ? feedbackRewardMarkup : ""}
         ${howToPlayModalHtml()}
       </div>
     `;
