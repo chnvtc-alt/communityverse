@@ -220,9 +220,9 @@
                 <ul>
                   <li>Menu photo questions that make featured items memorable.</li>
                   <li>Restaurant trivia that teaches people about your story, specials, and events.</li>
-                  <li>Quick entertainment for guests while they wait for food.</li>
+                  <li>Keeps guests engaged while they wait for their food.</li>
                   <li>Your own custom URL and branded game page.</li>
-                  <li>Collectible characters that make the game feel personal and repeatable.</li>
+                  <li>Collectible characters that encourage guests to play again.</li>
                   <li>Feedback rewards that give people a reason to complete your survey.</li>
                 </ul>
               </section>
@@ -503,7 +503,7 @@
       ? reward.prompt
       : `Share quick feedback for ${restaurant.name}.`;
     const feedbackBody = salesDemoMode
-      ? "Players earn a collectible character and a leaderboard bonus for completing your survey, helping you collect more feedback."
+      ? "Players earn a collectible character and a leaderboard bonus after completing your survey, giving guests a clear reason to share feedback."
       : reward.prompt;
     const feedbackButtonText = salesDemoMode ? "Try Feedback Demo" : "Give Feedback";
     const feedbackRewardKind = salesDemoMode ? "character" : "customer";
@@ -742,8 +742,8 @@
     const playHref = customerId
       ? `${restaurantPlayPath(restaurant)}?fresh=1&customerId=${encodeURIComponent(customerId)}`
       : `${restaurantPlayPath(restaurant)}?fresh=1`;
-    const showMyRestaurantButton = Boolean(activeProfile || customerId);
     const salesDemoMode = isSalesDemoRestaurant(restaurant);
+    const showMyRestaurantButton = !salesDemoMode && Boolean(activeProfile || customerId);
     const openerCopy = salesDemoMode
       ? "Discover how a custom 3-minute trivia game can promote your menu, engage guests, and encourage repeat visits."
       : restaurant.openingCopy ||
@@ -794,7 +794,7 @@
                 ${openingCustomers
                   .map(
                     (customer) => `
-                      <article class="opening-guest-card">
+                      <article class="opening-guest-card ${salesDemoMode ? "opening-guest-card-demo" : ""}">
                         <img class="opening-guest-photo" src="${escapeHtml(customer.image)}" alt="${escapeHtml(customer.name)}" />
                         <div class="${openingCustomerCopyClass(customer, restaurant)}">
                           <p class="opening-guest-name">${escapeHtml(salesDemoMode ? salesDemoCharacterName(customer) : customer.name)}</p>

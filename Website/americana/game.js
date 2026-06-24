@@ -311,9 +311,9 @@
                 <ul>
                   <li>Menu photo questions that make featured items memorable.</li>
                   <li>Restaurant trivia that teaches people about your story, specials, and events.</li>
-                  <li>Quick entertainment for guests while they wait for food.</li>
+                  <li>Keeps guests engaged while they wait for their food.</li>
                   <li>Your own custom URL and branded game page.</li>
-                  <li>Collectible characters that make the game feel personal and repeatable.</li>
+                  <li>Collectible characters that encourage guests to play again.</li>
                   <li>Feedback rewards that give people a reason to complete your survey.</li>
                 </ul>
               </section>
@@ -795,7 +795,7 @@
         <div class="feedback-reward-copy">
           <p class="kicker">${escapeHtml(isSalesDemoMode() ? "Feedback Demo" : "Optional Feedback Reward")}</p>
           <h3 class="section-title">${escapeHtml(isSalesDemoMode() ? reward.prompt : `Share quick feedback for ${restaurant?.name || "this restaurant"}.`)}</h3>
-          <p class="copy">${escapeHtml(isSalesDemoMode() ? "Players earn a collectible character and a leaderboard bonus for completing your survey, helping you collect more feedback." : reward.prompt)}</p>
+          <p class="copy">${escapeHtml(isSalesDemoMode() ? "Players earn a collectible character and a leaderboard bonus after completing your survey, giving guests a clear reason to share feedback." : reward.prompt)}</p>
         </div>
         <div class="feedback-reward-customer">
           <img class="feedback-reward-photo" src="${reward.customer.image}" alt="${escapeHtml(reward.customer.name)}" />
@@ -1036,7 +1036,7 @@
                 ${safeOpeningCustomers
                   .map(
                     (customer) => `
-                      <article class="opening-guest-card">
+                      <article class="opening-guest-card ${isSalesDemoMode() ? "opening-guest-card-demo" : ""}">
                         <img class="opening-guest-photo" src="${customer.image}" alt="${escapeHtml(customer.name)}" />
                         <div class="${openingCustomerCopyClass(customer)}">
                           <p class="opening-guest-name">${formatGuestDisplayName(isSalesDemoMode() ? salesDemoCharacterName(customer) : customer.name)}</p>
@@ -1065,7 +1065,7 @@
                 <a class="button button-muted" href="${restaurantBasePath()}?home=1">Cancel Invite Back</a>
                 <a class="button button-muted" href="/restaurant/?hub=1">View My Virtual Restaurant</a>
               `
-              : profile
+              : profile && !isSalesDemoMode()
                 ? `
                   <a class="button button-muted" href="/restaurant/?hub=1">View My Virtual Restaurant</a>
                 `
@@ -1128,7 +1128,7 @@
                 ${getDisplayedOpeningCustomers()
                   .map(
                     (customer) => `
-                      <article class="opening-guest-card">
+                      <article class="opening-guest-card ${isSalesDemoMode() ? "opening-guest-card-demo" : ""}">
                         <img class="opening-guest-photo" src="${customer.image}" alt="${escapeHtml(customer.name)}" />
                         <div class="${openingCustomerCopyClass(customer)}">
                           <p class="opening-guest-name">${formatGuestDisplayName(isSalesDemoMode() ? salesDemoCharacterName(customer) : customer.name)}</p>
@@ -1152,7 +1152,7 @@
         <div class="button-row opening-start-actions opening-start-actions-bottom">
           <a class="button button-hot" id="start-game-button" href="${startHref}">${escapeHtml(startButtonText)}</a>
           ${
-            profile
+            profile && !isSalesDemoMode()
               ? `<a class="button button-muted" href="/restaurant/?hub=1">View My Virtual Restaurant</a>`
               : ""
           }

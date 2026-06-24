@@ -4216,6 +4216,30 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     max-width: 10ch;
   }
 
+  .opening-guest-card-demo {
+    background: rgba(255, 253, 248, 0.92);
+    border: 1px solid rgba(133, 105, 72, 0.14);
+  }
+
+  .opening-guest-card-demo .opening-guest-copy-demo {
+    position: static;
+    min-height: 58px;
+    padding: 8px 7px 9px;
+    background: transparent;
+    pointer-events: auto;
+  }
+
+  .opening-guest-card-demo .opening-guest-name {
+    color: var(--ink);
+    text-shadow: none;
+    max-width: none;
+  }
+
+  .opening-guest-card-demo .opening-guest-caption {
+    color: var(--muted);
+    text-shadow: none;
+  }
+
   .opening-guest-name-starter {
     font-size: 0.76rem;
     line-height: 1.08;
@@ -5364,6 +5388,11 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
   .opening-guest-copy {
     min-height: 34px;
+  }
+
+  .opening-guest-card-demo .opening-guest-copy-demo {
+    min-height: 54px;
+    padding: 7px 6px 8px;
   }
 
   .opening-start-actions-bottom .button {
