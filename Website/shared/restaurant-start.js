@@ -498,8 +498,11 @@
     const salesDemoMode = isSalesDemoRestaurant(restaurant);
     const feedbackKicker = salesDemoMode ? "Feedback Demo" : "Optional Feedback Reward";
     const feedbackTitle = salesDemoMode
-      ? "Players earn a collectible character and a leaderboard bonus for completing your survey, helping you collect more feedback."
+      ? reward.prompt
       : `Share quick feedback for ${restaurant.name}.`;
+    const feedbackBody = salesDemoMode
+      ? "Players earn a collectible character and a leaderboard bonus for completing your survey, helping you collect more feedback."
+      : reward.prompt;
     const feedbackButtonText = salesDemoMode ? "Try Feedback Demo" : "Give Feedback";
     const feedbackRewardKind = salesDemoMode ? "character" : "customer";
 
@@ -508,7 +511,7 @@
         <div class="feedback-reward-copy">
           <p class="kicker">${escapeHtml(feedbackKicker)}</p>
           <h3 class="section-title">${escapeHtml(feedbackTitle)}</h3>
-          <p class="copy">${escapeHtml(reward.prompt)}</p>
+          <p class="copy">${escapeHtml(feedbackBody)}</p>
         </div>
         <div class="feedback-reward-customer">
           <img class="feedback-reward-photo" src="${escapeHtml(reward.customer.image)}" alt="${escapeHtml(reward.customer.name)}" />
@@ -743,10 +746,9 @@
       ? "Discover how a custom 3-minute trivia game can promote your menu, engage guests, and encourage repeat visits."
       : restaurant.openingCopy ||
         "Play a quick game of trivia, win a customer, and progress on the leaderboard!";
-    const demoIntroLine = "In about 3 minutes, you'll experience the same game guests would play for your restaurant.";
     const demoExpectationLine = "In this demo you'll see: menu photo questions, restaurant trivia, collectible characters, and feedback surveys.";
     const openingQuestion = salesDemoMode
-      ? "Play the 3-Minute Demo"
+      ? ""
       : "Can You Add A New Customer To Your Collection?";
     const startButtonText = customerId
       ? "INVITE BACK"
@@ -809,8 +811,7 @@
           </div>
         </div>
 
-        <p class="opening-title-small opening-title-small-bottom">${escapeHtml(openingQuestion)}</p>
-        ${salesDemoMode ? `<p class="helper opening-start-helper opening-title-helper">${escapeHtml(demoIntroLine)}</p>` : ""}
+        ${openingQuestion ? `<p class="opening-title-small opening-title-small-bottom">${escapeHtml(openingQuestion)}</p>` : ""}
 
         <div class="button-row opening-start-actions opening-start-actions-bottom">
           <a class="button button-hot" id="start-game-button" href="${escapeHtml(playHref)}">${escapeHtml(startButtonText)}</a>

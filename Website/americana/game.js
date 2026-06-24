@@ -792,8 +792,8 @@
       <div class="hero-card feedback-reward-card">
         <div class="feedback-reward-copy">
           <p class="kicker">${escapeHtml(isSalesDemoMode() ? "Feedback Demo" : "Optional Feedback Reward")}</p>
-          <h3 class="section-title">${escapeHtml(isSalesDemoMode() ? "Players earn a collectible character and a leaderboard bonus for completing your survey, helping you collect more feedback." : `Share quick feedback for ${restaurant?.name || "this restaurant"}.`)}</h3>
-          <p class="copy">${escapeHtml(reward.prompt)}</p>
+          <h3 class="section-title">${escapeHtml(isSalesDemoMode() ? reward.prompt : `Share quick feedback for ${restaurant?.name || "this restaurant"}.`)}</h3>
+          <p class="copy">${escapeHtml(isSalesDemoMode() ? "Players earn a collectible character and a leaderboard bonus for completing your survey, helping you collect more feedback." : reward.prompt)}</p>
         </div>
         <div class="feedback-reward-customer">
           <img class="feedback-reward-photo" src="${reward.customer.image}" alt="${escapeHtml(reward.customer.name)}" />
@@ -994,9 +994,8 @@
       ? `<p class="copy opening-title-copy">${escapeHtml(introCopy)}</p>`
       : "";
     const openingQuestion = isSalesDemoMode()
-      ? "Play the 3-Minute Demo"
+      ? ""
       : "Can You Add A New Customer To Your Collection?";
-    const demoIntroLine = "In about 3 minutes, you'll experience the same game guests would play for your restaurant.";
     const demoExpectationLine = "In this demo you'll see: menu photo questions, restaurant trivia, collectible characters, and feedback surveys.";
     const startButtonText = replayCustomer
       ? "INVITE BACK"
@@ -1054,8 +1053,7 @@
           </div>
         </div>
 
-        <p class="opening-title-small opening-title-small-bottom">${escapeHtml(openingQuestion)}</p>
-        ${isSalesDemoMode() ? `<p class="helper opening-start-helper opening-title-helper">${escapeHtml(demoIntroLine)}</p>` : ""}
+        ${openingQuestion ? `<p class="opening-title-small opening-title-small-bottom">${escapeHtml(openingQuestion)}</p>` : ""}
 
         <div class="button-row opening-start-actions opening-start-actions-bottom">
           <a class="button button-hot" id="start-game-button" href="${startHref}">${escapeHtml(startButtonText)}</a>
@@ -1099,9 +1097,8 @@
       ? `${restaurantBasePath()}?play=1&customerId=${encodeURIComponent(replayCustomer.id)}`
       : `${restaurantBasePath()}?play=1`;
     const openingQuestion = isSalesDemoMode()
-      ? "Play the 3-Minute Demo"
+      ? ""
       : "Can You Add A New Customer To Your Collection?";
-    const demoIntroLine = "In about 3 minutes, you'll experience the same game guests would play for your restaurant.";
     const demoExpectationLine = "In this demo you'll see: menu photo questions, restaurant trivia, collectible characters, and feedback surveys.";
     const startButtonText = isSalesDemoMode() ? "PLAY THE THREE MINUTE DEMO" : "START THE GAME";
     elements.start.innerHTML = `
@@ -1148,8 +1145,7 @@
           </div>
         </div>
 
-        <p class="opening-title-small opening-title-small-bottom">${escapeHtml(openingQuestion)}</p>
-        ${isSalesDemoMode() ? `<p class="helper opening-start-helper opening-title-helper">${escapeHtml(demoIntroLine)}</p>` : ""}
+        ${openingQuestion ? `<p class="opening-title-small opening-title-small-bottom">${escapeHtml(openingQuestion)}</p>` : ""}
 
         <div class="button-row opening-start-actions opening-start-actions-bottom">
           <a class="button button-hot" id="start-game-button" href="${startHref}">${escapeHtml(startButtonText)}</a>
