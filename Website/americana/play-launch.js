@@ -812,7 +812,7 @@
             ? `
               <form class="feedback-reward-form" id="feedback-reward-form">
                 ${isSalesDemoMode() ? `<p class="feedback-survey-demo-intro">${escapeHtml(feedbackSurveyIntro)}</p>` : ""}
-                ${renderFeedbackSurveyFields(surveyQuestions)}
+                ${renderFeedbackSurveyFields(surveyQuestions, { showRequiredText: !isSalesDemoMode() })}
                 ${errorMarkup}
                 ${statusMarkup}
                 <div class="button-row">
@@ -832,7 +832,8 @@
     `;
   }
 
-  function renderFeedbackSurveyFields(questions) {
+  function renderFeedbackSurveyFields(questions, options = {}) {
+    const showRequiredText = options.showRequiredText !== false;
     const surveyQuestions = Array.isArray(questions) && questions.length
       ? questions
       : [{
@@ -844,7 +845,7 @@
         }];
 
     return surveyQuestions.map((question) => {
-      const requiredText = question.required === false ? "" : " required";
+      const requiredText = showRequiredText && question.required !== false ? " required" : "";
       const fieldId = `feedback-question-${question.id}`;
       const currentValue = getFeedbackSurveyAnswerValue(question.id);
       const label = `<label class="field-label" for="${escapeHtml(fieldId)}">${escapeHtml(question.prompt)}${requiredText}</label>`;

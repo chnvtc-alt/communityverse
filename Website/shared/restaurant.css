@@ -3112,7 +3112,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 .feedback-survey-demo-intro {
   margin: 0 0 4px;
   max-width: 920px;
-  color: var(--muted);
+  color: var(--ink);
   font-family: Arial, sans-serif;
   font-size: 0.98rem;
   font-weight: 800;
