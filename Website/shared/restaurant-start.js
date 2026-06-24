@@ -27,10 +27,19 @@
   function salesDemoCustomerCaption(customer) {
     const name = String(customer?.name || "").toLowerCase();
     if (name.includes("staff")) return "Build personal connections.";
-    if (name.includes("owner") || name.includes("management")) return "Introduce the people behind your restaurant.";
+    if (name.includes("owner") || name.includes("management")) return "Introduce Your People.";
     if (name.includes("superfan")) return "Encourage repeat visits.";
-    if (name.includes("weekend") || name.includes("regular")) return "Reward loyal customers.";
+    if (name.includes("weekend") || name.includes("regular")) return "Reward loyal regulars.";
     return "";
+  }
+
+  function salesDemoCharacterName(customer) {
+    const name = String(customer?.name || "");
+    const lowerName = name.toLowerCase();
+    if (lowerName.includes("owner") || lowerName.includes("management")) {
+      return "Owners";
+    }
+    return name;
   }
 
   function openingCustomerCopyClass(customer, restaurant) {
@@ -187,7 +196,40 @@
     });
   }
 
-  function howToPlayModalHtml() {
+  function howToPlayModalHtml(salesDemoMode = false) {
+    if (salesDemoMode) {
+      return `
+        <section class="how-to-play-modal hidden" id="how-to-play-modal" aria-hidden="true">
+          <div class="how-to-play-backdrop" data-how-to-play-close></div>
+          <div
+            class="how-to-play-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="how-to-play-title"
+            aria-describedby="how-to-play-summary"
+          >
+            <button class="how-to-play-close" type="button" data-how-to-play-close aria-label="Close benefits">Close</button>
+            <p class="kicker">Restaurant Challenge</p>
+            <h2 class="section-title" id="how-to-play-title">SEE THE BENEFITS</h2>
+            <p class="copy" id="how-to-play-summary">
+              In about 3 minutes, this demo shows how a custom trivia game can promote your menu, spotlight your team, encourage repeat visits, and collect feedback.
+            </p>
+            <div class="how-to-play-topics">
+              <section class="how-to-play-topic how-to-play-topic-wide">
+                <h3>WHAT YOU WILL SEE</h3>
+                <ul>
+                  <li>Menu photo questions that make featured items memorable.</li>
+                  <li>Restaurant trivia that teaches people about your story, specials, and events.</li>
+                  <li>Collectible characters that make the game feel personal and repeatable.</li>
+                  <li>Feedback rewards that give people a reason to complete your survey.</li>
+                </ul>
+              </section>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
     return `
       <section class="how-to-play-modal hidden" id="how-to-play-modal" aria-hidden="true">
         <div class="how-to-play-backdrop" data-how-to-play-close></div>
@@ -454,11 +496,12 @@
 
     const surveyQuestions = (restaurant.feedbackSurveyQuestions || []).filter((question) => question.active !== false);
     const salesDemoMode = isSalesDemoRestaurant(restaurant);
-    const feedbackKicker = salesDemoMode ? "Customer Feedback Demo" : "Optional Feedback Reward";
+    const feedbackKicker = salesDemoMode ? "Feedback Demo" : "Optional Feedback Reward";
     const feedbackTitle = salesDemoMode
-      ? "See how the game can collect valuable customer feedback."
+      ? "Players earn a collectible character and a leaderboard bonus for completing your survey, helping you collect more feedback."
       : `Share quick feedback for ${restaurant.name}.`;
     const feedbackButtonText = salesDemoMode ? "Try Feedback Demo" : "Give Feedback";
+    const feedbackRewardKind = salesDemoMode ? "character" : "customer";
 
     return `
       <div class="hero-card feedback-reward-card">
@@ -470,7 +513,7 @@
         <div class="feedback-reward-customer">
           <img class="feedback-reward-photo" src="${escapeHtml(reward.customer.image)}" alt="${escapeHtml(reward.customer.name)}" />
           <div>
-            <p class="customer-reveal-rarity">${escapeHtml(reward.customer.rarity || "Special")} customer</p>
+            <p class="customer-reveal-rarity">${escapeHtml(reward.customer.rarity || "Special")} ${escapeHtml(feedbackRewardKind)}</p>
             <strong>${escapeHtml(reward.customer.name)}</strong>
           </div>
         </div>
@@ -695,19 +738,20 @@
       ? `${restaurantPlayPath(restaurant)}?fresh=1&customerId=${encodeURIComponent(customerId)}`
       : `${restaurantPlayPath(restaurant)}?fresh=1`;
     const showMyRestaurantButton = Boolean(activeProfile || customerId);
-    const openerCopy =
-      restaurant.openingCopy ||
-      "Play a quick game of trivia, win a customer, and progress on the leaderboard!";
     const salesDemoMode = isSalesDemoRestaurant(restaurant);
-    const demoIntroLine = "In about 3 minutes, you'll experience the same game your customers would play for your restaurant.";
-    const demoExpectationLine = "In this demo you'll see: menu photo questions, restaurant trivia, collectible customers, and customer feedback surveys.";
+    const openerCopy = salesDemoMode
+      ? "Discover how a custom 3-minute trivia game can promote your menu, engage guests, and encourage repeat visits."
+      : restaurant.openingCopy ||
+        "Play a quick game of trivia, win a customer, and progress on the leaderboard!";
+    const demoIntroLine = "In about 3 minutes, you'll experience the same game guests would play for your restaurant.";
+    const demoExpectationLine = "In this demo you'll see: menu photo questions, restaurant trivia, collectible characters, and feedback surveys.";
     const openingQuestion = salesDemoMode
       ? "Play the 3-Minute Demo"
       : "Can You Add A New Customer To Your Collection?";
     const startButtonText = customerId
       ? "INVITE BACK"
       : salesDemoMode
-        ? "PLAY THE DEMO"
+        ? "PLAY THE THREE MINUTE DEMO"
         : "START THE GAME";
     const howToPlayText = salesDemoMode ? "See the Benefits" : "How to Play";
 
@@ -741,6 +785,7 @@
 
           <div class="opening-start-side opening-start-side-wide">
             <div class="opening-guest-stack">
+              ${salesDemoMode ? `<p class="opening-guest-section-title">Collectible Characters</p>` : ""}
               <div class="opening-guest-grid">
                 ${openingCustomers
                   .map(
@@ -748,7 +793,7 @@
                       <article class="opening-guest-card">
                         <img class="opening-guest-photo" src="${escapeHtml(customer.image)}" alt="${escapeHtml(customer.name)}" />
                         <div class="${openingCustomerCopyClass(customer, restaurant)}">
-                          <p class="opening-guest-name">${escapeHtml(customer.name)}</p>
+                          <p class="opening-guest-name">${escapeHtml(salesDemoMode ? salesDemoCharacterName(customer) : customer.name)}</p>
                           ${
                             salesDemoMode && salesDemoCustomerCaption(customer)
                               ? `<p class="opening-guest-caption">${escapeHtml(salesDemoCustomerCaption(customer))}</p>`
@@ -779,7 +824,7 @@
         ${salesDemoMode ? `<p class="sales-demo-expectation">${escapeHtml(demoExpectationLine)}</p>` : ""}
         ${renderFeedbackRewardCard(restaurant)}
       </div>
-      ${howToPlayModalHtml()}
+      ${howToPlayModalHtml(salesDemoMode)}
     `;
     panel.classList.remove("hidden");
     bindHowToPlay();

@@ -2512,6 +2512,18 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   gap: 14px;
 }
 
+.opening-guest-section-title {
+  margin: 0;
+  color: var(--green);
+  font-family: Arial, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  line-height: 1.15;
+  text-align: center;
+  text-transform: uppercase;
+}
+
 .opening-guest-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2614,8 +2626,9 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 }
 
 .sales-demo-expectation {
-  max-width: 760px;
+  max-width: 1080px;
   margin: 10px auto 0;
+  padding: 0 12px;
   color: var(--muted);
   font-family: Arial, sans-serif;
   font-size: 0.88rem;
