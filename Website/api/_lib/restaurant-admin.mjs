@@ -93,6 +93,7 @@ export function normalizeRestaurant(restaurant) {
     safeRestaurant.include_area_questions ??
     !["americana", "wafflemaster"].includes(safeRestaurant.slug);
   safeRestaurant.includeAreaQuestions = safeRestaurant.includeAreaQuestions !== false;
+  safeRestaurant.salesDemoMode = safeRestaurant.salesDemoMode === true || safeRestaurant.sales_demo_mode === true;
   safeRestaurant.sortOrder = Number(safeRestaurant.sortOrder) || 0;
 
   return safeRestaurant;

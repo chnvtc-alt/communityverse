@@ -101,6 +101,7 @@ const elements = {
   restaurantLocation: document.querySelector("#restaurant-location"),
   restaurantAreaSlug: document.querySelector("#restaurant-area-slug"),
   restaurantIncludeAreaQuestions: document.querySelector("#restaurant-include-area-questions"),
+  restaurantSalesDemoMode: document.querySelector("#restaurant-sales-demo-mode"),
   restaurantDescription: document.querySelector("#restaurant-description"),
   restaurantOpeningCopy: document.querySelector("#restaurant-opening-copy"),
   restaurantFeedbackEnabled: document.querySelector("#restaurant-feedback-enabled"),
@@ -854,6 +855,7 @@ function normalizeRestaurantRecord(restaurant) {
     safeRestaurant.include_area_questions ??
     !["americana", "wafflemaster"].includes(safeRestaurant.slug);
   safeRestaurant.includeAreaQuestions = safeRestaurant.includeAreaQuestions !== false;
+  safeRestaurant.salesDemoMode = safeRestaurant.salesDemoMode === true || safeRestaurant.sales_demo_mode === true;
   return safeRestaurant;
 }
 
@@ -2483,6 +2485,7 @@ function resetRestaurantEditor(restaurant = null) {
   elements.restaurantLocation.value = restaurant?.location || "";
   elements.restaurantAreaSlug.value = restaurant?.areaSlug || "";
   elements.restaurantIncludeAreaQuestions.checked = restaurant?.includeAreaQuestions !== false;
+  elements.restaurantSalesDemoMode.checked = restaurant?.salesDemoMode === true;
   elements.restaurantDescription.value = restaurant?.description || "";
   elements.restaurantOpeningCopy.value = restaurant?.openingCopy || "";
   elements.restaurantFeedbackEnabled.checked = restaurant?.feedbackEnabled === true;
@@ -2515,6 +2518,7 @@ function restaurantFromForm() {
     location: elements.restaurantLocation.value.trim(),
     areaSlug: elements.restaurantAreaSlug.value.trim(),
     includeAreaQuestions: elements.restaurantIncludeAreaQuestions.checked,
+    salesDemoMode: elements.restaurantSalesDemoMode.checked,
     description: elements.restaurantDescription.value.trim(),
     openingCopy: elements.restaurantOpeningCopy.value.trim(),
     feedbackEnabled: elements.restaurantFeedbackEnabled.checked,

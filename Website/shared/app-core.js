@@ -1292,6 +1292,7 @@
       safeRestaurant.include_area_questions ??
       !["americana", "wafflemaster"].includes(safeRestaurant.slug);
     safeRestaurant.includeAreaQuestions = safeRestaurant.includeAreaQuestions !== false;
+    safeRestaurant.salesDemoMode = safeRestaurant.salesDemoMode === true || safeRestaurant.sales_demo_mode === true;
     safeRestaurant.feedbackEnabled = safeRestaurant.feedbackEnabled === true;
     safeRestaurant.feedbackPrompt = String(safeRestaurant.feedbackPrompt || "").trim();
     safeRestaurant.feedbackRewardCustomerId = String(safeRestaurant.feedbackRewardCustomerId || "").trim();

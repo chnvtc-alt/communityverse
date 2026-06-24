@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600;9..144,750&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/admin/questions/styles.css?v=feedback-results-viewer" />
+    <link rel="stylesheet" href="/admin/questions/styles.css?v=sales-demo-mode" />
   </head>
   <body>
     <div class="grain" aria-hidden="true"></div>
@@ -712,6 +712,11 @@
             Use area trivia questions
             <span class="optional">Turn this off for fictional demo restaurants. Leave it on for real local restaurants where city or county questions should appear.</span>
           </label>
+          <label class="checkbox-label form-span">
+            <input id="restaurant-sales-demo-mode" type="checkbox" />
+            Sales demo mode
+            <span class="optional">Use this for a sample restaurant game made for prospects. It lets us hide or simplify player-only features later.</span>
+          </label>
           <label class="form-span">
             Game title
             <input id="restaurant-public-game-name" placeholder="The Community Cafe Game" />
@@ -823,6 +828,6 @@
         </div>
       </form>
     </dialog>
-    <script type="module" src="/admin/questions/admin.js?v=feedback-results-viewer"></script>
+    <script type="module" src="/admin/questions/admin.js?v=sales-demo-mode"></script>
   </body>
 </html>
