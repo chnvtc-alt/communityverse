@@ -3109,6 +3109,16 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   gap: 10px;
 }
 
+.feedback-survey-demo-intro {
+  margin: 0 0 4px;
+  max-width: 920px;
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+  font-size: 0.98rem;
+  font-weight: 800;
+  line-height: 1.42;
+}
+
 .feedback-survey-question {
   display: grid;
   gap: 6px;

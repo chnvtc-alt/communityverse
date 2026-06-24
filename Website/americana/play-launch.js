@@ -778,6 +778,8 @@
       ? `<p class="error feedback-reward-error" aria-live="polite">${escapeHtml(state.feedbackRewardError)}</p>`
       : "";
     const surveyQuestions = (restaurant?.feedbackSurveyQuestions || []).filter((question) => question.active !== false);
+    const feedbackSurveyIntro = "The survey below shows the four types of questions your restaurant can ask: Yes/No, scale of 1-5, multiple choice, and custom answers. These answers are stored for your use in our database and can be accessed by you at any time with your own custom URL.";
+    const feedbackSubmitText = isSalesDemoMode() ? "Send Feedback & Claim Character" : "Send Feedback & Claim Customer";
 
     if (reward.alreadyAwarded && !state.feedbackRewardMessage) {
       return `
@@ -809,11 +811,12 @@
           state.showFeedbackRewardForm || state.feedbackRewardError
             ? `
               <form class="feedback-reward-form" id="feedback-reward-form">
+                ${isSalesDemoMode() ? `<p class="feedback-survey-demo-intro">${escapeHtml(feedbackSurveyIntro)}</p>` : ""}
                 ${renderFeedbackSurveyFields(surveyQuestions)}
                 ${errorMarkup}
                 ${statusMarkup}
                 <div class="button-row">
-                  <button class="button button-hot" id="feedback-reward-submit" type="submit">Send Feedback & Claim Customer</button>
+                  <button class="button button-hot" id="feedback-reward-submit" type="submit">${escapeHtml(feedbackSubmitText)}</button>
                   <button class="button button-muted" id="feedback-reward-cancel" type="button">Maybe Later</button>
                 </div>
               </form>
