@@ -747,7 +747,7 @@
       <div class="hero-card feedback-reward-card">
         <div class="feedback-reward-copy">
           <p class="kicker">${escapeHtml(isSalesDemoMode() ? "Customer Feedback Demo" : "Optional Feedback Reward")}</p>
-          <h3 class="section-title">${escapeHtml(isSalesDemoMode() ? "Show how feedback rewards work." : `Share quick feedback for ${restaurant?.name || "this restaurant"}.`)}</h3>
+          <h3 class="section-title">${escapeHtml(isSalesDemoMode() ? "See how the game can collect valuable customer feedback." : `Share quick feedback for ${restaurant?.name || "this restaurant"}.`)}</h3>
           <p class="copy">${escapeHtml(reward.prompt)}</p>
         </div>
         <div class="feedback-reward-customer">
@@ -949,9 +949,10 @@
       ? `<p class="copy opening-title-copy">${escapeHtml(introCopy)}</p>`
       : "";
     const openingQuestion = isSalesDemoMode()
-      ? "See How This Game Can Help Your Restaurant Grow"
+      ? "Play the 3-Minute Demo"
       : "Can You Add A New Customer To Your Collection?";
     const demoIntroLine = "In about 3 minutes, you'll experience the same game your customers would play for your restaurant.";
+    const demoExpectationLine = "In this demo you'll see: menu photo questions, restaurant trivia, collectible customers, and customer feedback surveys.";
     const startButtonText = replayCustomer
       ? "INVITE BACK"
       : isSalesDemoMode()
@@ -1032,6 +1033,7 @@
               : ""
           }
         </div>
+        ${isSalesDemoMode() ? `<p class="sales-demo-expectation">${escapeHtml(demoExpectationLine)}</p>` : ""}
         ${renderFeedbackRewardCard()}
       </div>`;
     bindFeedbackRewardCard();
@@ -1051,9 +1053,10 @@
       ? `${restaurantBasePath()}?play=1&customerId=${encodeURIComponent(replayCustomer.id)}`
       : `${restaurantBasePath()}?play=1`;
     const openingQuestion = isSalesDemoMode()
-      ? "See How This Game Can Help Your Restaurant Grow"
+      ? "Play the 3-Minute Demo"
       : "Can You Add A New Customer To Your Collection?";
     const demoIntroLine = "In about 3 minutes, you'll experience the same game your customers would play for your restaurant.";
+    const demoExpectationLine = "In this demo you'll see: menu photo questions, restaurant trivia, collectible customers, and customer feedback surveys.";
     const startButtonText = isSalesDemoMode() ? "PLAY THE DEMO" : "START THE GAME";
     elements.start.innerHTML = `
       <div class="opening-start-shell">
@@ -1109,6 +1112,7 @@
               : ""
           }
         </div>
+        ${isSalesDemoMode() ? `<p class="sales-demo-expectation">${escapeHtml(demoExpectationLine)}</p>` : ""}
         ${renderFeedbackRewardCard()}
       </div>`;
     bindFeedbackRewardCard();

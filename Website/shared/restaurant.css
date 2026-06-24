@@ -2613,6 +2613,17 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   text-align: center;
 }
 
+.sales-demo-expectation {
+  max-width: 760px;
+  margin: 10px auto 0;
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+  font-size: 0.88rem;
+  font-weight: 800;
+  line-height: 1.45;
+  text-align: center;
+}
+
 .opening-guest-kicker {
   margin: 0;
   color: #a25b13;

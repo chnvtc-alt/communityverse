@@ -456,7 +456,7 @@
     const salesDemoMode = isSalesDemoRestaurant(restaurant);
     const feedbackKicker = salesDemoMode ? "Customer Feedback Demo" : "Optional Feedback Reward";
     const feedbackTitle = salesDemoMode
-      ? "Show how feedback rewards work."
+      ? "See how the game can collect valuable customer feedback."
       : `Share quick feedback for ${restaurant.name}.`;
     const feedbackButtonText = salesDemoMode ? "Try Feedback Demo" : "Give Feedback";
 
@@ -700,15 +700,16 @@
       "Play a quick game of trivia, win a customer, and progress on the leaderboard!";
     const salesDemoMode = isSalesDemoRestaurant(restaurant);
     const demoIntroLine = "In about 3 minutes, you'll experience the same game your customers would play for your restaurant.";
+    const demoExpectationLine = "In this demo you'll see: menu photo questions, restaurant trivia, collectible customers, and customer feedback surveys.";
     const openingQuestion = salesDemoMode
-      ? "See How This Game Can Help Your Restaurant Grow"
+      ? "Play the 3-Minute Demo"
       : "Can You Add A New Customer To Your Collection?";
     const startButtonText = customerId
       ? "INVITE BACK"
       : salesDemoMode
         ? "PLAY THE DEMO"
         : "START THE GAME";
-    const howToPlayText = salesDemoMode ? "What This Shows" : "How to Play";
+    const howToPlayText = salesDemoMode ? "See the Benefits" : "How to Play";
 
     document.title = `${restaurant.publicGameName || `${restaurant.name} Game`} | CommunityVerse Games`;
 
@@ -775,6 +776,7 @@
           }
           <button class="button button-muted" id="start-how-to-play-button" type="button">${escapeHtml(howToPlayText)}</button>
         </div>
+        ${salesDemoMode ? `<p class="sales-demo-expectation">${escapeHtml(demoExpectationLine)}</p>` : ""}
         ${renderFeedbackRewardCard(restaurant)}
       </div>
       ${howToPlayModalHtml()}
