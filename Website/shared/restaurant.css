@@ -2877,6 +2877,15 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   font-size: clamp(2rem, 3.5vw, 3.1rem);
 }
 
+.customer-reveal-card-demo .customer-reveal-details {
+  gap: 24px;
+}
+
+.customer-reveal-card-demo .customer-reveal-rarity {
+  margin-bottom: 6px;
+  font-size: 0.88rem;
+}
+
 .customer-reveal-goals,
 .customer-reveal-values {
   display: grid;
@@ -2939,7 +2948,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 }
 
 .customer-reveal-card-demo .customer-reveal-actions {
-  margin-top: 10px;
+  margin-top: 22px;
 }
 
 .question-main-layout {

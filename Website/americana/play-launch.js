@@ -1213,7 +1213,7 @@
     const revealBioMarkup = salesDemoMode
       ? `${escapeHtml(customer.name)} is an exclusive collectible character available only in your restaurant's game.<br />Players will come back to build their collection and unlock new characters.`
       : escapeHtml(customerBio);
-    const revealType = salesDemoMode ? "collectible character" : "customer";
+    const revealType = salesDemoMode ? "character" : "customer";
     const regularValueLabel = salesDemoMode ? "Regular Value" : "Regular Customer Value";
     const occasionalValueLabel = salesDemoMode ? "Occasional Value" : "Occasional Customer Value";
     const howToPlayText = salesDemoMode ? "See the Benefits" : "How to Play";
