@@ -172,6 +172,16 @@ img {
   line-height: 1.45;
 }
 
+.sales-page-callout,
+.sales-offer-subhead {
+  margin: 0;
+  color: var(--green);
+  font-family: Arial, sans-serif;
+  font-size: clamp(1rem, 1.8vw, 1.18rem);
+  font-weight: 900;
+  line-height: 1.3;
+}
+
 .sales-page-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);
@@ -208,6 +218,19 @@ img {
 .sales-contact-card {
   display: grid;
   gap: 14px;
+}
+
+.sales-keep-playing {
+  display: grid;
+  gap: 8px;
+}
+
+.sales-keep-playing h3 {
+  margin: 0;
+  color: var(--ink);
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(1.2rem, 2.3vw, 1.55rem);
+  line-height: 1;
 }
 
 .sales-contact-actions {
