@@ -17,7 +17,7 @@
     <meta property="og:url" content="https://communityversegames.com/get-your-own-game/" />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-    <link rel="stylesheet" href="/shared/restaurant.css?v=get-your-own-game-v14" />
+    <link rel="stylesheet" href="/shared/restaurant.css?v=get-your-own-game-v15" />
   </head>
   <body data-page="get-your-own-game">
     <main class="app-shell sales-page-shell">
@@ -99,10 +99,9 @@
       </section>
 
       <section class="panel panel-pad sales-contact-card" id="request-demo">
-        <h2 class="section-title">Ready to see your own restaurant?</h2>
+        <h2 class="section-title">Ready to Get Your Own Restaurant Game?</h2>
         <p class="copy">
-          We'll build a private, fully functioning demo featuring your restaurant name, logo, menu, trivia, photos, and
-          customer survey. You'll receive a custom link you can share, and your demo will remain active for 24 hours.
+          Whether you're ready to get started or would like to see a free custom demo first, we'd love to hear from you.
         </p>
         <p class="copy">Fill in the form below or call or text Tim Collins at <a href="tel:+14044286302">404-428-6302</a>.</p>
         <form class="sales-contact-form" id="demo-request-form">
@@ -125,7 +124,11 @@
             </label>
             <label class="field" for="demo-message">
               <span class="field-label">Message</span>
-              <textarea class="textarea" id="demo-message" name="message" maxlength="2000" required>I would like a free custom demo for my restaurant game.</textarea>
+              <textarea class="textarea" id="demo-message" name="message" maxlength="2000" required>I'm interested in a custom restaurant game for my restaurant. Please contact me.</textarea>
+            </label>
+            <label class="checkbox-row" for="demo-sign-me-up">
+              <input id="demo-sign-me-up" name="signMeUp" type="checkbox" value="yes" />
+              <span>Sign me up. I am ready to get started.</span>
             </label>
             <label class="contact-extra-field" for="demo-company">
               Company
@@ -133,7 +136,7 @@
             </label>
           </div>
           <p class="form-message hidden" id="demo-request-status"></p>
-          <button class="button button-hot contact-submit" id="demo-request-submit" type="submit">Request My Free Demo</button>
+          <button class="button button-hot contact-submit" id="demo-request-submit" type="submit">Let's Get Started</button>
         </form>
       </section>
 
@@ -164,6 +167,7 @@
           const restaurant = String(formData.get("restaurant") || "").trim();
           const phone = String(formData.get("phone") || "").trim();
           const message = String(formData.get("message") || "").trim();
+          const signMeUp = formData.get("signMeUp") === "yes";
           const payload = {
             name: String(formData.get("name") || "").trim(),
             email: String(formData.get("email") || "").trim(),
@@ -172,6 +176,7 @@
             message: [
               restaurant ? `Restaurant: ${restaurant}` : "",
               phone ? `Phone: ${phone}` : "",
+              `Sign me up: ${signMeUp ? "Yes" : "No"}`,
               message,
             ].filter(Boolean).join("\n\n"),
           };
@@ -201,7 +206,7 @@
             setStatus(error instanceof Error ? error.message : "The request could not be sent.", true);
           } finally {
             submit.disabled = false;
-            submit.textContent = "Request My Free Demo";
+            submit.textContent = "Let's Get Started";
           }
         });
       })();
