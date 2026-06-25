@@ -150,8 +150,8 @@ img {
   padding: clamp(24px, 5vw, 46px);
   border-radius: 30px;
   background:
-    linear-gradient(135deg, rgba(255, 253, 248, 0.94), rgba(247, 239, 222, 0.88)),
-    url("/assets/restaurant-challenge/restaurant-challenge-splash.svg") center/cover no-repeat;
+    linear-gradient(135deg, rgba(255, 253, 248, 0.88), rgba(247, 239, 222, 0.7)),
+    url("https://bbwozgyfrdskisbwdysg.supabase.co/storage/v1/object/public/restaurant-images/your-restaurant-game/hero.jpg") center/cover no-repeat;
   border: 1px solid rgba(215, 203, 175, 0.72);
   box-shadow: 0 24px 60px rgba(39, 55, 44, 0.1);
 }
