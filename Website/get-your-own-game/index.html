@@ -17,7 +17,7 @@
     <meta property="og:url" content="https://communityversegames.com/get-your-own-game/" />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-    <link rel="stylesheet" href="/shared/restaurant.css?v=get-your-own-game-v1" />
+    <link rel="stylesheet" href="/shared/restaurant.css?v=get-your-own-game-v2" />
   </head>
   <body data-page="get-your-own-game">
     <main class="app-shell sales-page-shell">
@@ -76,7 +76,7 @@
         <p class="kicker">Ready To See Your Own Restaurant?</p>
         <h2 class="section-title">Request a free custom demo</h2>
         <p class="copy">
-          I can create a personalized demo with your restaurant's logo, menu, photos, staff, and survey. Free custom demo. No obligation.
+          We will create a personalized demo with your restaurant's logo, menu, photos, staff, and survey. Free custom demo. No obligation.
         </p>
         <p class="copy">
           Email: <a href="mailto:communityversegames@gmail.com">communityversegames@gmail.com</a>
@@ -90,6 +90,10 @@
             <label class="field" for="demo-email">
               <span class="field-label">Email address</span>
               <input class="input" id="demo-email" name="email" type="email" autocomplete="email" maxlength="120" required />
+            </label>
+            <label class="field" for="demo-phone">
+              <span class="field-label">Phone number <span style="font-weight: 500;">(optional)</span></span>
+              <input class="input" id="demo-phone" name="phone" type="tel" autocomplete="tel" maxlength="40" placeholder="Call or text" />
             </label>
             <label class="field" for="demo-restaurant">
               <span class="field-label">Restaurant name</span>
@@ -134,13 +138,18 @@
           event.preventDefault();
           const formData = new FormData(form);
           const restaurant = String(formData.get("restaurant") || "").trim();
+          const phone = String(formData.get("phone") || "").trim();
           const message = String(formData.get("message") || "").trim();
           const payload = {
             name: String(formData.get("name") || "").trim(),
             email: String(formData.get("email") || "").trim(),
             company: String(formData.get("company") || "").trim(),
             page: window.location.href,
-            message: [restaurant ? `Restaurant: ${restaurant}` : "", message].filter(Boolean).join("\n\n"),
+            message: [
+              restaurant ? `Restaurant: ${restaurant}` : "",
+              phone ? `Phone: ${phone}` : "",
+              message,
+            ].filter(Boolean).join("\n\n"),
           };
 
           setStatus("");
