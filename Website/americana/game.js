@@ -80,7 +80,7 @@
     if (isSalesDemoMode()) {
       return "Discover how a custom 3-minute trivia game can promote your menu, engage guests, and encourage repeat visits.";
     }
-    return restaurant?.openingCopy || "Play a quick game of trivia, win a customer, and progress on the leaderboard!";
+    return restaurant?.openingCopy || "Play a quick game of trivia, unlock a character, and progress on the leaderboard!";
   }
 
   function getHeroImage() {
@@ -342,15 +342,15 @@
           <p class="kicker">Restaurant Challenge</p>
           <h2 class="section-title" id="how-to-play-title">HOW TO PLAY</h2>
           <p class="copy" id="how-to-play-summary">
-            Restaurant Challenge is a quick 10-question trivia game. Play in about 3 minutes, earn collectible customers, improve your trivia score, and compete on the leaderboards.
+            Restaurant Challenge is a quick 10-question trivia game. Play in about 3 minutes, unlock collectible characters, improve your trivia score, and compete on the leaderboards.
           </p>
           <div class="how-to-play-topics">
             <section class="how-to-play-topic how-to-play-topic-wide">
               <h3>THE QUICK VERSION</h3>
               <ul>
                 <li>Answer 10 trivia questions.</li>
-                <li>Earn a customer for your collection.</li>
-                <li>Save your progress to keep customers and track your scores.</li>
+                <li>Unlock a character for your collection.</li>
+                <li>Save your progress to keep characters and track your scores.</li>
                 <li>Climb the trivia and net worth leaderboards.</li>
                 <li>Optionally, build and grow a virtual restaurant.</li>
               </ul>
@@ -369,18 +369,18 @@
               <p>Most games take about 3 minutes to complete.</p>
             </section>
             <section class="how-to-play-topic">
-              <h3>STEP 2: EARN CUSTOMERS</h3>
-              <p>Before each game begins, you will see the customer you are playing for.</p>
-              <p>The better your score, the more likely that customer is to join your collection.</p>
-              <p>Some customers are more valuable than others.</p>
-              <p>Customers increase your collection, sales, and future restaurant value.</p>
+              <h3>STEP 2: UNLOCK CHARACTERS</h3>
+              <p>Before each game begins, you will see the character you are playing for.</p>
+              <p>The better your score, the more likely that character is to join your collection.</p>
+              <p>Some characters are more valuable than others.</p>
+              <p>Characters increase your collection, sales, and future restaurant value.</p>
             </section>
             <section class="how-to-play-topic">
               <h3>STEP 3: SAVE YOUR COLLECTION</h3>
-              <p>When you earn customers, you can save your collection and continue building it over time.</p>
+              <p>When you unlock characters, you can save your collection and continue building it over time.</p>
               <p>Saving your progress allows you to:</p>
               <ul>
-                <li>Keep customers you earn</li>
+                <li>Keep characters you unlock</li>
                 <li>Track your trivia scores</li>
                 <li>Appear on the leaderboards</li>
                 <li>Continue your collection on future visits</li>
@@ -401,19 +401,19 @@
             </section>
             <section class="how-to-play-topic">
               <h3>STEP 5: BUILD A VIRTUAL RESTAURANT (OPTIONAL)</h3>
-              <p>Many players enjoy collecting customers and competing on the trivia leaderboard.</p>
+              <p>Many players enjoy collecting characters and competing on the trivia leaderboard.</p>
               <p>Others choose to build a virtual restaurant.</p>
-              <p>Customers increase your restaurant's value and generate sales.</p>
-              <p>You can expand from a Food Truck into a Local Landmark by earning customers, saving cash, and purchasing upgrades.</p>
+              <p>Characters increase your restaurant's value and generate sales.</p>
+              <p>You can expand from a Food Truck into a Local Landmark by unlocking characters, saving cash, and purchasing upgrades.</p>
             </section>
             <section class="how-to-play-topic">
               <h3>VIRTUAL GAME VALUES</h3>
-              <p>All cash, sales, customer values, and net worth figures are virtual game values used for gameplay and leaderboards.</p>
+              <p>All cash, sales, character values, and net worth figures are virtual game values used for gameplay and leaderboards.</p>
               <p>They have no real cash value.</p>
             </section>
             <section class="how-to-play-topic">
               <h3>DO I WIN REAL PRIZES?</h3>
-              <p>Restaurant Challenge is primarily a trivia and customer collection game.</p>
+              <p>Restaurant Challenge is primarily a trivia and character collection game.</p>
               <p>Most restaurants do not currently offer prizes.</p>
               <p>Some restaurants may choose to offer promotions, discounts, contests, or giveaways in the future.</p>
             </section>
@@ -802,7 +802,7 @@
         <div class="feedback-reward-copy">
           <p class="kicker">${escapeHtml(isSalesDemoMode() ? "Feedback Demo" : "Optional Feedback Reward")}</p>
           <h3 class="section-title">${escapeHtml(isSalesDemoMode() ? reward.prompt : `Share quick feedback for ${restaurant?.name || "this restaurant"}.`)}</h3>
-          <p class="copy">${escapeHtml(isSalesDemoMode() ? "Players earn a collectible character and a leaderboard bonus after completing your survey, giving guests a clear reason to share feedback." : reward.prompt)}</p>
+          <p class="copy">${escapeHtml(isSalesDemoMode() ? "Players unlock a collectible character and a leaderboard bonus after completing your survey, giving guests a clear reason to share feedback." : reward.prompt)}</p>
         </div>
         <div class="feedback-reward-customer">
           <img class="feedback-reward-photo" src="${reward.customer.image}" alt="${escapeHtml(reward.customer.name)}" />
@@ -1216,7 +1216,7 @@
     const thresholds = core.getCustomerWinThresholds(customer);
     const rarity = customer.rarity || "Rare";
     const salesDemoMode = isSalesDemoMode();
-    const revealKicker = salesDemoMode ? "Collectible Character Demo" : "Play Trivia To Earn This Customer";
+    const revealKicker = salesDemoMode ? "Collectible Character Demo" : "Play Trivia To Unlock This Character";
     const revealBioMarkup = salesDemoMode
       ? `${escapeHtml(customer.name)} is an exclusive collectible character available only in your restaurant's game.<br />Players will come back to build their collection and unlock new characters.`
       : escapeHtml(customerBio);
@@ -1526,11 +1526,11 @@
     }
 
     if (session.result === "regular") {
-      return `${session.customer.name} has joined your customer collection.`;
+      return `${session.customer.name} has joined your character collection.`;
     }
 
     if (session.result === "occasional") {
-      return `${session.customer.name} has joined your customer collection.`;
+      return `${session.customer.name} has joined your character collection.`;
     }
 
     return `${session.customer.name} was not impressed and will not be coming back.`;
@@ -1773,7 +1773,7 @@
             ? `
               <div class="hero-card result-followup-card result-followup-card-guest" style="margin-top: 0; padding: 16px;">
                 <p class="kicker" style="margin: 0 0 6px;">${isFourthGame ? "Trivia % Leaderboard" : salesDemoMode ? "Save Your Character Collection" : "Save Your Customer Collection"}</p>
-                <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${isFourthGame ? "Congratulations! You completed your 4th game." : demoCharacterUnlocked ? `You unlocked ${escapeHtml(session.customer.name)}.` : salesDemoMode ? "Start your character collection." : `You just earned ${escapeHtml(session.customer.name)}.`}</h3>
+                <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${isFourthGame ? "Congratulations! You completed your 4th game." : demoCharacterUnlocked ? `You unlocked ${escapeHtml(session.customer.name)}.` : salesDemoMode ? "Start your character collection." : `You just unlocked ${escapeHtml(session.customer.name)}.`}</h3>
                 <p class="copy" style="margin: 0 0 12px;">${isFourthGame ? "Save your restaurant to keep your Trivia % leaderboard progress. No email required." : salesDemoMode ? "Save your collection and continue unlocking collectible characters from restaurants throughout your community." : "Save your collection to keep customers, track your trivia progress, and compete on the leaderboards."}</p>
                 <div class="button-row">
                   <button class="button button-hot result-save-progress-button" id="register-now-button" type="button">
@@ -1792,7 +1792,7 @@
                   <p class="copy result-save-mobile-note" style="margin: 0 0 14px;">${demoCharacterUnlocked ? `This is the first character in your collection. Save your progress to keep this character and unlock dozens more from restaurants throughout your community.` : salesDemoMode ? "Save now to keep your characters, trivia record, and leaderboard progress." : "Save now to keep your customers, trivia record, and leaderboard progress."}</p>
                   <p class="copy" style="margin: 0 0 8px;">Save your collection to:</p>
                   <ul class="copy" style="margin: 0 0 16px; padding-left: 20px; line-height: 1.45;">
-                    <li>${salesDemoMode ? "Track characters you unlock" : "Keep all customers you earn"}</li>
+                    <li>${salesDemoMode ? "Track characters you unlock" : "Keep all characters you unlock"}</li>
                     <li>Track your trivia record</li>
                     <li>Appear on the leaderboards</li>
                     <li>Grow a virtual restaurant if you want</li>

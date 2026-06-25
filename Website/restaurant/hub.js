@@ -28,7 +28,7 @@
       value: "estimatedSales",
       label: "Sales",
       rankLabel: "Sales",
-      description: "Total sales from the characters each restaurant has earned.",
+      description: "Total sales from the characters each restaurant has unlocked.",
     },
     {
       value: "gamesPlayed",

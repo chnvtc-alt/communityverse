@@ -251,15 +251,15 @@
           <p class="kicker">Restaurant Challenge</p>
           <h2 class="section-title" id="how-to-play-title">HOW TO PLAY</h2>
           <p class="copy" id="how-to-play-summary">
-            Restaurant Challenge is a quick 10-question trivia game. Play in about 3 minutes, earn collectible customers, improve your trivia score, and compete on the leaderboards.
+            Restaurant Challenge is a quick 10-question trivia game. Play in about 3 minutes, unlock collectible characters, improve your trivia score, and compete on the leaderboards.
           </p>
           <div class="how-to-play-topics">
             <section class="how-to-play-topic how-to-play-topic-wide">
               <h3>THE QUICK VERSION</h3>
               <ul>
                 <li>Answer 10 trivia questions.</li>
-                <li>Earn a customer for your collection.</li>
-                <li>Save your progress to keep customers and track your scores.</li>
+                <li>Unlock a character for your collection.</li>
+                <li>Save your progress to keep characters and track your scores.</li>
                 <li>Climb the trivia and net worth leaderboards.</li>
                 <li>Optionally, build and grow a virtual restaurant.</li>
               </ul>
@@ -278,18 +278,18 @@
               <p>Most games take about 3 minutes to complete.</p>
             </section>
             <section class="how-to-play-topic">
-              <h3>STEP 2: EARN CUSTOMERS</h3>
-              <p>Before each game begins, you will see the customer you are playing for.</p>
-              <p>The better your score, the more likely that customer is to join your collection.</p>
-              <p>Some customers are more valuable than others.</p>
-              <p>Customers increase your collection, sales, and future restaurant value.</p>
+              <h3>STEP 2: UNLOCK CHARACTERS</h3>
+              <p>Before each game begins, you will see the character you are playing for.</p>
+              <p>The better your score, the more likely that character is to join your collection.</p>
+              <p>Some characters are more valuable than others.</p>
+              <p>Characters increase your collection, sales, and future restaurant value.</p>
             </section>
             <section class="how-to-play-topic">
               <h3>STEP 3: SAVE YOUR COLLECTION</h3>
-              <p>When you earn customers, you can save your collection and continue building it over time.</p>
+              <p>When you unlock characters, you can save your collection and continue building it over time.</p>
               <p>Saving your progress allows you to:</p>
               <ul>
-                <li>Keep customers you earn</li>
+                <li>Keep characters you unlock</li>
                 <li>Track your trivia scores</li>
                 <li>Appear on the leaderboards</li>
                 <li>Continue your collection on future visits</li>
@@ -310,26 +310,26 @@
             </section>
             <section class="how-to-play-topic">
               <h3>STEP 5: BUILD A VIRTUAL RESTAURANT (OPTIONAL)</h3>
-              <p>Many players enjoy collecting customers and competing on the trivia leaderboard.</p>
+              <p>Many players enjoy collecting characters and competing on the trivia leaderboard.</p>
               <p>Others choose to build a virtual restaurant.</p>
-              <p>Customers increase your restaurant's value and generate sales.</p>
-              <p>You can expand from a Food Truck into a Local Landmark by earning customers, saving cash, and purchasing upgrades.</p>
+              <p>Characters increase your restaurant's value and generate sales.</p>
+              <p>You can expand from a Food Truck into a Local Landmark by unlocking characters, saving cash, and purchasing upgrades.</p>
             </section>
             <section class="how-to-play-topic">
               <h3>VIRTUAL GAME VALUES</h3>
-              <p>All cash, sales, customer values, and net worth figures are virtual game values used for gameplay and leaderboards.</p>
+              <p>All cash, sales, character values, and net worth figures are virtual game values used for gameplay and leaderboards.</p>
               <p>They have no real cash value.</p>
             </section>
             <section class="how-to-play-topic">
               <h3>DO I WIN REAL PRIZES?</h3>
-              <p>Restaurant Challenge is primarily a trivia and customer collection game.</p>
+              <p>Restaurant Challenge is primarily a trivia and character collection game.</p>
               <p>Most restaurants do not currently offer prizes.</p>
               <p>Some restaurants may choose to offer promotions, discounts, contests, or giveaways in the future.</p>
             </section>
             <section class="how-to-play-topic how-to-play-topic-wide">
               <h3>PLAY YOUR WAY</h3>
               <p>Some players enjoy Restaurant Challenge simply as a quick trivia game.</p>
-              <p>Others enjoy collecting customers, competing on the trivia leaderboard, and building a virtual restaurant.</p>
+              <p>Others enjoy collecting characters, competing on the trivia leaderboard, and building a virtual restaurant.</p>
               <p>Both ways are correct.</p>
             </section>
           </div>
@@ -508,7 +508,7 @@
       ? reward.prompt
       : `Share quick feedback for ${restaurant.name}.`;
     const feedbackBody = salesDemoMode
-      ? "Players earn a collectible character and a leaderboard bonus after completing your survey, giving guests a clear reason to share feedback."
+      ? "Players unlock a collectible character and a leaderboard bonus after completing your survey, giving guests a clear reason to share feedback."
       : reward.prompt;
     const feedbackButtonText = salesDemoMode ? "Try Feedback Demo" : "Give Feedback";
     const feedbackSubmitText = salesDemoMode ? "Send Feedback & Claim Character" : "Send Feedback & Claim Customer";
@@ -759,7 +759,7 @@
     const openerCopy = salesDemoMode
       ? "Discover how a custom 3-minute trivia game can promote your menu, engage guests, and encourage repeat visits."
       : restaurant.openingCopy ||
-        "Play a quick game of trivia, win a customer, and progress on the leaderboard!";
+        "Play a quick game of trivia, unlock a character, and progress on the leaderboard!";
     const demoExpectationLine = "In this demo you'll see: menu photo questions, restaurant trivia, collectible characters, and feedback surveys.";
     const openingQuestion = salesDemoMode
       ? ""
@@ -783,7 +783,7 @@
             customerId
               ? `
                 <p class="helper opening-start-helper opening-title-helper" id="invite-copy">
-                  You invited a customer back. Win the round to try to upgrade them.
+                  You invited a character back. Complete the round to try to upgrade them.
                 </p>
               `
               : ""

@@ -401,7 +401,7 @@
       name: "Americana Diner",
       publicGameName: "The Americana Diner Game",
       description:
-        "Classic comfort food in Pepperville. Answer 10 questions to win a customer for your own restaurant.",
+        "Classic comfort food in Pepperville. Answer 10 questions to unlock a character for your own restaurant.",
       areaSlug: "pepperville",
       primaryColor: "#b84c38",
       secondaryColor: "#1f4e44",

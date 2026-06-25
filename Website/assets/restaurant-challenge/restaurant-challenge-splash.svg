@@ -63,7 +63,7 @@
     <circle cx="542" cy="405" r="14" fill="#D58A2B"/>
 
     <rect x="146" y="442" width="446" height="190" rx="24" fill="#FFFDF7" stroke="#D7CBAF" stroke-width="2"/>
-    <text x="170" y="480" fill="#203129" font-family="Georgia, serif" font-size="24" font-weight="700">Scan. Answer. Win customers.</text>
+    <text x="170" y="480" fill="#203129" font-family="Georgia, serif" font-size="24" font-weight="700">Scan. Answer. Unlock characters.</text>
     <text x="170" y="512" fill="#566D61" font-family="Arial, sans-serif" font-size="16" font-weight="700">Every restaurant gets its own trivia page and artwork.</text>
     <g transform="translate(170 540)">
       <rect x="0" y="0" width="116" height="64" rx="16" fill="#E7F0E8"/>
