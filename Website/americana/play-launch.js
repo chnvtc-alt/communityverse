@@ -1767,7 +1767,7 @@
 
         <div class="divider"></div>
         ${triviaLeaderboardMilestoneMarkup}
-        ${!isGuest && !state.showProfileForm ? netWorthPromptMarkup : ""}
+        ${!isGuest && !state.showProfileForm && !salesDemoMode ? netWorthPromptMarkup : ""}
         ${
           isGuest && !state.showProfileForm
             ? `
@@ -1832,8 +1832,8 @@
               : `
                 <div class="button-row result-followup-actions">
                   <button class="button button-hot" id="play-again-button" type="button">Play Again</button>
-                  <a class="button button-muted" href="/restaurant/?hub=1">View My Virtual Restaurant</a>
-                  <button class="button button-muted" id="result-how-to-play-button" type="button" data-how-to-play-button>How to Play</button>
+                  <a class="button button-muted" href="/restaurant/?hub=1${salesDemoMode ? "#leaderboard-panel" : ""}">${salesDemoMode ? "Character Collection / Leaderboard" : "View My Virtual Restaurant"}</a>
+                  <button class="button button-muted" id="result-how-to-play-button" type="button" data-how-to-play-button>${salesDemoMode ? "See the Benefits" : "How to Play"}</button>
                 </div>
               `
         }
