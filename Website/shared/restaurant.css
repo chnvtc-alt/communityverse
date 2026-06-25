@@ -544,6 +544,15 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   line-height: 1.45;
 }
 
+.sales-demo-audience-topic {
+  margin-top: 10px;
+}
+
+.sales-demo-audience-topic p {
+  color: var(--ink);
+  font-weight: 700;
+}
+
 .how-to-play-topic ul {
   margin: 0;
   padding-left: 20px;
