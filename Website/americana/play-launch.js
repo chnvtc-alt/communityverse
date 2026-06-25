@@ -1365,6 +1365,26 @@
       : (session.currentIndex / session.questions.length) * 100;
     const customerBio = core.getCustomerBio(session.customer);
     const customerThresholds = core.getCustomerWinThresholds(session.customer);
+    const customerInfoCardMarkup = isSalesDemoMode()
+      ? ""
+      : `
+        <div class="hero-card question-customer-card" style="margin-top: 0;">
+          <div class="customer-card-top question-customer-top">
+            <img class="customer-avatar question-customer-avatar" src="${session.customer.image}" alt="${escapeHtml(session.customer.name)}" />
+            <div>
+              <p class="customer-name">${escapeHtml(session.customer.name)}</p>
+              <p class="customer-bio">${escapeHtml(customerBio)}</p>
+              <div class="chip-row" style="margin-top: 10px;">
+                <span class="chip">${escapeHtml(session.customer.rarity || "Rare")} customer</span>
+                <span class="chip">Regular needs ${customerThresholds.regular}/10</span>
+                <span class="chip">Occasional needs ${customerThresholds.occasional}/10</span>
+                <span class="chip">Regular value ${core.formatCurrency(session.customer.regularValue)}</span>
+                <span class="chip">Occasional value ${core.formatCurrency(session.customer.occasionalValue)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
 
     elements.game.classList.remove("hidden");
     elements.start.classList.add("hidden");
@@ -1382,22 +1402,7 @@
           </div>
         </div>
 
-        <div class="hero-card question-customer-card" style="margin-top: 0;">
-          <div class="customer-card-top question-customer-top">
-            <img class="customer-avatar question-customer-avatar" src="${session.customer.image}" alt="${escapeHtml(session.customer.name)}" />
-            <div>
-              <p class="customer-name">${escapeHtml(session.customer.name)}</p>
-              <p class="customer-bio">${escapeHtml(customerBio)}</p>
-              <div class="chip-row" style="margin-top: 10px;">
-                <span class="chip">${escapeHtml(session.customer.rarity || "Rare")} customer</span>
-                <span class="chip">Regular needs ${customerThresholds.regular}/10</span>
-                <span class="chip">Occasional needs ${customerThresholds.occasional}/10</span>
-                <span class="chip">Regular value ${core.formatCurrency(session.customer.regularValue)}</span>
-                <span class="chip">Occasional value ${core.formatCurrency(session.customer.occasionalValue)}</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        ${customerInfoCardMarkup}
 
         <div class="progress-track" aria-hidden="true">
           <div class="progress-bar" style="width: ${progressPercent}%"></div>
