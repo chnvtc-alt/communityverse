@@ -3234,6 +3234,14 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   letter-spacing: -0.04em;
 }
 
+.result-banner-demo .result-celebration-title {
+  font-size: clamp(1.15rem, 2vw, 1.45rem);
+}
+
+.result-banner-demo .result-customer-copy h2 {
+  font-size: clamp(1.9rem, 3.4vw, 2.5rem);
+}
+
 .result-banner .copy,
 .result-banner .meta,
 .result-banner .note,
@@ -4698,6 +4706,10 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   .result-customer-copy h2 {
     font-size: clamp(0.96rem, 4.4vw, 1.1rem);
     line-height: 1.02;
+  }
+
+  .result-banner-demo .result-customer-copy h2 {
+    font-size: clamp(1.18rem, 6vw, 1.45rem);
   }
 
   .result-bio-toggle {
