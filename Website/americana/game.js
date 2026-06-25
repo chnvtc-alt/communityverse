@@ -779,7 +779,7 @@
       ? `<p class="error feedback-reward-error" aria-live="polite">${escapeHtml(state.feedbackRewardError)}</p>`
       : "";
     const surveyQuestions = (restaurant?.feedbackSurveyQuestions || []).filter((question) => question.active !== false);
-    const feedbackSurveyIntro = "The survey below shows the four types of questions your restaurant can ask: Yes/No, scale of 1-5, multiple choice, and custom answers. These answers are stored for your use in our database and can be accessed by you at any time with your own custom URL.";
+    const feedbackSurveyIntro = "Create your own survey questions using ratings, Yes/No, multiple choice, 1-5 scale, or written responses. View your survey results anytime in your private dashboard.";
     const feedbackSubmitText = isSalesDemoMode() ? "Send Feedback & Claim Character" : "Send Feedback & Claim Customer";
 
     if (reward.alreadyAwarded && !state.feedbackRewardMessage) {
@@ -813,6 +813,7 @@
             ? `
               <form class="feedback-reward-form" id="feedback-reward-form">
                 ${isSalesDemoMode() ? `<p class="feedback-survey-demo-intro">${escapeHtml(feedbackSurveyIntro)}</p>` : ""}
+                ${isSalesDemoMode() ? `<p class="feedback-survey-demo-example">Examples of questions your restaurant could ask:</p>` : ""}
                 ${renderFeedbackSurveyFields(surveyQuestions, { showRequiredText: !isSalesDemoMode() })}
                 ${errorMarkup}
                 ${statusMarkup}
@@ -982,7 +983,9 @@
       state.showFeedbackRewardForm = false;
       state.feedbackRewardError = "";
       state.feedbackSurveyAnswers = [];
-      state.feedbackRewardMessage = outcome.message || `${outcome.customer?.name || "This customer"} has joined your collection.`;
+      state.feedbackRewardMessage = isSalesDemoMode()
+        ? `${outcome.customer?.name || "This character"} has joined your character collection.`
+        : outcome.message || `${outcome.customer?.name || "This customer"} has joined your collection.`;
       renderAll();
     });
   }

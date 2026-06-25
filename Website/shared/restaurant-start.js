@@ -510,7 +510,7 @@
     const feedbackButtonText = salesDemoMode ? "Try Feedback Demo" : "Give Feedback";
     const feedbackSubmitText = salesDemoMode ? "Send Feedback & Claim Character" : "Send Feedback & Claim Customer";
     const feedbackRewardKind = salesDemoMode ? "character" : "customer";
-    const feedbackSurveyIntro = "The survey below shows the four types of questions your restaurant can ask: Yes/No, scale of 1-5, multiple choice, and custom answers. These answers are stored for your use in our database and can be accessed by you at any time with your own custom URL.";
+    const feedbackSurveyIntro = "Create your own survey questions using ratings, Yes/No, multiple choice, 1-5 scale, or written responses. View your survey results anytime in your private dashboard.";
 
     return `
       <div class="hero-card feedback-reward-card">
@@ -531,6 +531,7 @@
             ? `
               <form class="feedback-reward-form" id="feedback-reward-form">
                 ${salesDemoMode ? `<p class="feedback-survey-demo-intro">${escapeHtml(feedbackSurveyIntro)}</p>` : ""}
+                ${salesDemoMode ? `<p class="feedback-survey-demo-example">Examples of questions your restaurant could ask:</p>` : ""}
                 ${renderFeedbackSurveyFields(surveyQuestions, { showRequiredText: !salesDemoMode })}
                 ${errorMarkup}
                 ${statusMarkup}
@@ -709,7 +710,9 @@
       state.showFeedbackRewardForm = false;
       state.feedbackRewardError = "";
       state.feedbackSurveyAnswers = [];
-      state.feedbackRewardMessage = outcome.message || `${outcome.customer?.name || "This customer"} has joined your collection.`;
+      state.feedbackRewardMessage = salesDemoMode
+        ? `${outcome.customer?.name || "This character"} has joined your character collection.`
+        : outcome.message || `${outcome.customer?.name || "This customer"} has joined your collection.`;
       renderRestaurantStart(restaurant);
     });
   }
