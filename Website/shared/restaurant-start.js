@@ -42,6 +42,22 @@
     });
   }
 
+  function updateSalesDemoBrand(show) {
+    document.querySelectorAll(".brand").forEach((brand) => {
+      if (!brand.dataset.defaultText) {
+        brand.dataset.defaultText = brand.textContent;
+      }
+      brand.textContent = show ? "Restaurant Demo Game" : brand.dataset.defaultText;
+    });
+  }
+
+  function getOpeningGameTitle(restaurant) {
+    if (isSalesDemoRestaurant(restaurant)) {
+      return "(YOUR RESTAURANT NAME HERE) Game";
+    }
+    return restaurant.publicGameName || `${restaurant.name} Game`;
+  }
+
   function salesDemoCustomerCaption(customer) {
     const name = String(customer?.name || "").toLowerCase();
     if (name.includes("staff")) return "Build personal connections.";
@@ -788,14 +804,16 @@
         ? "PLAY THE THREE MINUTE DEMO"
         : "START THE GAME";
     const howToPlayText = salesDemoMode ? "See the Benefits" : "How to Play";
+    const gameTitle = getOpeningGameTitle(restaurant);
 
-    document.title = `${restaurant.publicGameName || `${restaurant.name} Game`} | CommunityVerse Games`;
+    document.title = `${gameTitle} | CommunityVerse Games`;
+    updateSalesDemoBrand(salesDemoMode);
 
     panel.innerHTML = `
       <div class="opening-start-shell">
         <div class="opening-start-heading">
           <p class="kicker" style="margin: 0 0 4px;">Restaurant Challenge Trivia</p>
-          <h2 class="opening-title">${escapeHtml(restaurant.publicGameName || `${restaurant.name} Game`)}</h2>
+          <h2 class="opening-title">${escapeHtml(gameTitle)}</h2>
           <p class="copy opening-title-copy">${escapeHtml(openerCopy)}</p>
           ${
             customerId
