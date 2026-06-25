@@ -57,6 +57,24 @@ img {
   margin-bottom: 16px;
 }
 
+.topbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.sales-demo-cta-note {
+  max-width: 280px;
+  color: var(--green);
+  font-family: Arial, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: right;
+}
+
 .brand {
   display: inline-flex;
   align-items: center;
@@ -99,6 +117,18 @@ img {
   box-shadow: 0 12px 28px rgba(213, 138, 43, 0.16);
 }
 
+.topbar-sales-cta {
+  border-color: rgba(213, 138, 43, 0.7);
+  background: linear-gradient(135deg, #c9552d, #d58a2b);
+  color: #fffdf8;
+}
+
+.topbar-sales-cta:hover,
+.topbar-sales-cta:focus-visible {
+  border-color: rgba(213, 138, 43, 0.88);
+  box-shadow: 0 14px 30px rgba(201, 85, 45, 0.22);
+}
+
 .kicker {
   margin: 8px 0 0;
   font-family: Arial, sans-serif;
@@ -107,6 +137,86 @@ img {
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--green);
+}
+
+.sales-page-shell {
+  display: grid;
+  gap: 18px;
+}
+
+.sales-page-hero {
+  display: grid;
+  gap: 18px;
+  padding: clamp(24px, 5vw, 46px);
+  border-radius: 30px;
+  background:
+    linear-gradient(135deg, rgba(255, 253, 248, 0.94), rgba(247, 239, 222, 0.88)),
+    url("/assets/restaurant-challenge/restaurant-challenge-splash.svg") center/cover no-repeat;
+  border: 1px solid rgba(215, 203, 175, 0.72);
+  box-shadow: 0 24px 60px rgba(39, 55, 44, 0.1);
+}
+
+.sales-page-hero .page-title {
+  max-width: 760px;
+  margin-bottom: 0;
+}
+
+.sales-page-lead {
+  max-width: 680px;
+  margin: 0;
+  color: var(--muted);
+  font-size: clamp(1.05rem, 2vw, 1.28rem);
+  line-height: 1.45;
+}
+
+.sales-page-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.sales-feature-list,
+.sales-offer-list {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sales-feature-list li,
+.sales-offer-list li {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(235, 243, 236, 0.74);
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.sales-offer-price {
+  margin: 12px 0 0;
+  color: var(--ink);
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  line-height: 1;
+}
+
+.sales-contact-card {
+  display: grid;
+  gap: 14px;
+}
+
+.sales-contact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.sales-contact-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 10px;
 }
 
 .page-title {
@@ -5429,6 +5539,20 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   .leaderboard-scroll {
     max-height: none;
     padding-bottom: 8px;
+  }
+
+  .topbar-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .sales-demo-cta-note {
+    max-width: none;
+    text-align: left;
+  }
+
+  .sales-page-grid {
+    grid-template-columns: 1fr;
   }
 }
 

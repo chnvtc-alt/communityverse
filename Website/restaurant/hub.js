@@ -4,6 +4,13 @@
   const editMode = query.has("edit");
   const hubMode = query.get("hub") === "1" || query.get("view") === "hub";
   const authCallbackMode = query.get("auth") === "callback";
+  const salesDemoHubMode = query.get("demo") === "1" || (() => {
+    try {
+      return window.sessionStorage?.getItem("restaurantSalesDemoCta") === "1";
+    } catch {
+      return false;
+    }
+  })();
 
   const metricOptions = [
     {
@@ -105,6 +112,16 @@
     const separator = pathAndQuery.includes("?") ? "&" : "?";
     const entryPoint = window.location.pathname || "/restaurant/";
     return `${pathAndQuery}${separator}entry=${encodeURIComponent(entryPoint)}${hash ? `#${hash}` : ""}`;
+  }
+
+  function updateSalesDemoCta() {
+    document.querySelectorAll("[data-sales-demo-cta]").forEach((link) => {
+      link.classList.toggle("hidden", !salesDemoHubMode);
+    });
+    document.querySelectorAll("[data-sales-demo-cta-note]").forEach((note) => {
+      note.textContent = salesDemoHubMode ? "Ready for your own version?" : "";
+      note.classList.toggle("hidden", !salesDemoHubMode);
+    });
   }
 
   const elements = {
@@ -2406,6 +2423,7 @@
 
   bindHowToPlay();
   bindContact();
+  updateSalesDemoCta();
   renderAll();
   if (core.whenReady) {
     core.whenReady().then(async () => {

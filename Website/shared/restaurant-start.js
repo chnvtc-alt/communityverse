@@ -21,7 +21,25 @@
   }
 
   function isSalesDemoRestaurant(restaurant) {
-    return restaurant?.salesDemoMode === true;
+    return restaurant?.salesDemoMode === true || query.has("demo");
+  }
+
+  function markSalesDemoVisit() {
+    try {
+      window.sessionStorage?.setItem("restaurantSalesDemoCta", "1");
+    } catch {
+      // Session storage is optional; the topbar CTA still works on the current page.
+    }
+  }
+
+  function updateSalesDemoCta(show, message = "Like the idea?") {
+    document.querySelectorAll("[data-sales-demo-cta]").forEach((link) => {
+      link.classList.toggle("hidden", !show);
+    });
+    document.querySelectorAll("[data-sales-demo-cta-note]").forEach((note) => {
+      note.textContent = show ? message : "";
+      note.classList.toggle("hidden", !show || !message);
+    });
   }
 
   function salesDemoCustomerCaption(customer) {
@@ -844,6 +862,12 @@
     panel.classList.remove("hidden");
     bindHowToPlay();
     bindFeedbackRewardCard(restaurant);
+    if (salesDemoMode) {
+      markSalesDemoVisit();
+      updateSalesDemoCta(true, "See your own restaurant brought to life.");
+    } else {
+      updateSalesDemoCta(false);
+    }
 
     const canonical = document.querySelector('link[rel="canonical"]');
     if (canonical) {

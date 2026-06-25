@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Get Your Own Restaurant Game | CommunityVerse Games</title>
+    <meta
+      name="description"
+      content="Request a free custom demo of a restaurant trivia game with your logo, menu photos, staff, collectible characters, surveys, and leaderboards."
+    />
+    <link rel="canonical" href="https://communityversegames.com/get-your-own-game/" />
+    <meta property="og:title" content="Get Your Own Restaurant Game | CommunityVerse Games" />
+    <meta
+      property="og:description"
+      content="See your own restaurant brought to life with a custom 3-minute trivia game. Request a free custom demo."
+    />
+    <meta property="og:url" content="https://communityversegames.com/get-your-own-game/" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="stylesheet" href="/shared/restaurant.css?v=get-your-own-game-v1" />
+  </head>
+  <body data-page="get-your-own-game">
+    <main class="app-shell sales-page-shell">
+      <header class="topbar">
+        <div>
+          <a class="brand" href="/">CommunityVerse Games</a>
+        </div>
+        <a class="topbar-contact" href="/americana/">Back to Demo</a>
+      </header>
+
+      <section class="sales-page-hero">
+        <p class="kicker">Restaurant Challenge Sales Demo</p>
+        <h1 class="page-title">Get Your Own Restaurant Game</h1>
+        <p class="sales-page-lead">
+          See your own restaurant brought to life with a custom 3-minute trivia game built around your menu, story, staff, and guests.
+        </p>
+        <div class="sales-contact-actions">
+          <a class="button button-hot" href="#request-demo">Request My Free Demo</a>
+          <a class="button button-muted" href="mailto:communityversegames@gmail.com?subject=Request%20my%20free%20restaurant%20game%20demo">Email CommunityVerse Games</a>
+        </div>
+      </section>
+
+      <section class="sales-page-grid">
+        <article class="panel panel-pad">
+          <p class="kicker">Your Game Includes</p>
+          <h2 class="section-title">A branded game for your restaurant</h2>
+          <ul class="sales-feature-list">
+            <li>Your restaurant name</li>
+            <li>Your logo and branded game page</li>
+            <li>Your menu photos</li>
+            <li>Your restaurant trivia</li>
+            <li>Your staff and owners</li>
+            <li>Collectible character cards</li>
+            <li>Guest surveys with rewards</li>
+            <li>Leaderboards and virtual restaurant building</li>
+          </ul>
+        </article>
+
+        <article class="panel panel-pad">
+          <p class="kicker">Introductory Offer</p>
+          <h2 class="section-title">Only $19/month</h2>
+          <p class="copy">
+            Start with a personalized demo first. No app download, no obligation, and the game is built to work while guests wait for food.
+          </p>
+          <p class="sales-offer-price">$19<span style="font-size: 1rem; font-family: Arial, sans-serif;">/month</span></p>
+          <ul class="sales-offer-list">
+            <li>No app to download</li>
+            <li>About 3 minutes per game</li>
+            <li>Easy to update</li>
+            <li>Great while guests wait for food</li>
+          </ul>
+        </article>
+      </section>
+
+      <section class="panel panel-pad sales-contact-card" id="request-demo">
+        <p class="kicker">Ready To See Your Own Restaurant?</p>
+        <h2 class="section-title">Request a free custom demo</h2>
+        <p class="copy">
+          I can create a personalized demo with your restaurant's logo, menu, photos, staff, and survey. Free custom demo. No obligation.
+        </p>
+        <p class="copy">
+          Email: <a href="mailto:communityversegames@gmail.com">communityversegames@gmail.com</a>
+        </p>
+        <form class="sales-contact-form" id="demo-request-form">
+          <div class="input-grid">
+            <label class="field" for="demo-name">
+              <span class="field-label">Name</span>
+              <input class="input" id="demo-name" name="name" autocomplete="name" maxlength="80" required />
+            </label>
+            <label class="field" for="demo-email">
+              <span class="field-label">Email address</span>
+              <input class="input" id="demo-email" name="email" type="email" autocomplete="email" maxlength="120" required />
+            </label>
+            <label class="field" for="demo-restaurant">
+              <span class="field-label">Restaurant name</span>
+              <input class="input" id="demo-restaurant" name="restaurant" maxlength="120" placeholder="Your restaurant" />
+            </label>
+            <label class="field" for="demo-message">
+              <span class="field-label">Message</span>
+              <textarea class="textarea" id="demo-message" name="message" maxlength="2000" required>I would like a free custom demo for my restaurant game.</textarea>
+            </label>
+            <label class="contact-extra-field" for="demo-company">
+              Company
+              <input id="demo-company" name="company" tabindex="-1" autocomplete="off" />
+            </label>
+          </div>
+          <p class="form-message hidden" id="demo-request-status"></p>
+          <button class="button button-hot contact-submit" id="demo-request-submit" type="submit">Request My Free Demo</button>
+        </form>
+      </section>
+
+      <footer class="site-footer">
+        <span>Copyright - CommunityVerse Games. All rights reserved</span>
+        <span aria-hidden="true">|</span>
+        <a href="/privacy/">Privacy Policy</a>
+        <span aria-hidden="true">|</span>
+        <a href="/terms/">Terms of Use</a>
+      </footer>
+    </main>
+    <script>
+      (() => {
+        const form = document.getElementById("demo-request-form");
+        const status = document.getElementById("demo-request-status");
+        const submit = document.getElementById("demo-request-submit");
+
+        function setStatus(message, isError = false) {
+          status.textContent = message;
+          status.classList.toggle("hidden", !message);
+          status.classList.toggle("form-message-error", isError);
+          status.classList.toggle("form-message-success", Boolean(message) && !isError);
+        }
+
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const formData = new FormData(form);
+          const restaurant = String(formData.get("restaurant") || "").trim();
+          const message = String(formData.get("message") || "").trim();
+          const payload = {
+            name: String(formData.get("name") || "").trim(),
+            email: String(formData.get("email") || "").trim(),
+            company: String(formData.get("company") || "").trim(),
+            page: window.location.href,
+            message: [restaurant ? `Restaurant: ${restaurant}` : "", message].filter(Boolean).join("\n\n"),
+          };
+
+          setStatus("");
+          submit.disabled = true;
+          submit.textContent = "Sending...";
+
+          try {
+            const response = await fetch("/api/contact", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(payload),
+            });
+            const result = await response.json().catch(() => ({
+              error: "The request could not be sent.",
+            }));
+            if (!response.ok || result?.ok === false) {
+              throw new Error(result?.error || "The request could not be sent.");
+            }
+
+            form.reset();
+            setStatus("Thanks. Your request was sent.");
+          } catch (error) {
+            setStatus(error instanceof Error ? error.message : "The request could not be sent.", true);
+          } finally {
+            submit.disabled = false;
+            submit.textContent = "Request My Free Demo";
+          }
+        });
+      })();
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
+  </body>
+</html>

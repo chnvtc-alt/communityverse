@@ -118,7 +118,25 @@
   }
 
   function isSalesDemoMode() {
-    return restaurant?.salesDemoMode === true;
+    return restaurant?.salesDemoMode === true || demoMode;
+  }
+
+  function markSalesDemoVisit() {
+    try {
+      window.sessionStorage?.setItem("restaurantSalesDemoCta", "1");
+    } catch {
+      // Session storage is optional; the topbar CTA still works on the current page.
+    }
+  }
+
+  function updateSalesDemoCta(show, message = "Like the idea?") {
+    document.querySelectorAll("[data-sales-demo-cta]").forEach((link) => {
+      link.classList.toggle("hidden", !show);
+    });
+    document.querySelectorAll("[data-sales-demo-cta-note]").forEach((note) => {
+      note.textContent = show ? message : "";
+      note.classList.toggle("hidden", !show || !message);
+    });
   }
 
   function salesDemoCustomerCaption(customer) {
@@ -1832,7 +1850,7 @@
               : `
                 <div class="button-row result-followup-actions">
                   <button class="button button-hot" id="play-again-button" type="button">Play Again</button>
-                  <a class="button button-muted" href="/restaurant/?hub=1${salesDemoMode ? "#leaderboard-panel" : ""}">${salesDemoMode ? "Character Collection / Leaderboard" : "View My Virtual Restaurant"}</a>
+                  <a class="button button-muted" href="/restaurant/?hub=1${salesDemoMode ? "&demo=1#leaderboard-panel" : ""}">${salesDemoMode ? "Character Collection / Leaderboard" : "View My Virtual Restaurant"}</a>
                   <button class="button button-muted" id="result-how-to-play-button" type="button" data-how-to-play-button>${salesDemoMode ? "See the Benefits" : "How to Play"}</button>
                 </div>
               `
@@ -1994,10 +2012,14 @@
 
   function renderAll() {
     try {
+      if (isSalesDemoMode()) {
+        markSalesDemoVisit();
+      }
       renderHero(false);
       if (playMode) {
         const session = getSession();
         if (session && session.completed) {
+          updateSalesDemoCta(isSalesDemoMode(), "Enjoying the demo?");
           state.showGame = false;
           elements.start.classList.add("hidden");
           elements.game.classList.add("hidden");
@@ -2007,6 +2029,7 @@
         }
 
         if (session && (state.showGame || shouldResumeQuestions(session))) {
+          updateSalesDemoCta(isSalesDemoMode(), "Imagine this with your menu and staff.");
           state.showGame = true;
           elements.start.classList.add("hidden");
           elements.game.classList.remove("hidden");
@@ -2016,6 +2039,7 @@
         }
 
         if (session && !state.showGame) {
+          updateSalesDemoCta(isSalesDemoMode(), "Imagine this character featuring your restaurant.");
           elements.start.classList.remove("hidden");
           elements.game.classList.add("hidden");
           elements.result.classList.add("hidden");
@@ -2023,12 +2047,14 @@
           return;
         }
 
+        updateSalesDemoCta(isSalesDemoMode(), "See your own restaurant brought to life.");
         elements.start.classList.remove("hidden");
         elements.game.classList.add("hidden");
         elements.result.classList.add("hidden");
         state.showGame = false;
         return;
       }
+      updateSalesDemoCta(isSalesDemoMode(), "See your own restaurant brought to life.");
       renderSetup();
       renderStartPanel();
     } catch (error) {
