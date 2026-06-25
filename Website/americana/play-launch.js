@@ -314,6 +314,7 @@
                   <li>Over 1,200 built-in trivia questions, plus custom questions about your restaurant.</li>
                   <li>Keeps guests engaged while they wait for their food.</li>
                   <li>Your own custom URL and branded game page.</li>
+                  <li>Players may discover your restaurant while searching online or collecting characters from other local restaurant games.</li>
                   <li>Collectible characters that encourage guests to play again.</li>
                   <li>Feedback rewards that give people a reason to complete your survey.</li>
                 </ul>
