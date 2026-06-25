@@ -1611,6 +1611,7 @@
         : overallSummary?.stats;
     const isGuest = Boolean(profile && profile.isGuest);
     const salesDemoMode = isSalesDemoMode();
+    const demoCharacterUnlocked = salesDemoMode && ["favorite", "regular", "occasional"].includes(session.result);
     const isFourthGame = Number(overallSummary?.stats?.gamesPlayed) === 4;
     const resultLayoutMode = isGuest
       ? (state.showProfileForm ? "register-form" : "guest-prompt")
@@ -1636,7 +1637,9 @@
     const showFullBio = state.resultBioExpanded || !customerBioPreview.isTruncated;
     const favoriteProgress = session.favoriteProgress;
     const resultHeadline =
-      favoriteProgress?.becameFavorite
+      salesDemoMode && session.result === "lost"
+        ? "Almost there"
+        : favoriteProgress?.becameFavorite
         ? "Favorite earned"
         : favoriteProgress?.wasEligible && favoriteProgress.successful
           ? "Bonus progress"
@@ -1646,8 +1649,10 @@
           ? "Nice work"
           : "Better luck next time";
     const resultSubheadline =
-      salesDemoMode && ["favorite", "regular", "occasional"].includes(session.result)
+      demoCharacterUnlocked
         ? "Character Unlocked"
+        : salesDemoMode
+          ? "Character Not Unlocked"
         : favoriteProgress?.becameFavorite
         ? "New Favorite Customer"
         : favoriteProgress?.wasEligible && favoriteProgress.successful
@@ -1762,8 +1767,8 @@
             ? `
               <div class="hero-card result-followup-card result-followup-card-guest" style="margin-top: 0; padding: 16px;">
                 <p class="kicker" style="margin: 0 0 6px;">${isFourthGame ? "Trivia % Leaderboard" : salesDemoMode ? "Save Your Character Collection" : "Save Your Customer Collection"}</p>
-                <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${isFourthGame ? "Congratulations! You completed your 4th game." : salesDemoMode ? `You unlocked ${escapeHtml(session.customer.name)}.` : `You just earned ${escapeHtml(session.customer.name)}.`}</h3>
-                <p class="copy" style="margin: 0 0 12px;">${isFourthGame ? "Save your restaurant to keep your Trivia % leaderboard progress. No email required." : salesDemoMode ? "Save your collection to keep your characters, track your trivia progress, and compete on the leaderboards. Keep playing to unlock more collectible characters from local restaurant games." : "Save your collection to keep customers, track your trivia progress, and compete on the leaderboards."}</p>
+                <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${isFourthGame ? "Congratulations! You completed your 4th game." : demoCharacterUnlocked ? `You unlocked ${escapeHtml(session.customer.name)}.` : salesDemoMode ? "Start your character collection." : `You just earned ${escapeHtml(session.customer.name)}.`}</h3>
+                <p class="copy" style="margin: 0 0 12px;">${isFourthGame ? "Save your restaurant to keep your Trivia % leaderboard progress. No email required." : salesDemoMode ? "Save your collection to track your trivia progress, compete on the leaderboards, and unlock collectible characters from local restaurant games." : "Save your collection to keep customers, track your trivia progress, and compete on the leaderboards."}</p>
                 <div class="button-row">
                   <button class="button button-hot result-save-progress-button" id="register-now-button" type="button">
                     <span>${isFourthGame ? "Save My Restaurant" : salesDemoMode ? "Save My Character Collection" : "Save My Customer Collection"}</span>
@@ -1777,11 +1782,11 @@
               ? `
                 <div class="hero-card result-followup-card result-followup-card-form" style="margin-top: 0; padding: 16px;">
                   <p class="kicker" style="margin: 0 0 6px;">Save Collection</p>
-                  <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${salesDemoMode ? `${escapeHtml(session.customer.name)} Unlocked!` : `${escapeHtml(session.customer.name)} Has Joined Your Collection!`}</h3>
+                  <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${demoCharacterUnlocked ? `${escapeHtml(session.customer.name)} Unlocked!` : salesDemoMode ? "Start your character collection." : `${escapeHtml(session.customer.name)} Has Joined Your Collection!`}</h3>
                   <p class="copy result-save-mobile-note" style="margin: 0 0 14px;">${salesDemoMode ? "Save now to keep your characters, trivia record, and leaderboard progress." : "Save now to keep your customers, trivia record, and leaderboard progress."}</p>
                   <p class="copy" style="margin: 0 0 8px;">Save your collection to:</p>
                   <ul class="copy" style="margin: 0 0 16px; padding-left: 20px; line-height: 1.45;">
-                    <li>Keep all ${salesDemoMode ? "characters you unlock" : "customers you earn"}</li>
+                    <li>${salesDemoMode ? "Track characters you unlock" : "Keep all customers you earn"}</li>
                     <li>Track your trivia record</li>
                     <li>Appear on the leaderboards</li>
                     <li>Grow a virtual restaurant if you want</li>
