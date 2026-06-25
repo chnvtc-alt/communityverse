@@ -17,7 +17,7 @@
     <meta property="og:url" content="https://communityversegames.com/get-your-own-game/" />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-    <link rel="stylesheet" href="/shared/restaurant.css?v=get-your-own-game-v18" />
+    <link rel="stylesheet" href="/shared/restaurant.css?v=get-your-own-game-v19" />
   </head>
   <body data-page="get-your-own-game">
     <main class="app-shell sales-page-shell">
@@ -112,6 +112,10 @@
               <span class="field-label">Name</span>
               <input class="input" id="demo-name" name="name" autocomplete="name" maxlength="80" required />
             </label>
+            <label class="field" for="demo-restaurant">
+              <span class="field-label">Restaurant name</span>
+              <input class="input" id="demo-restaurant" name="restaurant" maxlength="120" placeholder="Your restaurant" />
+            </label>
             <label class="field" for="demo-email">
               <span class="field-label">Email address</span>
               <input class="input" id="demo-email" name="email" type="email" autocomplete="email" maxlength="120" required />
@@ -120,10 +124,6 @@
               <span class="field-label">Phone number <span style="font-weight: 500;">(optional)</span></span>
               <input class="input" id="demo-phone" name="phone" type="tel" autocomplete="tel" maxlength="40" placeholder="Call or text" />
             </label>
-            <label class="field" for="demo-restaurant">
-              <span class="field-label">Restaurant name</span>
-              <input class="input" id="demo-restaurant" name="restaurant" maxlength="120" placeholder="Your restaurant" />
-            </label>
             <label class="field" for="demo-message">
               <span class="field-label">Message</span>
               <textarea class="textarea" id="demo-message" name="message" maxlength="2000" required>I'm interested in a custom restaurant game for my restaurant. Please contact me.</textarea>
@@ -131,6 +131,10 @@
             <label class="checkbox-row" for="demo-sign-me-up">
               <input id="demo-sign-me-up" name="signMeUp" type="checkbox" value="yes" />
               <span>Sign me up. I am ready to get started.</span>
+            </label>
+            <label class="checkbox-row" for="demo-free-demo-first">
+              <input id="demo-free-demo-first" name="freeDemoFirst" type="checkbox" value="yes" />
+              <span>Can I see a free custom demo first?</span>
             </label>
             <label class="contact-extra-field" for="demo-company">
               Company
@@ -170,6 +174,7 @@
           const phone = String(formData.get("phone") || "").trim();
           const message = String(formData.get("message") || "").trim();
           const signMeUp = formData.get("signMeUp") === "yes";
+          const freeDemoFirst = formData.get("freeDemoFirst") === "yes";
           const payload = {
             name: String(formData.get("name") || "").trim(),
             email: String(formData.get("email") || "").trim(),
@@ -179,6 +184,7 @@
               restaurant ? `Restaurant: ${restaurant}` : "",
               phone ? `Phone: ${phone}` : "",
               `Sign me up: ${signMeUp ? "Yes" : "No"}`,
+              `Free custom demo first: ${freeDemoFirst ? "Yes" : "No"}`,
               message,
             ].filter(Boolean).join("\n\n"),
           };
