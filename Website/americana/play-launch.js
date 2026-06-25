@@ -1494,6 +1494,14 @@
 
   function resultMessage(session) {
     const favoriteProgress = session.favoriteProgress;
+    const salesDemoMode = isSalesDemoMode();
+
+    if (salesDemoMode) {
+      if (["favorite", "regular", "occasional"].includes(session.result)) {
+        return `${session.customer.name} unlocked.`;
+      }
+      return `${session.customer.name} was not unlocked this time.`;
+    }
 
     if (favoriteProgress?.becameFavorite) {
       return `${session.customer.name} is now a Favorite Customer. Their value increased from ${core.formatCurrency(favoriteProgress.regularValue)} to ${core.formatCurrency(favoriteProgress.favoriteValue)}.`;
@@ -1602,6 +1610,7 @@
         ? core.getPublicLeaderboardStats(profile)
         : overallSummary?.stats;
     const isGuest = Boolean(profile && profile.isGuest);
+    const salesDemoMode = isSalesDemoMode();
     const isFourthGame = Number(overallSummary?.stats?.gamesPlayed) === 4;
     const resultLayoutMode = isGuest
       ? (state.showProfileForm ? "register-form" : "guest-prompt")
@@ -1637,7 +1646,9 @@
           ? "Nice work"
           : "Better luck next time";
     const resultSubheadline =
-      favoriteProgress?.becameFavorite
+      salesDemoMode && ["favorite", "regular", "occasional"].includes(session.result)
+        ? "Character Unlocked"
+        : favoriteProgress?.becameFavorite
         ? "New Favorite Customer"
         : favoriteProgress?.wasEligible && favoriteProgress.successful
           ? "Favorite Progress +1"
@@ -1730,7 +1741,7 @@
               </div>
               <div class="result-metric-row">
                 <div class="result-metric-card">
-                  <span class="result-metric-label">Customer value:</span>
+                  <span class="result-metric-label">${salesDemoMode ? "Guest value:" : "Customer value:"}</span>
                   <span class="result-metric-value">${core.formatCurrency(customerValue)}</span>
                 </div>
                 <div class="result-metric-card">
@@ -1750,12 +1761,12 @@
           isGuest && !state.showProfileForm
             ? `
               <div class="hero-card result-followup-card result-followup-card-guest" style="margin-top: 0; padding: 16px;">
-                <p class="kicker" style="margin: 0 0 6px;">${isFourthGame ? "Trivia % Leaderboard" : "Save Your Customer Collection"}</p>
-                <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${isFourthGame ? "Congratulations! You completed your 4th game." : `You just earned ${escapeHtml(session.customer.name)}.`}</h3>
-                <p class="copy" style="margin: 0 0 12px;">${isFourthGame ? "Save your restaurant to keep your Trivia % leaderboard progress. No email required." : "Save your collection to keep customers, track your trivia progress, and compete on the leaderboards."}</p>
+                <p class="kicker" style="margin: 0 0 6px;">${isFourthGame ? "Trivia % Leaderboard" : salesDemoMode ? "Save Your Character Collection" : "Save Your Customer Collection"}</p>
+                <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${isFourthGame ? "Congratulations! You completed your 4th game." : salesDemoMode ? `You unlocked ${escapeHtml(session.customer.name)}.` : `You just earned ${escapeHtml(session.customer.name)}.`}</h3>
+                <p class="copy" style="margin: 0 0 12px;">${isFourthGame ? "Save your restaurant to keep your Trivia % leaderboard progress. No email required." : salesDemoMode ? "Save your collection to keep your characters, track your trivia progress, and compete on the leaderboards. Keep playing to unlock more collectible characters from local restaurant games." : "Save your collection to keep customers, track your trivia progress, and compete on the leaderboards."}</p>
                 <div class="button-row">
                   <button class="button button-hot result-save-progress-button" id="register-now-button" type="button">
-                    <span>${isFourthGame ? "Save My Restaurant" : "Save My Customer Collection"}</span>
+                    <span>${isFourthGame ? "Save My Restaurant" : salesDemoMode ? "Save My Character Collection" : "Save My Customer Collection"}</span>
                     <small>No email required</small>
                   </button>
                   <button class="button button-muted" id="guest-continue-button" type="button">Keep Playing as Guest</button>
@@ -1766,11 +1777,11 @@
               ? `
                 <div class="hero-card result-followup-card result-followup-card-form" style="margin-top: 0; padding: 16px;">
                   <p class="kicker" style="margin: 0 0 6px;">Save Collection</p>
-                  <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${escapeHtml(session.customer.name)} Has Joined Your Collection!</h3>
-                  <p class="copy result-save-mobile-note" style="margin: 0 0 14px;">Save now to keep your customers, trivia record, and leaderboard progress.</p>
+                  <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${salesDemoMode ? `${escapeHtml(session.customer.name)} Unlocked!` : `${escapeHtml(session.customer.name)} Has Joined Your Collection!`}</h3>
+                  <p class="copy result-save-mobile-note" style="margin: 0 0 14px;">${salesDemoMode ? "Save now to keep your characters, trivia record, and leaderboard progress." : "Save now to keep your customers, trivia record, and leaderboard progress."}</p>
                   <p class="copy" style="margin: 0 0 8px;">Save your collection to:</p>
                   <ul class="copy" style="margin: 0 0 16px; padding-left: 20px; line-height: 1.45;">
-                    <li>Keep all customers you earn</li>
+                    <li>Keep all ${salesDemoMode ? "characters you unlock" : "customers you earn"}</li>
                     <li>Track your trivia record</li>
                     <li>Appear on the leaderboards</li>
                     <li>Grow a virtual restaurant if you want</li>
