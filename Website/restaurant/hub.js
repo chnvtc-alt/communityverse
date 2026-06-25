@@ -20,15 +20,15 @@
     },
     {
       value: "collected",
-      label: "Customers",
-      rankLabel: "Customer",
-      description: "Total customers collected, including regular and occasional customers.",
+      label: "Characters",
+      rankLabel: "Characters",
+      description: "Total characters collected, including regular and occasional characters.",
     },
     {
       value: "estimatedSales",
       label: "Sales",
       rankLabel: "Sales",
-      description: "Total sales from the customers each restaurant has earned.",
+      description: "Total sales from the characters each restaurant has earned.",
     },
     {
       value: "gamesPlayed",
@@ -189,7 +189,7 @@
     const tabs = ensureMobileTabs();
     tabs.innerHTML = `
       <button class="button ${state.activeMobileTab === "overview" ? "button-primary" : "button-muted"}" data-hub-tab="overview" type="button">Overview</button>
-      <button class="button ${state.activeMobileTab === "collection" ? "button-primary" : "button-muted"}" data-hub-tab="collection" type="button">Customers</button>
+      <button class="button ${state.activeMobileTab === "collection" ? "button-primary" : "button-muted"}" data-hub-tab="collection" type="button">Characters</button>
       <button class="button ${state.activeMobileTab === "leaderboard" ? "button-primary" : "button-muted"}" data-hub-tab="leaderboard" type="button">Leaderboards</button>
     `;
 
@@ -501,7 +501,7 @@
     elements.splashRatingBadge.textContent = hasGames
       ? `⭐ Rating: ${core.formatRating(summary.rating)}`
       : "⭐ Rating: New";
-    elements.splashCustomersBadge.textContent = `👥 Customers: ${collected}`;
+    elements.splashCustomersBadge.textContent = `👥 Characters: ${collected}`;
     elements.splashRankBadge.textContent = rank
       ? `🏆 Rank: #${rank}`
       : "🏆 Rank: Not Ranked";
@@ -809,7 +809,7 @@
     if (!state.showGuestSaveForm) {
       return `
         <div class="hub-email-info">
-          <p class="helper" style="margin: 0 0 10px;">Save your restaurant to keep your customers, trivia record, and leaderboard progress. No email required.</p>
+          <p class="helper" style="margin: 0 0 10px;">Save your restaurant to keep your characters, trivia record, and leaderboard progress. No email required.</p>
           <button class="button button-primary button-sm" type="button" data-show-guest-save>
             Name &amp; Save My Restaurant
           </button>
@@ -909,7 +909,7 @@
             </button>
           `)
           .join("")
-      : `<p class="helper" style="margin: 0;">Play a game to collect customers.</p>`;
+      : `<p class="helper" style="margin: 0;">Play a game to unlock characters.</p>`;
 
     const leaderboardMarkup = leaderboardRows.length
       ? leaderboardRows
@@ -927,7 +927,7 @@
       <div class="hub-overview-preview">
         <section class="hub-overview-panel">
           <button class="hub-overview-heading" type="button" data-overview-tab="collection">
-            <span>Recent Customers</span>
+            <span>Recent Characters</span>
             <span>View all</span>
           </button>
           <div class="hub-overview-list">
@@ -959,7 +959,7 @@
     const netWorth = Math.max(0, Number(breakdown.total) || 0) + cashOnHand;
     const rows = [
       [`${breakdown.expansionLabel || "Food Truck"} base`, breakdown.expansionValue],
-      ["Customer loyalty", breakdown.loyaltyValue],
+      ["Character collection", breakdown.loyaltyValue],
       [`Recent sales ${Math.round((Number(breakdown.recentPerformanceRate) || 0) * 100)}%`, breakdown.recentPerformanceValue],
       [`Rating bonus ${((Number(breakdown.ratingRate) || 0) * 100).toFixed(2)}% of value`, breakdown.ratingValue],
       ["Upgrades", breakdown.upgradeValue],
@@ -1139,7 +1139,7 @@
 
     return `
       <div class="restaurant-complete-note">
-        <strong>You collected every customer currently available in ${escapeHtml(restaurant.name)}.</strong>
+        <strong>You unlocked every character currently available in ${escapeHtml(restaurant.name)}.</strong>
         <span>Keep playing here to improve trivia, build Favorites, earn sales, and grow your virtual restaurant. You can also try another Restaurant Challenge when you're ready.</span>
       </div>
     `;
@@ -1177,7 +1177,7 @@
     const nextUpgradeShortfall = nextUpgradeCost === null ? 0 : Math.max(0, nextUpgradeCost - cashOnHand);
     const cashNote = (() => {
       if (cashOnHand <= 0) {
-        return `Cash on hand: ${core.formatCurrency(0)}. Earn more customers to unlock expansions and upgrades.`;
+        return `Cash on hand: ${core.formatCurrency(0)}. Unlock more characters to open expansions and upgrades.`;
       }
       if (canBuyNext && affordableUpgrade) {
         return `You have ${core.formatCurrency(cashOnHand)} cash on hand. You can expand or buy an upgrade now.`;
@@ -1196,7 +1196,7 @@
           : "";
         return `You have ${core.formatCurrency(cashOnHand)} cash on hand. Save ${core.formatCurrency(shortfall)} more to expand${upgradeText}.`;
       }
-      return `You have ${core.formatCurrency(cashOnHand)} cash on hand. Keep collecting customers to buy upgrades.`;
+      return `You have ${core.formatCurrency(cashOnHand)} cash on hand. Keep unlocking characters to buy upgrades.`;
     })();
 
     return `
@@ -1282,7 +1282,7 @@
       ? `You can expand to ${preview.next.label} now. Expanding adds ${core.formatCurrency(preview.valueAdded)} to your restaurant value and grows your Net Worth.`
       : affordableUpgrade
         ? `${affordableUpgrade.label} is available now. Upgrades add value, boost future sales, and grow your Net Worth.`
-        : `You are ${core.formatCurrency(shortfall)} away from ${preview.next.label}. A few more customers could help you expand and grow your Net Worth.`;
+        : `You are ${core.formatCurrency(shortfall)} away from ${preview.next.label}. A few more characters could help you expand and grow your Net Worth.`;
 
     return `
       <div class="restaurant-growth-prompt">
@@ -1399,7 +1399,7 @@
             <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
             <span class="chip hero-stat-chip">🏦 Value ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
             <span class="chip hero-stat-chip">💵 Cash ${core.formatCurrency(cashOnHand)}</span>
-            <span class="chip hero-stat-chip">👥 Customers ${collectedCustomers}</span>
+            <span class="chip hero-stat-chip">👥 Characters ${collectedCustomers}</span>
             <span class="chip hero-stat-chip">💰 Sales ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
             <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
             <span class="chip hero-stat-chip">${bestRankLabel}</span>
@@ -1459,7 +1459,7 @@
                       <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
                       <span class="chip hero-stat-chip">🏦 Value ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
                       <span class="chip hero-stat-chip">💵 Cash ${core.formatCurrency(cashOnHand)}</span>
-                      <span class="chip hero-stat-chip">👥 Customers ${collectedCustomers}</span>
+                      <span class="chip hero-stat-chip">👥 Characters ${collectedCustomers}</span>
                       <span class="chip hero-stat-chip">💰 Sales ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
                       <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
                       <span class="chip hero-stat-chip">${bestRankLabel}</span>
@@ -1522,7 +1522,7 @@
                     <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
                     <span class="chip hero-stat-chip">🏦 Value ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
                     <span class="chip hero-stat-chip">💵 Cash ${core.formatCurrency(cashOnHand)}</span>
-                    <span class="chip hero-stat-chip">👥 Customers ${collectedCustomers}</span>
+                    <span class="chip hero-stat-chip">👥 Characters ${collectedCustomers}</span>
                     <span class="chip hero-stat-chip">💰 Sales ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
                     <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
                     <span class="chip hero-stat-chip">${bestRankLabel}</span>
@@ -1565,7 +1565,7 @@
                         <p class="copy compact-copy" style="margin: 4px 0 0;">${
                           hasSavedProgress
                             ? "This virtual restaurant is saved on this device. Save your restaurant to keep your leaderboard progress."
-                            : "You can keep playing as a guest, but registering after your next game keeps your customers and leaderboard progress with you."
+                            : "You can keep playing as a guest, but registering after your next game keeps your characters and leaderboard progress with you."
                         }</p>
                         ${renderSignInMarkup()}
                         ${hasSavedProgress ? renderGuestSaveMarkup(profile) : ""}
@@ -1579,7 +1579,7 @@
                       <div>
                         <p class="kicker" style="margin: 0 0 4px;">Welcome</p>
                         <h2 class="hero-profile-name">Play your first game, then save your virtual restaurant.</h2>
-                        <p class="copy compact-copy" style="margin: 4px 0 0;">Start with a quick trivia round. After you win your first customer, visit My Virtual Restaurant to name and save your virtual restaurant so progress can follow you.</p>
+                        <p class="copy compact-copy" style="margin: 4px 0 0;">Start with a quick trivia round. After you unlock your first character, visit My Virtual Restaurant to name and save your virtual restaurant so progress can follow you.</p>
                         ${renderSignInMarkup()}
                       </div>
                       <a class="button button-primary button-sm" href="${playAgainTarget.href}">Play First Game</a>
@@ -2151,14 +2151,26 @@
     });
   }
 
+  function getCharacterStatusLabel(status) {
+    if (status === "favorite") {
+      return "⭐ Favorite Character";
+    }
+
+    if (status === "regular") {
+      return "Regular Character";
+    }
+
+    return "Occasional Character";
+  }
+
   function renderCollection() {
     const compactMobile = isMobileHub();
     const profile = core.getActiveProfile();
 
     if (!profile) {
       elements.collection.innerHTML = `
-        <h2 class="section-title">Customer Collection</h2>
-        <p class="copy">Play your first game to start collecting customers. After that, visit My Virtual Restaurant to name your virtual restaurant and add email recovery when you are ready.</p>
+        <h2 class="section-title">Character Collection</h2>
+        <p class="copy">Play your first game to start unlocking characters. After that, visit My Virtual Restaurant to name your virtual restaurant and add email recovery when you are ready.</p>
       `;
       return;
     }
@@ -2182,15 +2194,7 @@
     const selectedCustomerBioPreview = getBioPreview(selectedCustomerBio);
     const showFullBio = state.selectedCustomerBioExpanded || !selectedCustomerBioPreview.isTruncated;
     const favoriteGoal = core.getFavoriteVisitGoal ? core.getFavoriteVisitGoal() : 10;
-    const selectedStatusLabel = selectedCustomer
-      ? selectedCustomer.status === "favorite"
-        ? "⭐ Favorite Customer"
-        : core.getCustomerStatusLabel
-          ? core.getCustomerStatusLabel(selectedCustomer.status)
-          : selectedCustomer.status === "regular"
-            ? "Regular Customer"
-            : "Occasional Customer"
-      : "";
+    const selectedStatusLabel = selectedCustomer ? getCharacterStatusLabel(selectedCustomer.status) : "";
     const selectedValue = selectedCustomer
       ? core.getCollectionEntryValue
         ? core.getCollectionEntryValue(selectedCustomer)
@@ -2206,7 +2210,7 @@
       selectedIsFeedbackReward
         ? `<p class="customer-favorite-progress">Special feedback reward. Cannot be invited back.</p>`
         : selectedCustomer?.status === "favorite"
-        ? `<p class="customer-favorite-progress">Favorite Customer. Value: ${core.formatCurrency(selectedValue)}</p>`
+        ? `<p class="customer-favorite-progress">Favorite Character. Value: ${core.formatCurrency(selectedValue)}</p>`
         : selectedCustomer?.status === "regular"
           ? `<p class="customer-favorite-progress">Favorite Progress: ${selectedFavoriteVisits} / ${favoriteGoal} successful visits</p>`
           : "";
@@ -2215,12 +2219,12 @@
       ? getCustomerInviteBackHref(selectedCustomer, selectedDirectoryRestaurant)
       : "";
       elements.collection.innerHTML = `
-      <h2 class="section-title">Customer Collection</h2>
-      <p class="copy">Your collected customers are stored here. Tap a card to view it or bring that customer back.</p>
-      <div class="leaderboard-tabs collection-tabs" role="tablist" aria-label="Customer collection filter">
-        <button class="button ${state.collectionFilter === "all" ? "button-primary" : "button-muted"} metric-button" data-collection-filter="all" type="button">All Customers</button>
-        <button class="button ${state.collectionFilter === "regular" ? "button-primary" : "button-muted"} metric-button" data-collection-filter="regular" type="button">Regular Customers</button>
-        <button class="button ${state.collectionFilter === "occasional" ? "button-primary" : "button-muted"} metric-button" data-collection-filter="occasional" type="button">Occasional Customers</button>
+      <h2 class="section-title">Character Collection</h2>
+      <p class="copy">Your unlocked characters are stored here. Tap a card to view it or play for that character again.</p>
+      <div class="leaderboard-tabs collection-tabs" role="tablist" aria-label="Character collection filter">
+        <button class="button ${state.collectionFilter === "all" ? "button-primary" : "button-muted"} metric-button" data-collection-filter="all" type="button">All Characters</button>
+        <button class="button ${state.collectionFilter === "regular" ? "button-primary" : "button-muted"} metric-button" data-collection-filter="regular" type="button">Regular Characters</button>
+        <button class="button ${state.collectionFilter === "occasional" ? "button-primary" : "button-muted"} metric-button" data-collection-filter="occasional" type="button">Occasional Characters</button>
       </div>
 
       ${
@@ -2229,7 +2233,7 @@
             ? `
               <div class="collection-selected-card collection-selected-card-mobile ${selectedCustomer.status === "favorite" ? "collection-selected-card-favorite" : ""}">
                 <div class="collection-selected-copy collection-selected-copy-mobile">
-                  <p class="kicker" style="margin: 0 0 4px;">Selected Customer</p>
+                  <p class="kicker" style="margin: 0 0 4px;">Selected Character</p>
                   <h3 class="section-title" style="margin: 0; font-size: 1.45rem;">${escapeHtml(selectedCustomer.customerName)}</h3>
                   <p class="customer-meta" style="margin-top: 4px;">${escapeHtml(selectedStatusLabel)}</p>
                   ${selectedFavoriteProgress}
@@ -2257,7 +2261,7 @@
                 <div class="collection-selected-top">
                   <img class="customer-avatar collection-selected-avatar" src="${resolveCustomerImage(selectedCustomer)}" alt="${escapeHtml(selectedCustomer.customerName)}" onerror="this.onerror=null;this.src='../assets/restaurant-challenge/customers/customer-placeholder.svg';" />
                   <div class="collection-selected-copy">
-                    <p class="kicker" style="margin: 0 0 4px;">Selected Customer</p>
+                    <p class="kicker" style="margin: 0 0 4px;">Selected Character</p>
                     <h3 class="section-title" style="margin: 0; font-size: 1.45rem;">${escapeHtml(selectedCustomer.customerName)}</h3>
                     <p class="customer-meta" style="margin-top: 4px;">${escapeHtml(selectedStatusLabel)}</p>
                     ${selectedFavoriteProgress}
@@ -2295,14 +2299,7 @@
                       : entry.status === "regular"
                         ? entry.regularValue
                         : entry.occasionalValue;
-                    const entryStatusLabel =
-                      entry.status === "favorite"
-                        ? "⭐ Favorite Customer"
-                        : core.getCustomerStatusLabel
-                          ? core.getCustomerStatusLabel(entry.status)
-                          : entry.status === "regular"
-                            ? "Regular Customer"
-                            : "Occasional Customer";
+                    const entryStatusLabel = getCharacterStatusLabel(entry.status);
                     const entryFavoriteVisits = Math.max(0, Math.min(favoriteGoal, Number(entry.favoriteVisits) || 0));
                     const entryIsFeedbackReward = isFeedbackRewardCustomerEntry(entry);
                     const entryProgress =
@@ -2336,7 +2333,7 @@
                   }
                 )
                 .join("")
-            : `<p class="empty-state">No customers yet. Play a few rounds to build your roster.</p>`
+            : `<p class="empty-state">No characters yet. Play a few rounds to build your roster.</p>`
         }
       </div>
 
@@ -2390,7 +2387,7 @@
         `;
       }
       if (elements.collection) {
-        elements.collection.innerHTML = `<h2 class="section-title">Customer Collection</h2><p class="copy">Unable to load this section right now.</p>`;
+        elements.collection.innerHTML = `<h2 class="section-title">Character Collection</h2><p class="copy">Unable to load this section right now.</p>`;
       }
       if (elements.leaderboard) {
         elements.leaderboard.innerHTML = `<h2 class="section-title">Leaderboards</h2><p class="copy">Unable to load this section right now.</p>`;
