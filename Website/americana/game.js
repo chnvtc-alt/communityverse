@@ -1789,7 +1789,7 @@
                 <div class="hero-card result-followup-card result-followup-card-form" style="margin-top: 0; padding: 16px;">
                   <p class="kicker" style="margin: 0 0 6px;">Save Collection</p>
                   <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${demoCharacterUnlocked ? `${escapeHtml(session.customer.name)} Unlocked!` : salesDemoMode ? "Start your character collection." : `${escapeHtml(session.customer.name)} Has Joined Your Collection!`}</h3>
-                  <p class="copy result-save-mobile-note" style="margin: 0 0 14px;">${salesDemoMode ? "Save now to keep your characters, trivia record, and leaderboard progress." : "Save now to keep your customers, trivia record, and leaderboard progress."}</p>
+                  <p class="copy result-save-mobile-note" style="margin: 0 0 14px;">${demoCharacterUnlocked ? `This is the first character in your collection. Save your progress to keep this character and unlock dozens more from restaurants throughout your community.` : salesDemoMode ? "Save now to keep your characters, trivia record, and leaderboard progress." : "Save now to keep your customers, trivia record, and leaderboard progress."}</p>
                   <p class="copy" style="margin: 0 0 8px;">Save your collection to:</p>
                   <ul class="copy" style="margin: 0 0 16px; padding-left: 20px; line-height: 1.45;">
                     <li>${salesDemoMode ? "Track characters you unlock" : "Keep all customers you earn"}</li>
@@ -1799,8 +1799,8 @@
                   </ul>
                   <form class="input-grid" id="profile-form" style="margin-top: 8px;">
                     <div class="field">
-                      <label class="field-label save-restaurant-label" for="restaurant-name">Name Your Virtual Restaurant</label>
-                      <p class="helper save-restaurant-helper">This is how you will appear on the leaderboards. Make it yours by replacing "${escapeHtml(profile ? profile.restaurantName : "our suggestion")}", or keep that as your restaurant name.</p>
+                      <label class="field-label save-restaurant-label" for="restaurant-name">${salesDemoMode ? "Restaurant Name for the Leaderboards" : "Name Your Virtual Restaurant"}</label>
+                      <p class="helper save-restaurant-helper">${salesDemoMode ? `This is the restaurant name other players will see on the leaderboards. You can keep the generated name or create your own.` : `This is how you will appear on the leaderboards. Make it yours by replacing "${escapeHtml(profile ? profile.restaurantName : "our suggestion")}", or keep that as your restaurant name.`}</p>
                       <input class="input save-restaurant-input" id="restaurant-name" name="restaurantName" type="text" maxlength="32" placeholder="Tim's Roadhouse" value="${escapeHtml(profile ? profile.restaurantName : "")}" data-suggested-name="${escapeHtml(profile ? profile.restaurantName : "")}" />
                     </div>
                     <div class="field">
@@ -1808,12 +1808,12 @@
                       <input class="input" id="player-name" name="playerName" type="text" placeholder="Tim" value="${escapeHtml(profile ? profile.playerName : "")}" />
                     </div>
                     <div class="field">
-                      <label class="field-label" for="profile-email">Email address <span style="font-weight: 500;">(optional)</span></label>
+                      <label class="field-label" for="profile-email">${salesDemoMode ? `Email <span style="font-weight: 500;">(optional - helps recover your collection)</span>` : `Email address <span style="font-weight: 500;">(optional)</span>`}</label>
                       <input class="input" id="profile-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" />
                     </div>
                     <p class="helper" style="margin: 0;">Your player name and email are private. Other players only see your virtual restaurant name on leaderboards.</p>
-                    <button class="text-button" id="email-info-toggle" type="button">${state.emailInfoExpanded ? "Hide email note" : "Why save with email?"}</button>
-                    <p class="helper ${state.emailInfoExpanded ? "" : "hidden"}" style="margin: 0;">Email is only used to send a secure recovery link. Without it, your virtual restaurant is saved in this browser, but it cannot be restored after clearing cache or changing devices.</p>
+                    <button class="text-button" id="email-info-toggle" type="button">${state.emailInfoExpanded ? "Hide email note" : salesDemoMode ? "How email helps" : "Why save with email?"}</button>
+                    <p class="helper ${state.emailInfoExpanded ? "" : "hidden"}" style="margin: 0;">${salesDemoMode ? "Email lets you recover your collection if you get a new phone, play on multiple devices, and avoid losing unlocked characters." : "Email is only used to send a secure recovery link. Without it, your virtual restaurant is saved in this browser, but it cannot be restored after clearing cache or changing devices."}</p>
                     <label class="checkbox-row profile-age-confirm" for="profile-age-confirm">
                       <input id="profile-age-confirm" name="ageConfirm" type="checkbox" />
                       <span>I am 13 or older.</span>
