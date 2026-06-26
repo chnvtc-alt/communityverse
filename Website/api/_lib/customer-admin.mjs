@@ -51,8 +51,12 @@ function normalizeRestaurant(value) {
   return raw.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "shared";
 }
 
-function normalizeCharacterType(value) {
+function slugText(value) {
   return String(value || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+function normalizeCharacterType(value) {
+  return slugText(value);
 }
 
 function normalizeAreaSlugs(value) {
@@ -219,6 +223,7 @@ export function filterAdminCustomers(customers, searchParams) {
   const restaurant = String(searchParams.get("restaurant") || searchParams.get("focusTag") || "")
     .trim()
     .toLowerCase();
+  const areaSlug = slugText(searchParams.get("areaSlug") || searchParams.get("area") || "");
   const rarity = String(searchParams.get("rarity") || "").trim().toLowerCase();
 
   return (Array.isArray(customers) ? customers : []).filter((customer) => {
@@ -230,6 +235,7 @@ export function filterAdminCustomers(customers, searchParams) {
       customer.rarity,
       customer.restaurant,
       customer.focusTag,
+      ...(Array.isArray(customer.areaSlugs) ? customer.areaSlugs : []),
       customer.bio,
       customer.questionPlace,
       customer.questionFact,
@@ -247,6 +253,11 @@ export function filterAdminCustomers(customers, searchParams) {
       (status === "all" || (status === "active" ? customer.active : !customer.active)) &&
       (!characterType || String(customer.characterType || customer.group || "").toLowerCase() === characterType) &&
       (!restaurant || String(customer.restaurant || customer.focusTag || "").toLowerCase() === restaurant) &&
+      (!areaSlug ||
+        (Array.isArray(customer.areaSlugs) &&
+          customer.areaSlugs
+            .map(slugText)
+            .some((slug) => slug === areaSlug || slug.includes(areaSlug) || areaSlug.includes(slug)))) &&
       (!rarity || String(customer.rarity || "").toLowerCase() === rarity)
     );
   });

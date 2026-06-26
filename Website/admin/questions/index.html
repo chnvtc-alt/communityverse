@@ -31,7 +31,7 @@
       <button class="workshop-tab is-active" type="button" data-tab="questions">Questions</button>
       <button class="workshop-tab" type="button" data-tab="stats">Stats</button>
       <button class="workshop-tab" type="button" data-tab="profiles">Guest Restaurants</button>
-      <button class="workshop-tab" type="button" data-tab="customers">Customers</button>
+      <button class="workshop-tab" type="button" data-tab="customers">Characters</button>
       <button class="workshop-tab" type="button" data-tab="restaurants">Restaurants</button>
       <button class="workshop-tab" type="button" data-tab="feedback">Feedback</button>
     </nav>
@@ -126,12 +126,12 @@
     <section id="customers-panel" class="layout admin-panel" hidden>
       <aside class="sidebar">
         <button id="new-customer-button" class="button button-primary button-wide" type="button">
-          + New customer
+          + New character
         </button>
 
         <section class="filter-card" aria-labelledby="customer-filter-title">
           <div class="section-heading">
-            <h2 id="customer-filter-title">Find customers</h2>
+            <h2 id="customer-filter-title">Find characters</h2>
             <button id="clear-customer-filters-button" class="text-button" type="button">Clear</button>
           </div>
 
@@ -158,6 +158,10 @@
               <input id="customer-filter-focus-tag" list="customer-focus-options" placeholder="shared" />
             </label>
             <label>
+              Area
+              <input id="customer-filter-area" list="area-options" placeholder="villa-rica" />
+            </label>
+            <label>
               Rarity
               <input id="customer-filter-rarity" list="customer-rarity-options" placeholder="Rare" />
             </label>
@@ -165,7 +169,7 @@
         </section>
 
         <section class="help-card">
-          <h2>Customer photos</h2>
+          <h2>Character photos</h2>
           <p>Upload JPGs at 512 x 512. The filename and current image path will be saved in Supabase.</p>
           <p>Use the editor to change names, bios, values, and the photo whenever you need to.</p>
           <p><strong>Restaurant</strong> is usually <code>shared</code> or a restaurant slug. <strong>Group name</strong> is the database category, such as <code>exclusive</code>, <code>historical</code>, or <code>communityverse</code>.</p>
@@ -175,8 +179,8 @@
       <section class="content">
         <div class="list-heading">
           <div>
-            <p id="customer-count" class="count">0 customers</p>
-            <p class="subtle">Customers now live in Supabase and still fall back to the repo seed file.</p>
+            <p id="customer-count" class="count">0 characters</p>
+            <p class="subtle">Characters now live in Supabase and still fall back to the repo seed file.</p>
           </div>
           <div class="list-actions">
             <label class="inline-control">
@@ -565,8 +569,8 @@
       <form id="customer-form" method="dialog">
         <div class="dialog-heading">
           <div>
-            <p class="eyebrow">Customer record</p>
-            <h2 id="customer-editor-title">New customer</h2>
+            <p class="eyebrow">Character record</p>
+            <h2 id="customer-editor-title">New character</h2>
           </div>
           <button id="close-customer-editor-button" class="icon-button" type="button" aria-label="Close">×</button>
         </div>
@@ -575,31 +579,31 @@
         <div id="customer-form-errors" class="message message-error" hidden></div>
 
         <details class="field-guide">
-          <summary>Customer field guide</summary>
+          <summary>Character field guide</summary>
           <div class="field-guide-grid">
             <p><strong>Character name:</strong> The name players will see after unlocking this character.</p>
-            <p><strong>Group name:</strong> The database category for organizing customers, like exclusive, historical, storybook, communityverse, or staff.</p>
+            <p><strong>Group name:</strong> The database category for organizing characters, like exclusive, historical, storybook, communityverse, or staff.</p>
             <p><strong>Rarity / difficulty:</strong> Common appears most often and is easiest to unlock. Uncommon is in the middle. Rare appears less often and needs a better score.</p>
             <p><strong>Regular value:</strong> Common $75-$125, Uncommon $125-$200, Rare $200-$350.</p>
             <p><strong>Occasional value:</strong> Usually 30% of Regular value, rounded to the nearest $5. This auto-fills, but you can still change it.</p>
-            <p><strong>Restaurant:</strong> Choose Shared for every restaurant, or choose one restaurant so the customer only appears there.</p>
+            <p><strong>Restaurant:</strong> Choose Shared for every restaurant, or choose one restaurant so the character only appears there.</p>
             <p><strong>Sort order:</strong> Lower numbers show first in the control room. It does not need to be perfect.</p>
-            <p><strong>Bio:</strong> Short player-facing description of the customer.</p>
-            <p><strong>Question place:</strong> Where the customer is connected to, if you want the game to ask about it.</p>
-            <p><strong>Question fact:</strong> A short fact the game can use for customer-related trivia.</p>
+            <p><strong>Bio:</strong> Short player-facing description of the character.</p>
+            <p><strong>Question place:</strong> Where the character is connected to, if you want the game to ask about it.</p>
+            <p><strong>Question fact:</strong> A short fact the game can use for character-related trivia.</p>
             <p><strong>Photo URL / path:</strong> You can leave this blank if you use Replace photo. The upload will fill it in when you save.</p>
-            <p><strong>Replace photo:</strong> Upload a 512 x 512 JPG square customer picture.</p>
+            <p><strong>Replace photo:</strong> Upload a 512 x 512 JPG square character picture.</p>
           </div>
         </details>
 
         <div class="form-grid">
           <label class="form-span">
-            Customer ID
-            <input id="customer-id-display" readonly placeholder="Saved customers show their exact ID here." />
+            Character ID
+            <input id="customer-id-display" readonly placeholder="Saved characters show their exact ID here." />
             <span class="optional">Use this exact ID in restaurant feedback reward settings.</span>
           </label>
           <label class="form-span">
-            Customer name
+            Character name
             <input id="customer-name" required />
           </label>
           <label>
@@ -628,7 +632,7 @@
           <label>
             Restaurant
             <select id="customer-focus-tag"></select>
-            <span class="optional">Shared means this customer can appear in every restaurant.</span>
+            <span class="optional">Shared means this character can appear in every restaurant.</span>
           </label>
           <label>
             Sort order
@@ -652,9 +656,9 @@
             <input id="customer-question-place" />
           </label>
           <label class="form-span">
-            Customer area slugs
+            Character area slugs
             <input id="customer-area-slugs" placeholder="villa-rica, douglas-county" />
-            <span class="optional">For shared customers, limit where they appear. Use commas between areas.</span>
+            <span class="optional">For shared characters, limit where they appear. Use commas between areas.</span>
           </label>
           <label class="form-span">
             Question fact
@@ -679,7 +683,7 @@
           <button id="delete-customer-button" class="button button-danger" type="button" hidden>Delete permanently</button>
           <span class="action-spacer"></span>
           <button id="cancel-customer-button" class="button button-quiet" type="button">Cancel</button>
-          <button class="button button-primary" type="submit">Save customer</button>
+          <button class="button button-primary" type="submit">Save character</button>
         </div>
       </form>
     </dialog>
@@ -830,6 +834,6 @@
         </div>
       </form>
     </dialog>
-    <script type="module" src="/admin/questions/admin.js?v=customer-value-helper-v1"></script>
+    <script type="module" src="/admin/questions/admin.js?v=character-area-filter-v1"></script>
   </body>
 </html>

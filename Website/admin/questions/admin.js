@@ -166,6 +166,7 @@ const elements = {
   customerFilterStatus: document.querySelector("#customer-filter-status"),
   customerFilterGroup: document.querySelector("#customer-filter-group"),
   customerFilterFocusTag: document.querySelector("#customer-filter-focus-tag"),
+  customerFilterArea: document.querySelector("#customer-filter-area"),
   customerFilterRarity: document.querySelector("#customer-filter-rarity"),
 };
 
@@ -876,6 +877,7 @@ function updateSuggestions() {
   populateDatalist("area-options", [
     ...restaurants.map((restaurant) => restaurant.areaSlug),
     ...questions.map((question) => question.areaSlug),
+    ...customers.flatMap((customer) => customer.areaSlugs || []),
   ]);
   populateDatalist("customer-options", questions.flatMap((question) => question.customerIds || []));
   populateDatalist("tag-options", questions.flatMap((question) => question.tags || []));
@@ -1057,6 +1059,7 @@ function customerFilterParams() {
     "customer-filter-status": "status",
     "customer-filter-group": "characterType",
     "customer-filter-focus-tag": "restaurant",
+    "customer-filter-area": "areaSlug",
     "customer-filter-rarity": "rarity",
   };
   const params = new URLSearchParams();
@@ -1091,11 +1094,11 @@ function sortedCustomersForDisplay() {
 }
 
 function renderCustomers() {
-  elements.customerCount.textContent = `${customers.length} customer${customers.length === 1 ? "" : "s"}`;
+  elements.customerCount.textContent = `${customers.length} character${customers.length === 1 ? "" : "s"}`;
   populateCustomerSuggestions();
 
   if (!customers.length) {
-    elements.customerList.innerHTML = '<div class="empty-state">No customers match these filters.</div>';
+    elements.customerList.innerHTML = '<div class="empty-state">No characters match these filters.</div>';
     return;
   }
 
@@ -1106,6 +1109,7 @@ function renderCustomers() {
         formatRestaurantLabel(customer.restaurant),
         formatCharacterTypeLabel(customer.characterType),
         customer.rarity,
+        ...(Array.isArray(customer.areaSlugs) ? customer.areaSlugs : []),
         customer.feedbackRewardOnly ? "feedback reward only" : "",
         customer.active ? "" : "inactive",
       ].filter(Boolean);
@@ -2697,7 +2701,7 @@ function resetCustomerEditor(customer = null) {
   elements.customerQuestionFact.value = customer?.questionFact || "";
   elements.customerImage.value = customer?.image || "";
   updateCustomerPhotoPreview(customer?.image || "");
-  elements.customerEditorTitle.textContent = customer ? "Edit customer" : "New customer";
+  elements.customerEditorTitle.textContent = customer ? "Edit character" : "New character";
   elements.deleteCustomerButton.hidden = !customer;
 }
 
@@ -2758,7 +2762,7 @@ async function saveCustomerEditor(event) {
   }
 
   if (!customer.name) {
-    showCustomerFormErrors("Customer name is required.");
+    showCustomerFormErrors("Character name is required.");
     return;
   }
 
@@ -2777,7 +2781,7 @@ async function saveCustomerEditor(event) {
     });
 
     elements.customerDialog.close();
-    showCustomerMessage(isEditing ? "Customer updated." : "Customer added.");
+    showCustomerMessage(isEditing ? "Character updated." : "Character added.");
     await loadCustomers({ quiet: true });
   } catch (error) {
     showCustomerFormErrors(error.details || error.message);
@@ -2798,12 +2802,12 @@ async function toggleCustomer(customer) {
 
 async function deleteCurrentCustomer() {
   const id = elements.customerId.value;
-  if (!id || !window.confirm("Permanently delete this customer? Deactivating is usually safer.")) return;
+  if (!id || !window.confirm("Permanently delete this character? Deactivating is usually safer.")) return;
 
   try {
     await customerApiRequest(`/${encodeURIComponent(id)}`, { method: "DELETE" });
     elements.customerDialog.close();
-    showCustomerMessage("Customer deleted.");
+    showCustomerMessage("Character deleted.");
     await loadCustomers({ quiet: true });
   } catch (error) {
     showCustomerFormErrors(error.message);
@@ -3206,6 +3210,7 @@ elements.clearCustomerFiltersButton.addEventListener("click", () => {
     elements.customerFilterQuery,
     elements.customerFilterGroup,
     elements.customerFilterFocusTag,
+    elements.customerFilterArea,
     elements.customerFilterRarity,
   ].forEach((input) => {
     input.value = "";
@@ -3252,6 +3257,7 @@ filterIds.forEach((id) => {
   elements.customerFilterQuery,
   elements.customerFilterGroup,
   elements.customerFilterFocusTag,
+  elements.customerFilterArea,
   elements.customerFilterRarity,
   elements.customerFilterStatus,
 ].forEach((input) => {
