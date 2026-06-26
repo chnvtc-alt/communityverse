@@ -160,15 +160,6 @@
     return "";
   }
 
-  function salesDemoCharacterName(customer) {
-    const name = String(customer?.name || "");
-    const lowerName = name.toLowerCase();
-    if (lowerName.includes("owner") || lowerName.includes("management")) {
-      return "Owners";
-    }
-    return name;
-  }
-
   function openingCustomerCopyClass(customer) {
     return isSalesDemoMode() && salesDemoCustomerCaption(customer)
       ? "opening-guest-copy opening-guest-copy-demo"
@@ -1095,7 +1086,7 @@
                       <article class="opening-guest-card ${isSalesDemoMode() ? "opening-guest-card-demo" : ""}">
                         <img class="opening-guest-photo" src="${customer.image}" alt="${escapeHtml(customer.name)}" />
                         <div class="${openingCustomerCopyClass(customer)}">
-                          <p class="opening-guest-name">${formatGuestDisplayName(isSalesDemoMode() ? salesDemoCharacterName(customer) : customer.name)}</p>
+                          <p class="opening-guest-name">${formatGuestDisplayName(customer.name)}</p>
                           ${
                             isSalesDemoMode() && salesDemoCustomerCaption(customer)
                               ? `<p class="opening-guest-caption">${escapeHtml(salesDemoCustomerCaption(customer))}</p>`
@@ -1187,7 +1178,7 @@
                       <article class="opening-guest-card ${isSalesDemoMode() ? "opening-guest-card-demo" : ""}">
                         <img class="opening-guest-photo" src="${customer.image}" alt="${escapeHtml(customer.name)}" />
                         <div class="${openingCustomerCopyClass(customer)}">
-                          <p class="opening-guest-name">${formatGuestDisplayName(isSalesDemoMode() ? salesDemoCharacterName(customer) : customer.name)}</p>
+                          <p class="opening-guest-name">${formatGuestDisplayName(customer.name)}</p>
                           ${
                             isSalesDemoMode() && salesDemoCustomerCaption(customer)
                               ? `<p class="opening-guest-caption">${escapeHtml(salesDemoCustomerCaption(customer))}</p>`

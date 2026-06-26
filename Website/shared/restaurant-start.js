@@ -67,15 +67,6 @@
     return "";
   }
 
-  function salesDemoCharacterName(customer) {
-    const name = String(customer?.name || "");
-    const lowerName = name.toLowerCase();
-    if (lowerName.includes("owner") || lowerName.includes("management")) {
-      return "Owners";
-    }
-    return name;
-  }
-
   function openingCustomerCopyClass(customer, restaurant) {
     return isSalesDemoRestaurant(restaurant) && salesDemoCustomerCaption(customer)
       ? "opening-guest-copy opening-guest-copy-demo"
@@ -859,7 +850,7 @@
                       <article class="opening-guest-card ${salesDemoMode ? "opening-guest-card-demo" : ""}">
                         <img class="opening-guest-photo" src="${escapeHtml(customer.image)}" alt="${escapeHtml(customer.name)}" />
                         <div class="${openingCustomerCopyClass(customer, restaurant)}">
-                          <p class="opening-guest-name">${escapeHtml(salesDemoMode ? salesDemoCharacterName(customer) : customer.name)}</p>
+                          <p class="opening-guest-name">${escapeHtml(customer.name)}</p>
                           ${
                             salesDemoMode && salesDemoCustomerCaption(customer)
                               ? `<p class="opening-guest-caption">${escapeHtml(salesDemoCustomerCaption(customer))}</p>`
