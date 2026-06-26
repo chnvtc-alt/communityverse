@@ -1007,11 +1007,9 @@
         return;
       }
 
-      try {
-        await core.syncActiveProfile?.();
-      } catch {
+      void Promise.resolve(core.syncActiveProfile?.()).catch(() => {
         // The profile is still saved locally; the normal sync path will retry on later changes.
-      }
+      });
 
       state.showFeedbackRewardForm = false;
       state.feedbackRewardError = "";

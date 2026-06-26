@@ -3488,19 +3488,33 @@
       throw new Error("Please answer the survey before claiming this reward.");
     }
 
-    const result = await requestJson("/feedback-responses", {
-      method: "POST",
-      body: JSON.stringify({
-        restaurantSlug: config.restaurant.slug,
-        restaurantName: config.restaurant.name,
-        profileId: activeProfile?.id || "",
-        rewardCustomerId: config.customer.id,
-        rewardCustomerName: config.customer.name,
-        rewardAwarded: Boolean(options.rewardAwarded),
-        answers: normalizedAnswers,
-        submittedAt: nowIso(),
-      }),
-    });
+    const timeoutController = new AbortController();
+    const timeoutId = window.setTimeout(() => timeoutController.abort(), 15000);
+
+    let result = null;
+    try {
+      result = await requestJson("/feedback-responses", {
+        method: "POST",
+        signal: timeoutController.signal,
+        body: JSON.stringify({
+          restaurantSlug: config.restaurant.slug,
+          restaurantName: config.restaurant.name,
+          profileId: activeProfile?.id || "",
+          rewardCustomerId: config.customer.id,
+          rewardCustomerName: config.customer.name,
+          rewardAwarded: Boolean(options.rewardAwarded),
+          answers: normalizedAnswers,
+          submittedAt: nowIso(),
+        }),
+      });
+    } catch (error) {
+      if (error?.name === "AbortError") {
+        throw new Error("The survey is taking too long to send. Please try again.");
+      }
+      throw error;
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
 
     return result?.response || null;
   }

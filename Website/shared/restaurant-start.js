@@ -738,11 +738,9 @@
         return;
       }
 
-      try {
-        await core.syncActiveProfile?.();
-      } catch {
+      void Promise.resolve(core.syncActiveProfile?.()).catch(() => {
         // The normal profile sync path will try again later.
-      }
+      });
 
       state.showFeedbackRewardForm = false;
       state.feedbackRewardError = "";
