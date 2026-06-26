@@ -977,6 +977,8 @@
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       const submitButton = document.getElementById("feedback-reward-submit");
+      const originalSubmitText = submitButton?.textContent || "Send Feedback & Claim Customer";
+      let didRedraw = false;
       const answers = collectFeedbackSurveyAnswers();
       state.feedbackSurveyAnswers = answers;
       if (!answers.some((answer) => answer.value)) {
@@ -990,30 +992,48 @@
         submitButton.textContent = "Sending...";
       }
 
-      void Promise.resolve(core.submitFeedbackSurveyResponse?.(restaurantSlug, answers)).catch((submitError) => {
-        console.warn("Feedback survey submission will retry through normal profile sync if needed.", submitError);
-      });
+      try {
+        void Promise.resolve(core.submitFeedbackSurveyResponse?.(restaurantSlug, answers)).catch((submitError) => {
+          console.warn("Feedback survey submission will retry through normal profile sync if needed.", submitError);
+        });
 
-      const outcome = core.awardFeedbackReward?.(restaurantSlug, {
-        message: answers.map((answer) => `${answer.questionText}: ${answer.value}`).join("\n"),
-      });
-      if (!outcome?.ok) {
-        state.feedbackRewardError = outcome?.message || "Unable to claim this reward right now.";
+        const outcome = core.awardFeedbackReward?.(restaurantSlug, {
+          message: answers.map((answer) => `${answer.questionText}: ${answer.value}`).join("\n"),
+        });
+        if (!outcome?.ok) {
+          state.feedbackRewardError = outcome?.message || "Unable to claim this reward right now.";
+          renderAll();
+          didRedraw = true;
+          return;
+        }
+
+        void Promise.resolve(core.syncActiveProfile?.()).catch(() => {
+          // The profile is still saved locally; the normal sync path will retry on later changes.
+        });
+
+        state.showFeedbackRewardForm = false;
+        state.feedbackRewardError = "";
+        state.feedbackSurveyAnswers = [];
+        state.feedbackRewardMessage = isSalesDemoMode()
+          ? `${outcome.customer?.name || "This character"} has joined your character collection.`
+          : outcome.message || `${outcome.customer?.name || "This customer"} has joined your collection.`;
         renderAll();
-        return;
+        didRedraw = true;
+      } catch (error) {
+        console.error("Feedback reward display failed.", error);
+        state.feedbackRewardError = error instanceof Error ? error.message : "Unable to claim this reward right now.";
+        try {
+          renderAll();
+          didRedraw = true;
+        } catch (renderError) {
+          console.error("Feedback reward error display failed.", renderError);
+        }
+      } finally {
+        if (!didRedraw && submitButton?.isConnected) {
+          submitButton.disabled = false;
+          submitButton.textContent = originalSubmitText;
+        }
       }
-
-      void Promise.resolve(core.syncActiveProfile?.()).catch(() => {
-        // The profile is still saved locally; the normal sync path will retry on later changes.
-      });
-
-      state.showFeedbackRewardForm = false;
-      state.feedbackRewardError = "";
-      state.feedbackSurveyAnswers = [];
-      state.feedbackRewardMessage = isSalesDemoMode()
-        ? `${outcome.customer?.name || "This character"} has joined your character collection.`
-        : outcome.message || `${outcome.customer?.name || "This customer"} has joined your collection.`;
-      renderAll();
     });
   }
 
