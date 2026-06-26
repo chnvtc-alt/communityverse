@@ -74,7 +74,7 @@
 
   function getGameTitle() {
     if (isSalesDemoMode()) {
-      return "(YOUR RESTAURANT NAME HERE) Game";
+      return "The (YOUR RESTAURANT NAME HERE) Game";
     }
     return restaurant?.publicGameName || `${restaurant?.name || "Restaurant"} Game`;
   }

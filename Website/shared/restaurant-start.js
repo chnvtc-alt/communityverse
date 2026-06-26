@@ -53,7 +53,7 @@
 
   function getOpeningGameTitle(restaurant) {
     if (isSalesDemoRestaurant(restaurant)) {
-      return "(YOUR RESTAURANT NAME HERE) Game";
+      return "The (YOUR RESTAURANT NAME HERE) Game";
     }
     return restaurant.publicGameName || `${restaurant.name} Game`;
   }
