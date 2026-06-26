@@ -1568,7 +1568,7 @@
       return `${session.customer.name} has joined your character collection.`;
     }
 
-    return `${session.customer.name} was not unlocked this time. This character can appear again and will be added to your collection if you score enough.`;
+    return `${session.customer.name} was not unlocked this time. Try again when this character appears to add it to your collection.`;
   }
 
   function renderResultNetWorthPrompt(profile, stats = null) {
@@ -1704,7 +1704,7 @@
         ? "New Regular Character"
         : session.result === "occasional"
           ? "New Occasional Character"
-          : "Character Not Kept";
+          : "Character Not Unlocked";
     const customerValue =
       session.result === "favorite"
         ? core.getFavoriteCustomerValue(session.customer)
