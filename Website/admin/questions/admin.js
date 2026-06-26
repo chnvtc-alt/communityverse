@@ -201,6 +201,7 @@ let selectedQuestionImageFile = null;
 let selectedQuestionImagePreviewUrl = "";
 let selectedCustomerPhotoFile = null;
 let selectedCustomerPhotoPreviewUrl = "";
+let customerOccasionalValueManuallyEdited = false;
 let selectedRestaurantHeroFile = null;
 let selectedRestaurantHeroPreviewUrl = "";
 let selectedRestaurantLogoFile = null;
@@ -2651,9 +2652,23 @@ function updateCustomerPhotoPreview(source) {
   }
 }
 
+function suggestedOccasionalValue(regularValue) {
+  const regular = Math.max(0, Number(regularValue) || 0);
+  return Math.round((regular * 0.3) / 5) * 5;
+}
+
+function updateSuggestedOccasionalValue(force = false) {
+  if (!force && customerOccasionalValueManuallyEdited) {
+    return;
+  }
+
+  elements.customerOccasionalValue.value = suggestedOccasionalValue(elements.customerRegularValue.value);
+}
+
 function resetCustomerEditor(customer = null) {
   elements.customerForm.reset();
   showCustomerFormErrors([]);
+  customerOccasionalValueManuallyEdited = false;
   if (selectedCustomerPhotoPreviewUrl) {
     URL.revokeObjectURL(selectedCustomerPhotoPreviewUrl);
     selectedCustomerPhotoPreviewUrl = "";
@@ -2666,7 +2681,10 @@ function resetCustomerEditor(customer = null) {
   elements.customerGroup.value = customer?.characterType || customer?.group || "";
   elements.customerRarity.value = customer?.rarity || "Common";
   elements.customerRegularValue.value = customer?.regularValue || 0;
-  elements.customerOccasionalValue.value = customer?.occasionalValue || 0;
+  elements.customerOccasionalValue.value = customer
+    ? customer.occasionalValue || 0
+    : suggestedOccasionalValue(elements.customerRegularValue.value);
+  customerOccasionalValueManuallyEdited = Boolean(customer);
   renderCustomerRestaurantChoices(customer?.restaurant || customer?.focusTag || "shared");
   elements.customerSortOrder.value = customer?.sortOrder || 0;
   elements.customerActive.checked = customer?.active !== false;
@@ -3343,6 +3361,10 @@ elements.form.addEventListener("submit", saveEditor);
 elements.deleteButton.addEventListener("click", deleteCurrentQuestion);
 elements.closeEditorButton.addEventListener("click", () => elements.editor.close());
 elements.cancelButton.addEventListener("click", () => elements.editor.close());
+elements.customerRegularValue.addEventListener("input", () => updateSuggestedOccasionalValue());
+elements.customerOccasionalValue.addEventListener("input", () => {
+  customerOccasionalValueManuallyEdited = true;
+});
 elements.customerForm.addEventListener("submit", saveCustomerEditor);
 elements.deleteCustomerButton.addEventListener("click", deleteCurrentCustomer);
 elements.closeCustomerEditorButton.addEventListener("click", () => elements.customerDialog.close());
