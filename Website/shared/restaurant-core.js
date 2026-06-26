@@ -3880,10 +3880,10 @@
     }
 
     if (customer.restaurant && customer.restaurant !== "shared") {
-      return `${customer.name} is a special restaurant regular who only shows up at ${restaurantLabel(customer.restaurant)}.`;
+      return `${customer.name} is an exclusive character who only appears in ${restaurantLabel(customer.restaurant)}.`;
     }
 
-    return `${customer.name} is a recurring CommunityVerse customer.`;
+    return `${customer.name} is a recurring CommunityVerse character.`;
   }
 
   function getCustomersForRestaurant(slug) {

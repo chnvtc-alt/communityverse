@@ -24,6 +24,16 @@ function uniqueStrings(values) {
   return [...new Set((Array.isArray(values) ? values : []).map((value) => String(value || "").trim()).filter(Boolean))];
 }
 
+function firstNonEmpty(...values) {
+  for (const value of values) {
+    const text = String(value || "").trim();
+    if (text) {
+      return text;
+    }
+  }
+  return "";
+}
+
 function normalizeRestaurant(value) {
   const raw = String(value || "").trim().toLowerCase();
   if (!raw || raw === "shared") {
@@ -118,7 +128,7 @@ export function customerFromRecord(record) {
     occasionalValue: record.occasional_value ?? payload.occasionalValue,
     restaurant: record.focus_tag ?? payload.restaurant ?? payload.focusTag,
     image: record.image ?? payload.image,
-    bio: record.bio ?? payload.bio,
+    bio: firstNonEmpty(record.bio, payload.bio),
     questionPlace: record.question_place ?? payload.questionPlace,
     questionFact: record.question_fact ?? payload.questionFact,
     createdAt: record.created_at ?? payload.createdAt,
