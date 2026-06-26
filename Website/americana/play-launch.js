@@ -813,7 +813,7 @@
       : "";
     const surveyQuestions = (restaurant?.feedbackSurveyQuestions || []).filter((question) => question.active !== false);
     const feedbackSurveyIntro = "Create your own survey questions using ratings, Yes/No, multiple choice, 1-5 scale, or written responses. View your survey results anytime in your private dashboard.";
-    const feedbackSubmitText = isSalesDemoMode() ? "Send Feedback & Claim Character" : "Send Feedback & Claim Customer";
+    const feedbackSubmitText = "Send Feedback & Claim Character";
 
     if (reward.alreadyAwarded && !state.feedbackRewardMessage) {
       return `
@@ -977,7 +977,7 @@
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       const submitButton = document.getElementById("feedback-reward-submit");
-      const originalSubmitText = submitButton?.textContent || "Send Feedback & Claim Customer";
+      const originalSubmitText = submitButton?.textContent || "Send Feedback & Claim Character";
       let didRedraw = false;
       const answers = collectFeedbackSurveyAnswers();
       state.feedbackSurveyAnswers = answers;
@@ -1069,7 +1069,7 @@
             replayCustomer
               ? `
                 <p class="helper opening-start-helper opening-title-helper">
-                  You invited <strong>${escapeHtml(replayCustomer.name)}</strong> back. Playing again can upgrade the customer, but a lower score will replace the earlier result.
+                  You invited <strong>${escapeHtml(replayCustomer.name)}</strong> back. Playing again can upgrade the character, but a lower score will replace the earlier result.
                 </p>
               `
               : ""
@@ -1264,9 +1264,9 @@
     const revealBioMarkup = salesDemoMode
       ? `${escapeHtml(customer.name)} is an exclusive collectible character available only in your restaurant's game.<br />Players will come back to build their collection and unlock new characters.`
       : escapeHtml(customerBio);
-    const revealType = salesDemoMode ? "character" : "customer";
-    const regularValueLabel = salesDemoMode ? "Regular Value" : "Regular Customer Value";
-    const occasionalValueLabel = salesDemoMode ? "Occasional Value" : "Occasional Customer Value";
+    const revealType = "character";
+    const regularValueLabel = salesDemoMode ? "Regular Value" : "Regular Character Value";
+    const occasionalValueLabel = salesDemoMode ? "Occasional Value" : "Occasional Character Value";
     const howToPlayText = salesDemoMode ? "See the Benefits" : "How to Play";
     const collectionEntry = getCollectionEntryForSession(session);
     const favoriteGoal = core.getFavoriteVisitGoal();
@@ -1277,16 +1277,16 @@
       isRegularReplay && collectionEntry.status !== "favorite"
         ? `
           <div class="favorite-progress-note">
-            <p class="kicker">Regular Customer Bonus</p>
-            <p class="copy">Score <strong>${thresholds.regular}/10 or better</strong> with this customer to build Favorite progress. After <strong>${favoriteGoal} successful visits</strong>, they become a Favorite Customer and their value increases from <strong>${core.formatCurrency(customer.regularValue)}</strong> to <strong>${core.formatCurrency(core.getFavoriteCustomerValue(customer))}</strong>.</p>
+            <p class="kicker">Regular Character Bonus</p>
+            <p class="copy">Score <strong>${thresholds.regular}/10 or better</strong> with this character to build Favorite progress. After <strong>${favoriteGoal} successful visits</strong>, they become a Favorite Character and their value increases from <strong>${core.formatCurrency(customer.regularValue)}</strong> to <strong>${core.formatCurrency(core.getFavoriteCustomerValue(customer))}</strong>.</p>
             <p class="helper">Current Favorite progress: ${favoriteVisits}/${favoriteGoal}</p>
           </div>
         `
         : collectionEntry?.status === "favorite"
           ? `
             <div class="favorite-progress-note favorite-progress-note-complete">
-              <p class="kicker">Favorite Customer</p>
-              <p class="copy">${escapeHtml(customer.name)} is already a Favorite Customer. Their value is <strong>${core.formatCurrency(core.getFavoriteCustomerValue(customer))}</strong>.</p>
+              <p class="kicker">Favorite Character</p>
+              <p class="copy">${escapeHtml(customer.name)} is already a Favorite Character. Their value is <strong>${core.formatCurrency(core.getFavoriteCustomerValue(customer))}</strong>.</p>
             </div>
           `
           : "";
@@ -1312,11 +1312,11 @@
                 : `
                   <div class="customer-reveal-goals">
                     <div class="customer-reveal-goal">
-                      <span class="customer-reveal-label">Regular Customer</span>
+                      <span class="customer-reveal-label">Regular Character</span>
                       <strong>Need ${thresholds.regular}/10 Correct</strong>
                     </div>
                     <div class="customer-reveal-goal">
-                      <span class="customer-reveal-label">Occasional Customer</span>
+                      <span class="customer-reveal-label">Occasional Character</span>
                       <strong>Need ${thresholds.occasional}/10 Correct</strong>
                     </div>
                   </div>
@@ -1334,11 +1334,11 @@
             </div>
             <div class="customer-reveal-mobile-summary">
               <div class="customer-reveal-combo">
-                <span class="customer-reveal-label">${escapeHtml(salesDemoMode ? "Regular Value" : "Regular Customer")}</span>
+                <span class="customer-reveal-label">${escapeHtml(salesDemoMode ? "Regular Value" : "Regular Character")}</span>
                 <strong>${escapeHtml(salesDemoMode ? core.formatCurrency(customer.regularValue) : `Need ${thresholds.regular}/10 Correct - Value ${core.formatCurrency(customer.regularValue)}`)}</strong>
               </div>
               <div class="customer-reveal-combo">
-                <span class="customer-reveal-label">${escapeHtml(salesDemoMode ? "Occasional Value" : "Occasional Customer")}</span>
+                <span class="customer-reveal-label">${escapeHtml(salesDemoMode ? "Occasional Value" : "Occasional Character")}</span>
                 <strong>${escapeHtml(salesDemoMode ? core.formatCurrency(customer.occasionalValue) : `Need ${thresholds.occasional}/10 Correct - Value ${core.formatCurrency(customer.occasionalValue)}`)}</strong>
               </div>
             </div>
@@ -1554,11 +1554,11 @@
     }
 
     if (favoriteProgress?.becameFavorite) {
-      return `${session.customer.name} is now a Favorite Customer. Their value increased from ${core.formatCurrency(favoriteProgress.regularValue)} to ${core.formatCurrency(favoriteProgress.favoriteValue)}.`;
+      return `${session.customer.name} is now a Favorite Character. Their value increased from ${core.formatCurrency(favoriteProgress.regularValue)} to ${core.formatCurrency(favoriteProgress.favoriteValue)}.`;
     }
 
     if (favoriteProgress?.wasEligible && favoriteProgress.successful) {
-      return `${session.customer.name} is now ${favoriteProgress.visits}/${favoriteProgress.goal} successful visits toward becoming a Favorite Customer.`;
+      return `${session.customer.name} is now ${favoriteProgress.visits}/${favoriteProgress.goal} successful visits toward becoming a Favorite Character.`;
     }
 
     if (favoriteProgress?.wasEligible && !favoriteProgress.successful) {
@@ -1566,7 +1566,7 @@
     }
 
     if (session.result === "favorite") {
-      return `${session.customer.name} is already a Favorite Customer.`;
+      return `${session.customer.name} is already a Favorite Character.`;
     }
 
     if (session.result === "regular") {
@@ -1668,12 +1668,12 @@
       : "return-actions";
     const label =
       session.result === "favorite"
-        ? "Favorite Customer"
+        ? "Favorite Character"
         : session.result === "regular"
-        ? "Regular Customer"
+        ? "Regular Character"
         : session.result === "occasional"
-        ? "Occasional Customer"
-          : "Lost Customer";
+        ? "Occasional Character"
+          : "Lost Character";
     const resultSummaryLabel =
       session.result === "favorite"
         ? "Favorite"
@@ -1704,16 +1704,16 @@
         : salesDemoMode
           ? "Character Not Unlocked"
         : favoriteProgress?.becameFavorite
-        ? "New Favorite Customer"
+        ? "New Favorite Character"
         : favoriteProgress?.wasEligible && favoriteProgress.successful
           ? "Favorite Progress +1"
           : favoriteProgress?.wasEligible
             ? "Favorite Progress Missed"
             : session.result === "regular"
-        ? "New Regular Customer"
+        ? "New Regular Character"
         : session.result === "occasional"
-          ? "New Occasional Customer"
-          : "Customer Not Kept";
+          ? "New Occasional Character"
+          : "Character Not Kept";
     const customerValue =
       session.result === "favorite"
         ? core.getFavoriteCustomerValue(session.customer)
@@ -1796,7 +1796,7 @@
               </div>
               <div class="result-metric-row">
                 <div class="result-metric-card">
-                  <span class="result-metric-label">${salesDemoMode ? "Guest value:" : "Customer value:"}</span>
+                  <span class="result-metric-label">${salesDemoMode ? "Guest value:" : "Character value:"}</span>
                   <span class="result-metric-value">${core.formatCurrency(customerValue)}</span>
                 </div>
                 <div class="result-metric-card">
@@ -1816,12 +1816,12 @@
           isGuest && !state.showProfileForm
             ? `
               <div class="hero-card result-followup-card result-followup-card-guest" style="margin-top: 0; padding: 16px;">
-                <p class="kicker" style="margin: 0 0 6px;">${isFourthGame ? "Trivia % Leaderboard" : salesDemoMode ? "Save Your Character Collection" : "Save Your Customer Collection"}</p>
+                <p class="kicker" style="margin: 0 0 6px;">${isFourthGame ? "Trivia % Leaderboard" : "Save Your Character Collection"}</p>
                 <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${isFourthGame ? "Congratulations! You completed your 4th game." : demoCharacterUnlocked ? `You unlocked ${escapeHtml(session.customer.name)}.` : salesDemoMode ? "Start your character collection." : `You just unlocked ${escapeHtml(session.customer.name)}.`}</h3>
-                <p class="copy" style="margin: 0 0 12px;">${isFourthGame ? "Save your restaurant to keep your Trivia % leaderboard progress. No email required." : salesDemoMode ? "Save your collection and continue unlocking collectible characters from restaurants throughout your community." : "Save your collection to keep customers, track your trivia progress, and compete on the leaderboards."}</p>
+                <p class="copy" style="margin: 0 0 12px;">${isFourthGame ? "Save your restaurant to keep your Trivia % leaderboard progress. No email required." : salesDemoMode ? "Save your collection and continue unlocking collectible characters from restaurants throughout your community." : "Save your collection to keep characters, track your trivia progress, and compete on the leaderboards."}</p>
                 <div class="button-row">
                   <button class="button button-hot result-save-progress-button" id="register-now-button" type="button">
-                    <span>${isFourthGame ? "Save My Restaurant" : salesDemoMode ? "Save My Collection" : "Save My Customer Collection"}</span>
+                    <span>${isFourthGame ? "Save My Restaurant" : salesDemoMode ? "Save My Collection" : "Save My Character Collection"}</span>
                     <small>No email required</small>
                   </button>
                   <button class="button button-muted" id="guest-continue-button" type="button">Keep Playing as Guest</button>
@@ -1833,7 +1833,7 @@
                 <div class="hero-card result-followup-card result-followup-card-form" style="margin-top: 0; padding: 16px;">
                   <p class="kicker" style="margin: 0 0 6px;">Save Collection</p>
                   <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${demoCharacterUnlocked ? `${escapeHtml(session.customer.name)} Unlocked!` : salesDemoMode ? "Start your character collection." : `${escapeHtml(session.customer.name)} Has Joined Your Collection!`}</h3>
-                  <p class="copy result-save-mobile-note" style="margin: 0 0 14px;">${demoCharacterUnlocked ? `This is the first character in your collection. Save your progress to keep this character and unlock dozens more from restaurants throughout your community.` : salesDemoMode ? "Save now to keep your characters, trivia record, and leaderboard progress." : "Save now to keep your customers, trivia record, and leaderboard progress."}</p>
+                  <p class="copy result-save-mobile-note" style="margin: 0 0 14px;">${demoCharacterUnlocked ? `This is the first character in your collection. Save your progress to keep this character and unlock dozens more from restaurants throughout your community.` : "Save now to keep your characters, trivia record, and leaderboard progress."}</p>
                   <p class="copy" style="margin: 0 0 8px;">Save your collection to:</p>
                   <ul class="copy" style="margin: 0 0 16px; padding-left: 20px; line-height: 1.45;">
                     <li>${salesDemoMode ? "Track characters you unlock" : "Keep all characters you unlock"}</li>
