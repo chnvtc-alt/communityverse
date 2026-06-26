@@ -990,13 +990,9 @@
         submitButton.textContent = "Sending...";
       }
 
-      try {
-        await core.submitFeedbackSurveyResponse?.(restaurantSlug, answers);
-      } catch (submitError) {
-        state.feedbackRewardError = submitError instanceof Error ? submitError.message : "Unable to save that survey right now.";
-        renderAll();
-        return;
-      }
+      void Promise.resolve(core.submitFeedbackSurveyResponse?.(restaurantSlug, answers)).catch((submitError) => {
+        console.warn("Feedback survey submission will retry through normal profile sync if needed.", submitError);
+      });
 
       const outcome = core.awardFeedbackReward?.(restaurantSlug, {
         message: answers.map((answer) => `${answer.questionText}: ${answer.value}`).join("\n"),
