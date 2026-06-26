@@ -4506,7 +4506,7 @@
         : []
     );
     const isAmericanaDemo = restaurant.slug === "americana";
-    const restaurantSlots = isAmericanaDemo ? [3] : [0, 5];
+    const restaurantSlots = isAmericanaDemo ? [3] : [2, 6];
     const openerSlots = [0];
 
     const restaurantQuestions = shuffle(pools.restaurantQuestions);
