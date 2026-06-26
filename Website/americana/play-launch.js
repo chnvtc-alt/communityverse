@@ -1087,7 +1087,7 @@
 
           <div class="opening-start-side opening-start-side-wide">
             <div class="opening-guest-stack">
-              ${isSalesDemoMode() ? `<p class="opening-guest-section-title">Collectible Characters</p>` : ""}
+              <p class="opening-guest-section-title">Collectible Characters</p>
               <div class="opening-guest-grid">
                 ${safeOpeningCustomers
                   .map(
@@ -1179,7 +1179,7 @@
 
           <div class="opening-start-side opening-start-side-wide">
             <div class="opening-guest-stack">
-              ${isSalesDemoMode() ? `<p class="opening-guest-section-title">Collectible Characters</p>` : ""}
+              <p class="opening-guest-section-title">Collectible Characters</p>
               <div class="opening-guest-grid">
                 ${getDisplayedOpeningCustomers()
                   .map(

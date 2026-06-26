@@ -851,7 +851,7 @@
 
           <div class="opening-start-side opening-start-side-wide">
             <div class="opening-guest-stack">
-              ${salesDemoMode ? `<p class="opening-guest-section-title">Collectible Characters</p>` : ""}
+              <p class="opening-guest-section-title">Collectible Characters</p>
               <div class="opening-guest-grid">
                 ${openingCustomers
                   .map(
