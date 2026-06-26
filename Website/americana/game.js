@@ -1577,7 +1577,7 @@
       return `${session.customer.name} has joined your character collection.`;
     }
 
-    return `${session.customer.name} was not impressed and will not be coming back.`;
+    return `${session.customer.name} was not unlocked this time. This character can appear again and will be added to your collection if you score enough.`;
   }
 
   function renderResultNetWorthPrompt(profile, stats = null) {
