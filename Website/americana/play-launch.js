@@ -837,7 +837,7 @@
         <div class="feedback-reward-customer">
           <img class="feedback-reward-photo" src="${reward.customer.image}" alt="${escapeHtml(reward.customer.name)}" />
           <div>
-            <p class="customer-reveal-rarity">${escapeHtml(reward.customer.rarity || "Special")} ${escapeHtml(isSalesDemoMode() ? "character" : "customer")}</p>
+            <p class="customer-reveal-rarity">${escapeHtml(reward.customer.rarity || "Special")} character</p>
             <strong>${escapeHtml(reward.customer.name)}</strong>
           </div>
         </div>
@@ -1425,7 +1425,7 @@
               <p class="customer-name">${escapeHtml(session.customer.name)}</p>
               <p class="customer-bio">${escapeHtml(customerBio)}</p>
               <div class="chip-row" style="margin-top: 10px;">
-                <span class="chip">${escapeHtml(session.customer.rarity || "Rare")} customer</span>
+                <span class="chip">${escapeHtml(session.customer.rarity || "Rare")} character</span>
                 <span class="chip">Regular needs ${customerThresholds.regular}/10</span>
                 <span class="chip">Occasional needs ${customerThresholds.occasional}/10</span>
                 <span class="chip">Regular value ${core.formatCurrency(session.customer.regularValue)}</span>
