@@ -811,7 +811,7 @@
     const demoExpectationLine = "In this demo you'll see: menu photo questions, restaurant trivia, collectible characters, and feedback surveys.";
     const openingQuestion = salesDemoMode
       ? ""
-      : "Can You Add A New Customer To Your Collection?";
+      : "Can You Add A New Character To Your Collection?";
     const startButtonText = customerId
       ? "INVITE BACK"
       : salesDemoMode

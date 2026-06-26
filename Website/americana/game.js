@@ -1053,7 +1053,7 @@
       : "";
     const openingQuestion = isSalesDemoMode()
       ? ""
-      : "Can You Add A New Customer To Your Collection?";
+      : "Can You Add A New Character To Your Collection?";
     const demoExpectationLine = "In this demo you'll see: menu photo questions, restaurant trivia, collectible characters, and feedback surveys.";
     const startButtonText = replayCustomer
       ? "INVITE BACK"
@@ -1156,7 +1156,7 @@
       : `${restaurantBasePath()}?play=1`;
     const openingQuestion = isSalesDemoMode()
       ? ""
-      : "Can You Add A New Customer To Your Collection?";
+      : "Can You Add A New Character To Your Collection?";
     const demoExpectationLine = "In this demo you'll see: menu photo questions, restaurant trivia, collectible characters, and feedback surveys.";
     const startButtonText = isSalesDemoMode() ? "PLAY THE THREE MINUTE DEMO" : "START THE GAME";
     elements.start.innerHTML = `
