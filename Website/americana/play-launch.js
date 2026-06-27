@@ -191,6 +191,20 @@
     return Boolean(customer?.image && !customer.image.includes("customer-placeholder"));
   }
 
+  const AREA_MATCH_STOP_WORDS = new Set(["area", "city", "town", "county", "state", "georgia", "game"]);
+
+  function isSpecificAreaPiece(piece) {
+    const slug = core.slugify(piece);
+    return slug.length >= 4 && !AREA_MATCH_STOP_WORDS.has(slug);
+  }
+
+  function getSpecificAreaPieces(areaSlug) {
+    return String(areaSlug || "")
+      .split("-")
+      .map((piece) => core.slugify(piece))
+      .filter(isSpecificAreaPiece);
+  }
+
   function dailyRotationOffset(targetRestaurantSlug, count) {
     if (!count) {
       return 0;
@@ -240,7 +254,7 @@
         if (slug) {
           areaSlugs.add(slug);
           slug.split("-").forEach((piece) => {
-            if (piece.length >= 4) {
+            if (isSpecificAreaPiece(piece)) {
               areaSlugs.add(piece);
             }
           });
@@ -267,12 +281,12 @@
           if (areaSlugs.has(customerAreaSlug)) {
             return true;
           }
-          const customerPieces = customerAreaSlug.split("-");
+          const customerPieces = getSpecificAreaPieces(customerAreaSlug);
           return [...areaSlugs].some(
             (areaSlug) =>
-              areaSlug.length >= 4 &&
+              isSpecificAreaPiece(areaSlug) &&
               (customerPieces.includes(areaSlug) ||
-                areaSlug.split("-").some((piece) => piece.length >= 4 && customerPieces.includes(piece)))
+                getSpecificAreaPieces(areaSlug).some((piece) => customerPieces.includes(piece)))
           );
         });
     }
@@ -298,11 +312,11 @@
         if (areaSlugs.has(slug)) {
           return true;
         }
-        const slugPieces = slug.split("-");
+        const slugPieces = getSpecificAreaPieces(slug);
         return [...areaSlugs].some(
           (areaSlug) =>
-            areaSlug.length >= 4 &&
-            (slugPieces.includes(areaSlug) || areaSlug.split("-").some((piece) => piece.length >= 4 && slugPieces.includes(piece)))
+            isSpecificAreaPiece(areaSlug) &&
+            (slugPieces.includes(areaSlug) || getSpecificAreaPieces(areaSlug).some((piece) => slugPieces.includes(piece)))
         );
       });
     });

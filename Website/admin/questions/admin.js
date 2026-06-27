@@ -70,13 +70,16 @@ const elements = {
   customerRarity: document.querySelector("#customer-rarity"),
   customerRegularValue: document.querySelector("#customer-regular-value"),
   customerOccasionalValue: document.querySelector("#customer-occasional-value"),
+  customerAvailability: document.querySelector("#customer-availability"),
   customerFocusTag: document.querySelector("#customer-focus-tag"),
+  customerFocusTagWrap: document.querySelector("#customer-focus-tag-wrap"),
   customerSortOrder: document.querySelector("#customer-sort-order"),
   customerActive: document.querySelector("#customer-active"),
   customerFeedbackRewardOnly: document.querySelector("#customer-feedback-reward-only"),
   customerBio: document.querySelector("#customer-bio"),
   customerQuestionPlace: document.querySelector("#customer-question-place"),
   customerAreaSlugs: document.querySelector("#customer-area-slugs"),
+  customerAreaSlugsWrap: document.querySelector("#customer-area-slugs-wrap"),
   customerQuestionFact: document.querySelector("#customer-question-fact"),
   customerImage: document.querySelector("#customer-image"),
   customerPhotoFile: document.querySelector("#customer-photo-file"),
@@ -923,6 +926,28 @@ function renderCustomerRestaurantChoices(selectedValue = elements.customerFocusT
     )
     .join("");
   elements.customerFocusTag.value = value;
+}
+
+function customerAvailabilityFor(customer = null) {
+  const restaurant = String(customer?.restaurant || customer?.focusTag || "shared").trim() || "shared";
+  const areaSlugs = Array.isArray(customer?.areaSlugs) ? customer.areaSlugs : [];
+  if (restaurant && restaurant !== "shared") {
+    return "restaurant";
+  }
+  if (areaSlugs.length) {
+    return "area";
+  }
+  return "shared";
+}
+
+function updateCustomerAvailabilityFields() {
+  const availability = elements.customerAvailability?.value || "shared";
+  if (elements.customerFocusTagWrap) {
+    elements.customerFocusTagWrap.hidden = availability !== "restaurant";
+  }
+  if (elements.customerAreaSlugsWrap) {
+    elements.customerAreaSlugsWrap.hidden = availability !== "area";
+  }
 }
 
 function getFeedbackRewardCustomerChoices(restaurantSlug, selectedValue = "") {
@@ -2689,6 +2714,8 @@ function resetCustomerEditor(customer = null) {
     ? customer.occasionalValue || 0
     : suggestedOccasionalValue(elements.customerRegularValue.value);
   customerOccasionalValueManuallyEdited = Boolean(customer);
+  const availability = customerAvailabilityFor(customer);
+  elements.customerAvailability.value = availability;
   renderCustomerRestaurantChoices(customer?.restaurant || customer?.focusTag || "shared");
   elements.customerSortOrder.value = customer?.sortOrder || 0;
   elements.customerActive.checked = customer?.active !== false;
@@ -2703,9 +2730,21 @@ function resetCustomerEditor(customer = null) {
   updateCustomerPhotoPreview(customer?.image || "");
   elements.customerEditorTitle.textContent = customer ? "Edit character" : "New character";
   elements.deleteCustomerButton.hidden = !customer;
+  updateCustomerAvailabilityFields();
 }
 
 function customerFromForm() {
+  const availability = elements.customerAvailability.value;
+  const restaurant = availability === "restaurant"
+    ? elements.customerFocusTag.value.trim()
+    : "shared";
+  const areaSlugs = availability === "area"
+    ? elements.customerAreaSlugs.value
+      .split(",")
+      .map((slug) => slugify(slug))
+      .filter(Boolean)
+    : [];
+
   return {
     id: elements.customerId.value.trim(),
     name: elements.customerName.value.trim(),
@@ -2714,17 +2753,14 @@ function customerFromForm() {
     rarity: elements.customerRarity.value.trim(),
     regularValue: Number(elements.customerRegularValue.value) || 0,
     occasionalValue: Number(elements.customerOccasionalValue.value) || 0,
-    restaurant: elements.customerFocusTag.value.trim(),
-    focusTag: elements.customerFocusTag.value.trim(),
+    restaurant,
+    focusTag: restaurant,
     sortOrder: Number(elements.customerSortOrder.value) || 0,
     active: elements.customerActive.checked,
     feedbackRewardOnly: elements.customerFeedbackRewardOnly.checked,
     bio: elements.customerBio.value.trim(),
     questionPlace: elements.customerQuestionPlace.value.trim(),
-    areaSlugs: elements.customerAreaSlugs.value
-      .split(",")
-      .map((slug) => slugify(slug))
-      .filter(Boolean),
+    areaSlugs,
     questionFact: elements.customerQuestionFact.value.trim(),
     image: elements.customerImage.value.trim(),
   };
@@ -2763,6 +2799,16 @@ async function saveCustomerEditor(event) {
 
   if (!customer.name) {
     showCustomerFormErrors("Character name is required.");
+    return;
+  }
+
+  if (elements.customerAvailability.value === "restaurant" && customer.restaurant === "shared") {
+    showCustomerFormErrors("Choose a restaurant, or change Availability to Shared.");
+    return;
+  }
+
+  if (elements.customerAvailability.value === "area" && !customer.areaSlugs.length) {
+    showCustomerFormErrors("Choose an area, or change Availability to Shared.");
     return;
   }
 
@@ -3370,6 +3416,9 @@ elements.cancelButton.addEventListener("click", () => elements.editor.close());
 elements.customerRegularValue.addEventListener("input", () => updateSuggestedOccasionalValue());
 elements.customerOccasionalValue.addEventListener("input", () => {
   customerOccasionalValueManuallyEdited = true;
+});
+elements.customerAvailability.addEventListener("change", () => {
+  updateCustomerAvailabilityFields();
 });
 elements.customerForm.addEventListener("submit", saveCustomerEditor);
 elements.deleteCustomerButton.addEventListener("click", deleteCurrentCustomer);

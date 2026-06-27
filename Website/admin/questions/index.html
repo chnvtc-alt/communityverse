@@ -587,8 +587,8 @@
             <p><strong>Rarity / difficulty:</strong> Common appears most often and is easiest to unlock. Uncommon is in the middle. Rare appears less often and needs a better score.</p>
             <p><strong>Regular value:</strong> Common $75-$125, Uncommon $125-$200, Rare $200-$350.</p>
             <p><strong>Occasional value:</strong> Usually 30% of Regular value, rounded to the nearest $5. This auto-fills, but you can still change it.</p>
-            <p><strong>Restaurant:</strong> Choose Shared for every restaurant, or choose one restaurant so the character only appears there.</p>
-            <p><strong>Character area slugs:</strong> Use this for shared characters that should only appear in certain places, like Villa Rica or Douglas County.</p>
+            <p><strong>Availability:</strong> Choose Shared, Area, or Restaurant. Shared can appear broadly, Area limits the character to one place, and Restaurant makes it exclusive to one restaurant.</p>
+            <p><strong>Character area slugs:</strong> Use this when Availability is Area, like Villa Rica or Douglas County.</p>
             <p><strong>Sort order:</strong> Lower numbers show first in the control room. It does not need to be perfect.</p>
             <p><strong>Bio:</strong> Short player-facing description of the character.</p>
             <p><strong>Question place:</strong> Where the character is connected to, if you want the game to ask about it.</p>
@@ -633,9 +633,18 @@
             <span class="optional">Auto-fills to 30% of Regular value, rounded to the nearest $5. You can still edit it.</span>
           </label>
           <label>
+            Availability
+            <select id="customer-availability">
+              <option value="shared">Shared - many restaurants</option>
+              <option value="area">Area - one city or county</option>
+              <option value="restaurant">Restaurant - one restaurant only</option>
+            </select>
+            <span class="optional">This controls where the character can appear.</span>
+          </label>
+          <label id="customer-focus-tag-wrap">
             Restaurant
             <select id="customer-focus-tag"></select>
-            <span class="optional">Shared means this character can appear in many restaurants. Pick one restaurant to make it exclusive there.</span>
+            <span class="optional">Use this when Availability is Restaurant.</span>
           </label>
           <label>
             Sort order
@@ -658,10 +667,10 @@
             Question place
             <input id="customer-question-place" />
           </label>
-          <label class="form-span">
-            Character area slugs
-            <input id="customer-area-slugs" placeholder="villa-rica, douglas-county" />
-            <span class="optional">For shared characters, limit where they appear. Example: villa-rica-carroll-county. Use commas between areas.</span>
+          <label id="customer-area-slugs-wrap" class="form-span">
+            Area
+            <input id="customer-area-slugs" list="area-options" placeholder="villa-rica, douglas-county" />
+            <span class="optional">Use this when Availability is Area. Example: villa-rica-carroll-county. Use commas between multiple areas.</span>
           </label>
           <label class="form-span">
             Question fact
@@ -837,6 +846,6 @@
         </div>
       </form>
     </dialog>
-    <script type="module" src="/admin/questions/admin.js?v=character-area-filter-v1"></script>
+    <script type="module" src="/admin/questions/admin.js?v=character-availability-v1"></script>
   </body>
 </html>
