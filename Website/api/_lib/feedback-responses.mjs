@@ -121,3 +121,17 @@ export async function fetchFeedbackResponses(searchParams = new URLSearchParams(
 
   return Array.isArray(rows) ? rows.map(feedbackResponseFromRecord).filter(Boolean) : [];
 }
+
+export async function deleteFeedbackResponse(id) {
+  const safeId = String(id || "").trim();
+  if (!safeId) {
+    throw new Error("Feedback response id is required.");
+  }
+
+  await supabaseRequest(`feedback_responses?id=eq.${encodeURIComponent(safeId)}`, {
+    method: "DELETE",
+    headers: {
+      Prefer: "return=minimal",
+    },
+  });
+}

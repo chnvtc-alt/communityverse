@@ -548,6 +548,10 @@ textarea {
   gap: 16px;
 }
 
+.feedback-card-actions {
+  margin-top: 14px;
+}
+
 .feedback-answer-list {
   display: grid;
   gap: 8px;

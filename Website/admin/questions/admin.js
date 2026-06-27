@@ -1362,6 +1362,9 @@ function renderFeedbackResponses() {
                 <span class="meta-chip">Reward: ${escapeHtml(reward)}</span>
                 ${response.rewardAwarded ? '<span class="meta-chip">reward awarded</span>' : ""}
               </div>
+              <div class="feedback-card-actions">
+                <button class="button button-danger delete-feedback-response-button" type="button">Delete response</button>
+              </div>
             </div>
             <div class="feedback-answer-list">
               ${
@@ -1411,6 +1414,25 @@ async function loadFeedbackResponses({ quiet = false } = {}) {
       if (!elements.login.open) elements.login.showModal();
       return;
     }
+    showFeedbackMessage(error.message, true);
+  }
+}
+
+async function deleteFeedbackResponse(id) {
+  const response = feedbackResponses.find((entry) => entry.id === id);
+  const restaurantName = response?.restaurantName || formatRestaurantLabel(response?.restaurantSlug) || "this restaurant";
+  const confirmed = window.confirm(
+    `Delete this feedback response for ${restaurantName}? This only removes the survey answers, not any character rewards or scores.`
+  );
+
+  if (!confirmed) return;
+
+  try {
+    showFeedbackMessage("Deleting feedback response...");
+    await feedbackApiRequest(`/${encodeURIComponent(id)}`, { method: "DELETE" });
+    showFeedbackMessage("Feedback response deleted.");
+    await loadFeedbackResponses({ quiet: true });
+  } catch (error) {
     showFeedbackMessage(error.message, true);
   }
 }
@@ -3384,6 +3406,14 @@ elements.restaurantList.addEventListener("click", (event) => {
   }
   if (event.target.closest(".toggle-restaurant-playable-button")) toggleRestaurantPlayable(restaurant);
   if (event.target.closest(".toggle-restaurant-list-button")) toggleRestaurantListVisibility(restaurant);
+});
+
+elements.feedbackList.addEventListener("click", (event) => {
+  const button = event.target.closest(".delete-feedback-response-button");
+  if (!button) return;
+  const card = button.closest(".feedback-card");
+  if (!card?.dataset.id) return;
+  deleteFeedbackResponse(card.dataset.id);
 });
 
 elements.profileList.addEventListener("click", (event) => {
