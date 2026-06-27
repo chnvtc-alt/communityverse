@@ -1599,13 +1599,12 @@
     return `
       <div class="hero-card result-followup-card" style="margin-top: 16px; padding: 16px;">
         <p class="kicker">Play With Friends</p>
-        <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">Create a room for this game.</h3>
-        <p class="copy" style="margin: 0 0 12px;">Friends join by code or link, then everyone plays the same character and same questions.</p>
+        <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">Create or join a Live Round.</h3>
+        <p class="copy" style="margin: 0 0 12px;">Friends join by code or link, then everyone gets each question together.</p>
         ${errorMarkup}
         ${messageMarkup}
         <div class="button-row">
-          <button class="button button-muted" id="create-multiplayer-room-button" type="button" ${state.multiplayerLoading ? "disabled" : ""}>Play With Friends</button>
-          <button class="button button-hot" id="create-live-room-button" type="button" ${state.multiplayerLoading ? "disabled" : ""}>Live Round</button>
+          <button class="button button-hot" id="create-live-room-button" type="button" ${state.multiplayerLoading ? "disabled" : ""}>Create Live Round</button>
           <a class="button button-muted" href="${restaurantPlayPath()}?multiplayer=1&join=1">Join Friends' Game</a>
         </div>
       </div>
@@ -1613,13 +1612,6 @@
   }
 
   function bindMultiplayerCard() {
-    const createButton = document.getElementById("create-multiplayer-room-button");
-    if (createButton) {
-      createButton.addEventListener("click", () => {
-        void createMultiplayerRoom();
-      });
-    }
-
     const createLiveButton = document.getElementById("create-live-room-button");
     if (createLiveButton) {
       createLiveButton.addEventListener("click", () => {
