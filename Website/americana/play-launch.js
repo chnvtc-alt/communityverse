@@ -819,8 +819,10 @@
     state.multiplayerPlayers = Array.isArray(data.players) ? data.players : [];
     const storedPlayerId = getStoredMultiplayerPlayerId(safeRoomCode);
     state.multiplayerPlayer = state.multiplayerPlayers.find((player) => player.id === storedPlayerId) || state.multiplayerPlayer;
-    startMultiplayerRefresh();
-    syncLiveRoomToSession();
+    if (state.multiplayerPlayer) {
+      startMultiplayerRefresh();
+      syncLiveRoomToSession();
+    }
     return data;
   }
 
@@ -1557,8 +1559,9 @@
                 `
             }
             <div class="field">
-              <label class="field-label" for="multiplayer-name">Your display name</label>
+              <label class="field-label" for="multiplayer-name">Name shown in this room</label>
               <input class="input" id="multiplayer-name" name="displayName" maxlength="40" value="${escapeHtml(state.multiplayerName || defaultMultiplayerName())}" placeholder="Your name" />
+              <p class="helper" style="margin: 8px 0 0;">You can change this. It will be remembered as your player name on this device.</p>
             </div>
             ${errorMarkup}
             ${messageMarkup}
@@ -2175,8 +2178,15 @@
         return;
       }
 
-      const profile = ensurePlayableProfile();
+      let profile = ensurePlayableProfile();
       if (profile) {
+        const displayName = state.multiplayerName || defaultMultiplayerName();
+        if (displayName && displayName !== profile.playerName) {
+          profile = core.updateProfile({
+            ...profile,
+            playerName: displayName,
+          }) || profile;
+        }
         core.setActiveProfileId(profile.id);
       }
 
