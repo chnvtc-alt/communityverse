@@ -2309,6 +2309,12 @@
     const correctAnswer = question?.options?.[question.correctIndex] || "";
     const players = getSortedRoomPlayers();
     const answeredPlayers = players.filter((player) => Number(player.answeredQuestionIndex ?? -1) >= currentIndex);
+    const answerStatusLabel = (player) => {
+      if (Number(player.lastSelectedIndex ?? -1) < 0) {
+        return "Did not answer";
+      }
+      return player.lastAnswerCorrect ? "Correct" : "Incorrect";
+    };
     elements.game.classList.remove("hidden");
     elements.start.classList.add("hidden");
     elements.result.classList.add("hidden");
@@ -2327,7 +2333,7 @@
                         <strong class="multiplayer-rank">#${index + 1}</strong>
                         <div class="multiplayer-player-name">${escapeHtml(player.displayName || "Player")}</div>
                         <div class="multiplayer-player-status">
-                          <span>${player.lastAnswerCorrect ? "Correct" : "Missed"} · ${Number(player.score) || 0}/${Number(player.totalQuestions) || 10}</span>
+                          <span>${escapeHtml(answerStatusLabel(player))} · ${Number(player.score) || 0}/${Number(player.totalQuestions) || 10}</span>
                         </div>
                       </article>
                     `)
