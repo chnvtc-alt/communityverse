@@ -2482,7 +2482,7 @@
         elements.game.classList.add("hidden");
         elements.result.classList.add("hidden");
         state.showGame = false;
-        if (query.get("multiplayer") === "1") {
+        if (query.get("multiplayer") === "1" || multiplayerRoomCodeParam) {
           renderSetup();
         }
         return;
