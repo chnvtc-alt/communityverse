@@ -1354,35 +1354,9 @@
               <p class="customer-reveal-rarity">${escapeHtml(rarity)} ${escapeHtml(revealType)}</p>
               <h3 class="customer-reveal-name">${escapeHtml(customer.name)}</h3>
             </div>
-            <div class="customer-reveal-goals">
-              <div class="customer-reveal-goal">
-                <span class="customer-reveal-label">Unlock Score</span>
-                <strong>Need ${unlockScore}/10 Correct</strong>
-              </div>
-              <div class="customer-reveal-goal">
-                <span class="customer-reveal-label">Value Grows With Score</span>
-                <strong>About ${core.formatCurrency(valuePerExtraCorrect)} more per extra correct answer</strong>
-              </div>
-            </div>
-            <div class="customer-reveal-values">
-              <div class="customer-reveal-value">
-                <span class="customer-reveal-label">Unlock Value</span>
-                <strong>${core.formatCurrency(unlockValue)}</strong>
-              </div>
-              <div class="customer-reveal-value">
-                <span class="customer-reveal-label">Each Extra Correct</span>
-                <strong>+${core.formatCurrency(valuePerExtraCorrect)}</strong>
-              </div>
-            </div>
-            <div class="customer-reveal-mobile-summary">
-              <div class="customer-reveal-combo">
-                <span class="customer-reveal-label">Unlock Score</span>
-                <strong>Need ${unlockScore}/10 Correct - Value ${core.formatCurrency(unlockValue)}</strong>
-              </div>
-              <div class="customer-reveal-combo">
-                <span class="customer-reveal-label">Each Extra Correct</span>
-                <strong>+${core.formatCurrency(valuePerExtraCorrect)}</strong>
-              </div>
+            <div class="customer-reveal-earnings">
+              <p>Need <strong>${unlockScore} correct answers</strong> to unlock this character.</p>
+              <p>Earn <strong>${core.formatCurrency(unlockValue)}</strong> for unlocking, plus <strong>${core.formatCurrency(valuePerExtraCorrect)}</strong> for each additional correct answer.</p>
             </div>
             ${replayValueMarkup}
             ${favoriteBonusMarkup}

@@ -3035,33 +3035,25 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   font-size: 0.88rem;
 }
 
-.customer-reveal-goals,
-.customer-reveal-values {
+.customer-reveal-earnings {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.customer-reveal-goal,
-.customer-reveal-value {
-  display: grid;
-  gap: 4px;
-  min-height: 82px;
-  align-content: center;
-  padding: 14px;
+  gap: 8px;
+  padding: 16px;
   border-radius: 18px;
   border: 1px solid rgba(93, 116, 105, 0.14);
   background: rgba(255, 255, 255, 0.72);
 }
 
-.customer-reveal-goal strong,
-.customer-reveal-value strong {
-  color: var(--ink);
-  font-size: 1.35rem;
+.customer-reveal-earnings p {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 750;
+  line-height: 1.35;
 }
 
-.customer-reveal-mobile-summary {
-  display: none;
+.customer-reveal-earnings strong {
+  color: var(--ink);
+  font-size: 1.1em;
 }
 
 .customer-reveal-label {
@@ -4222,21 +4214,12 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     font-size: 2rem;
   }
 
-  .customer-reveal-goals,
-  .customer-reveal-values {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-
-  .customer-reveal-goal,
-  .customer-reveal-value {
-    min-height: 64px;
+  .customer-reveal-earnings {
     padding: 10px;
   }
 
-  .customer-reveal-goal strong,
-  .customer-reveal-value strong {
-    font-size: 1.15rem;
+  .customer-reveal-earnings p {
+    font-size: 0.95rem;
   }
 
   .customer-reveal-actions {
@@ -5355,35 +5338,14 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     gap: 8px;
   }
 
-  .customer-reveal-goals,
-  .customer-reveal-values {
-    display: none;
-  }
-
-  .customer-reveal-mobile-summary {
-    display: grid;
-    gap: 6px;
-  }
-
-  .customer-reveal-combo {
-    display: grid;
-    gap: 3px;
-    min-height: 54px;
-    padding: 8px;
+  .customer-reveal-earnings {
+    gap: 5px;
+    padding: 9px;
     border-radius: 14px;
-    align-content: center;
-    border: 1px solid rgba(93, 116, 105, 0.14);
-    background: rgba(255, 255, 255, 0.72);
   }
 
-  .customer-reveal-combo .customer-reveal-label {
-    font-size: 0.68rem;
-    letter-spacing: 0.03em;
-  }
-
-  .customer-reveal-combo strong {
-    color: var(--ink);
-    font-size: 1rem;
+  .customer-reveal-earnings p {
+    font-size: 0.92rem;
   }
 
   .question-shell {
