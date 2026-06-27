@@ -1056,7 +1056,8 @@
   }
 
   function roomWinnerMarkup(showGroupResults = false) {
-    const completedPlayers = getSortedRoomPlayers().filter((player) => player.status === "completed");
+    const players = getSortedRoomPlayers();
+    const completedPlayers = players.filter((player) => player.status === "completed");
     if (!completedPlayers.length) {
       return showGroupResults
         ? `<p class="copy multiplayer-results-note">No one has finished yet. This will update as players complete their games.</p>`
@@ -1065,6 +1066,16 @@
     const topScore = Number(completedPlayers[0].score) || 0;
     const winners = completedPlayers.filter((player) => Number(player.score) === topScore);
     const winnerNames = winners.map((player) => player.displayName || "Player").join(", ");
+    const waitingForPlayers = showGroupResults && players.some((player) => player.status !== "completed" && player.status !== "did_not_finish");
+    if (waitingForPlayers) {
+      return `
+        <div class="multiplayer-winner-panel">
+          <p class="kicker">Group Results</p>
+          <h3 class="section-title">Results still coming in</h3>
+          <p class="copy">Current top score: ${topScore}/${Number(completedPlayers[0].totalQuestions) || 10}</p>
+        </div>
+      `;
+    }
     return `
       <div class="multiplayer-winner-panel">
         <p class="kicker">${showGroupResults ? "Group Results" : "Current Leader"}</p>
