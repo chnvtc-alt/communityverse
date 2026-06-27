@@ -13,6 +13,8 @@
   const playMode = window.location.pathname.includes("/play");
   const autoPlayMode = query.get("play") === "1";
   const replayCustomerId = String(query.get("customerId") || "").trim();
+  const multiplayerRoomCodeParam = String(query.get("room") || "").trim().toUpperCase();
+  const multiplayerStorageKey = `${restaurantSlug}_multiplayer_room_v1`;
   let replayCustomer = null;
   const RESULT_VISIBLE_SESSION_KEY = `${restaurantSlug}_result_visible_session_v1`;
   const resultVisibleSessionState = {
@@ -41,6 +43,13 @@
     feedbackRewardError: "",
     feedbackSurveyAnswers: [],
     showGame: false,
+    multiplayerRoom: null,
+    multiplayerPlayer: null,
+    multiplayerPlayers: [],
+    multiplayerError: "",
+    multiplayerMessage: "",
+    multiplayerName: "",
+    multiplayerLoading: false,
   };
 
   const mobileGuestQuery = "(max-width: 960px)";
@@ -681,6 +690,115 @@
     }
   }
 
+  async function requestApiJson(path, options = {}) {
+    const response = await window.fetch(`/api${path}`, {
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+      },
+      ...options,
+    });
+    const data = await response.json().catch(() => null);
+    if (!response.ok) {
+      throw new Error(data?.error || `Request failed with status ${response.status}`);
+    }
+    return data;
+  }
+
+  function getStoredMultiplayerPlayerId(roomCode) {
+    try {
+      const stored = JSON.parse(window.localStorage?.getItem(multiplayerStorageKey) || "{}");
+      return String(stored?.[String(roomCode || "").toUpperCase()] || "");
+    } catch (error) {
+      return "";
+    }
+  }
+
+  function storeMultiplayerPlayer(roomCode, playerId) {
+    const safeRoomCode = String(roomCode || "").toUpperCase();
+    const safePlayerId = String(playerId || "");
+    if (!safeRoomCode || !safePlayerId) {
+      return;
+    }
+    try {
+      const stored = JSON.parse(window.localStorage?.getItem(multiplayerStorageKey) || "{}");
+      window.localStorage?.setItem(multiplayerStorageKey, JSON.stringify({
+        ...(stored && typeof stored === "object" ? stored : {}),
+        [safeRoomCode]: safePlayerId,
+      }));
+    } catch (error) {
+      // The room still works in this tab even if local storage is blocked.
+    }
+  }
+
+  function defaultMultiplayerName() {
+    const profile = getProfile();
+    return String(profile?.playerName || profile?.restaurantName || "").trim().slice(0, 40);
+  }
+
+  function multiplayerShareUrl(roomCode) {
+    const url = new URL(restaurantPlayPath(), window.location.origin);
+    url.searchParams.set("room", String(roomCode || "").toUpperCase());
+    return url.toString();
+  }
+
+  async function loadMultiplayerRoom(roomCode) {
+    const safeRoomCode = String(roomCode || "").trim().toUpperCase();
+    if (!safeRoomCode) {
+      return null;
+    }
+    const data = await requestApiJson(`/multiplayer/rooms/${encodeURIComponent(safeRoomCode)}`, { method: "GET" });
+    state.multiplayerRoom = data.room || null;
+    state.multiplayerPlayers = Array.isArray(data.players) ? data.players : [];
+    const storedPlayerId = getStoredMultiplayerPlayerId(safeRoomCode);
+    state.multiplayerPlayer = state.multiplayerPlayers.find((player) => player.id === storedPlayerId) || state.multiplayerPlayer;
+    return data;
+  }
+
+  function roomLeaderboardMarkup() {
+    const players = Array.isArray(state.multiplayerPlayers) ? state.multiplayerPlayers : [];
+    if (!players.length) {
+      return `<p class="copy">No room scores yet.</p>`;
+    }
+    return `
+      <div class="leaderboard-list">
+        ${players
+          .slice()
+          .sort((left, right) => {
+            if ((right.score || 0) !== (left.score || 0)) {
+              return (right.score || 0) - (left.score || 0);
+            }
+            return String(left.displayName || "").localeCompare(String(right.displayName || ""));
+          })
+          .map((player, index) => {
+            const status = player.status === "completed"
+              ? `${Number(player.score) || 0}/${Number(player.totalQuestions) || 10}`
+              : player.status === "did_not_finish"
+                ? "Did Not Finish"
+                : "In Progress";
+            return `
+              <article class="leaderboard-row">
+                <div>
+                  <strong>#${index + 1} ${escapeHtml(player.displayName || "Player")}</strong>
+                  <p class="helper">${escapeHtml(status)}</p>
+                </div>
+              </article>
+            `;
+          })
+          .join("")}
+      </div>
+    `;
+  }
+
+  function isMultiplayerRoomClosed() {
+    const room = state.multiplayerRoom;
+    if (!room) {
+      return false;
+    }
+    const expiresAt = Date.parse(room.expiresAt || "");
+    return room.status === "closed" || Boolean(expiresAt && expiresAt <= Date.now());
+  }
+
   function getCollectionEntryForSession(session) {
     const profile = getProfile();
     const collection = Array.isArray(profile?.customerCollection) ? profile.customerCollection : [];
@@ -747,7 +865,12 @@
 
     core.applyRestaurantTheme?.(restaurant);
 
-    const existingSession = getSession();
+    let existingSession = getSession();
+    if (query.get("multiplayer") === "1" && existingSession && !existingSession.completed) {
+      core.clearActiveSession();
+      clearResultVisibleSessionId();
+      existingSession = null;
+    }
     const freshInviteCustomerChanged = Boolean(
       freshMode &&
         replayCustomerId &&
@@ -769,7 +892,15 @@
       ensurePlayableProfile();
     }
 
-    if (playMode || autoPlayMode) {
+    if (multiplayerRoomCodeParam) {
+      try {
+        await loadMultiplayerRoom(multiplayerRoomCodeParam);
+      } catch (error) {
+        state.multiplayerError = error instanceof Error ? error.message : "Unable to load this room.";
+      }
+    }
+
+    if ((playMode || autoPlayMode) && !multiplayerRoomCodeParam && query.get("multiplayer") !== "1") {
       const existingSession = getSession();
       if (existingSession && !existingSession.completed) {
         state.showGame = shouldResumeQuestions(existingSession);
@@ -1059,6 +1190,90 @@
     });
   }
 
+  function renderMultiplayerCard() {
+    if (isSalesDemoMode() || replayCustomer) {
+      return "";
+    }
+    const room = state.multiplayerRoom;
+    const roomCode = String(room?.roomCode || multiplayerRoomCodeParam || "").toUpperCase();
+    const shareUrl = roomCode ? multiplayerShareUrl(roomCode) : "";
+    const roomStatus = room?.status === "closed" ? "Room closed" : "Room open for about 15 minutes";
+    const errorMarkup = state.multiplayerError ? `<p class="error" aria-live="polite">${escapeHtml(state.multiplayerError)}</p>` : "";
+    const messageMarkup = state.multiplayerMessage ? `<p class="helper" aria-live="polite">${escapeHtml(state.multiplayerMessage)}</p>` : "";
+
+    if (roomCode && !state.multiplayerPlayer) {
+      return `
+        <div class="hero-card result-followup-card" style="margin-top: 16px; padding: 16px;">
+          <p class="kicker">Play With Friends</p>
+          <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">Join room ${escapeHtml(roomCode)}</h3>
+          <p class="copy" style="margin: 0 0 12px;">Everyone plays the same character and questions at their own pace.</p>
+          <form class="input-grid" id="multiplayer-join-form">
+            <div class="field">
+              <label class="field-label" for="multiplayer-name">Your display name</label>
+              <input class="input" id="multiplayer-name" name="displayName" maxlength="40" value="${escapeHtml(state.multiplayerName || defaultMultiplayerName())}" placeholder="Your name" />
+            </div>
+            ${errorMarkup}
+            ${messageMarkup}
+            <div class="button-row">
+              <button class="button button-hot" type="submit" ${state.multiplayerLoading ? "disabled" : ""}>Join Room</button>
+              <a class="button button-muted" href="${restaurantBasePath()}">Play Solo Instead</a>
+            </div>
+          </form>
+        </div>
+      `;
+    }
+
+    if (room && state.multiplayerPlayer) {
+      return `
+        <div class="hero-card result-followup-card" style="margin-top: 16px; padding: 16px;">
+          <p class="kicker">Play With Friends</p>
+          <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">Room ${escapeHtml(roomCode)}</h3>
+          <p class="copy" style="margin: 0 0 12px;">${escapeHtml(roomStatus)}</p>
+          <div class="input-grid">
+            <div class="field">
+              <label class="field-label" for="multiplayer-share-link">Share link</label>
+              <input class="input" id="multiplayer-share-link" readonly value="${escapeHtml(shareUrl)}" />
+            </div>
+          </div>
+          ${messageMarkup}
+          ${roomLeaderboardMarkup()}
+        </div>
+      `;
+    }
+
+    return `
+      <div class="hero-card result-followup-card" style="margin-top: 16px; padding: 16px;">
+        <p class="kicker">Play With Friends</p>
+        <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">Create a room for this game.</h3>
+        <p class="copy" style="margin: 0 0 12px;">Friends join by code or link, then everyone plays the same character and same questions.</p>
+        ${errorMarkup}
+        ${messageMarkup}
+        <div class="button-row">
+          <button class="button button-muted" id="create-multiplayer-room-button" type="button" ${state.multiplayerLoading ? "disabled" : ""}>Play With Friends</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function bindMultiplayerCard() {
+    const createButton = document.getElementById("create-multiplayer-room-button");
+    if (createButton) {
+      createButton.addEventListener("click", () => {
+        void createMultiplayerRoom();
+      });
+    }
+
+    const joinForm = document.getElementById("multiplayer-join-form");
+    if (joinForm) {
+      joinForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const formData = new FormData(joinForm);
+        state.multiplayerName = String(formData.get("displayName") || "").trim();
+        void joinMultiplayerRoom(multiplayerRoomCodeParam);
+      });
+    }
+  }
+
   function renderSetup() {
     const profile = getProfile();
     const session = getSession();
@@ -1158,9 +1373,11 @@
           }
         </div>
         ${isSalesDemoMode() ? `<p class="sales-demo-expectation">${escapeHtml(demoExpectationLine)}</p>` : ""}
+        ${renderMultiplayerCard()}
         ${renderFeedbackRewardCard()}
       </div>`;
     bindFeedbackRewardCard();
+    bindMultiplayerCard();
 
     const resumeButton = document.getElementById("resume-game-button");
     if (resumeButton) {
@@ -1236,9 +1453,11 @@
           }
         </div>
         ${isSalesDemoMode() ? `<p class="sales-demo-expectation">${escapeHtml(demoExpectationLine)}</p>` : ""}
+        ${renderMultiplayerCard()}
         ${renderFeedbackRewardCard()}
       </div>`;
     bindFeedbackRewardCard();
+    bindMultiplayerCard();
 
   }
 
@@ -1368,9 +1587,11 @@
           </div>
         </div>
       </div>
+      ${state.multiplayerRoom ? renderMultiplayerCard() : ""}
       ${howToPlayModalHtml(isSalesDemoMode())}
     `;
     bindHowToPlay();
+    bindMultiplayerCard();
 
     document.getElementById("begin-questions-button")?.addEventListener("click", () => {
       core.markActiveSessionStarted?.();
@@ -1409,6 +1630,151 @@
         window.scrollTo({ top: revealTop, behavior: "smooth" });
       });
     });
+  }
+
+  async function createMultiplayerRoom() {
+    state.multiplayerLoading = true;
+    state.multiplayerError = "";
+    state.multiplayerMessage = "Creating room...";
+    renderAll();
+
+    try {
+      const profile = ensurePlayableProfile();
+      if (profile) {
+        core.setActiveProfileId(profile.id);
+      }
+      const session = core.startNewSession(restaurantSlug, {});
+      if (!session) {
+        throw new Error(`No available characters are ready for ${restaurant?.name || "this restaurant"} right now.`);
+      }
+
+      const data = await requestApiJson("/multiplayer/rooms", {
+        method: "POST",
+        body: JSON.stringify({
+          restaurantSlug,
+          customerId: session.customer?.id || "",
+          questionIds: (session.questions || []).map((question) => question.id).filter(Boolean),
+          hostName: defaultMultiplayerName() || "Host",
+          profileId: session.profileId || "",
+          sessionId: session.id || "",
+        }),
+      });
+
+      state.multiplayerRoom = data.room || null;
+      state.multiplayerPlayer = data.player || null;
+      state.multiplayerPlayers = Array.isArray(data.players) ? data.players : [];
+      if (state.multiplayerRoom?.roomCode && state.multiplayerPlayer?.id) {
+        storeMultiplayerPlayer(state.multiplayerRoom.roomCode, state.multiplayerPlayer.id);
+      }
+      state.multiplayerMessage = `Room ${state.multiplayerRoom?.roomCode || ""} is ready. Share the link with friends.`;
+      state.multiplayerLoading = false;
+      clearResultVisibleSessionId();
+      state.feedback = null;
+      state.isLocked = false;
+      state.resultBioExpanded = false;
+      state.showGame = false;
+      renderAll();
+    } catch (error) {
+      core.clearActiveSession();
+      state.multiplayerLoading = false;
+      state.multiplayerMessage = "";
+      state.multiplayerError = error instanceof Error ? error.message : "Unable to create a room right now.";
+      renderAll();
+    }
+  }
+
+  async function joinMultiplayerRoom(roomCode) {
+    const safeRoomCode = String(roomCode || "").trim().toUpperCase();
+    if (!safeRoomCode) {
+      return;
+    }
+    state.multiplayerLoading = true;
+    state.multiplayerError = "";
+    state.multiplayerMessage = "Joining room...";
+    renderAll();
+
+    try {
+      const roomState = await loadMultiplayerRoom(safeRoomCode);
+      const room = roomState?.room;
+      if (!room || room.status === "closed") {
+        throw new Error("This room is closed.");
+      }
+
+      const profile = ensurePlayableProfile();
+      if (profile) {
+        core.setActiveProfileId(profile.id);
+      }
+
+      const joinData = await requestApiJson(`/multiplayer/rooms/${encodeURIComponent(safeRoomCode)}`, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "join",
+          displayName: state.multiplayerName || defaultMultiplayerName() || "Player",
+          profileId: profile?.id || "",
+        }),
+      });
+
+      state.multiplayerRoom = joinData.room || room;
+      state.multiplayerPlayer = joinData.player || null;
+      state.multiplayerPlayers = Array.isArray(joinData.players) ? joinData.players : [];
+      if (state.multiplayerRoom?.roomCode && state.multiplayerPlayer?.id) {
+        storeMultiplayerPlayer(state.multiplayerRoom.roomCode, state.multiplayerPlayer.id);
+      }
+
+      const session = core.startNewSession(restaurantSlug, {
+        customerId: state.multiplayerRoom.customerId,
+        questionIds: state.multiplayerRoom.questionIds,
+        multiplayerRoomCode: state.multiplayerRoom.roomCode,
+        multiplayerPlayerId: state.multiplayerPlayer?.id || "",
+      });
+      if (!session) {
+        throw new Error("Unable to start this room game on this device.");
+      }
+
+      state.multiplayerLoading = false;
+      state.multiplayerMessage = `Joined room ${state.multiplayerRoom.roomCode}.`;
+      clearResultVisibleSessionId();
+      state.feedback = null;
+      state.isLocked = false;
+      state.resultBioExpanded = false;
+      state.showGame = false;
+      renderAll();
+    } catch (error) {
+      core.clearActiveSession();
+      state.multiplayerLoading = false;
+      state.multiplayerMessage = "";
+      state.multiplayerError = error instanceof Error ? error.message : "Unable to join this room right now.";
+      renderAll();
+    }
+  }
+
+  async function syncMultiplayerFinish(session) {
+    const roomCode = String(state.multiplayerRoom?.roomCode || session?.multiplayerRoomCode || multiplayerRoomCodeParam || "").toUpperCase();
+    const playerId = String(state.multiplayerPlayer?.id || session?.multiplayerPlayerId || getStoredMultiplayerPlayerId(roomCode) || "");
+    if (!roomCode || !playerId || !session?.completed) {
+      return;
+    }
+    try {
+      const data = await requestApiJson(`/multiplayer/rooms/${encodeURIComponent(roomCode)}`, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "finish",
+          playerId,
+          profileId: session.profileId || "",
+          sessionId: session.id || "",
+          score: session.score,
+          totalQuestions: session.questions?.length || 10,
+          result: session.result || "",
+          completedAt: session.completedAt || new Date().toISOString(),
+        }),
+      });
+      state.multiplayerRoom = data.room || state.multiplayerRoom;
+      state.multiplayerPlayer = data.player || state.multiplayerPlayer;
+      state.multiplayerPlayers = Array.isArray(data.players) ? data.players : state.multiplayerPlayers;
+      state.multiplayerMessage = "Room leaderboard updated.";
+    } catch (error) {
+      state.multiplayerError = "Your normal game was saved, but the room leaderboard did not update.";
+    }
   }
 
   function renderGamePanel() {
@@ -1545,6 +1911,11 @@
   }
 
   function handleAnswer(selectedIndex) {
+    if (isMultiplayerRoomClosed()) {
+      state.multiplayerError = "This room is closed, so no new answers can be accepted.";
+      renderAll();
+      return;
+    }
     state.isLocked = true;
     const activeSession = getSession();
     const currentQuestion = activeSession ? activeSession.questions[activeSession.currentIndex] : null;
@@ -1563,6 +1934,12 @@
 
     if (outcome.completed && outcome.session && outcome.session.id) {
       setResultVisibleSessionId(outcome.session.id);
+      void syncMultiplayerFinish(outcome.session).then(() => {
+        const session = getSession();
+        if (session && session.completed) {
+          renderResultPanel(session);
+        }
+      });
     }
 
     state.answerTimer = window.setTimeout(() => {
@@ -1778,6 +2155,7 @@
         : "";
     const netWorthPromptMarkup = renderResultNetWorthPrompt(profile, overallSummary?.stats || profile?.stats);
     const feedbackRewardMarkup = renderFeedbackRewardCard();
+    const multiplayerMarkup = state.multiplayerRoom ? renderMultiplayerCard() : "";
 
     elements.result.innerHTML = `
       <div class="result-screen result-screen-${resultLayoutMode}">
@@ -1831,6 +2209,7 @@
         </div>
 
         <div class="divider"></div>
+        ${multiplayerMarkup}
         ${triviaLeaderboardMilestoneMarkup}
         ${!isGuest && !state.showProfileForm && !salesDemoMode ? netWorthPromptMarkup : ""}
         ${
@@ -1908,6 +2287,7 @@
     `;
     bindHowToPlay();
     bindFeedbackRewardCard();
+    bindMultiplayerCard();
 
     const toggleBioButton = document.getElementById("toggle-bio-button");
     if (toggleBioButton) {
@@ -2102,6 +2482,9 @@
         elements.game.classList.add("hidden");
         elements.result.classList.add("hidden");
         state.showGame = false;
+        if (query.get("multiplayer") === "1") {
+          renderSetup();
+        }
         return;
       }
       updateSalesDemoCta(salesDemoMode, "See your own restaurant brought to life.");

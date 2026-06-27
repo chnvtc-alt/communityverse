@@ -4695,6 +4695,14 @@
     return chosen.filter(Boolean).map(prepareQuestion);
   }
 
+  function buildFixedSessionQuestions(questionIds = []) {
+    const selectedQuestions = (Array.isArray(questionIds) ? questionIds : [])
+      .map((questionId) => questions.find((question) => question.id === String(questionId || "").trim()))
+      .filter(Boolean)
+      .slice(0, 10);
+    return selectedQuestions.map(prepareQuestion);
+  }
+
   function weightedCustomerPick(list) {
     if (!list.length) {
       return null;
@@ -4846,6 +4854,9 @@
     }
 
     const existingCollectionEntry = getCustomerCollectionEntry(profile, customer.id, restaurant.slug);
+    const fixedQuestions = options.questionIds && Array.isArray(options.questionIds)
+      ? buildFixedSessionQuestions(options.questionIds)
+      : [];
 
     const session = {
       id: makeId("session"),
@@ -4861,7 +4872,9 @@
       previousCustomerStatus: existingCollectionEntry ? existingCollectionEntry.status : "",
       previousFavoriteVisits: existingCollectionEntry ? Number(existingCollectionEntry.favoriteVisits) || 0 : 0,
       improvingExistingCustomer: Boolean(preferredCustomer),
-      questions: buildSessionQuestions(restaurant, customer, profile),
+      questions: fixedQuestions.length >= 10
+        ? fixedQuestions
+        : buildSessionQuestions(restaurant, customer, profile),
       currentIndex: 0,
       score: 0,
       answers: [],
@@ -4871,6 +4884,8 @@
       result: "",
       outcomeText: "",
       favoriteProgress: null,
+      multiplayerRoomCode: String(options.multiplayerRoomCode || "").trim(),
+      multiplayerPlayerId: String(options.multiplayerPlayerId || "").trim(),
     };
 
     if (featuredGuests.length && !preferredCustomer) {

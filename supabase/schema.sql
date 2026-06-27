@@ -23,6 +23,40 @@ create table if not exists sessions (
 create index if not exists idx_sessions_profile_id on sessions (profile_id);
 create index if not exists idx_sessions_completed_at on sessions (completed_at desc);
 
+create table if not exists multiplayer_rooms (
+  id text primary key,
+  room_code text not null unique,
+  restaurant_slug text not null,
+  customer_id text not null,
+  question_ids text[] not null default '{}',
+  status text not null default 'open',
+  created_at timestamptz not null default now(),
+  expires_at timestamptz not null,
+  payload_json jsonb not null
+);
+
+create index if not exists idx_multiplayer_rooms_code on multiplayer_rooms (room_code);
+create index if not exists idx_multiplayer_rooms_restaurant_slug on multiplayer_rooms (restaurant_slug);
+create index if not exists idx_multiplayer_rooms_expires_at on multiplayer_rooms (expires_at desc);
+
+create table if not exists multiplayer_room_players (
+  id text primary key,
+  room_id text not null references multiplayer_rooms (id) on delete cascade,
+  profile_id text,
+  session_id text,
+  display_name text not null default '',
+  score integer not null default 0,
+  total_questions integer not null default 10,
+  result text not null default '',
+  status text not null default 'in_progress',
+  joined_at timestamptz not null default now(),
+  completed_at timestamptz,
+  payload_json jsonb not null
+);
+
+create index if not exists idx_multiplayer_room_players_room_id on multiplayer_room_players (room_id);
+create index if not exists idx_multiplayer_room_players_status on multiplayer_room_players (status);
+
 create table if not exists feedback_responses (
   id text primary key,
   restaurant_slug text not null,

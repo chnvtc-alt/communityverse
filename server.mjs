@@ -45,6 +45,38 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_sessions_profile_id ON sessions(profile_id);
   CREATE INDEX IF NOT EXISTS idx_sessions_completed_at ON sessions(completed_at);
 
+  CREATE TABLE IF NOT EXISTS multiplayer_rooms (
+    id TEXT PRIMARY KEY,
+    room_code TEXT NOT NULL UNIQUE,
+    restaurant_slug TEXT NOT NULL,
+    customer_id TEXT NOT NULL,
+    question_ids TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'open',
+    created_at TEXT NOT NULL,
+    expires_at TEXT NOT NULL,
+    payload_json TEXT NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_multiplayer_rooms_code ON multiplayer_rooms(room_code);
+
+  CREATE TABLE IF NOT EXISTS multiplayer_room_players (
+    id TEXT PRIMARY KEY,
+    room_id TEXT NOT NULL,
+    profile_id TEXT,
+    session_id TEXT,
+    display_name TEXT NOT NULL DEFAULT '',
+    score INTEGER NOT NULL DEFAULT 0,
+    total_questions INTEGER NOT NULL DEFAULT 10,
+    result TEXT NOT NULL DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'in_progress',
+    joined_at TEXT NOT NULL,
+    completed_at TEXT,
+    payload_json TEXT NOT NULL,
+    FOREIGN KEY (room_id) REFERENCES multiplayer_rooms(id) ON DELETE CASCADE
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_multiplayer_room_players_room_id ON multiplayer_room_players(room_id);
+
   CREATE TABLE IF NOT EXISTS questions (
     id TEXT PRIMARY KEY,
     active INTEGER NOT NULL DEFAULT 1,
@@ -192,6 +224,254 @@ function saveSession(session) {
   );
 
   return safeSession;
+}
+
+const ROOM_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+function randomId(prefix) {
+  if (globalThis.crypto?.randomUUID) {
+    return `${prefix}_${globalThis.crypto.randomUUID().replace(/-/g, "").slice(0, 18)}`;
+  }
+  return `${prefix}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function randomRoomCode() {
+  const bytes = new Uint8Array(5);
+  if (globalThis.crypto?.getRandomValues) {
+    globalThis.crypto.getRandomValues(bytes);
+  } else {
+    bytes.forEach((_, index) => {
+      bytes[index] = Math.floor(Math.random() * 255);
+    });
+  }
+  return Array.from(bytes, (byte) => ROOM_CODE_ALPHABET[byte % ROOM_CODE_ALPHABET.length]).join("");
+}
+
+function normalizeRoomCode(value) {
+  return String(value || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+
+function normalizeQuestionIds(value) {
+  return (Array.isArray(value) ? value : [])
+    .map((questionId) => String(questionId || "").trim())
+    .filter(Boolean)
+    .slice(0, 10);
+}
+
+function roomIsClosed(room) {
+  const expiresAt = Date.parse(room?.expiresAt || "");
+  return room?.status === "closed" || Boolean(expiresAt && expiresAt <= Date.now());
+}
+
+function roomFromRow(row) {
+  if (!row) {
+    return null;
+  }
+  const payload = safeJsonParse(row.payload_json, {});
+  const room = {
+    ...payload,
+    id: row.id,
+    roomCode: row.room_code,
+    restaurantSlug: row.restaurant_slug,
+    customerId: row.customer_id,
+    questionIds: normalizeQuestionIds(safeJsonParse(row.question_ids, payload.questionIds || [])),
+    status: row.status,
+    createdAt: row.created_at,
+    expiresAt: row.expires_at,
+  };
+  if (roomIsClosed(room)) {
+    room.status = "closed";
+  }
+  return room;
+}
+
+function playerFromRow(row, room) {
+  if (!row) {
+    return null;
+  }
+  const payload = safeJsonParse(row.payload_json, {});
+  const status = row.status || payload.status || "in_progress";
+  return {
+    ...payload,
+    id: row.id,
+    roomId: row.room_id,
+    profileId: row.profile_id || "",
+    sessionId: row.session_id || "",
+    displayName: row.display_name || "Player",
+    score: Number(row.score) || 0,
+    totalQuestions: Number(row.total_questions) || 10,
+    result: row.result || "",
+    status: roomIsClosed(room) && status === "in_progress" ? "did_not_finish" : status,
+    joinedAt: row.joined_at,
+    completedAt: row.completed_at || "",
+  };
+}
+
+function getRoomByCode(roomCode) {
+  const row = db.prepare("SELECT * FROM multiplayer_rooms WHERE room_code = ?").get(normalizeRoomCode(roomCode));
+  return roomFromRow(row);
+}
+
+function getRoomPlayers(room) {
+  if (!room?.id) {
+    return [];
+  }
+  return db
+    .prepare("SELECT * FROM multiplayer_room_players WHERE room_id = ? ORDER BY score DESC, completed_at ASC, joined_at ASC")
+    .all(room.id)
+    .map((row) => playerFromRow(row, room))
+    .filter(Boolean);
+}
+
+function getRoomState(roomCode) {
+  const room = getRoomByCode(roomCode);
+  if (!room) {
+    return null;
+  }
+  return {
+    room,
+    players: getRoomPlayers(room),
+  };
+}
+
+function createRoom(body) {
+  const questionIds = normalizeQuestionIds(body?.questionIds);
+  const restaurantSlug = String(body?.restaurantSlug || "").trim();
+  const customerId = String(body?.customerId || "").trim();
+  if (!restaurantSlug || !customerId || questionIds.length < 10) {
+    throw new Error("A room needs a restaurant, character, and 10 questions.");
+  }
+
+  let roomCode = randomRoomCode();
+  while (getRoomByCode(roomCode)) {
+    roomCode = randomRoomCode();
+  }
+  const createdAt = nowIso();
+  const room = {
+    id: randomId("room"),
+    roomCode,
+    restaurantSlug,
+    customerId,
+    questionIds,
+    status: "open",
+    createdAt,
+    expiresAt: new Date(Date.parse(createdAt) + 15 * 60 * 1000).toISOString(),
+  };
+  db.prepare(`
+    INSERT INTO multiplayer_rooms (id, room_code, restaurant_slug, customer_id, question_ids, status, created_at, expires_at, payload_json)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    room.id,
+    room.roomCode,
+    room.restaurantSlug,
+    room.customerId,
+    JSON.stringify(room.questionIds),
+    room.status,
+    room.createdAt,
+    room.expiresAt,
+    JSON.stringify(room)
+  );
+  const joined = joinRoom(room.roomCode, {
+    displayName: body?.hostName || body?.displayName || "Host",
+    profileId: body?.profileId || "",
+    sessionId: body?.sessionId || "",
+    host: true,
+  });
+  return {
+    ...joined,
+    room,
+  };
+}
+
+function joinRoom(roomCode, body) {
+  const state = getRoomState(roomCode);
+  if (!state?.room) {
+    throw new Error("Room not found.");
+  }
+  if (roomIsClosed(state.room)) {
+    throw new Error("This room is closed.");
+  }
+  const player = {
+    id: randomId("room_player"),
+    roomId: state.room.id,
+    profileId: String(body?.profileId || ""),
+    sessionId: String(body?.sessionId || ""),
+    displayName: String(body?.displayName || body?.playerName || "Player").trim().slice(0, 40) || "Player",
+    score: 0,
+    totalQuestions: state.room.questionIds.length || 10,
+    result: "",
+    status: "in_progress",
+    joinedAt: nowIso(),
+    completedAt: "",
+    host: Boolean(body?.host),
+  };
+  db.prepare(`
+    INSERT INTO multiplayer_room_players (id, room_id, profile_id, session_id, display_name, score, total_questions, result, status, joined_at, completed_at, payload_json)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    player.id,
+    player.roomId,
+    player.profileId || null,
+    player.sessionId || null,
+    player.displayName,
+    player.score,
+    player.totalQuestions,
+    player.result,
+    player.status,
+    player.joinedAt,
+    null,
+    JSON.stringify(player)
+  );
+  return {
+    room: state.room,
+    player,
+    players: [...state.players, player],
+  };
+}
+
+function finishRoomPlayer(roomCode, body) {
+  const state = getRoomState(roomCode);
+  if (!state?.room) {
+    throw new Error("Room not found.");
+  }
+  if (roomIsClosed(state.room)) {
+    throw new Error("This room is closed.");
+  }
+  const playerId = String(body?.playerId || "");
+  const existing = state.players.find((player) => player.id === playerId);
+  if (!existing) {
+    throw new Error("Room player not found.");
+  }
+  const player = {
+    ...existing,
+    profileId: String(body?.profileId || existing.profileId || ""),
+    sessionId: String(body?.sessionId || existing.sessionId || ""),
+    score: Math.max(0, Number(body?.score) || 0),
+    totalQuestions: Math.max(1, Number(body?.totalQuestions) || existing.totalQuestions || 10),
+    result: String(body?.result || ""),
+    status: "completed",
+    completedAt: String(body?.completedAt || nowIso()),
+  };
+  db.prepare(`
+    UPDATE multiplayer_room_players
+    SET profile_id = ?, session_id = ?, score = ?, total_questions = ?, result = ?, status = ?, completed_at = ?, payload_json = ?
+    WHERE id = ?
+  `).run(
+    player.profileId || null,
+    player.sessionId || null,
+    player.score,
+    player.totalQuestions,
+    player.result,
+    player.status,
+    player.completedAt,
+    JSON.stringify(player),
+    player.id
+  );
+  return {
+    room: state.room,
+    player,
+    players: getRoomPlayers(state.room).map((item) => item.id === player.id ? player : item),
+  };
 }
 
 function questionFromRow(row) {
@@ -537,6 +817,46 @@ async function handleApi(request, response, url) {
     const restaurantSlug = String(searchParams.get("restaurantSlug") || "");
     sendJson(response, 200, getLeaderboard(metric, restaurantSlug));
     return;
+  }
+
+  if (request.method === "POST" && pathname === "/api/multiplayer/rooms") {
+    try {
+      const body = await readBody(request);
+      sendJson(response, 201, { ok: true, ...createRoom(body || {}) });
+    } catch (error) {
+      sendJson(response, 400, { ok: false, error: String(error?.message || error) });
+    }
+    return;
+  }
+
+  if (pathname.startsWith("/api/multiplayer/rooms/")) {
+    const roomCode = decodeURIComponent(pathname.slice("/api/multiplayer/rooms/".length));
+    if (request.method === "GET") {
+      const state = getRoomState(roomCode);
+      if (!state) {
+        sendJson(response, 404, { ok: false, error: "Room not found." });
+        return;
+      }
+      sendJson(response, 200, { ok: true, ...state });
+      return;
+    }
+    if (request.method === "POST") {
+      try {
+        const body = await readBody(request);
+        if (body?.action === "finish") {
+          sendJson(response, 200, { ok: true, ...finishRoomPlayer(roomCode, body) });
+          return;
+        }
+        if (body?.action === "join") {
+          sendJson(response, 201, { ok: true, ...joinRoom(roomCode, body) });
+          return;
+        }
+        sendJson(response, 400, { ok: false, error: "Unknown room action." });
+      } catch (error) {
+        sendJson(response, 400, { ok: false, error: String(error?.message || error) });
+      }
+      return;
+    }
   }
 
   sendNotFound(response);
