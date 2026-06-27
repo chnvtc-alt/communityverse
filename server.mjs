@@ -269,6 +269,7 @@ const ROOM_CODE_WORDS = [
   "ZESTY",
 ];
 const LIVE_QUESTION_SECONDS = 25;
+const LIVE_REVIEW_SECONDS = 4;
 
 function randomId(prefix) {
   if (globalThis.crypto?.randomUUID) {
@@ -351,6 +352,9 @@ function playerFromRow(row, room) {
     status: roomIsClosed(room) && status === "in_progress" ? "did_not_finish" : status,
     joinedAt: row.joined_at,
     completedAt: row.completed_at || "",
+    answeredQuestionIndex: Number(payload.answeredQuestionIndex ?? -1),
+    lastAnswerCorrect: Boolean(payload.lastAnswerCorrect),
+    lastSelectedIndex: Number(payload.lastSelectedIndex ?? -1),
   };
 }
 
@@ -433,6 +437,8 @@ function createRoom(body) {
     questionDurationSeconds: body?.mode === "live" ? LIVE_QUESTION_SECONDS : null,
     questionStartedAt: "",
     questionEndsAt: "",
+    reviewStartedAt: "",
+    reviewEndsAt: "",
     createdAt,
     expiresAt: new Date(Date.parse(createdAt) + 15 * 60 * 1000).toISOString(),
   };
@@ -470,6 +476,9 @@ function joinRoom(roomCode, body) {
     joinedAt: nowIso(),
     completedAt: "",
     host: Boolean(body?.host),
+    answeredQuestionIndex: -1,
+    lastAnswerCorrect: false,
+    lastSelectedIndex: -1,
   };
   db.prepare(`
     INSERT INTO multiplayer_room_players (id, room_id, profile_id, session_id, display_name, score, total_questions, result, status, joined_at, completed_at, payload_json)
@@ -517,6 +526,13 @@ function finishRoomPlayer(roomCode, body) {
     result: String(body?.result || ""),
     status: "completed",
     completedAt: String(body?.completedAt || nowIso()),
+    answeredQuestionIndex: Number.isFinite(Number(body?.answeredQuestionIndex))
+      ? Number(body.answeredQuestionIndex)
+      : Number(existing.answeredQuestionIndex ?? -1),
+    lastAnswerCorrect: Boolean(body?.lastAnswerCorrect),
+    lastSelectedIndex: Number.isFinite(Number(body?.lastSelectedIndex))
+      ? Number(body.lastSelectedIndex)
+      : Number(existing.lastSelectedIndex ?? -1),
   };
   db.prepare(`
     UPDATE multiplayer_room_players
@@ -562,6 +578,13 @@ function updateRoomPlayerProgress(roomCode, body) {
     result: String(body?.result || existing.result || ""),
     status: body?.status === "completed" ? "completed" : "in_progress",
     completedAt: body?.status === "completed" ? String(body?.completedAt || nowIso()) : "",
+    answeredQuestionIndex: Number.isFinite(Number(body?.answeredQuestionIndex))
+      ? Number(body.answeredQuestionIndex)
+      : Number(existing.answeredQuestionIndex ?? -1),
+    lastAnswerCorrect: Boolean(body?.lastAnswerCorrect),
+    lastSelectedIndex: Number.isFinite(Number(body?.lastSelectedIndex))
+      ? Number(body.lastSelectedIndex)
+      : Number(existing.lastSelectedIndex ?? -1),
   };
   db.prepare(`
     UPDATE multiplayer_room_players
@@ -605,6 +628,8 @@ function startLiveRoom(roomCode) {
     questionDurationSeconds: duration,
     questionStartedAt: startedAt,
     questionEndsAt: new Date(Date.parse(startedAt) + duration * 1000).toISOString(),
+    reviewStartedAt: "",
+    reviewEndsAt: "",
   });
   return {
     room,
@@ -617,10 +642,25 @@ function advanceLiveRoom(roomCode) {
   if (!state?.room) {
     throw new Error("Room not found.");
   }
-  if (roomIsClosed(state.room) || state.room.mode !== "live" || state.room.liveStatus !== "active") {
+  if (roomIsClosed(state.room) || state.room.mode !== "live" || !["active", "review"].includes(state.room.liveStatus)) {
     return state;
   }
   const currentIndex = Math.max(0, Number(state.room.currentQuestionIndex) || 0);
+  if (state.room.liveStatus === "active") {
+    const reviewStartedAt = nowIso();
+    const room = saveRoom({
+      ...state.room,
+      liveStatus: "review",
+      questionStartedAt: "",
+      questionEndsAt: "",
+      reviewStartedAt,
+      reviewEndsAt: new Date(Date.parse(reviewStartedAt) + LIVE_REVIEW_SECONDS * 1000).toISOString(),
+    });
+    return {
+      room,
+      players: getRoomPlayers(room),
+    };
+  }
   const nextIndex = currentIndex + 1;
   const totalQuestions = normalizeQuestionIds(state.room.questionIds).length || 10;
   if (nextIndex >= totalQuestions) {
@@ -630,6 +670,8 @@ function advanceLiveRoom(roomCode) {
       currentQuestionIndex: totalQuestions,
       questionStartedAt: "",
       questionEndsAt: "",
+      reviewStartedAt: "",
+      reviewEndsAt: "",
     });
     return {
       room,
@@ -640,9 +682,12 @@ function advanceLiveRoom(roomCode) {
   const duration = Number(state.room.questionDurationSeconds) || LIVE_QUESTION_SECONDS;
   const room = saveRoom({
     ...state.room,
+    liveStatus: "active",
     currentQuestionIndex: nextIndex,
     questionStartedAt: startedAt,
     questionEndsAt: new Date(Date.parse(startedAt) + duration * 1000).toISOString(),
+    reviewStartedAt: "",
+    reviewEndsAt: "",
   });
   return {
     room,

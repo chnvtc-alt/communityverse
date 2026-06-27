@@ -816,6 +816,29 @@
     return Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
   }
 
+  function liveRoomReviewTimeLeftSeconds() {
+    const endsAt = Date.parse(state.multiplayerRoom?.reviewEndsAt || "");
+    if (!endsAt) {
+      return 0;
+    }
+    return Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
+  }
+
+  function liveRoomPlayersAnsweredCurrentQuestion() {
+    if (!isLiveRoundRoom() || state.multiplayerRoom?.liveStatus !== "active") {
+      return false;
+    }
+    const players = Array.isArray(state.multiplayerPlayers) ? state.multiplayerPlayers : [];
+    const activePlayers = players.filter((player) => player.status !== "did_not_finish");
+    if (!activePlayers.length) {
+      return false;
+    }
+    const currentIndex = Math.max(0, Number(state.multiplayerRoom.currentQuestionIndex) || 0);
+    return activePlayers.every((player) =>
+      player.status === "completed" || Number(player.answeredQuestionIndex ?? -1) >= currentIndex
+    );
+  }
+
   async function startLiveRound() {
     const roomCode = String(state.multiplayerRoom?.roomCode || "").toUpperCase();
     if (!roomCode) return;
@@ -884,6 +907,14 @@
       }
     }
 
+    if (room.liveStatus === "review" && getSession()?.currentIndex <= Math.min(targetIndex, totalQuestions - 1)) {
+      core.answerActiveSession(-1);
+      const missedSession = getSession();
+      if (missedSession) {
+        void syncMultiplayerProgress(missedSession);
+      }
+    }
+
     if (room.liveStatus === "completed" || targetIndex >= totalQuestions) {
       while (!getSession()?.completed) {
         core.answerActiveSession(-1);
@@ -896,9 +927,26 @@
       return;
     }
 
+    if (room.liveStatus === "review") {
+      state.showGame = true;
+      if (liveRoomReviewTimeLeftSeconds() <= 0) {
+        void advanceLiveRound();
+      }
+      return;
+    }
+
     if (room.liveStatus === "active") {
       state.showGame = true;
       if (liveRoomTimeLeftSeconds() <= 0) {
+        if (getSession()?.currentIndex <= Math.min(targetIndex, totalQuestions - 1)) {
+          core.answerActiveSession(-1);
+          const missedSession = getSession();
+          if (missedSession) {
+            void syncMultiplayerProgress(missedSession);
+          }
+        }
+        void advanceLiveRound();
+      } else if (liveRoomPlayersAnsweredCurrentQuestion()) {
         void advanceLiveRound();
       }
     }
@@ -952,11 +1000,14 @@
       <div class="multiplayer-leaderboard-list">
         ${players
           .map((player, index) => {
+            const scoreText = `${Number(player.score) || 0}/${Number(player.totalQuestions) || 10}`;
             const status = player.status === "completed"
-              ? `${Number(player.score) || 0}/${Number(player.totalQuestions) || 10}`
-              : player.status === "did_not_finish"
-                ? "Did Not Finish"
-                : "In Progress";
+              ? scoreText
+              : isLiveRoundRoom() && player.status !== "did_not_finish"
+                ? `${scoreText} · In Progress`
+                : player.status === "did_not_finish"
+                  ? "Did Not Finish"
+                  : "In Progress";
             return `
               <article class="multiplayer-leaderboard-row">
                 <strong class="multiplayer-rank">#${index + 1}</strong>
@@ -1391,7 +1442,9 @@
         ? `<p class="helper" style="margin: 0 0 12px;">Live Round is waiting for the host to start. Everyone will get each question together.</p>`
         : liveActive
           ? `<p class="helper" style="margin: 0 0 12px;">Live question ${Math.min((Number(room.currentQuestionIndex) || 0) + 1, (room.questionIds || []).length || 10)} is running. About ${liveRoomTimeLeftSeconds()} seconds left.</p>`
-          : `<p class="helper" style="margin: 0 0 12px;">Live Round results are ready.</p>`
+          : room?.liveStatus === "review"
+            ? `<p class="helper" style="margin: 0 0 12px;">Showing answers. Next question starts in about ${liveRoomReviewTimeLeftSeconds()} seconds.</p>`
+            : `<p class="helper" style="margin: 0 0 12px;">Live Round results are ready.</p>`
       : "";
     const errorMarkup = state.multiplayerError ? `<p class="error" aria-live="polite">${escapeHtml(state.multiplayerError)}</p>` : "";
     const messageMarkup = state.multiplayerMessage ? `<p class="helper" aria-live="polite">${escapeHtml(state.multiplayerMessage)}</p>` : "";
@@ -2045,6 +2098,9 @@
       return;
     }
     try {
+      const latestAnswer = Array.isArray(session.answers) && session.answers.length
+        ? session.answers[session.answers.length - 1]
+        : null;
       const data = await requestApiJson(`/multiplayer/rooms/${encodeURIComponent(roomCode)}`, {
         method: "POST",
         body: JSON.stringify({
@@ -2056,6 +2112,9 @@
           totalQuestions: session.questions?.length || 10,
           result: session.result || "",
           completedAt: session.completedAt || new Date().toISOString(),
+          answeredQuestionIndex: latestAnswer ? Math.max(0, session.currentIndex - 1) : -1,
+          lastAnswerCorrect: Boolean(latestAnswer?.isCorrect),
+          lastSelectedIndex: Number.isFinite(Number(latestAnswer?.selectedIndex)) ? Number(latestAnswer.selectedIndex) : -1,
         }),
       });
       state.multiplayerRoom = data.room || state.multiplayerRoom;
@@ -2074,6 +2133,9 @@
       return;
     }
     try {
+      const latestAnswer = Array.isArray(session.answers) && session.answers.length
+        ? session.answers[session.answers.length - 1]
+        : null;
       const data = await requestApiJson(`/multiplayer/rooms/${encodeURIComponent(roomCode)}`, {
         method: "POST",
         body: JSON.stringify({
@@ -2086,14 +2148,57 @@
           result: session.result || "",
           status: session.completed ? "completed" : "in_progress",
           completedAt: session.completedAt || "",
+          answeredQuestionIndex: latestAnswer ? Math.max(0, session.currentIndex - 1) : -1,
+          lastAnswerCorrect: Boolean(latestAnswer?.isCorrect),
+          lastSelectedIndex: Number.isFinite(Number(latestAnswer?.selectedIndex)) ? Number(latestAnswer.selectedIndex) : -1,
         }),
       });
       state.multiplayerRoom = data.room || state.multiplayerRoom;
       state.multiplayerPlayer = data.player || state.multiplayerPlayer;
       state.multiplayerPlayers = Array.isArray(data.players) ? data.players : state.multiplayerPlayers;
+      if (liveRoomPlayersAnsweredCurrentQuestion()) {
+        void advanceLiveRound();
+      }
     } catch {
       // Normal profile/session saving still happens; room progress will retry on the next answer or finish.
     }
+  }
+
+  function renderLiveReviewPanel(session) {
+    const currentIndex = Math.max(0, Number(state.multiplayerRoom?.currentQuestionIndex) || 0);
+    const question = session.questions[currentIndex] || session.questions[session.currentIndex - 1];
+    const correctAnswer = question?.options?.[question.correctIndex] || "";
+    const players = getSortedRoomPlayers();
+    const answeredPlayers = players.filter((player) => Number(player.answeredQuestionIndex ?? -1) >= currentIndex);
+    elements.game.classList.remove("hidden");
+    elements.start.classList.add("hidden");
+    elements.result.classList.add("hidden");
+    elements.game.innerHTML = `
+      <div class="question-shell">
+        <div class="hero-card" style="margin-top: 0;">
+          <p class="kicker">Live Round</p>
+          <h2 class="section-title">Correct answer: ${escapeHtml(correctAnswer || "Shown after this question")}</h2>
+          <p class="copy">Next question starts in about ${liveRoomReviewTimeLeftSeconds()} seconds.</p>
+          <div class="multiplayer-leaderboard-list" style="margin-top: 16px;">
+            ${
+              answeredPlayers.length
+                ? answeredPlayers
+                    .map((player, index) => `
+                      <article class="multiplayer-leaderboard-row">
+                        <strong class="multiplayer-rank">#${index + 1}</strong>
+                        <div class="multiplayer-player-name">${escapeHtml(player.displayName || "Player")}</div>
+                        <div class="multiplayer-player-status">
+                          <span>${player.lastAnswerCorrect ? "Correct" : "Missed"} · ${Number(player.score) || 0}/${Number(player.totalQuestions) || 10}</span>
+                        </div>
+                      </article>
+                    `)
+                    .join("")
+                : `<p class="copy">Waiting for room answers...</p>`
+            }
+          </div>
+        </div>
+      </div>
+    `;
   }
 
   function renderGamePanel() {
@@ -2131,6 +2236,11 @@
       return;
     }
 
+    if (isLiveRoundRoom() && state.multiplayerRoom?.liveStatus === "review" && !state.feedback) {
+      renderLiveReviewPanel(session);
+      return;
+    }
+
     const displayQuestion = state.feedback ? state.feedback.question : session.questions[session.currentIndex];
     const displayNumber = state.feedback ? session.currentIndex : session.currentIndex + 1;
     const hasQuestionImage = Boolean(displayQuestion.image);
@@ -2150,7 +2260,9 @@
       : Math.max(0, (Number(session.customer.regularValue) || 0) - (Number(session.customer.occasionalValue) || 0));
     const isCharacterUnlocked = session.score >= customerUnlockScore;
     const liveRoundMarkup = isLiveRoundRoom()
-      ? `<span class="chip gold">Live ${Math.max(0, liveRoomTimeLeftSeconds())}s</span>`
+      ? state.multiplayerRoom?.liveStatus === "review"
+        ? `<span class="chip gold">Review ${Math.max(0, liveRoomReviewTimeLeftSeconds())}s</span>`
+        : `<span class="chip gold">Live ${Math.max(0, liveRoomTimeLeftSeconds())}s</span>`
       : "";
     const currentCharacterValue = core.getCharacterScoreValue
       ? core.getCharacterScoreValue(session.customer, session.score)

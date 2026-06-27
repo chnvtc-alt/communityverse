@@ -2,6 +2,7 @@ import { supabaseRequest } from "./supabase.mjs";
 
 const ROOM_DURATION_MINUTES = 15;
 const LIVE_QUESTION_SECONDS = 25;
+const LIVE_REVIEW_SECONDS = 4;
 const ROOM_CODE_WORDS = [
   "ANCHOR",
   "BAKER",
@@ -126,6 +127,9 @@ function playerFromRecord(record, room = null) {
     status: isExpired && status === "in_progress" ? "did_not_finish" : status,
     joinedAt: record.joined_at ?? payload.joinedAt,
     completedAt: record.completed_at ?? payload.completedAt ?? "",
+    answeredQuestionIndex: Number(payload.answeredQuestionIndex ?? -1),
+    lastAnswerCorrect: Boolean(payload.lastAnswerCorrect),
+    lastSelectedIndex: Number(payload.lastSelectedIndex ?? -1),
   };
 }
 
@@ -192,6 +196,9 @@ function playerToRecord(player) {
     status: String(player.status || "in_progress").trim(),
     joinedAt: player.joinedAt || nowIso(),
     completedAt: String(player.completedAt || "").trim() || null,
+    answeredQuestionIndex: Number.isFinite(Number(player.answeredQuestionIndex)) ? Number(player.answeredQuestionIndex) : -1,
+    lastAnswerCorrect: Boolean(player.lastAnswerCorrect),
+    lastSelectedIndex: Number.isFinite(Number(player.lastSelectedIndex)) ? Number(player.lastSelectedIndex) : -1,
   };
   return {
     id: payload.id,
@@ -263,6 +270,8 @@ export async function createRoom(body = {}) {
     questionDurationSeconds: body.mode === "live" ? LIVE_QUESTION_SECONDS : null,
     questionStartedAt: "",
     questionEndsAt: "",
+    reviewStartedAt: "",
+    reviewEndsAt: "",
     createdAt,
     expiresAt: addMinutes(new Date(createdAt), ROOM_DURATION_MINUTES),
   };
@@ -353,6 +362,8 @@ export async function startLiveRoom(code) {
     questionDurationSeconds: Number(state.room.questionDurationSeconds) || LIVE_QUESTION_SECONDS,
     questionStartedAt: startedAt,
     questionEndsAt: addMinutes(new Date(startedAt), (Number(state.room.questionDurationSeconds) || LIVE_QUESTION_SECONDS) / 60),
+    reviewStartedAt: "",
+    reviewEndsAt: "",
   });
   return {
     room: {
@@ -371,10 +382,28 @@ export async function advanceLiveRoom(code) {
   if (state.room.status !== "open") {
     throw new Error("This room is closed.");
   }
-  if (state.room.mode !== "live" || state.room.liveStatus !== "active") {
+  if (state.room.mode !== "live" || !["active", "review"].includes(state.room.liveStatus)) {
     return state;
   }
   const currentIndex = Math.max(0, Number(state.room.currentQuestionIndex) || 0);
+  if (state.room.liveStatus === "active") {
+    const reviewStartedAt = nowIso();
+    const room = await saveRoom({
+      ...state.room,
+      liveStatus: "review",
+      questionStartedAt: "",
+      questionEndsAt: "",
+      reviewStartedAt,
+      reviewEndsAt: addMinutes(new Date(reviewStartedAt), LIVE_REVIEW_SECONDS / 60),
+    });
+    return {
+      room: {
+        ...room,
+        status: roomStatus(room),
+      },
+      players: await fetchPlayersForRoom(room.id, room),
+    };
+  }
   const nextIndex = currentIndex + 1;
   const totalQuestions = normalizeQuestionIds(state.room.questionIds).length || 10;
   if (nextIndex >= totalQuestions) {
@@ -384,6 +413,8 @@ export async function advanceLiveRoom(code) {
       currentQuestionIndex: totalQuestions,
       questionStartedAt: "",
       questionEndsAt: "",
+      reviewStartedAt: "",
+      reviewEndsAt: "",
     });
     return {
       room: {
@@ -397,8 +428,11 @@ export async function advanceLiveRoom(code) {
   const room = await saveRoom({
     ...state.room,
     currentQuestionIndex: nextIndex,
+    liveStatus: "active",
     questionStartedAt: startedAt,
     questionEndsAt: addMinutes(new Date(startedAt), (Number(state.room.questionDurationSeconds) || LIVE_QUESTION_SECONDS) / 60),
+    reviewStartedAt: "",
+    reviewEndsAt: "",
   });
   return {
     room: {
@@ -431,6 +465,13 @@ export async function updateRoomPlayerProgress(code, body = {}) {
     result: String(body.result || player.result || "").trim(),
     status: body.status === "completed" ? "completed" : "in_progress",
     completedAt: body.status === "completed" ? body.completedAt || nowIso() : "",
+    answeredQuestionIndex: Number.isFinite(Number(body.answeredQuestionIndex))
+      ? Number(body.answeredQuestionIndex)
+      : Number(player.answeredQuestionIndex ?? -1),
+    lastAnswerCorrect: Boolean(body.lastAnswerCorrect),
+    lastSelectedIndex: Number.isFinite(Number(body.lastSelectedIndex))
+      ? Number(body.lastSelectedIndex)
+      : Number(player.lastSelectedIndex ?? -1),
   };
 
   const rows = await supabaseRequest("multiplayer_room_players?on_conflict=id", {
@@ -470,6 +511,13 @@ export async function finishRoomPlayer(code, body = {}) {
     result: String(body.result || "").trim(),
     status: "completed",
     completedAt: body.completedAt || nowIso(),
+    answeredQuestionIndex: Number.isFinite(Number(body.answeredQuestionIndex))
+      ? Number(body.answeredQuestionIndex)
+      : Number(player.answeredQuestionIndex ?? -1),
+    lastAnswerCorrect: Boolean(body.lastAnswerCorrect),
+    lastSelectedIndex: Number.isFinite(Number(body.lastSelectedIndex))
+      ? Number(body.lastSelectedIndex)
+      : Number(player.lastSelectedIndex ?? -1),
   };
 
   const rows = await supabaseRequest("multiplayer_room_players?on_conflict=id", {
