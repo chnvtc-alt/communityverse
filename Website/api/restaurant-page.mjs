@@ -16,6 +16,24 @@ const defaultRestaurants = [
     publicGameName: "The Waffle Master Game",
     heroImage: "/assets/restaurant-challenge/restaurants/wafflemaster/wafflemaster-hero.jpg",
   },
+  {
+    slug: "sam-and-roscos",
+    name: "Sam & Rosco's",
+    publicGameName: "The Sam & Rosco's Game",
+    description: "Play the Sam & Rosco's Restaurant Challenge trivia game.",
+  },
+  {
+    slug: "hudsons",
+    name: "Hudson's Hickory House",
+    publicGameName: "The Hudson's Hickory House Game",
+    description: "Play the Hudson's Hickory House Restaurant Challenge trivia game.",
+  },
+  {
+    slug: "marcossp",
+    name: "Marco's Pizza - South Paulding",
+    publicGameName: "Marco's Pizza - South Paulding Game",
+    description: "Play the Marco's Pizza - South Paulding Restaurant Challenge trivia game.",
+  },
 ];
 
 function escapeHtml(value) {
@@ -56,6 +74,65 @@ function replaceMeta(html, name, content) {
   }
 
   return html.replace("</head>", `    ${replacement}\n  </head>`);
+}
+
+function cleanSentence(value) {
+  return String(value || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\.+$/g, "");
+}
+
+function buildPageDescription(restaurant, title, page) {
+  const restaurantName = cleanSentence(restaurant.name);
+  const location = cleanSentence(restaurant.location);
+  const restaurantDescription = cleanSentence(restaurant.description);
+  const locationText = location ? ` in ${location}` : "";
+  const action = page === "play" ? "Play" : "Start";
+  const baseDescription = restaurantDescription || `${action} ${title}${locationText}`;
+  const gameDetails = "Answer 10 quick trivia questions, unlock collectible characters, and compete on the leaderboard.";
+  return `${baseDescription}. ${gameDetails}`.slice(0, 300);
+}
+
+function buildStructuredData({ restaurant, title, description, canonicalUrl, imageUrl, origin }) {
+  const restaurantName = cleanSentence(restaurant.name);
+  const location = cleanSentence(restaurant.location);
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: `${title} | CommunityVerse Games`,
+    description,
+    url: canonicalUrl,
+    isPartOf: {
+      "@type": "WebSite",
+      name: "CommunityVerse Games",
+      url: origin,
+    },
+    about: {
+      "@type": "Restaurant",
+      name: restaurantName || title,
+    },
+  };
+
+  if (imageUrl) {
+    structuredData.image = imageUrl;
+  }
+
+  if (location) {
+    structuredData.about.address = location;
+  }
+
+  return JSON.stringify(structuredData).replace(/</g, "\\u003c");
+}
+
+function replaceStructuredData(html, structuredData) {
+  const script = `<script type="application/ld+json">${structuredData}</script>`;
+  const pattern = /<script\s+type="application\/ld\+json">[\s\S]*?<\/script>/i;
+  if (pattern.test(html)) {
+    return html.replace(pattern, script);
+  }
+
+  return html.replace("</head>", `    ${script}\n  </head>`);
 }
 
 async function getRestaurant(slug) {
@@ -100,11 +177,16 @@ export async function GET(request) {
   const path = page === "play" ? `/${restaurant.slug}/play` : `/${restaurant.slug}`;
   const canonicalUrl = absoluteUrl(origin, path);
   const title = restaurant.publicGameName || `${restaurant.name} Game`;
-  const description =
-    page === "play"
-      ? `Play ${title} in Restaurant Challenge Trivia, a free 3-minute trivia game. Answer quick rounds from a 1,000+ question pool, unlock characters, and climb the leaderboard.`
-      : `Start ${title} in Restaurant Challenge Trivia, a free 3-minute trivia game. Answer quick rounds from a 1,000+ question pool, unlock characters, and climb the leaderboard.`;
+  const description = buildPageDescription(restaurant, title, page);
   const imageUrl = absoluteUrl(origin, restaurant.heroImage || restaurant.logoSquare || "");
+  const structuredData = buildStructuredData({
+    restaurant,
+    title,
+    description,
+    canonicalUrl,
+    imageUrl,
+    origin,
+  });
 
   let html = await loadTemplate(page);
   html = html.replace(/<title>.*?<\/title>/i, `<title>${escapeHtml(title)} | CommunityVerse Games</title>`);
@@ -120,6 +202,7 @@ export async function GET(request) {
     html = replaceMeta(html, "og:image", imageUrl);
     html = replaceMeta(html, "twitter:image", imageUrl);
   }
+  html = replaceStructuredData(html, structuredData);
 
   return new Response(html, {
     status: 200,
