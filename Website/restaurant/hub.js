@@ -2426,8 +2426,78 @@
       .replace(/'/g, "&#39;");
   }
 
+  function normalizeRoomCodeForUrl(value) {
+    return String(value || "")
+      .trim()
+      .toUpperCase()
+      .replace(/[\s_]+/g, "-")
+      .replace(/[^A-Z0-9-]/g, "")
+      .replace(/-+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  }
+
+  function bindJoinRoomForm() {
+    const form = document.getElementById("hub-join-room-form");
+    if (!form) {
+      return;
+    }
+    const input = document.getElementById("hub-join-room-code");
+    const message = document.getElementById("hub-join-room-message");
+    const error = document.getElementById("hub-join-room-error");
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const roomCode = normalizeRoomCodeForUrl(input?.value || "");
+      if (message) {
+        message.textContent = "";
+      }
+      if (error) {
+        error.textContent = "";
+        error.classList.add("hidden");
+      }
+      if (!roomCode) {
+        if (error) {
+          error.textContent = "Enter the room code your friend shared.";
+          error.classList.remove("hidden");
+        }
+        return;
+      }
+      const submitButton = form.querySelector("button[type='submit']");
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = "Joining...";
+      }
+      try {
+        const response = await fetch(`/api/multiplayer/rooms/${encodeURIComponent(roomCode)}`);
+        const data = await response.json().catch(() => null);
+        if (!response.ok) {
+          throw new Error(data?.error || "Room not found.");
+        }
+        const restaurantSlug = String(data?.room?.restaurantSlug || "").trim();
+        if (!restaurantSlug) {
+          throw new Error("That room is missing its restaurant.");
+        }
+        if (message) {
+          message.textContent = "Opening the right restaurant game...";
+        }
+        const nextUrl = new URL(`/${restaurantSlug}/play/`, window.location.origin);
+        nextUrl.searchParams.set("room", roomCode);
+        window.location.href = nextUrl.toString();
+      } catch (joinError) {
+        if (error) {
+          error.textContent = joinError instanceof Error ? joinError.message : "Unable to join that room.";
+          error.classList.remove("hidden");
+        }
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = "Join Room";
+        }
+      }
+    });
+  }
+
   bindHowToPlay();
   bindContact();
+  bindJoinRoomForm();
   updateSalesDemoCta();
   renderAll();
   if (core.whenReady) {

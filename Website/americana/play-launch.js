@@ -49,7 +49,7 @@
     multiplayerPlayers: [],
     multiplayerError: "",
     multiplayerMessage: "",
-    multiplayerName: "",
+    multiplayerName: String(query.get("name") || "").trim().slice(0, 40),
     multiplayerJoinCode: "",
     multiplayerLoading: false,
     liveAdvanceInFlight: false,
@@ -739,6 +739,16 @@
       throw new Error(data?.error || `Request failed with status ${response.status}`);
     }
     return data;
+  }
+
+  function normalizeRoomCodeForUrl(value) {
+    return String(value || "")
+      .trim()
+      .toUpperCase()
+      .replace(/[\s_]+/g, "-")
+      .replace(/[^A-Z0-9-]/g, "")
+      .replace(/-+/g, "-")
+      .replace(/^-+|-+$/g, "");
   }
 
   function getStoredMultiplayerPlayerId(roomCode) {
@@ -2126,6 +2136,16 @@
       const room = roomState?.room;
       if (!room || room.status === "closed") {
         throw new Error("This room is closed.");
+      }
+      const roomRestaurantSlug = String(room.restaurantSlug || "").trim();
+      if (roomRestaurantSlug && roomRestaurantSlug !== restaurantSlug) {
+        const redirectUrl = new URL(`/${roomRestaurantSlug}/play/`, window.location.origin);
+        redirectUrl.searchParams.set("room", normalizeRoomCodeForUrl(safeRoomCode));
+        if (state.multiplayerName) {
+          redirectUrl.searchParams.set("name", state.multiplayerName);
+        }
+        window.location.href = redirectUrl.toString();
+        return;
       }
 
       const profile = ensurePlayableProfile();

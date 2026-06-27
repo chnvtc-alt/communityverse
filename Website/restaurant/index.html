@@ -80,7 +80,7 @@
     </script>
     <link rel="stylesheet" href="../shared/restaurant.css?v=multiplayer-room-results-v1" />
     <script defer src="../shared/app-core.js?v=multiplayer-rooms-v1"></script>
-    <script defer src="hub.js?v=replay-any-character-v1"></script>
+    <script defer src="hub.js?v=join-room-redirect-v1"></script>
   </head>
   <body data-page="hub">
     <main class="app-shell">
@@ -131,6 +131,17 @@
               <a class="button button-muted challenge-splash-secondary" id="splash-leaderboard-button" href="/restaurant/?hub=1#leaderboard-panel">Leaderboard</a>
               <button class="button button-muted challenge-splash-secondary" id="splash-how-to-play-button" type="button" data-how-to-play-button>How to Play</button>
             </div>
+            <form class="input-grid" id="hub-join-room-form" style="margin-top: 16px;">
+              <div class="field">
+                <label class="field-label" for="hub-join-room-code">Join Friends' Game</label>
+                <input class="input" id="hub-join-room-code" name="roomCode" maxlength="40" placeholder="Enter room code" autocomplete="off" />
+              </div>
+              <div class="button-row">
+                <button class="button button-muted" type="submit">Join Room</button>
+              </div>
+              <p class="helper" id="hub-join-room-message" aria-live="polite"></p>
+              <p class="error hidden" id="hub-join-room-error" aria-live="polite"></p>
+            </form>
           </div>
         </div>
       </section>
