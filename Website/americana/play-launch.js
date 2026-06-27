@@ -406,8 +406,8 @@
             <section class="how-to-play-topic">
               <h3>STEP 2: UNLOCK CHARACTERS</h3>
               <p>Before each game begins, you will see the character you are playing for.</p>
-              <p>The better your score, the more likely that character is to join your collection.</p>
-              <p>Some characters are more valuable than others.</p>
+              <p>Reach the unlock score to add that character to your collection.</p>
+              <p>Every extra correct answer after that increases the character's value.</p>
               <p>Characters increase your collection, sales, and future restaurant value.</p>
             </section>
             <section class="how-to-play-topic">
