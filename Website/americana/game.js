@@ -55,7 +55,7 @@
 
   const mobileGuestQuery = "(max-width: 960px)";
   const mobileVisibleGuestCount = 2;
-  const desktopVisibleGuestCount = 3;
+  const desktopVisibleGuestCount = 4;
   const answerFeedbackDelayMs = 1500;
   const multiplayerRefreshDelayMs = 5000;
   const liveRoundRefreshDelayMs = 1000;
@@ -629,6 +629,36 @@
         restaurantSlug,
         allCustomers.length
       ));
+    }
+
+    if (selectedCustomers.length < count) {
+      addCustomers(rotateCustomers(
+        allCustomers.filter((customer) => customer.restaurant === "shared"),
+        restaurantSlug,
+        allCustomers.length
+      ));
+    }
+
+    if (selectedCustomers.length < count) {
+      addCustomers(rotateCustomers(
+        allCustomers.filter((customer) => customer.restaurant === restaurantSlug),
+        restaurantSlug,
+        allCustomers.length
+      ), { skipOwned: false });
+    }
+
+    if (selectedCustomers.length < count) {
+      addCustomers(rotateCustomers(
+        allCustomers.filter(
+          (customer) =>
+            customer.restaurant === "shared" &&
+            (customerMatchesArea(customer, areaSlugs) ||
+              !Array.isArray(customer.areaSlugs) ||
+              !customer.areaSlugs.length)
+        ),
+        restaurantSlug,
+        allCustomers.length
+      ), { skipOwned: false });
     }
 
     return selectedCustomers.slice(0, count);
