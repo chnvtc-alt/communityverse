@@ -751,6 +751,23 @@
       .replace(/^-+|-+$/g, "");
   }
 
+  function roomCodeFromInput(value) {
+    const raw = String(value || "").trim();
+    if (!raw) {
+      return "";
+    }
+    try {
+      const parsedUrl = new URL(raw, window.location.origin);
+      const roomParam = parsedUrl.searchParams.get("room");
+      if (roomParam) {
+        return normalizeRoomCodeForUrl(roomParam);
+      }
+    } catch (error) {
+      // Treat plain text as a room code below.
+    }
+    return normalizeRoomCodeForUrl(raw);
+  }
+
   function getStoredMultiplayerPlayerId(roomCode) {
     try {
       const stored = JSON.parse(window.localStorage?.getItem(multiplayerStorageKey) || "{}");
@@ -1533,7 +1550,7 @@
                 : `
                   <div class="field">
                     <label class="field-label" for="multiplayer-room-code">Room code</label>
-                    <input class="input" id="multiplayer-room-code" name="roomCode" maxlength="40" value="${escapeHtml(state.multiplayerJoinCode)}" placeholder="Pepper Meadow" autocomplete="off" />
+                    <input class="input" id="multiplayer-room-code" name="roomCode" maxlength="240" value="${escapeHtml(state.multiplayerJoinCode)}" placeholder="Pepper Meadow or invite link" autocomplete="off" />
                   </div>
                 `
             }
@@ -1614,7 +1631,7 @@
         event.preventDefault();
         const formData = new FormData(joinForm);
         state.multiplayerName = String(formData.get("displayName") || "").trim();
-        state.multiplayerJoinCode = String(formData.get("roomCode") || multiplayerRoomCodeParam || "").trim();
+        state.multiplayerJoinCode = roomCodeFromInput(formData.get("roomCode") || multiplayerRoomCodeParam || "");
         if (!state.multiplayerJoinCode) {
           state.multiplayerError = "Enter the room code your friend shared.";
           renderAll();

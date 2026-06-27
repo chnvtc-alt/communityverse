@@ -2436,6 +2436,23 @@
       .replace(/^-+|-+$/g, "");
   }
 
+  function roomCodeFromInput(value) {
+    const raw = String(value || "").trim();
+    if (!raw) {
+      return "";
+    }
+    try {
+      const parsedUrl = new URL(raw, window.location.origin);
+      const roomParam = parsedUrl.searchParams.get("room");
+      if (roomParam) {
+        return normalizeRoomCodeForUrl(roomParam);
+      }
+    } catch (error) {
+      // Treat plain text as a room code below.
+    }
+    return normalizeRoomCodeForUrl(raw);
+  }
+
   function bindJoinRoomForm() {
     const form = document.getElementById("hub-join-room-form");
     if (!form) {
@@ -2446,7 +2463,7 @@
     const error = document.getElementById("hub-join-room-error");
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
-      const roomCode = normalizeRoomCodeForUrl(input?.value || "");
+      const roomCode = roomCodeFromInput(input?.value || "");
       if (message) {
         message.textContent = "";
       }
