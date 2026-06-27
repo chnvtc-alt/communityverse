@@ -172,7 +172,8 @@
           <h2>Character photos</h2>
           <p>Upload JPGs at 512 x 512. The filename and current image path will be saved in Supabase.</p>
           <p>Use the editor to change names, bios, values, and the photo whenever you need to.</p>
-          <p><strong>Restaurant</strong> is usually <code>shared</code> or a restaurant slug. <strong>Group name</strong> is the database category, such as <code>exclusive</code>, <code>historical</code>, or <code>communityverse</code>.</p>
+          <p><strong>Restaurant</strong> controls where the character can appear. Use <code>shared</code> for many restaurants, or pick one restaurant so the character only appears there.</p>
+          <p><strong>Area</strong> limits shared characters to places like <code>villa-rica-carroll-county</code>. <strong>Group name</strong> is mostly an organizing label, such as <code>exclusive</code>, <code>historical</code>, or <code>communityverse</code>.</p>
         </section>
       </aside>
 
@@ -582,11 +583,12 @@
           <summary>Character field guide</summary>
           <div class="field-guide-grid">
             <p><strong>Character name:</strong> The name players will see after unlocking this character.</p>
-            <p><strong>Group name:</strong> The database category for organizing characters, like exclusive, historical, storybook, communityverse, or staff.</p>
+            <p><strong>Group name:</strong> Mostly an organizing label, like exclusive, historical, storybook, communityverse, or staff. It does not decide where the character appears by itself.</p>
             <p><strong>Rarity / difficulty:</strong> Common appears most often and is easiest to unlock. Uncommon is in the middle. Rare appears less often and needs a better score.</p>
             <p><strong>Regular value:</strong> Common $75-$125, Uncommon $125-$200, Rare $200-$350.</p>
             <p><strong>Occasional value:</strong> Usually 30% of Regular value, rounded to the nearest $5. This auto-fills, but you can still change it.</p>
             <p><strong>Restaurant:</strong> Choose Shared for every restaurant, or choose one restaurant so the character only appears there.</p>
+            <p><strong>Character area slugs:</strong> Use this for shared characters that should only appear in certain places, like Villa Rica or Douglas County.</p>
             <p><strong>Sort order:</strong> Lower numbers show first in the control room. It does not need to be perfect.</p>
             <p><strong>Bio:</strong> Short player-facing description of the character.</p>
             <p><strong>Question place:</strong> Where the character is connected to, if you want the game to ask about it.</p>
@@ -609,6 +611,7 @@
           <label>
             Group name
             <input id="customer-group" list="customer-group-options" placeholder="exclusive" />
+            <span class="optional">This is mainly a category label. It does not control location by itself.</span>
           </label>
           <label>
             Rarity / difficulty
@@ -632,7 +635,7 @@
           <label>
             Restaurant
             <select id="customer-focus-tag"></select>
-            <span class="optional">Shared means this character can appear in every restaurant.</span>
+            <span class="optional">Shared means this character can appear in many restaurants. Pick one restaurant to make it exclusive there.</span>
           </label>
           <label>
             Sort order
@@ -658,7 +661,7 @@
           <label class="form-span">
             Character area slugs
             <input id="customer-area-slugs" placeholder="villa-rica, douglas-county" />
-            <span class="optional">For shared characters, limit where they appear. Use commas between areas.</span>
+            <span class="optional">For shared characters, limit where they appear. Example: villa-rica-carroll-county. Use commas between areas.</span>
           </label>
           <label class="form-span">
             Question fact
