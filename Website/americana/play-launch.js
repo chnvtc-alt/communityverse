@@ -1702,6 +1702,7 @@
   function renderSetup() {
     const profile = getProfile();
     const session = getSession();
+    const multiplayerFocusMode = query.get("multiplayer") === "1" || multiplayerRoomCodeParam || multiplayerJoinMode;
     const openingCustomers = getDisplayedOpeningCustomers();
     const safeOpeningCustomers = Array.isArray(openingCustomers) ? openingCustomers : [];
     const startHref = replayCustomer
@@ -1722,6 +1723,22 @@
       : isSalesDemoMode()
         ? "PLAY THE THREE MINUTE DEMO"
         : "START THE GAME";
+    if (multiplayerFocusMode && !replayCustomer && !isSalesDemoMode()) {
+      elements.start.innerHTML = `
+        <div class="opening-start-shell">
+          <div class="opening-start-heading">
+            <p class="kicker" style="margin: 0 0 4px;">Play With Friends</p>
+            <h2 class="opening-title">${escapeHtml(getGameTitle())}</h2>
+            <p class="copy opening-title-copy">Create or join a room, then everyone plays the same character and same questions.</p>
+          </div>
+          ${renderMultiplayerCard()}
+          <div class="button-row opening-start-actions opening-start-actions-bottom">
+            <a class="button button-muted" href="${restaurantBasePath()}">Back To Game</a>
+          </div>
+        </div>`;
+      bindMultiplayerCard();
+      return;
+    }
     elements.start.innerHTML = `
       <div class="opening-start-shell">
         <div class="opening-start-heading">
@@ -1789,6 +1806,7 @@
                 `
               : ""
           }
+          ${!replayCustomer && !isSalesDemoMode() ? `<a class="button button-muted" href="${restaurantBasePath()}?multiplayer=1">Play With Friends</a>` : ""}
           ${
             session && !session.completed && !state.showGame
               ? `
@@ -1798,11 +1816,9 @@
           }
         </div>
         ${isSalesDemoMode() ? `<p class="sales-demo-expectation">${escapeHtml(demoExpectationLine)}</p>` : ""}
-        ${renderMultiplayerCard()}
         ${renderFeedbackRewardCard()}
       </div>`;
     bindFeedbackRewardCard();
-    bindMultiplayerCard();
 
     const resumeButton = document.getElementById("resume-game-button");
     if (resumeButton) {

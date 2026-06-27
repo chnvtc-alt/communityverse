@@ -808,7 +808,6 @@
       ? `${restaurantPlayPath(restaurant)}?fresh=1&customerId=${encodeURIComponent(customerId)}`
       : `${restaurantPlayPath(restaurant)}?fresh=1`;
     const multiplayerHref = `${restaurantPlayPath(restaurant)}?multiplayer=1`;
-    const multiplayerJoinHref = `${restaurantPlayPath(restaurant)}?multiplayer=1&join=1`;
     const salesDemoMode = isSalesDemoRestaurant(restaurant);
     const showMyRestaurantButton = !salesDemoMode && Boolean(activeProfile || customerId);
     const openerCopy = salesDemoMode
@@ -886,13 +885,12 @@
 
         <div class="button-row opening-start-actions opening-start-actions-bottom">
           <a class="button button-hot" id="start-game-button" href="${escapeHtml(playHref)}">${escapeHtml(startButtonText)}</a>
-          ${!salesDemoMode && !customerId ? `<a class="button button-muted" href="${escapeHtml(multiplayerHref)}">Play With Friends</a>` : ""}
-          ${!salesDemoMode && !customerId ? `<a class="button button-muted" href="${escapeHtml(multiplayerJoinHref)}">Join Friends' Game</a>` : ""}
           ${
             showMyRestaurantButton
               ? `<a class="button button-muted" href="/restaurant/?hub=1">View My Restaurant</a>`
               : ""
           }
+          ${!salesDemoMode && !customerId ? `<a class="button button-muted" href="${escapeHtml(multiplayerHref)}">Play With Friends</a>` : ""}
           <button class="button button-muted" id="start-how-to-play-button" type="button">${escapeHtml(howToPlayText)}</button>
         </div>
         ${salesDemoMode ? `<p class="sales-demo-expectation">${escapeHtml(demoExpectationLine)}</p>` : ""}
