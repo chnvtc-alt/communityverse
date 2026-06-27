@@ -1,5 +1,5 @@
-import { finishRoomPlayer, getRoomState, joinRoom } from "../../../_lib/multiplayer-rooms.mjs";
-import { hasSupabaseConfig, jsonResponse, readJsonBody } from "../../../_lib/supabase.mjs";
+import { finishRoomPlayer, getRoomState, joinRoom } from "../../_lib/multiplayer-rooms.mjs";
+import { hasSupabaseConfig, jsonResponse, readJsonBody } from "../../_lib/supabase.mjs";
 
 function getRoomCodeFromRequest(request) {
   const pathname = new URL(request.url).pathname;
