@@ -796,7 +796,7 @@
 
   function defaultMultiplayerName() {
     const profile = getProfile();
-    return String(profile?.playerName || profile?.restaurantName || "").trim().slice(0, 40);
+    return String(profile?.restaurantName || profile?.playerName || "").trim().slice(0, 40);
   }
 
   function multiplayerShareUrl(roomCode) {
@@ -1561,7 +1561,7 @@
             <div class="field">
               <label class="field-label" for="multiplayer-name">Name shown in this room</label>
               <input class="input" id="multiplayer-name" name="displayName" maxlength="40" value="${escapeHtml(state.multiplayerName || defaultMultiplayerName())}" placeholder="Your name" />
-              <p class="helper" style="margin: 8px 0 0;">You can change this. It will be remembered as your player name on this device.</p>
+              <p class="helper" style="margin: 8px 0 0;">Guests start with their generated restaurant name. Changing this only changes the name shown in this room.</p>
             </div>
             ${errorMarkup}
             ${messageMarkup}
