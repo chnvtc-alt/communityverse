@@ -1,7 +1,48 @@
 import { supabaseRequest } from "./supabase.mjs";
 
 const ROOM_DURATION_MINUTES = 15;
-const ROOM_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const ROOM_CODE_WORDS = [
+  "ANCHOR",
+  "BAKER",
+  "BENGAL",
+  "BISTRO",
+  "BRAVO",
+  "CEDAR",
+  "COBALT",
+  "COPPER",
+  "DELTA",
+  "DINER",
+  "EMBER",
+  "FABLE",
+  "FIESTA",
+  "GARDEN",
+  "GINGER",
+  "HARBOR",
+  "HARVEST",
+  "JAZZ",
+  "JUNIPER",
+  "KETTLE",
+  "LANTERN",
+  "MAPLE",
+  "MARKET",
+  "MEADOW",
+  "NICKEL",
+  "ORCHARD",
+  "PEPPER",
+  "PIONEER",
+  "PLAZA",
+  "ROCKET",
+  "SADDLE",
+  "SAFFRON",
+  "SUNSET",
+  "TAVERN",
+  "TIGER",
+  "VELVET",
+  "VICTORY",
+  "WALNUT",
+  "WILLOW",
+  "ZESTY",
+];
 
 function nowIso() {
   return new Date().toISOString();
@@ -19,15 +60,14 @@ function randomString(prefix = "id") {
 }
 
 function generateRoomCode() {
-  const bytes = new Uint8Array(5);
+  const bytes = new Uint8Array(2);
   if (globalThis.crypto?.getRandomValues) {
     globalThis.crypto.getRandomValues(bytes);
   } else {
-    bytes.forEach((_, index) => {
-      bytes[index] = Math.floor(Math.random() * 255);
-    });
+    bytes[0] = Math.floor(Math.random() * 255);
+    bytes[1] = Math.floor(Math.random() * 255);
   }
-  return Array.from(bytes, (byte) => ROOM_CODE_ALPHABET[byte % ROOM_CODE_ALPHABET.length]).join("");
+  return `${ROOM_CODE_WORDS[bytes[0] % ROOM_CODE_WORDS.length]}-${ROOM_CODE_WORDS[bytes[1] % ROOM_CODE_WORDS.length]}`;
 }
 
 function normalizeQuestionIds(value) {
@@ -38,7 +78,13 @@ function normalizeQuestionIds(value) {
 }
 
 function normalizeCode(value) {
-  return String(value || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+  return String(value || "")
+    .trim()
+    .toUpperCase()
+    .replace(/[\s_]+/g, "-")
+    .replace(/[^A-Z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 function roomFromRecord(record) {
