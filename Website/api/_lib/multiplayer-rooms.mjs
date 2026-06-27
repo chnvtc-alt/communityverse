@@ -1,6 +1,7 @@
 import { supabaseRequest } from "./supabase.mjs";
 
 const ROOM_DURATION_MINUTES = 15;
+const LIVE_QUESTION_SECONDS = 25;
 const ROOM_CODE_WORDS = [
   "ANCHOR",
   "BAKER",
@@ -167,6 +168,17 @@ function roomToRecord(room) {
   };
 }
 
+async function saveRoom(room) {
+  const rows = await supabaseRequest("multiplayer_rooms?on_conflict=id", {
+    method: "POST",
+    headers: {
+      Prefer: "resolution=merge-duplicates,return=representation",
+    },
+    body: JSON.stringify([roomToRecord(room)]),
+  });
+  return Array.isArray(rows) && rows.length ? roomFromRecord(rows[0]) : room;
+}
+
 function playerToRecord(player) {
   const payload = {
     ...player,
@@ -245,18 +257,17 @@ export async function createRoom(body = {}) {
     customerId,
     questionIds,
     status: "open",
+    mode: body.mode === "live" ? "live" : "casual",
+    liveStatus: body.mode === "live" ? "waiting" : "",
+    currentQuestionIndex: body.mode === "live" ? 0 : null,
+    questionDurationSeconds: body.mode === "live" ? LIVE_QUESTION_SECONDS : null,
+    questionStartedAt: "",
+    questionEndsAt: "",
     createdAt,
     expiresAt: addMinutes(new Date(createdAt), ROOM_DURATION_MINUTES),
   };
 
-  const rows = await supabaseRequest("multiplayer_rooms?on_conflict=id", {
-    method: "POST",
-    headers: {
-      Prefer: "resolution=merge-duplicates,return=representation",
-    },
-    body: JSON.stringify([roomToRecord(room)]),
-  });
-  const savedRoom = Array.isArray(rows) && rows.length ? roomFromRecord(rows[0]) : room;
+  const savedRoom = await saveRoom(room);
   const player = await joinRoom(savedRoom.roomCode, {
     displayName: body.hostName || body.displayName || "Host",
     profileId: body.profileId || "",
@@ -320,6 +331,119 @@ export async function joinRoom(code, body = {}) {
     room: state.room,
     player: Array.isArray(rows) && rows.length ? playerFromRecord(rows[0], state.room) : player,
     players: [...state.players, player],
+  };
+}
+
+export async function startLiveRoom(code) {
+  const state = await getRoomState(code);
+  if (!state?.room) {
+    throw new Error("Room not found.");
+  }
+  if (state.room.status !== "open") {
+    throw new Error("This room is closed.");
+  }
+  if (state.room.mode !== "live") {
+    throw new Error("This is not a live round room.");
+  }
+  const startedAt = nowIso();
+  const room = await saveRoom({
+    ...state.room,
+    liveStatus: "active",
+    currentQuestionIndex: 0,
+    questionDurationSeconds: Number(state.room.questionDurationSeconds) || LIVE_QUESTION_SECONDS,
+    questionStartedAt: startedAt,
+    questionEndsAt: addMinutes(new Date(startedAt), (Number(state.room.questionDurationSeconds) || LIVE_QUESTION_SECONDS) / 60),
+  });
+  return {
+    room: {
+      ...room,
+      status: roomStatus(room),
+    },
+    players: await fetchPlayersForRoom(room.id, room),
+  };
+}
+
+export async function advanceLiveRoom(code) {
+  const state = await getRoomState(code);
+  if (!state?.room) {
+    throw new Error("Room not found.");
+  }
+  if (state.room.status !== "open") {
+    throw new Error("This room is closed.");
+  }
+  if (state.room.mode !== "live" || state.room.liveStatus !== "active") {
+    return state;
+  }
+  const currentIndex = Math.max(0, Number(state.room.currentQuestionIndex) || 0);
+  const nextIndex = currentIndex + 1;
+  const totalQuestions = normalizeQuestionIds(state.room.questionIds).length || 10;
+  if (nextIndex >= totalQuestions) {
+    const room = await saveRoom({
+      ...state.room,
+      liveStatus: "completed",
+      currentQuestionIndex: totalQuestions,
+      questionStartedAt: "",
+      questionEndsAt: "",
+    });
+    return {
+      room: {
+        ...room,
+        status: roomStatus(room),
+      },
+      players: await fetchPlayersForRoom(room.id, room),
+    };
+  }
+  const startedAt = nowIso();
+  const room = await saveRoom({
+    ...state.room,
+    currentQuestionIndex: nextIndex,
+    questionStartedAt: startedAt,
+    questionEndsAt: addMinutes(new Date(startedAt), (Number(state.room.questionDurationSeconds) || LIVE_QUESTION_SECONDS) / 60),
+  });
+  return {
+    room: {
+      ...room,
+      status: roomStatus(room),
+    },
+    players: await fetchPlayersForRoom(room.id, room),
+  };
+}
+
+export async function updateRoomPlayerProgress(code, body = {}) {
+  const state = await getRoomState(code);
+  if (!state?.room) {
+    throw new Error("Room not found.");
+  }
+  if (roomIsExpired(state.room)) {
+    throw new Error("This room is closed.");
+  }
+  const playerId = String(body.playerId || "").trim();
+  const player = state.players.find((item) => item.id === playerId);
+  if (!player) {
+    throw new Error("Room player not found.");
+  }
+  const updatedPlayer = {
+    ...player,
+    profileId: body.profileId || player.profileId,
+    sessionId: body.sessionId || player.sessionId,
+    score: Math.max(0, Number(body.score) || 0),
+    totalQuestions: Math.max(1, Number(body.totalQuestions) || player.totalQuestions || 10),
+    result: String(body.result || player.result || "").trim(),
+    status: body.status === "completed" ? "completed" : "in_progress",
+    completedAt: body.status === "completed" ? body.completedAt || nowIso() : "",
+  };
+
+  const rows = await supabaseRequest("multiplayer_room_players?on_conflict=id", {
+    method: "POST",
+    headers: {
+      Prefer: "resolution=merge-duplicates,return=representation",
+    },
+    body: JSON.stringify([playerToRecord(updatedPlayer)]),
+  });
+  return {
+    room: state.room,
+    player: Array.isArray(rows) && rows.length ? playerFromRecord(rows[0], state.room) : updatedPlayer,
+    players: (await getRoomState(code))?.players || [],
   };
 }
 

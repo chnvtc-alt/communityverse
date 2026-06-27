@@ -1,4 +1,11 @@
-import { finishRoomPlayer, getRoomState, joinRoom } from "../../_lib/multiplayer-rooms.mjs";
+import {
+  advanceLiveRoom,
+  finishRoomPlayer,
+  getRoomState,
+  joinRoom,
+  startLiveRoom,
+  updateRoomPlayerProgress,
+} from "../../_lib/multiplayer-rooms.mjs";
 import { hasSupabaseConfig, jsonResponse, readJsonBody } from "../../_lib/supabase.mjs";
 
 function getRoomCodeFromRequest(request) {
@@ -39,6 +46,15 @@ export async function POST(request) {
     const code = getRoomCodeFromRequest(request);
     if (body.action === "finish") {
       return jsonResponse({ ok: true, ...(await finishRoomPlayer(code, body)) });
+    }
+    if (body.action === "progress") {
+      return jsonResponse({ ok: true, ...(await updateRoomPlayerProgress(code, body)) });
+    }
+    if (body.action === "start-live") {
+      return jsonResponse({ ok: true, ...(await startLiveRoom(code)) });
+    }
+    if (body.action === "advance-live") {
+      return jsonResponse({ ok: true, ...(await advanceLiveRoom(code)) });
     }
     if (body.action === "join") {
       return jsonResponse({ ok: true, ...(await joinRoom(code, body)) }, 201);

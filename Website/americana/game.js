@@ -50,6 +50,7 @@
     multiplayerMessage: "",
     multiplayerName: "",
     multiplayerLoading: false,
+    liveAdvanceInFlight: false,
   };
 
   const mobileGuestQuery = "(max-width: 960px)";
@@ -57,6 +58,7 @@
   const desktopVisibleGuestCount = 3;
   const answerFeedbackDelayMs = 1500;
   const multiplayerRefreshDelayMs = 5000;
+  const liveRoundRefreshDelayMs = 1000;
   const fallbackOpeningGuestIds = ["curtis-coolwater", "pastor-caleb-brooks", "ming-wu"];
   let multiplayerRefreshTimer = null;
 
@@ -759,6 +761,7 @@
     const storedPlayerId = getStoredMultiplayerPlayerId(safeRoomCode);
     state.multiplayerPlayer = state.multiplayerPlayers.find((player) => player.id === storedPlayerId) || state.multiplayerPlayer;
     startMultiplayerRefresh();
+    syncLiveRoomToSession();
     return data;
   }
 
@@ -790,14 +793,114 @@
         stopMultiplayerRefresh();
         return;
       }
-      void refreshMultiplayerRoom({ redraw: !state.showGame });
-    }, multiplayerRefreshDelayMs);
+      void refreshMultiplayerRoom({ redraw: !state.showGame || isLiveRoundRoom() });
+    }, isLiveRoundRoom() ? liveRoundRefreshDelayMs : multiplayerRefreshDelayMs);
   }
 
   function stopMultiplayerRefresh() {
     if (multiplayerRefreshTimer) {
       window.clearInterval(multiplayerRefreshTimer);
       multiplayerRefreshTimer = null;
+    }
+  }
+
+  function isLiveRoundRoom() {
+    return state.multiplayerRoom?.mode === "live";
+  }
+
+  function liveRoomTimeLeftSeconds() {
+    const endsAt = Date.parse(state.multiplayerRoom?.questionEndsAt || "");
+    if (!endsAt) {
+      return 0;
+    }
+    return Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
+  }
+
+  async function startLiveRound() {
+    const roomCode = String(state.multiplayerRoom?.roomCode || "").toUpperCase();
+    if (!roomCode) return;
+    state.multiplayerLoading = true;
+    state.multiplayerMessage = "Starting live round...";
+    renderAll();
+    try {
+      const data = await requestApiJson(`/multiplayer/rooms/${encodeURIComponent(roomCode)}`, {
+        method: "POST",
+        body: JSON.stringify({ action: "start-live" }),
+      });
+      state.multiplayerRoom = data.room || state.multiplayerRoom;
+      state.multiplayerPlayers = Array.isArray(data.players) ? data.players : state.multiplayerPlayers;
+      state.multiplayerLoading = false;
+      state.multiplayerMessage = "Live round started.";
+      state.showGame = true;
+      syncLiveRoomToSession();
+      renderAll();
+    } catch (error) {
+      state.multiplayerLoading = false;
+      state.multiplayerError = error instanceof Error ? error.message : "Unable to start the live round.";
+      renderAll();
+    }
+  }
+
+  async function advanceLiveRound() {
+    const roomCode = String(state.multiplayerRoom?.roomCode || multiplayerRoomCodeParam || "").toUpperCase();
+    if (!roomCode || state.liveAdvanceInFlight) return;
+    state.liveAdvanceInFlight = true;
+    try {
+      const data = await requestApiJson(`/multiplayer/rooms/${encodeURIComponent(roomCode)}`, {
+        method: "POST",
+        body: JSON.stringify({ action: "advance-live" }),
+      });
+      state.multiplayerRoom = data.room || state.multiplayerRoom;
+      state.multiplayerPlayers = Array.isArray(data.players) ? data.players : state.multiplayerPlayers;
+      syncLiveRoomToSession();
+    } catch (error) {
+      state.multiplayerError = "Live round updates are paused. Refresh the page to try again.";
+    } finally {
+      state.liveAdvanceInFlight = false;
+    }
+  }
+
+  function syncLiveRoomToSession() {
+    if (!isLiveRoundRoom()) {
+      return;
+    }
+    const room = state.multiplayerRoom;
+    const session = getSession();
+    if (!session || session.completed) {
+      return;
+    }
+    const targetIndex = Math.max(0, Number(room.currentQuestionIndex) || 0);
+    const totalQuestions = session.questions.length;
+    let advancedForMissedAnswers = false;
+
+    while (!getSession()?.completed && getSession()?.currentIndex < Math.min(targetIndex, totalQuestions)) {
+      core.answerActiveSession(-1);
+      advancedForMissedAnswers = true;
+    }
+    if (advancedForMissedAnswers) {
+      const progressedSession = getSession();
+      if (progressedSession) {
+        void syncMultiplayerProgress(progressedSession);
+      }
+    }
+
+    if (room.liveStatus === "completed" || targetIndex >= totalQuestions) {
+      while (!getSession()?.completed) {
+        core.answerActiveSession(-1);
+      }
+      const completedSession = getSession();
+      if (completedSession?.completed) {
+        setResultVisibleSessionId(completedSession.id);
+        void syncMultiplayerFinish(completedSession);
+      }
+      return;
+    }
+
+    if (room.liveStatus === "active") {
+      state.showGame = true;
+      if (liveRoomTimeLeftSeconds() <= 0) {
+        void advanceLiveRound();
+      }
     }
   }
 
@@ -1279,6 +1382,17 @@
     const roomStatus = room?.status === "closed" ? "Room closed" : "Room open for about 15 minutes";
     const activeSession = getSession();
     const showGroupResults = Boolean(activeSession?.completed || room?.status === "closed");
+    const isLiveRoom = room?.mode === "live";
+    const isHost = Boolean(state.multiplayerPlayer?.host);
+    const liveWaiting = isLiveRoom && room?.liveStatus === "waiting";
+    const liveActive = isLiveRoom && room?.liveStatus === "active";
+    const liveStatusMarkup = isLiveRoom
+      ? liveWaiting
+        ? `<p class="helper" style="margin: 0 0 12px;">Live Round is waiting for the host to start. Everyone will get each question together.</p>`
+        : liveActive
+          ? `<p class="helper" style="margin: 0 0 12px;">Live question ${Math.min((Number(room.currentQuestionIndex) || 0) + 1, (room.questionIds || []).length || 10)} is running. About ${liveRoomTimeLeftSeconds()} seconds left.</p>`
+          : `<p class="helper" style="margin: 0 0 12px;">Live Round results are ready.</p>`
+      : "";
     const errorMarkup = state.multiplayerError ? `<p class="error" aria-live="polite">${escapeHtml(state.multiplayerError)}</p>` : "";
     const messageMarkup = state.multiplayerMessage ? `<p class="helper" aria-live="polite">${escapeHtml(state.multiplayerMessage)}</p>` : "";
 
@@ -1312,6 +1426,7 @@
           <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">Room ${escapeHtml(roomCode)}</h3>
           <p class="copy" style="margin: 0 0 12px;">${escapeHtml(roomStatus)}</p>
           <p class="helper" style="margin: 0 0 12px;">Room codes are not case-sensitive. Friends can type a space instead of the dash.</p>
+          ${liveStatusMarkup}
           <div class="input-grid">
             <div class="field">
               <label class="field-label" for="multiplayer-share-link">Share link</label>
@@ -1321,6 +1436,7 @@
           <div class="button-row">
             <button class="button button-hot" id="share-multiplayer-room-button" type="button">Share Invite</button>
             <button class="button button-muted" id="copy-multiplayer-room-button" type="button">Copy Link</button>
+            ${liveWaiting && isHost ? `<button class="button button-hot" id="start-live-round-button" type="button" ${state.multiplayerLoading ? "disabled" : ""}>Start Live Round</button>` : ""}
           </div>
           ${messageMarkup}
           ${roomLeaderboardMarkup(showGroupResults)}
@@ -1337,6 +1453,7 @@
         ${messageMarkup}
         <div class="button-row">
           <button class="button button-muted" id="create-multiplayer-room-button" type="button" ${state.multiplayerLoading ? "disabled" : ""}>Play With Friends</button>
+          <button class="button button-hot" id="create-live-room-button" type="button" ${state.multiplayerLoading ? "disabled" : ""}>Live Round</button>
         </div>
       </div>
     `;
@@ -1347,6 +1464,13 @@
     if (createButton) {
       createButton.addEventListener("click", () => {
         void createMultiplayerRoom();
+      });
+    }
+
+    const createLiveButton = document.getElementById("create-live-room-button");
+    if (createLiveButton) {
+      createLiveButton.addEventListener("click", () => {
+        void createMultiplayerRoom("live");
       });
     }
 
@@ -1371,6 +1495,13 @@
     if (copyButton) {
       copyButton.addEventListener("click", () => {
         void copyMultiplayerRoomLink();
+      });
+    }
+
+    const startLiveButton = document.getElementById("start-live-round-button");
+    if (startLiveButton) {
+      startLiveButton.addEventListener("click", () => {
+        void startLiveRound();
       });
     }
   }
@@ -1685,6 +1816,8 @@
         : "";
     const isFavoriteProgressReplay =
       ["regular", "occasional", "favorite"].includes(collectionEntry?.status);
+    const liveWaiting = isLiveRoundRoom() && state.multiplayerRoom?.liveStatus === "waiting";
+    const liveActive = isLiveRoundRoom() && state.multiplayerRoom?.liveStatus === "active";
     const favoriteBonusMarkup =
       isFavoriteProgressReplay && collectionEntry.status !== "favorite"
         ? `
@@ -1725,7 +1858,11 @@
             ${replayValueMarkup}
             ${favoriteBonusMarkup}
             <div class="button-row customer-reveal-actions">
-              <button class="button button-hot" id="begin-questions-button" type="button">Begin Questions</button>
+              ${
+                isLiveRoundRoom()
+                  ? `<button class="button button-hot" id="begin-questions-button" type="button" ${liveWaiting ? "disabled" : ""}>${liveWaiting ? "Waiting For Host" : liveActive ? "Join Live Question" : "View Live Results"}</button>`
+                  : `<button class="button button-hot" id="begin-questions-button" type="button">Begin Questions</button>`
+              }
               ${salesDemoMode ? "" : `<a class="button button-muted" href="/restaurant/?hub=1">View My Collection / Leaderboard</a>`}
               <button class="button button-muted" id="reveal-how-to-play-button" type="button" data-how-to-play-button>${escapeHtml(howToPlayText)}</button>
             </div>
@@ -1739,6 +1876,9 @@
     bindMultiplayerCard();
 
     document.getElementById("begin-questions-button")?.addEventListener("click", () => {
+      if (liveWaiting) {
+        return;
+      }
       core.markActiveSessionStarted?.();
       state.showGame = true;
       renderAll();
@@ -1777,7 +1917,7 @@
     });
   }
 
-  async function createMultiplayerRoom() {
+  async function createMultiplayerRoom(mode = "casual") {
     state.multiplayerLoading = true;
     state.multiplayerError = "";
     state.multiplayerMessage = "Creating room...";
@@ -1802,6 +1942,7 @@
           hostName: defaultMultiplayerName() || "Host",
           profileId: session.profileId || "",
           sessionId: session.id || "",
+          mode,
         }),
       });
 
@@ -1812,7 +1953,9 @@
         storeMultiplayerPlayer(state.multiplayerRoom.roomCode, state.multiplayerPlayer.id);
       }
       startMultiplayerRefresh();
-      state.multiplayerMessage = `Room ${state.multiplayerRoom?.roomCode || ""} is ready. Share the link with friends.`;
+      state.multiplayerMessage = mode === "live"
+        ? `Live Round ${state.multiplayerRoom?.roomCode || ""} is ready. Share the link, then start when everyone has joined.`
+        : `Room ${state.multiplayerRoom?.roomCode || ""} is ready. Share the link with friends.`;
       state.multiplayerLoading = false;
       clearResultVisibleSessionId();
       state.feedback = null;
@@ -1924,6 +2067,35 @@
     }
   }
 
+  async function syncMultiplayerProgress(session) {
+    const roomCode = String(state.multiplayerRoom?.roomCode || session?.multiplayerRoomCode || multiplayerRoomCodeParam || "").toUpperCase();
+    const playerId = String(state.multiplayerPlayer?.id || session?.multiplayerPlayerId || getStoredMultiplayerPlayerId(roomCode) || "");
+    if (!roomCode || !playerId || !session) {
+      return;
+    }
+    try {
+      const data = await requestApiJson(`/multiplayer/rooms/${encodeURIComponent(roomCode)}`, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "progress",
+          playerId,
+          profileId: session.profileId || "",
+          sessionId: session.id || "",
+          score: session.score,
+          totalQuestions: session.questions?.length || 10,
+          result: session.result || "",
+          status: session.completed ? "completed" : "in_progress",
+          completedAt: session.completedAt || "",
+        }),
+      });
+      state.multiplayerRoom = data.room || state.multiplayerRoom;
+      state.multiplayerPlayer = data.player || state.multiplayerPlayer;
+      state.multiplayerPlayers = Array.isArray(data.players) ? data.players : state.multiplayerPlayers;
+    } catch {
+      // Normal profile/session saving still happens; room progress will retry on the next answer or finish.
+    }
+  }
+
   function renderGamePanel() {
     const session = getSession();
     if (!session) {
@@ -1934,6 +2106,28 @@
     if (session.completed && !state.feedback) {
       elements.game.classList.add("hidden");
       renderResultPanel(session);
+      return;
+    }
+
+    if (
+      isLiveRoundRoom() &&
+      state.multiplayerRoom?.liveStatus === "active" &&
+      !state.feedback &&
+      session.currentIndex > Math.max(0, Number(state.multiplayerRoom.currentQuestionIndex) || 0)
+    ) {
+      elements.game.classList.remove("hidden");
+      elements.start.classList.add("hidden");
+      elements.result.classList.add("hidden");
+      elements.game.innerHTML = `
+        <div class="question-shell">
+          <div class="hero-card" style="margin-top: 0;">
+            <p class="kicker">Live Round</p>
+            <h2 class="section-title">Answer locked in.</h2>
+            <p class="copy">Waiting for the next question. About ${Math.max(0, liveRoomTimeLeftSeconds())} seconds left.</p>
+            ${roomLeaderboardMarkup(false)}
+          </div>
+        </div>
+      `;
       return;
     }
 
@@ -1955,6 +2149,9 @@
       ? core.getCharacterValuePerExtraCorrect(session.customer)
       : Math.max(0, (Number(session.customer.regularValue) || 0) - (Number(session.customer.occasionalValue) || 0));
     const isCharacterUnlocked = session.score >= customerUnlockScore;
+    const liveRoundMarkup = isLiveRoundRoom()
+      ? `<span class="chip gold">Live ${Math.max(0, liveRoomTimeLeftSeconds())}s</span>`
+      : "";
     const currentCharacterValue = core.getCharacterScoreValue
       ? core.getCharacterScoreValue(session.customer, session.score)
       : isCharacterUnlocked
@@ -1998,6 +2195,7 @@
           </div>
           <div class="chip-row">
             <span class="chip gold">Score ${session.score}</span>
+            ${liveRoundMarkup}
             ${unlockStatusChip}
             ${currentValueChip}
           </div>
@@ -2063,6 +2261,11 @@
       renderAll();
       return;
     }
+    if (isLiveRoundRoom() && state.multiplayerRoom?.liveStatus !== "active") {
+      state.multiplayerError = "The live round is not accepting answers right now.";
+      renderAll();
+      return;
+    }
     state.isLocked = true;
     const activeSession = getSession();
     const currentQuestion = activeSession ? activeSession.questions[activeSession.currentIndex] : null;
@@ -2087,6 +2290,8 @@
           renderResultPanel(session);
         }
       });
+    } else if (isLiveRoundRoom() && outcome.session) {
+      void syncMultiplayerProgress(outcome.session);
     }
 
     state.answerTimer = window.setTimeout(() => {

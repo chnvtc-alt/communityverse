@@ -268,6 +268,7 @@ const ROOM_CODE_WORDS = [
   "WILLOW",
   "ZESTY",
 ];
+const LIVE_QUESTION_SECONDS = 25;
 
 function randomId(prefix) {
   if (globalThis.crypto?.randomUUID) {
@@ -380,6 +381,32 @@ function getRoomState(roomCode) {
   };
 }
 
+function saveRoom(room) {
+  db.prepare(`
+    INSERT INTO multiplayer_rooms (id, room_code, restaurant_slug, customer_id, question_ids, status, created_at, expires_at, payload_json)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(id) DO UPDATE SET
+      room_code = excluded.room_code,
+      restaurant_slug = excluded.restaurant_slug,
+      customer_id = excluded.customer_id,
+      question_ids = excluded.question_ids,
+      status = excluded.status,
+      expires_at = excluded.expires_at,
+      payload_json = excluded.payload_json
+  `).run(
+    room.id,
+    room.roomCode,
+    room.restaurantSlug,
+    room.customerId,
+    JSON.stringify(room.questionIds || []),
+    room.status || "open",
+    room.createdAt || nowIso(),
+    room.expiresAt,
+    JSON.stringify(room)
+  );
+  return getRoomByCode(room.roomCode) || room;
+}
+
 function createRoom(body) {
   const questionIds = normalizeQuestionIds(body?.questionIds);
   const restaurantSlug = String(body?.restaurantSlug || "").trim();
@@ -400,23 +427,16 @@ function createRoom(body) {
     customerId,
     questionIds,
     status: "open",
+    mode: body?.mode === "live" ? "live" : "casual",
+    liveStatus: body?.mode === "live" ? "waiting" : "",
+    currentQuestionIndex: body?.mode === "live" ? 0 : null,
+    questionDurationSeconds: body?.mode === "live" ? LIVE_QUESTION_SECONDS : null,
+    questionStartedAt: "",
+    questionEndsAt: "",
     createdAt,
     expiresAt: new Date(Date.parse(createdAt) + 15 * 60 * 1000).toISOString(),
   };
-  db.prepare(`
-    INSERT INTO multiplayer_rooms (id, room_code, restaurant_slug, customer_id, question_ids, status, created_at, expires_at, payload_json)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
-    room.id,
-    room.roomCode,
-    room.restaurantSlug,
-    room.customerId,
-    JSON.stringify(room.questionIds),
-    room.status,
-    room.createdAt,
-    room.expiresAt,
-    JSON.stringify(room)
-  );
+  saveRoom(room);
   const joined = joinRoom(room.roomCode, {
     displayName: body?.hostName || body?.displayName || "Host",
     profileId: body?.profileId || "",
@@ -517,6 +537,116 @@ function finishRoomPlayer(roomCode, body) {
     room: state.room,
     player,
     players: getRoomPlayers(state.room).map((item) => item.id === player.id ? player : item),
+  };
+}
+
+function updateRoomPlayerProgress(roomCode, body) {
+  const state = getRoomState(roomCode);
+  if (!state?.room) {
+    throw new Error("Room not found.");
+  }
+  if (roomIsClosed(state.room)) {
+    throw new Error("This room is closed.");
+  }
+  const playerId = String(body?.playerId || "");
+  const existing = state.players.find((player) => player.id === playerId);
+  if (!existing) {
+    throw new Error("Room player not found.");
+  }
+  const player = {
+    ...existing,
+    profileId: String(body?.profileId || existing.profileId || ""),
+    sessionId: String(body?.sessionId || existing.sessionId || ""),
+    score: Math.max(0, Number(body?.score) || 0),
+    totalQuestions: Math.max(1, Number(body?.totalQuestions) || existing.totalQuestions || 10),
+    result: String(body?.result || existing.result || ""),
+    status: body?.status === "completed" ? "completed" : "in_progress",
+    completedAt: body?.status === "completed" ? String(body?.completedAt || nowIso()) : "",
+  };
+  db.prepare(`
+    UPDATE multiplayer_room_players
+    SET profile_id = ?, session_id = ?, score = ?, total_questions = ?, result = ?, status = ?, completed_at = ?, payload_json = ?
+    WHERE id = ?
+  `).run(
+    player.profileId || null,
+    player.sessionId || null,
+    player.score,
+    player.totalQuestions,
+    player.result,
+    player.status,
+    player.completedAt || null,
+    JSON.stringify(player),
+    player.id
+  );
+  return {
+    room: state.room,
+    player,
+    players: getRoomPlayers(state.room).map((item) => item.id === player.id ? player : item),
+  };
+}
+
+function startLiveRoom(roomCode) {
+  const state = getRoomState(roomCode);
+  if (!state?.room) {
+    throw new Error("Room not found.");
+  }
+  if (roomIsClosed(state.room)) {
+    throw new Error("This room is closed.");
+  }
+  if (state.room.mode !== "live") {
+    throw new Error("This is not a live round room.");
+  }
+  const startedAt = nowIso();
+  const duration = Number(state.room.questionDurationSeconds) || LIVE_QUESTION_SECONDS;
+  const room = saveRoom({
+    ...state.room,
+    liveStatus: "active",
+    currentQuestionIndex: 0,
+    questionDurationSeconds: duration,
+    questionStartedAt: startedAt,
+    questionEndsAt: new Date(Date.parse(startedAt) + duration * 1000).toISOString(),
+  });
+  return {
+    room,
+    players: getRoomPlayers(room),
+  };
+}
+
+function advanceLiveRoom(roomCode) {
+  const state = getRoomState(roomCode);
+  if (!state?.room) {
+    throw new Error("Room not found.");
+  }
+  if (roomIsClosed(state.room) || state.room.mode !== "live" || state.room.liveStatus !== "active") {
+    return state;
+  }
+  const currentIndex = Math.max(0, Number(state.room.currentQuestionIndex) || 0);
+  const nextIndex = currentIndex + 1;
+  const totalQuestions = normalizeQuestionIds(state.room.questionIds).length || 10;
+  if (nextIndex >= totalQuestions) {
+    const room = saveRoom({
+      ...state.room,
+      liveStatus: "completed",
+      currentQuestionIndex: totalQuestions,
+      questionStartedAt: "",
+      questionEndsAt: "",
+    });
+    return {
+      room,
+      players: getRoomPlayers(room),
+    };
+  }
+  const startedAt = nowIso();
+  const duration = Number(state.room.questionDurationSeconds) || LIVE_QUESTION_SECONDS;
+  const room = saveRoom({
+    ...state.room,
+    currentQuestionIndex: nextIndex,
+    questionStartedAt: startedAt,
+    questionEndsAt: new Date(Date.parse(startedAt) + duration * 1000).toISOString(),
+  });
+  return {
+    room,
+    players: getRoomPlayers(room),
   };
 }
 
@@ -891,6 +1021,18 @@ async function handleApi(request, response, url) {
         const body = await readBody(request);
         if (body?.action === "finish") {
           sendJson(response, 200, { ok: true, ...finishRoomPlayer(roomCode, body) });
+          return;
+        }
+        if (body?.action === "progress") {
+          sendJson(response, 200, { ok: true, ...updateRoomPlayerProgress(roomCode, body) });
+          return;
+        }
+        if (body?.action === "start-live") {
+          sendJson(response, 200, { ok: true, ...startLiveRoom(roomCode) });
+          return;
+        }
+        if (body?.action === "advance-live") {
+          sendJson(response, 200, { ok: true, ...advanceLiveRoom(roomCode) });
           return;
         }
         if (body?.action === "join") {
