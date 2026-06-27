@@ -1604,7 +1604,7 @@
         <div class="button-row">
           <button class="button button-muted" id="create-multiplayer-room-button" type="button" ${state.multiplayerLoading ? "disabled" : ""}>Play With Friends</button>
           <button class="button button-hot" id="create-live-room-button" type="button" ${state.multiplayerLoading ? "disabled" : ""}>Live Round</button>
-          <a class="button button-muted" href="${restaurantBasePath()}?multiplayer=1&join=1">Join Friends' Game</a>
+          <a class="button button-muted" href="${restaurantPlayPath()}?multiplayer=1&join=1">Join Friends' Game</a>
         </div>
       </div>
     `;
@@ -1823,7 +1823,7 @@
                 `
               : ""
           }
-          ${!replayCustomer && !isSalesDemoMode() ? `<a class="button button-muted" href="${restaurantBasePath()}?multiplayer=1">Play With Friends</a>` : ""}
+          ${!replayCustomer && !isSalesDemoMode() ? `<a class="button button-muted" href="${restaurantPlayPath()}?multiplayer=1">Play With Friends</a>` : ""}
           ${
             session && !session.completed && !state.showGame
               ? `
