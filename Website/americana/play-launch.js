@@ -793,7 +793,7 @@
         stopMultiplayerRefresh();
         return;
       }
-      void refreshMultiplayerRoom({ redraw: !state.showGame || isLiveRoundRoom() });
+      void refreshMultiplayerRoom({ redraw: shouldRedrawMultiplayerRefresh() });
     }, isLiveRoundRoom() ? liveRoundRefreshDelayMs : multiplayerRefreshDelayMs);
   }
 
@@ -806,6 +806,14 @@
 
   function isLiveRoundRoom() {
     return state.multiplayerRoom?.mode === "live";
+  }
+
+  function shouldRedrawMultiplayerRefresh() {
+    const session = getSession();
+    if (session?.completed || state.multiplayerRoom?.liveStatus === "completed") {
+      return false;
+    }
+    return !state.showGame || isLiveRoundRoom();
   }
 
   function liveRoomTimeLeftSeconds() {
