@@ -3152,6 +3152,7 @@
 
     safeEntry.favoriteVisits = Math.max(0, Math.min(FAVORITE_VISIT_GOAL, Number(safeEntry.favoriteVisits) || 0));
     safeEntry.customerValue = Math.max(0, Number(safeEntry.customerValue) || 0);
+    safeEntry.bestScore = Math.max(0, Number(safeEntry.bestScore) || 0);
     safeEntry.scoringVersion = String(safeEntry.scoringVersion || "").trim();
     if (safeEntry.status === "favorite") {
       safeEntry.favoriteVisits = FAVORITE_VISIT_GOAL;
@@ -3177,6 +3178,7 @@
       regularValue: Math.max(0, Number(safeCredit.regularValue ?? fallback.regularValue) || 0),
       occasionalValue: Math.max(0, Number(safeCredit.occasionalValue ?? fallback.occasionalValue) || 0),
       customerValue: Math.max(0, Number(safeCredit.customerValue ?? fallback.customerValue) || 0),
+      bestScore: Math.max(0, Number(safeCredit.bestScore ?? fallback.bestScore) || 0),
       scoringVersion: String(safeCredit.scoringVersion || fallback.scoringVersion || "").trim(),
       salesBoostPercent: Math.max(0, Number(safeCredit.salesBoostPercent ?? fallback.salesBoostPercent) || 0),
       dateWon: safeCredit.dateWon || fallback.dateWon || "",
@@ -3196,6 +3198,7 @@
           regularValue: entry.regularValue,
           occasionalValue: entry.occasionalValue,
           customerValue: entry.customerValue,
+          bestScore: entry.bestScore,
           scoringVersion: entry.scoringVersion,
           salesBoostPercent: entry.salesBoostPercent,
           dateWon: entry.dateWon,
@@ -3219,6 +3222,7 @@
         regularValue: entry.regularValue,
         occasionalValue: entry.occasionalValue,
         customerValue: entry.customerValue,
+        bestScore: entry.bestScore,
         scoringVersion: entry.scoringVersion,
         salesBoostPercent: entry.salesBoostPercent,
         dateWon: entry.dateWon,
@@ -3258,6 +3262,11 @@
         Number(incomingCredit.customerValue) || 0,
         Number(strongerCredit.customerValue) || 0
       ),
+      bestScore: Math.max(
+        Number(existingCredit.bestScore) || 0,
+        Number(incomingCredit.bestScore) || 0,
+        Number(strongerCredit.bestScore) || 0
+      ),
       scoringVersion: strongerCredit.scoringVersion,
       salesBoostPercent: strongerCredit.salesBoostPercent,
     });
@@ -3295,6 +3304,7 @@
       regularValue: session.customer.regularValue,
       occasionalValue: session.customer.occasionalValue,
       customerValue: session.customerValue,
+      bestScore: session.score,
       scoringVersion: session.scoringVersion,
       salesBoostPercent: session.salesBoostPercent,
       dateWon: session.completedAt || nowIso(),
@@ -4017,6 +4027,15 @@
     return Math.min(10, Math.max(thresholds.occasional, thresholds.regular + 1));
   }
 
+  function getCharacterValuePerExtraCorrect(customer) {
+    const unlockScore = getCustomerUnlockScore(customer);
+    const baseValue = Math.max(0, Number(customer?.occasionalValue) || 0);
+    const targetValue = Math.max(baseValue, Number(customer?.regularValue) || 0);
+    const targetScore = getCharacterValueTargetScore(customer);
+    const scoringSteps = Math.max(1, targetScore - unlockScore);
+    return roundCharacterValue((targetValue - baseValue) / scoringSteps);
+  }
+
   function getCharacterScoreValue(customer, score) {
     const unlockScore = getCustomerUnlockScore(customer);
     const safeScore = Math.max(0, Number(score) || 0);
@@ -4025,10 +4044,7 @@
     }
 
     const baseValue = Math.max(0, Number(customer?.occasionalValue) || 0);
-    const targetValue = Math.max(baseValue, Number(customer?.regularValue) || 0);
-    const targetScore = getCharacterValueTargetScore(customer);
-    const scoringSteps = Math.max(1, targetScore - unlockScore);
-    const valuePerCorrect = (targetValue - baseValue) / scoringSteps;
+    const valuePerCorrect = getCharacterValuePerExtraCorrect(customer);
     return roundCharacterValue(baseValue + Math.max(0, safeScore - unlockScore) * valuePerCorrect);
   }
 
@@ -5011,6 +5027,10 @@
             Number(existingCustomer.customerValue) || 0,
             Number(session.customerValue) || 0
           ),
+          bestScore: Math.max(
+            Number(existingCustomer.bestScore) || 0,
+            Number(session.score) || 0
+          ),
           scoringVersion: session.scoringVersion || existingCustomer.scoringVersion || "",
           salesBoostPercent: Math.max(0, Number(session.salesBoostPercent) || 0),
           favoriteVisits: bestStatus === "favorite" ? FAVORITE_VISIT_GOAL : nextFavoriteVisits,
@@ -5037,6 +5057,7 @@
             regularValue: session.customer.regularValue,
             occasionalValue: session.customer.occasionalValue,
             customerValue: Math.max(0, Number(session.customerValue) || 0),
+            bestScore: Math.max(0, Number(session.score) || 0),
             scoringVersion: session.scoringVersion || "",
             salesBoostPercent: Math.max(0, Number(session.salesBoostPercent) || 0),
             favoriteVisits: 0,
@@ -5409,6 +5430,7 @@
     getCustomerUnlockScore,
     getCharacterScoreValue,
     getCharacterValueTargetScore,
+    getCharacterValuePerExtraCorrect,
     getFavoriteCustomerValue,
     getFavoriteVisitGoal,
     getCollectionEntryValue,

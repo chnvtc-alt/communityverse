@@ -689,6 +689,23 @@
     ) || null;
   }
 
+  function getBestScoreForCustomer(customerId, collectionEntry = null) {
+    const storedBest = Math.max(0, Number(collectionEntry?.bestScore) || 0);
+    if (storedBest) {
+      return storedBest;
+    }
+
+    const profile = getProfile();
+    const sessions = Array.isArray(profile?.recentSessions) ? profile.recentSessions : [];
+    return sessions.reduce((bestScore, session) => {
+      if (session?.customerId !== customerId) {
+        return bestScore;
+      }
+
+      return Math.max(bestScore, Number(session.score) || 0);
+    }, 0);
+  }
+
   function ensurePlayableProfile() {
     const existingProfile = getProfile();
     if (existingProfile) {
@@ -1051,7 +1068,7 @@
       ? `${restaurantBasePath()}?play=1&customerId=${encodeURIComponent(replayCustomer.id)}`
       : `${restaurantBasePath()}?play=1`;
     const introCopy = replayCustomer
-      ? `This is an invite-back visit for ${replayCustomer.name}. If you do better, they move up. If you do worse, the newer result replaces the old one.`
+      ? `This is a replay for ${replayCustomer.name}. If you score higher, you can increase this character's value. A lower score will not replace your best value.`
       : getOpenerCopy();
     const introCopyMarkup = introCopy
       ? `<p class="copy opening-title-copy">${escapeHtml(introCopy)}</p>`
@@ -1061,7 +1078,7 @@
       : "Can You Unlock A New Character For Your Collection?";
     const demoExpectationLine = "In this demo you'll see: menu photo questions, restaurant trivia, collectible characters, and feedback surveys.";
     const startButtonText = replayCustomer
-      ? "INVITE BACK"
+      ? "PLAY AGAIN"
       : isSalesDemoMode()
         ? "PLAY THE THREE MINUTE DEMO"
         : "START THE GAME";
@@ -1074,7 +1091,7 @@
             replayCustomer
               ? `
                 <p class="helper opening-start-helper opening-title-helper">
-                  You invited <strong>${escapeHtml(replayCustomer.name)}</strong> back. Playing again can upgrade the character, but a lower score will replace the earlier result.
+                  You are playing again for <strong>${escapeHtml(replayCustomer.name)}</strong>. Your best value is protected.
                 </p>
               `
               : ""
@@ -1276,20 +1293,32 @@
     const unlockValue = core.getCharacterScoreValue
       ? core.getCharacterScoreValue(customer, unlockScore)
       : customer.occasionalValue;
-    const targetScore = core.getCharacterValueTargetScore
-      ? core.getCharacterValueTargetScore(customer)
-      : Math.min(10, thresholds.regular + 1);
-    const targetValue = core.getCharacterScoreValue
-      ? core.getCharacterScoreValue(customer, targetScore)
-      : customer.regularValue;
-    const nextScoreValue = core.getCharacterScoreValue
-      ? core.getCharacterScoreValue(customer, unlockScore + 1)
-      : customer.regularValue;
-    const valuePerExtraCorrect = Math.max(0, nextScoreValue - unlockValue);
+    const valuePerExtraCorrect = core.getCharacterValuePerExtraCorrect
+      ? core.getCharacterValuePerExtraCorrect(customer)
+      : Math.max(0, (Number(customer.regularValue) || 0) - (Number(customer.occasionalValue) || 0));
     const howToPlayText = salesDemoMode ? "See the Benefits" : "How to Play";
     const collectionEntry = getCollectionEntryForSession(session);
     const favoriteGoal = core.getFavoriteVisitGoal();
     const favoriteVisits = Math.max(0, Math.min(favoriteGoal, Number(collectionEntry?.favoriteVisits) || 0));
+    const bestScore = collectionEntry ? getBestScoreForCustomer(customer.id, collectionEntry) : 0;
+    const bestValue = Math.max(0, Number(collectionEntry?.customerValue) || 0);
+    const nextValueScore = Math.min(10, Math.max(unlockScore, bestScore + 1));
+    const replayValueMarkup =
+      collectionEntry && bestValue > 0
+        ? `
+          <div class="favorite-progress-note">
+            <p class="kicker">Current Best</p>
+            <p class="copy">${bestScore ? `Best score: <strong>${bestScore}/10</strong>. ` : ""}Best value: <strong>${core.formatCurrency(bestValue)}</strong>.</p>
+            ${
+              bestScore > 0 && bestScore < 10
+                ? `<p class="helper">Each correct answer above ${bestScore}/10 can add ${core.formatCurrency(valuePerExtraCorrect)}. Score ${nextValueScore}/10 or better to increase this character's value.</p>`
+                : bestScore === 0
+                  ? `<p class="helper">Score higher than your previous best to increase this character's value.</p>`
+                : `<p class="helper">You have already reached the top score for this character.</p>`
+            }
+          </div>
+        `
+        : "";
     const isRegularReplay =
       collectionEntry?.status === "regular" || collectionEntry?.status === "favorite";
     const favoriteBonusMarkup =
@@ -1347,8 +1376,8 @@
                 <strong>${core.formatCurrency(unlockValue)}</strong>
               </div>
               <div class="customer-reveal-value">
-                <span class="customer-reveal-label">${escapeHtml(salesDemoMode ? "Strong Score Value" : `Around ${targetScore}/10 Correct`)}</span>
-                <strong>${core.formatCurrency(targetValue)}</strong>
+                <span class="customer-reveal-label">${escapeHtml(salesDemoMode ? "Extra Value" : "Each Extra Correct")}</span>
+                <strong>+${core.formatCurrency(valuePerExtraCorrect)}</strong>
               </div>
             </div>
             <div class="customer-reveal-mobile-summary">
@@ -1357,10 +1386,11 @@
                 <strong>${escapeHtml(salesDemoMode ? core.formatCurrency(unlockValue) : `Need ${unlockScore}/10 Correct - Value ${core.formatCurrency(unlockValue)}`)}</strong>
               </div>
               <div class="customer-reveal-combo">
-                <span class="customer-reveal-label">${escapeHtml(salesDemoMode ? "Strong Score Value" : "Higher Scores")}</span>
-                <strong>${escapeHtml(salesDemoMode ? core.formatCurrency(targetValue) : `Around ${targetScore}/10 Correct - Value ${core.formatCurrency(targetValue)}`)}</strong>
+                <span class="customer-reveal-label">${escapeHtml(salesDemoMode ? "Extra Value" : "Each Extra Correct")}</span>
+                <strong>+${core.formatCurrency(valuePerExtraCorrect)}</strong>
               </div>
             </div>
+            ${replayValueMarkup}
             ${favoriteBonusMarkup}
             <div class="button-row customer-reveal-actions">
               <button class="button button-hot" id="begin-questions-button" type="button">Begin Questions</button>
@@ -1440,12 +1470,9 @@
     const customerUnlockValue = core.getCharacterScoreValue
       ? core.getCharacterScoreValue(session.customer, customerUnlockScore)
       : session.customer.occasionalValue;
-    const customerTargetScore = core.getCharacterValueTargetScore
-      ? core.getCharacterValueTargetScore(session.customer)
-      : Math.min(10, customerThresholds.regular + 1);
-    const customerTargetValue = core.getCharacterScoreValue
-      ? core.getCharacterScoreValue(session.customer, customerTargetScore)
-      : session.customer.regularValue;
+    const customerValuePerExtraCorrect = core.getCharacterValuePerExtraCorrect
+      ? core.getCharacterValuePerExtraCorrect(session.customer)
+      : Math.max(0, (Number(session.customer.regularValue) || 0) - (Number(session.customer.occasionalValue) || 0));
     const customerInfoCardMarkup = isSalesDemoMode()
       ? ""
       : `
@@ -1459,7 +1486,7 @@
                 <span class="chip">${escapeHtml(session.customer.rarity || "Rare")} character</span>
                 <span class="chip">Unlock at ${customerUnlockScore}/10</span>
                 <span class="chip">Unlock value ${core.formatCurrency(customerUnlockValue)}</span>
-                <span class="chip">Around ${customerTargetScore}/10 value ${core.formatCurrency(customerTargetValue)}</span>
+                <span class="chip">+${core.formatCurrency(customerValuePerExtraCorrect)} per extra correct</span>
               </div>
             </div>
           </div>
