@@ -816,6 +816,11 @@
     return Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
   }
 
+  function liveRoomQuestionExpired() {
+    const endsAt = Date.parse(state.multiplayerRoom?.questionEndsAt || "");
+    return Boolean(endsAt && endsAt <= Date.now());
+  }
+
   function liveRoomReviewTimeLeftSeconds() {
     const endsAt = Date.parse(state.multiplayerRoom?.reviewEndsAt || "");
     if (!endsAt) {
@@ -907,14 +912,6 @@
       }
     }
 
-    if (room.liveStatus === "review" && getSession()?.currentIndex <= Math.min(targetIndex, totalQuestions - 1)) {
-      core.answerActiveSession(-1);
-      const missedSession = getSession();
-      if (missedSession) {
-        void syncMultiplayerProgress(missedSession);
-      }
-    }
-
     if (room.liveStatus === "completed" || targetIndex >= totalQuestions) {
       while (!getSession()?.completed) {
         core.answerActiveSession(-1);
@@ -937,7 +934,7 @@
 
     if (room.liveStatus === "active") {
       state.showGame = true;
-      if (liveRoomTimeLeftSeconds() <= 0) {
+      if (liveRoomQuestionExpired()) {
         if (getSession()?.currentIndex <= Math.min(targetIndex, totalQuestions - 1)) {
           core.answerActiveSession(-1);
           const missedSession = getSession();
