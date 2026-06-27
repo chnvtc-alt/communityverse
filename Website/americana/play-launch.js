@@ -56,7 +56,9 @@
   const mobileVisibleGuestCount = 2;
   const desktopVisibleGuestCount = 3;
   const answerFeedbackDelayMs = 1500;
+  const multiplayerRefreshDelayMs = 5000;
   const fallbackOpeningGuestIds = ["curtis-coolwater", "pastor-caleb-brooks", "ming-wu"];
+  let multiplayerRefreshTimer = null;
 
   const openingMenuItems = [
     {
@@ -742,6 +744,10 @@
     return url.toString();
   }
 
+  function multiplayerShareText(roomCode) {
+    return `Join my Restaurant Challenge room ${String(roomCode || "").toUpperCase()}.`;
+  }
+
   async function loadMultiplayerRoom(roomCode) {
     const safeRoomCode = String(roomCode || "").trim().toUpperCase();
     if (!safeRoomCode) {
@@ -752,24 +758,96 @@
     state.multiplayerPlayers = Array.isArray(data.players) ? data.players : [];
     const storedPlayerId = getStoredMultiplayerPlayerId(safeRoomCode);
     state.multiplayerPlayer = state.multiplayerPlayers.find((player) => player.id === storedPlayerId) || state.multiplayerPlayer;
+    startMultiplayerRefresh();
     return data;
   }
 
-  function roomLeaderboardMarkup() {
+  async function refreshMultiplayerRoom({ redraw = false } = {}) {
+    const roomCode = String(state.multiplayerRoom?.roomCode || multiplayerRoomCodeParam || "").toUpperCase();
+    if (!roomCode) {
+      return;
+    }
+    try {
+      await loadMultiplayerRoom(roomCode);
+      state.multiplayerError = "";
+      if (redraw) {
+        renderAll();
+      }
+    } catch (error) {
+      state.multiplayerError = "Room updates are paused. Refresh the page to try again.";
+      if (redraw) {
+        renderAll();
+      }
+    }
+  }
+
+  function startMultiplayerRefresh() {
+    if (multiplayerRefreshTimer || !(state.multiplayerRoom?.roomCode || multiplayerRoomCodeParam)) {
+      return;
+    }
+    multiplayerRefreshTimer = window.setInterval(() => {
+      if (!state.multiplayerRoom?.roomCode && !multiplayerRoomCodeParam) {
+        stopMultiplayerRefresh();
+        return;
+      }
+      void refreshMultiplayerRoom({ redraw: !state.showGame });
+    }, multiplayerRefreshDelayMs);
+  }
+
+  function stopMultiplayerRefresh() {
+    if (multiplayerRefreshTimer) {
+      window.clearInterval(multiplayerRefreshTimer);
+      multiplayerRefreshTimer = null;
+    }
+  }
+
+  function getSortedRoomPlayers() {
     const players = Array.isArray(state.multiplayerPlayers) ? state.multiplayerPlayers : [];
+    return players.slice().sort((left, right) => {
+      const leftCompleted = left.status === "completed";
+      const rightCompleted = right.status === "completed";
+      if (leftCompleted !== rightCompleted) {
+        return rightCompleted ? 1 : -1;
+      }
+      if ((right.score || 0) !== (left.score || 0)) {
+        return (right.score || 0) - (left.score || 0);
+      }
+      return String(left.displayName || "").localeCompare(String(right.displayName || ""));
+    });
+  }
+
+  function roomWinnerMarkup(showGroupResults = false) {
+    const completedPlayers = getSortedRoomPlayers().filter((player) => player.status === "completed");
+    if (!completedPlayers.length) {
+      return showGroupResults
+        ? `<p class="copy multiplayer-results-note">No one has finished yet. This will update as players complete their games.</p>`
+        : "";
+    }
+    const topScore = Number(completedPlayers[0].score) || 0;
+    const winners = completedPlayers.filter((player) => Number(player.score) === topScore);
+    const winnerNames = winners.map((player) => player.displayName || "Player").join(", ");
+    return `
+      <div class="multiplayer-winner-panel">
+        <p class="kicker">${showGroupResults ? "Group Results" : "Current Leader"}</p>
+        <h3 class="section-title">${
+          showGroupResults
+            ? winners.length > 1 ? "Winners" : "Winner"
+            : winners.length > 1 ? "Leaders" : "Leader"
+        }: ${escapeHtml(winnerNames)}</h3>
+        <p class="copy">Top score: ${topScore}/${Number(completedPlayers[0].totalQuestions) || 10}</p>
+      </div>
+    `;
+  }
+
+  function roomLeaderboardMarkup(showGroupResults = false) {
+    const players = getSortedRoomPlayers();
     if (!players.length) {
       return `<p class="copy">No room scores yet.</p>`;
     }
     return `
-      <div class="leaderboard-list">
+      ${roomWinnerMarkup(showGroupResults)}
+      <div class="multiplayer-leaderboard-list">
         ${players
-          .slice()
-          .sort((left, right) => {
-            if ((right.score || 0) !== (left.score || 0)) {
-              return (right.score || 0) - (left.score || 0);
-            }
-            return String(left.displayName || "").localeCompare(String(right.displayName || ""));
-          })
           .map((player, index) => {
             const status = player.status === "completed"
               ? `${Number(player.score) || 0}/${Number(player.totalQuestions) || 10}`
@@ -777,10 +855,11 @@
                 ? "Did Not Finish"
                 : "In Progress";
             return `
-              <article class="leaderboard-row">
-                <div>
-                  <strong>#${index + 1} ${escapeHtml(player.displayName || "Player")}</strong>
-                  <p class="helper">${escapeHtml(status)}</p>
+              <article class="multiplayer-leaderboard-row">
+                <strong class="multiplayer-rank">#${index + 1}</strong>
+                <div class="multiplayer-player-name">${escapeHtml(player.displayName || "Player")}</div>
+                <div class="multiplayer-player-status">
+                  <span>${escapeHtml(status)}</span>
                 </div>
               </article>
             `;
@@ -1198,6 +1277,8 @@
     const roomCode = String(room?.roomCode || multiplayerRoomCodeParam || "").toUpperCase();
     const shareUrl = roomCode ? multiplayerShareUrl(roomCode) : "";
     const roomStatus = room?.status === "closed" ? "Room closed" : "Room open for about 15 minutes";
+    const activeSession = getSession();
+    const showGroupResults = Boolean(activeSession?.completed || room?.status === "closed");
     const errorMarkup = state.multiplayerError ? `<p class="error" aria-live="polite">${escapeHtml(state.multiplayerError)}</p>` : "";
     const messageMarkup = state.multiplayerMessage ? `<p class="helper" aria-live="polite">${escapeHtml(state.multiplayerMessage)}</p>` : "";
 
@@ -1235,8 +1316,12 @@
               <input class="input" id="multiplayer-share-link" readonly value="${escapeHtml(shareUrl)}" />
             </div>
           </div>
+          <div class="button-row">
+            <button class="button button-hot" id="share-multiplayer-room-button" type="button">Share Invite</button>
+            <button class="button button-muted" id="copy-multiplayer-room-button" type="button">Copy Link</button>
+          </div>
           ${messageMarkup}
-          ${roomLeaderboardMarkup()}
+          ${roomLeaderboardMarkup(showGroupResults)}
         </div>
       `;
     }
@@ -1272,6 +1357,64 @@
         void joinMultiplayerRoom(multiplayerRoomCodeParam);
       });
     }
+
+    const shareButton = document.getElementById("share-multiplayer-room-button");
+    if (shareButton) {
+      shareButton.addEventListener("click", () => {
+        void shareMultiplayerRoom();
+      });
+    }
+
+    const copyButton = document.getElementById("copy-multiplayer-room-button");
+    if (copyButton) {
+      copyButton.addEventListener("click", () => {
+        void copyMultiplayerRoomLink();
+      });
+    }
+  }
+
+  async function copyMultiplayerRoomLink() {
+    const roomCode = String(state.multiplayerRoom?.roomCode || multiplayerRoomCodeParam || "").toUpperCase();
+    const shareUrl = roomCode ? multiplayerShareUrl(roomCode) : "";
+    if (!shareUrl) {
+      return;
+    }
+    try {
+      if (!navigator.clipboard?.writeText) {
+        throw new Error("Clipboard is unavailable.");
+      }
+      await navigator.clipboard.writeText(shareUrl);
+      state.multiplayerMessage = "Invite link copied.";
+    } catch (error) {
+      state.multiplayerMessage = "Copy the invite link from the box above.";
+    }
+    renderAll();
+  }
+
+  async function shareMultiplayerRoom() {
+    const roomCode = String(state.multiplayerRoom?.roomCode || multiplayerRoomCodeParam || "").toUpperCase();
+    const shareUrl = roomCode ? multiplayerShareUrl(roomCode) : "";
+    if (!shareUrl) {
+      return;
+    }
+    const shareData = {
+      title: "Restaurant Challenge room",
+      text: multiplayerShareText(roomCode),
+      url: shareUrl,
+    };
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        state.multiplayerMessage = "Invite ready to send.";
+        renderAll();
+        return;
+      } catch (error) {
+        if (String(error?.name || "") === "AbortError") {
+          return;
+        }
+      }
+    }
+    await copyMultiplayerRoomLink();
   }
 
   function renderSetup() {
@@ -1666,6 +1809,7 @@
       if (state.multiplayerRoom?.roomCode && state.multiplayerPlayer?.id) {
         storeMultiplayerPlayer(state.multiplayerRoom.roomCode, state.multiplayerPlayer.id);
       }
+      startMultiplayerRefresh();
       state.multiplayerMessage = `Room ${state.multiplayerRoom?.roomCode || ""} is ready. Share the link with friends.`;
       state.multiplayerLoading = false;
       clearResultVisibleSessionId();
@@ -1720,6 +1864,7 @@
       if (state.multiplayerRoom?.roomCode && state.multiplayerPlayer?.id) {
         storeMultiplayerPlayer(state.multiplayerRoom.roomCode, state.multiplayerPlayer.id);
       }
+      startMultiplayerRefresh();
 
       const session = core.startNewSession(restaurantSlug, {
         customerId: state.multiplayerRoom.customerId,
