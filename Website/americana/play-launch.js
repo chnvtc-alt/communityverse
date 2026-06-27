@@ -14,6 +14,7 @@
   const autoPlayMode = query.get("play") === "1";
   const replayCustomerId = String(query.get("customerId") || "").trim();
   const multiplayerRoomCodeParam = String(query.get("room") || "").trim().toUpperCase();
+  const multiplayerJoinMode = query.get("join") === "1";
   const multiplayerStorageKey = `${restaurantSlug}_multiplayer_room_v1`;
   let replayCustomer = null;
   const RESULT_VISIBLE_SESSION_KEY = `${restaurantSlug}_result_visible_session_v1`;
@@ -49,6 +50,7 @@
     multiplayerError: "",
     multiplayerMessage: "",
     multiplayerName: "",
+    multiplayerJoinCode: "",
     multiplayerLoading: false,
     liveAdvanceInFlight: false,
   };
@@ -1506,14 +1508,25 @@
     const errorMarkup = state.multiplayerError ? `<p class="error" aria-live="polite">${escapeHtml(state.multiplayerError)}</p>` : "";
     const messageMarkup = state.multiplayerMessage ? `<p class="helper" aria-live="polite">${escapeHtml(state.multiplayerMessage)}</p>` : "";
 
-    if (roomCode && !state.multiplayerPlayer) {
+    if ((roomCode || multiplayerJoinMode) && !state.multiplayerPlayer) {
+      const targetRoomCode = roomCode || "";
       return `
         <div class="hero-card result-followup-card" style="margin-top: 16px; padding: 16px;">
           <p class="kicker">Play With Friends</p>
-          <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">Join room ${escapeHtml(roomCode)}</h3>
-          <p class="copy" style="margin: 0 0 12px;">Everyone plays the same character and questions at their own pace.</p>
+          <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${targetRoomCode ? `Join room ${escapeHtml(targetRoomCode)}` : "Join friends' game"}</h3>
+          <p class="copy" style="margin: 0 0 12px;">Everyone plays the same character and same questions.</p>
           <p class="helper" style="margin: 0 0 12px;">Room codes are not case-sensitive. A space works instead of the dash.</p>
           <form class="input-grid" id="multiplayer-join-form">
+            ${
+              targetRoomCode
+                ? ""
+                : `
+                  <div class="field">
+                    <label class="field-label" for="multiplayer-room-code">Room code</label>
+                    <input class="input" id="multiplayer-room-code" name="roomCode" maxlength="40" value="${escapeHtml(state.multiplayerJoinCode)}" placeholder="Pepper Meadow" autocomplete="off" />
+                  </div>
+                `
+            }
             <div class="field">
               <label class="field-label" for="multiplayer-name">Your display name</label>
               <input class="input" id="multiplayer-name" name="displayName" maxlength="40" value="${escapeHtml(state.multiplayerName || defaultMultiplayerName())}" placeholder="Your name" />
@@ -1564,6 +1577,7 @@
         <div class="button-row">
           <button class="button button-muted" id="create-multiplayer-room-button" type="button" ${state.multiplayerLoading ? "disabled" : ""}>Play With Friends</button>
           <button class="button button-hot" id="create-live-room-button" type="button" ${state.multiplayerLoading ? "disabled" : ""}>Live Round</button>
+          <a class="button button-muted" href="${restaurantBasePath()}?multiplayer=1&join=1">Join Friends' Game</a>
         </div>
       </div>
     `;
@@ -1590,7 +1604,13 @@
         event.preventDefault();
         const formData = new FormData(joinForm);
         state.multiplayerName = String(formData.get("displayName") || "").trim();
-        void joinMultiplayerRoom(multiplayerRoomCodeParam);
+        state.multiplayerJoinCode = String(formData.get("roomCode") || multiplayerRoomCodeParam || "").trim();
+        if (!state.multiplayerJoinCode) {
+          state.multiplayerError = "Enter the room code your friend shared.";
+          renderAll();
+          return;
+        }
+        void joinMultiplayerRoom(state.multiplayerJoinCode);
       });
     }
 
