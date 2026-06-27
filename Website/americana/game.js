@@ -1099,7 +1099,7 @@
     core.applyRestaurantTheme?.(restaurant);
 
     let existingSession = getSession();
-    if (query.get("multiplayer") === "1" && existingSession && !existingSession.completed) {
+    if (query.get("multiplayer") === "1" && existingSession) {
       core.clearActiveSession();
       clearResultVisibleSessionId();
       existingSession = null;
