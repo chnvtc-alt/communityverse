@@ -1473,6 +1473,18 @@
     const customerValuePerExtraCorrect = core.getCharacterValuePerExtraCorrect
       ? core.getCharacterValuePerExtraCorrect(session.customer)
       : Math.max(0, (Number(session.customer.regularValue) || 0) - (Number(session.customer.occasionalValue) || 0));
+    const isCharacterUnlocked = session.score >= customerUnlockScore;
+    const currentCharacterValue = core.getCharacterScoreValue
+      ? core.getCharacterScoreValue(session.customer, session.score)
+      : isCharacterUnlocked
+        ? customerUnlockValue
+        : 0;
+    const unlockStatusChip = isCharacterUnlocked
+      ? `<span class="chip">Unlocked</span>`
+      : `<span class="chip">Need ${Math.max(0, customerUnlockScore - session.score)} more</span>`;
+    const currentValueChip = isCharacterUnlocked
+      ? `<span class="chip">Current value ${core.formatCurrency(currentCharacterValue)}</span>`
+      : "";
     const customerInfoCardMarkup = isSalesDemoMode()
       ? ""
       : `
@@ -1505,7 +1517,8 @@
           </div>
           <div class="chip-row">
             <span class="chip gold">Score ${session.score}</span>
-            <span class="chip">Need ${customerUnlockScore}</span>
+            ${unlockStatusChip}
+            ${currentValueChip}
           </div>
         </div>
 
