@@ -145,6 +145,11 @@ function favoriteCustomerValue(value) {
 }
 
 function entryValueForStatus(entry, status) {
+  const storedValue = Math.max(0, Number(entry?.customerValue) || 0);
+  if (storedValue > 0) {
+    return storedValue;
+  }
+
   if (status === "favorite") {
     return favoriteCustomerValue(entry.regularValue);
   }

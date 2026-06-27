@@ -29,7 +29,7 @@
       value: "collected",
       label: "Characters",
       rankLabel: "Characters",
-      description: "Total characters collected, including regular and occasional characters.",
+      description: "Total collectible characters unlocked.",
     },
     {
       value: "estimatedSales",
@@ -2173,11 +2173,7 @@
       return "⭐ Favorite Character";
     }
 
-    if (status === "regular") {
-      return "Regular Character";
-    }
-
-    return "Occasional Character";
+    return "Collectible Character";
   }
 
   function renderCollection() {
@@ -2197,11 +2193,9 @@
       String(right.dateWon).localeCompare(String(left.dateWon))
     );
     const filteredCollection =
-      state.collectionFilter === "regular"
-        ? collection.filter((entry) => entry.status === "regular" || entry.status === "favorite")
-        : state.collectionFilter === "occasional"
-          ? collection.filter((entry) => entry.status === "occasional")
-          : collection;
+      state.collectionFilter === "favorite"
+        ? collection.filter((entry) => entry.status === "favorite")
+        : collection;
     const selectedCustomer =
       filteredCollection.find((entry) => entry.customerId === state.selectedCustomerId) ||
       filteredCollection[0] ||
@@ -2240,8 +2234,7 @@
       <p class="copy">Your unlocked characters are stored here. Tap a card to view it or play for that character again.</p>
       <div class="leaderboard-tabs collection-tabs" role="tablist" aria-label="Character collection filter">
         <button class="button ${state.collectionFilter === "all" ? "button-primary" : "button-muted"} metric-button" data-collection-filter="all" type="button">All Characters</button>
-        <button class="button ${state.collectionFilter === "regular" ? "button-primary" : "button-muted"} metric-button" data-collection-filter="regular" type="button">Regular Characters</button>
-        <button class="button ${state.collectionFilter === "occasional" ? "button-primary" : "button-muted"} metric-button" data-collection-filter="occasional" type="button">Occasional Characters</button>
+        <button class="button ${state.collectionFilter === "favorite" ? "button-primary" : "button-muted"} metric-button" data-collection-filter="favorite" type="button">Favorite Characters</button>
       </div>
 
       ${
@@ -2268,7 +2261,7 @@
                   <div class="collection-selected-mobile-actions">
                     <span class="collection-selected-value">${core.formatCurrency(selectedValue)}</span>
                     <span class="chip collection-selected-rarity-chip">${selectedCustomer.rarity}</span>
-                    ${selectedInviteBackHref ? `<a class="button button-primary" id="selected-invite-back-button" href="${selectedInviteBackHref}">Invite Back</a>` : ""}
+                    ${selectedInviteBackHref ? `<a class="button button-primary" id="selected-invite-back-button" href="${selectedInviteBackHref}">Play Again</a>` : ""}
                   </div>
                 </div>
               </div>
@@ -2297,7 +2290,7 @@
                   <span class="chip">${core.formatCurrency(selectedValue)}</span>
                 </div>
                 <div class="button-row" style="margin-top: 10px;">
-                  ${selectedInviteBackHref ? `<a class="button button-primary" id="selected-invite-back-button" href="${selectedInviteBackHref}">Invite Back</a>` : ""}
+                  ${selectedInviteBackHref ? `<a class="button button-primary" id="selected-invite-back-button" href="${selectedInviteBackHref}">Play Again</a>` : ""}
                 </div>
               </div>
             `

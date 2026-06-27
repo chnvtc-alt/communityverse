@@ -1123,7 +1123,7 @@
           ${
             replayCustomer
               ? `
-                <a class="button button-muted" href="${restaurantBasePath()}?home=1">Cancel Invite Back</a>
+                <a class="button button-muted" href="${restaurantBasePath()}?home=1">Cancel Replay</a>
                 <a class="button button-muted" href="/restaurant/?hub=1">View My Virtual Restaurant</a>
               `
               : profile && !isSalesDemoMode()
@@ -1270,8 +1270,22 @@
       ? `${escapeHtml(customer.name)} is an exclusive collectible character available only in your restaurant's game.<br />Players will come back to build their collection and unlock new characters.`
       : escapeHtml(customerBio);
     const revealType = "character";
-    const regularValueLabel = salesDemoMode ? "Regular Value" : "Regular Character Value";
-    const occasionalValueLabel = salesDemoMode ? "Occasional Value" : "Occasional Character Value";
+    const unlockScore = core.getCustomerUnlockScore
+      ? core.getCustomerUnlockScore(customer)
+      : thresholds.occasional;
+    const unlockValue = core.getCharacterScoreValue
+      ? core.getCharacterScoreValue(customer, unlockScore)
+      : customer.occasionalValue;
+    const targetScore = core.getCharacterValueTargetScore
+      ? core.getCharacterValueTargetScore(customer)
+      : Math.min(10, thresholds.regular + 1);
+    const targetValue = core.getCharacterScoreValue
+      ? core.getCharacterScoreValue(customer, targetScore)
+      : customer.regularValue;
+    const nextScoreValue = core.getCharacterScoreValue
+      ? core.getCharacterScoreValue(customer, unlockScore + 1)
+      : customer.regularValue;
+    const valuePerExtraCorrect = Math.max(0, nextScoreValue - unlockValue);
     const howToPlayText = salesDemoMode ? "See the Benefits" : "How to Play";
     const collectionEntry = getCollectionEntryForSession(session);
     const favoriteGoal = core.getFavoriteVisitGoal();
@@ -1282,8 +1296,8 @@
       isRegularReplay && collectionEntry.status !== "favorite"
         ? `
           <div class="favorite-progress-note">
-            <p class="kicker">Regular Character Bonus</p>
-            <p class="copy">Score <strong>${thresholds.regular}/10 or better</strong> with this character to build Favorite progress. After <strong>${favoriteGoal} successful visits</strong>, they become a Favorite Character and their value increases from <strong>${core.formatCurrency(customer.regularValue)}</strong> to <strong>${core.formatCurrency(core.getFavoriteCustomerValue(customer))}</strong>.</p>
+            <p class="kicker">Favorite Progress</p>
+            <p class="copy">Score <strong>${thresholds.regular}/10 or better</strong> with this character to build Favorite progress. After <strong>${favoriteGoal} successful visits</strong>, they become a Favorite Character and their value increases.</p>
             <p class="helper">Current Favorite progress: ${favoriteVisits}/${favoriteGoal}</p>
           </div>
         `
@@ -1317,34 +1331,34 @@
                 : `
                   <div class="customer-reveal-goals">
                     <div class="customer-reveal-goal">
-                      <span class="customer-reveal-label">Regular Character</span>
-                      <strong>Need ${thresholds.regular}/10 Correct</strong>
+                      <span class="customer-reveal-label">Unlock Score</span>
+                      <strong>Need ${unlockScore}/10 Correct</strong>
                     </div>
                     <div class="customer-reveal-goal">
-                      <span class="customer-reveal-label">Occasional Character</span>
-                      <strong>Need ${thresholds.occasional}/10 Correct</strong>
+                      <span class="customer-reveal-label">Value Grows With Score</span>
+                      <strong>About ${core.formatCurrency(valuePerExtraCorrect)} more per extra correct answer</strong>
                     </div>
                   </div>
                 `
             }
             <div class="customer-reveal-values">
               <div class="customer-reveal-value">
-                <span class="customer-reveal-label">${escapeHtml(regularValueLabel)}</span>
-                <strong>${core.formatCurrency(customer.regularValue)}</strong>
+                <span class="customer-reveal-label">${escapeHtml(salesDemoMode ? "Guest Value" : "Unlock Value")}</span>
+                <strong>${core.formatCurrency(unlockValue)}</strong>
               </div>
               <div class="customer-reveal-value">
-                <span class="customer-reveal-label">${escapeHtml(occasionalValueLabel)}</span>
-                <strong>${core.formatCurrency(customer.occasionalValue)}</strong>
+                <span class="customer-reveal-label">${escapeHtml(salesDemoMode ? "Strong Score Value" : `Around ${targetScore}/10 Correct`)}</span>
+                <strong>${core.formatCurrency(targetValue)}</strong>
               </div>
             </div>
             <div class="customer-reveal-mobile-summary">
               <div class="customer-reveal-combo">
-                <span class="customer-reveal-label">${escapeHtml(salesDemoMode ? "Regular Value" : "Regular Character")}</span>
-                <strong>${escapeHtml(salesDemoMode ? core.formatCurrency(customer.regularValue) : `Need ${thresholds.regular}/10 Correct - Value ${core.formatCurrency(customer.regularValue)}`)}</strong>
+                <span class="customer-reveal-label">${escapeHtml(salesDemoMode ? "Guest Value" : "Unlock Score")}</span>
+                <strong>${escapeHtml(salesDemoMode ? core.formatCurrency(unlockValue) : `Need ${unlockScore}/10 Correct - Value ${core.formatCurrency(unlockValue)}`)}</strong>
               </div>
               <div class="customer-reveal-combo">
-                <span class="customer-reveal-label">${escapeHtml(salesDemoMode ? "Occasional Value" : "Occasional Character")}</span>
-                <strong>${escapeHtml(salesDemoMode ? core.formatCurrency(customer.occasionalValue) : `Need ${thresholds.occasional}/10 Correct - Value ${core.formatCurrency(customer.occasionalValue)}`)}</strong>
+                <span class="customer-reveal-label">${escapeHtml(salesDemoMode ? "Strong Score Value" : "Higher Scores")}</span>
+                <strong>${escapeHtml(salesDemoMode ? core.formatCurrency(targetValue) : `Around ${targetScore}/10 Correct - Value ${core.formatCurrency(targetValue)}`)}</strong>
               </div>
             </div>
             ${favoriteBonusMarkup}
@@ -1420,6 +1434,18 @@
       : (session.currentIndex / session.questions.length) * 100;
     const customerBio = core.getCustomerBio(session.customer);
     const customerThresholds = core.getCustomerWinThresholds(session.customer);
+    const customerUnlockScore = core.getCustomerUnlockScore
+      ? core.getCustomerUnlockScore(session.customer)
+      : customerThresholds.occasional;
+    const customerUnlockValue = core.getCharacterScoreValue
+      ? core.getCharacterScoreValue(session.customer, customerUnlockScore)
+      : session.customer.occasionalValue;
+    const customerTargetScore = core.getCharacterValueTargetScore
+      ? core.getCharacterValueTargetScore(session.customer)
+      : Math.min(10, customerThresholds.regular + 1);
+    const customerTargetValue = core.getCharacterScoreValue
+      ? core.getCharacterScoreValue(session.customer, customerTargetScore)
+      : session.customer.regularValue;
     const customerInfoCardMarkup = isSalesDemoMode()
       ? ""
       : `
@@ -1431,10 +1457,9 @@
               <p class="customer-bio">${escapeHtml(customerBio)}</p>
               <div class="chip-row" style="margin-top: 10px;">
                 <span class="chip">${escapeHtml(session.customer.rarity || "Rare")} character</span>
-                <span class="chip">Regular needs ${customerThresholds.regular}/10</span>
-                <span class="chip">Occasional needs ${customerThresholds.occasional}/10</span>
-                <span class="chip">Regular value ${core.formatCurrency(session.customer.regularValue)}</span>
-                <span class="chip">Occasional value ${core.formatCurrency(session.customer.occasionalValue)}</span>
+                <span class="chip">Unlock at ${customerUnlockScore}/10</span>
+                <span class="chip">Unlock value ${core.formatCurrency(customerUnlockValue)}</span>
+                <span class="chip">Around ${customerTargetScore}/10 value ${core.formatCurrency(customerTargetValue)}</span>
               </div>
             </div>
           </div>
@@ -1453,7 +1478,7 @@
           </div>
           <div class="chip-row">
             <span class="chip gold">Score ${session.score}</span>
-            <span class="chip">Need ${customerThresholds.regular}</span>
+            <span class="chip">Need ${customerUnlockScore}</span>
           </div>
         </div>
 
@@ -1624,7 +1649,7 @@
       ? `You can expand to ${preview.next.label} now and add ${core.formatCurrency(preview.valueAdded)} to your restaurant value.`
       : affordableUpgrade
         ? `${affordableUpgrade.label} is available now. Upgrades add value and can boost future sales.`
-        : `You are ${core.formatCurrency(shortfall)} away from ${preview.next.label}. A few more customers could help you expand.`;
+        : `You are ${core.formatCurrency(shortfall)} away from ${preview.next.label}. A few more unlocked characters could help you expand.`;
 
     return `
       <div class="hero-card result-followup-card result-net-worth-prompt">
@@ -1674,19 +1699,15 @@
     const label =
       session.result === "favorite"
         ? "Favorite Character"
-        : session.result === "regular"
-        ? "Regular Character"
-        : session.result === "occasional"
-        ? "Occasional Character"
-          : "Lost Character";
+        : session.result === "regular" || session.result === "occasional"
+          ? "Character Unlocked"
+          : "Character Not Unlocked";
     const resultSummaryLabel =
       session.result === "favorite"
         ? "Favorite"
-        : session.result === "regular"
-        ? "Regular"
-        : session.result === "occasional"
-          ? "Occasional"
-          : "Lost";
+        : session.result === "regular" || session.result === "occasional"
+          ? "Unlocked"
+          : "Not Unlocked";
     const customerBio = core.getCustomerBio(session.customer);
     const customerBioPreview = getBioPreview(customerBio);
     const showFullBio = state.resultBioExpanded || !customerBioPreview.isTruncated;
@@ -1698,10 +1719,8 @@
         ? "Favorite earned"
         : favoriteProgress?.wasEligible && favoriteProgress.successful
           ? "Bonus progress"
-          : session.result === "regular"
+          : session.result === "regular" || session.result === "occasional"
         ? "Congratulations"
-        : session.result === "occasional"
-          ? "Nice work"
           : "Better luck next time";
     const resultSubheadline =
       demoCharacterUnlocked
@@ -1712,30 +1731,19 @@
         ? "New Favorite Character"
         : favoriteProgress?.wasEligible && favoriteProgress.successful
           ? "Favorite Progress +1"
-          : favoriteProgress?.wasEligible
-            ? "Favorite Progress Missed"
-            : session.result === "regular"
-        ? "New Regular Character"
-        : session.result === "occasional"
-          ? "New Occasional Character"
-          : "Character Not Unlocked";
-    const customerValue =
-      session.result === "favorite"
-        ? core.getFavoriteCustomerValue(session.customer)
-        : session.result === "regular"
-          ? session.customer.regularValue
-          : session.result === "occasional"
-            ? session.customer.occasionalValue
-            : 0;
+        : favoriteProgress?.wasEligible
+          ? "Favorite Progress Missed"
+            : session.result === "regular" || session.result === "occasional"
+              ? "Character Unlocked"
+              : "Character Not Unlocked";
+    const customerValue = Math.max(0, Number(session.customerValue) || 0);
     const salesBoostPercent = Math.max(0, Number(session.salesBoostPercent) || 0);
     const baseCustomerValue =
       session.result === "favorite"
         ? Number(session.customerBaseValues?.favoriteValue) || 0
-        : session.result === "regular"
-          ? Number(session.customerBaseValues?.regularValue) || 0
-          : session.result === "occasional"
-            ? Number(session.customerBaseValues?.occasionalValue) || 0
-            : 0;
+        : session.result === "regular" || session.result === "occasional"
+          ? Number(session.customerBaseValues?.characterValue) || Number(session.customerBaseValues?.regularValue) || 0
+          : 0;
     const salesBoostMarkup =
       salesBoostPercent > 0 && customerValue > 0 && baseCustomerValue > 0
         ? `

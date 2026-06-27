@@ -3151,6 +3151,8 @@
     }
 
     safeEntry.favoriteVisits = Math.max(0, Math.min(FAVORITE_VISIT_GOAL, Number(safeEntry.favoriteVisits) || 0));
+    safeEntry.customerValue = Math.max(0, Number(safeEntry.customerValue) || 0);
+    safeEntry.scoringVersion = String(safeEntry.scoringVersion || "").trim();
     if (safeEntry.status === "favorite") {
       safeEntry.favoriteVisits = FAVORITE_VISIT_GOAL;
     }
@@ -3174,6 +3176,8 @@
       status,
       regularValue: Math.max(0, Number(safeCredit.regularValue ?? fallback.regularValue) || 0),
       occasionalValue: Math.max(0, Number(safeCredit.occasionalValue ?? fallback.occasionalValue) || 0),
+      customerValue: Math.max(0, Number(safeCredit.customerValue ?? fallback.customerValue) || 0),
+      scoringVersion: String(safeCredit.scoringVersion || fallback.scoringVersion || "").trim(),
       salesBoostPercent: Math.max(0, Number(safeCredit.salesBoostPercent ?? fallback.salesBoostPercent) || 0),
       dateWon: safeCredit.dateWon || fallback.dateWon || "",
     };
@@ -3191,6 +3195,8 @@
           status: entry.status,
           regularValue: entry.regularValue,
           occasionalValue: entry.occasionalValue,
+          customerValue: entry.customerValue,
+          scoringVersion: entry.scoringVersion,
           salesBoostPercent: entry.salesBoostPercent,
           dateWon: entry.dateWon,
         });
@@ -3212,6 +3218,8 @@
         status: entry.status,
         regularValue: entry.regularValue,
         occasionalValue: entry.occasionalValue,
+        customerValue: entry.customerValue,
+        scoringVersion: entry.scoringVersion,
         salesBoostPercent: entry.salesBoostPercent,
         dateWon: entry.dateWon,
       });
@@ -3245,6 +3253,12 @@
       restaurantName: incomingCredit.restaurantName || existingCredit.restaurantName,
       regularValue: strongerCredit.regularValue,
       occasionalValue: strongerCredit.occasionalValue,
+      customerValue: Math.max(
+        Number(existingCredit.customerValue) || 0,
+        Number(incomingCredit.customerValue) || 0,
+        Number(strongerCredit.customerValue) || 0
+      ),
+      scoringVersion: strongerCredit.scoringVersion,
       salesBoostPercent: strongerCredit.salesBoostPercent,
     });
   }
@@ -3280,6 +3294,8 @@
       status: session.result,
       regularValue: session.customer.regularValue,
       occasionalValue: session.customer.occasionalValue,
+      customerValue: session.customerValue,
+      scoringVersion: session.scoringVersion,
       salesBoostPercent: session.salesBoostPercent,
       dateWon: session.completedAt || nowIso(),
     });
@@ -3632,7 +3648,7 @@
     });
 
     const applyCollectionStats = (stats, entry, customer) => {
-      const valueForStatus = getCollectionValueForStatus(customer, entry.status);
+      const valueForStatus = getScoredCollectionValue(entry, customer);
 
       if (entry.status === "regular" || entry.status === "favorite") {
         stats.regularCustomers += 1;
@@ -3659,7 +3675,7 @@
         regularValue: Number(credit.regularValue) || Number(entry.regularValue) || Number(customer.regularValue) || 0,
         occasionalValue: Number(credit.occasionalValue) || Number(entry.occasionalValue) || Number(customer.occasionalValue) || 0,
       };
-      applyCollectionStats(stats, { ...entry, status: creditStatus }, creditCustomer);
+      applyCollectionStats(stats, { ...entry, status: creditStatus, customerValue: credit.customerValue }, creditCustomer);
     };
 
     safeProfile.customerCollection.forEach((entry) => {
@@ -3913,6 +3929,15 @@
     return 0;
   }
 
+  function getScoredCollectionValue(entry, fallbackCustomer = null) {
+    const storedValue = Math.max(0, Number(entry?.customerValue) || 0);
+    if (storedValue > 0) {
+      return storedValue;
+    }
+
+    return getCollectionValueForStatus(fallbackCustomer || entry, entry?.status);
+  }
+
   function getFavoriteCustomerValue(customerOrValue) {
     const baseValue =
       typeof customerOrValue === "number"
@@ -3928,6 +3953,10 @@
 
     if (entry.status === "favorite") {
       return getFavoriteCustomerValue(Number(entry.regularValue) || 0);
+    }
+
+    if (entry.customerValue) {
+      return Math.max(0, Number(entry.customerValue) || 0);
     }
 
     if (entry.status === "regular") {
@@ -3973,6 +4002,34 @@
     }
 
     return { regular: 8, occasional: 5 };
+  }
+
+  function getCustomerUnlockScore(customer) {
+    return getCustomerWinThresholds(customer).occasional;
+  }
+
+  function roundCharacterValue(value) {
+    return Math.max(0, Math.round((Number(value) || 0) / 5) * 5);
+  }
+
+  function getCharacterValueTargetScore(customer) {
+    const thresholds = getCustomerWinThresholds(customer);
+    return Math.min(10, Math.max(thresholds.occasional, thresholds.regular + 1));
+  }
+
+  function getCharacterScoreValue(customer, score) {
+    const unlockScore = getCustomerUnlockScore(customer);
+    const safeScore = Math.max(0, Number(score) || 0);
+    if (safeScore < unlockScore) {
+      return 0;
+    }
+
+    const baseValue = Math.max(0, Number(customer?.occasionalValue) || 0);
+    const targetValue = Math.max(baseValue, Number(customer?.regularValue) || 0);
+    const targetScore = getCharacterValueTargetScore(customer);
+    const scoringSteps = Math.max(1, targetScore - unlockScore);
+    const valuePerCorrect = (targetValue - baseValue) / scoringSteps;
+    return roundCharacterValue(baseValue + Math.max(0, safeScore - unlockScore) * valuePerCorrect);
   }
 
   function getCustomerResultForScore(customer, score) {
@@ -4914,6 +4971,7 @@
           customerValue: Math.max(0, Number(session.customerValue) || 0),
           salesBoostPercent: Math.max(0, Number(session.salesBoostPercent) || 0),
           customerBaseValues: session.customerBaseValues || null,
+          scoringVersion: session.scoringVersion || "",
           playedAt: session.completedAt || nowIso(),
         },
         ...nextProfile.recentSessions,
@@ -4949,6 +5007,11 @@
           rarity: session.customer.rarity,
           regularValue: session.customer.regularValue,
           occasionalValue: session.customer.occasionalValue,
+          customerValue: Math.max(
+            Number(existingCustomer.customerValue) || 0,
+            Number(session.customerValue) || 0
+          ),
+          scoringVersion: session.scoringVersion || existingCustomer.scoringVersion || "",
           salesBoostPercent: Math.max(0, Number(session.salesBoostPercent) || 0),
           favoriteVisits: bestStatus === "favorite" ? FAVORITE_VISIT_GOAL : nextFavoriteVisits,
           restaurantCredits: addRestaurantCreditToEntry(existingCustomer, session),
@@ -4973,6 +5036,8 @@
             rarity: session.customer.rarity,
             regularValue: session.customer.regularValue,
             occasionalValue: session.customer.occasionalValue,
+            customerValue: Math.max(0, Number(session.customerValue) || 0),
+            scoringVersion: session.scoringVersion || "",
             salesBoostPercent: Math.max(0, Number(session.salesBoostPercent) || 0),
             favoriteVisits: 0,
             restaurantCredits: addRestaurantCreditToEntry({
@@ -5051,8 +5116,9 @@
     if (!hasMoreQuestions) {
       session.completed = true;
       session.completedAt = nowIso();
-      const scoreResult = getCustomerResultForScore(session.customer, session.score);
       const thresholds = getCustomerWinThresholds(session.customer);
+      const unlockScore = getCustomerUnlockScore(session.customer);
+      const scoreResult = session.score >= unlockScore ? "regular" : "lost";
       const isRegularReplay =
         session.previousCustomerStatus === "regular" || session.previousCustomerStatus === "favorite";
       const favoriteWasAlreadyComplete = session.previousCustomerStatus === "favorite";
@@ -5081,9 +5147,7 @@
             threshold: thresholds.regular,
           }
         : null;
-      session.result = isRegularReplay
-        ? (becameFavorite || favoriteWasAlreadyComplete ? "favorite" : "regular")
-        : scoreResult;
+      session.result = becameFavorite || favoriteWasAlreadyComplete ? "favorite" : scoreResult;
       const activeProfile = getProfiles().find((profile) => profile.id === session.profileId) || null;
       const boostedValues = getBoostedCustomerValues(session.customer, activeProfile);
       session.salesBoostPercent = boostedValues.boostPercent;
@@ -5091,6 +5155,14 @@
         regularValue: boostedValues.baseRegularValue,
         occasionalValue: boostedValues.baseOccasionalValue,
         favoriteValue: boostedValues.baseFavoriteValue,
+        characterValue: getCharacterScoreValue(
+          {
+            ...session.customer,
+            regularValue: boostedValues.baseRegularValue,
+            occasionalValue: boostedValues.baseOccasionalValue,
+          },
+          session.score
+        ),
       };
       session.customer = {
         ...session.customer,
@@ -5101,22 +5173,19 @@
         session.favoriteProgress.regularValue = boostedValues.regularValue;
         session.favoriteProgress.favoriteValue = boostedValues.favoriteValue;
       }
+      session.scoringVersion = "character-value-v2";
       session.customerValue =
         session.result === "favorite"
           ? boostedValues.favoriteValue
           : session.result === "regular"
-            ? boostedValues.regularValue
-            : session.result === "occasional"
-              ? boostedValues.occasionalValue
-              : 0;
+            ? getCharacterScoreValue(session.customer, session.score)
+            : 0;
       session.outcomeText =
         session.result === "favorite"
-          ? "favorite customer"
-          : session.result === "regular"
-          ? "regular customer"
-          : session.result === "occasional"
-            ? "occasional customer"
-            : "lost customer";
+          ? "favorite character"
+        : session.result === "regular"
+          ? "character unlocked"
+          : "character not unlocked";
       completeSession(session);
     } else {
       activeSessionState.session = clone(session);
@@ -5337,6 +5406,9 @@
     getCustomerById,
     getCustomerBio,
     getCustomerWinThresholds,
+    getCustomerUnlockScore,
+    getCharacterScoreValue,
+    getCharacterValueTargetScore,
     getFavoriteCustomerValue,
     getFavoriteVisitGoal,
     getCollectionEntryValue,
