@@ -1288,6 +1288,7 @@
           <p class="kicker">Play With Friends</p>
           <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">Join room ${escapeHtml(roomCode)}</h3>
           <p class="copy" style="margin: 0 0 12px;">Everyone plays the same character and questions at their own pace.</p>
+          <p class="helper" style="margin: 0 0 12px;">Room codes are not case-sensitive. A space works instead of the dash.</p>
           <form class="input-grid" id="multiplayer-join-form">
             <div class="field">
               <label class="field-label" for="multiplayer-name">Your display name</label>
@@ -1310,6 +1311,7 @@
           <p class="kicker">Play With Friends</p>
           <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">Room ${escapeHtml(roomCode)}</h3>
           <p class="copy" style="margin: 0 0 12px;">${escapeHtml(roomStatus)}</p>
+          <p class="helper" style="margin: 0 0 12px;">Room codes are not case-sensitive. Friends can type a space instead of the dash.</p>
           <div class="input-grid">
             <div class="field">
               <label class="field-label" for="multiplayer-share-link">Share link</label>
