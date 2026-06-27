@@ -1354,39 +1354,33 @@
               <p class="customer-reveal-rarity">${escapeHtml(rarity)} ${escapeHtml(revealType)}</p>
               <h3 class="customer-reveal-name">${escapeHtml(customer.name)}</h3>
             </div>
-            ${
-              salesDemoMode
-                ? ""
-                : `
-                  <div class="customer-reveal-goals">
-                    <div class="customer-reveal-goal">
-                      <span class="customer-reveal-label">Unlock Score</span>
-                      <strong>Need ${unlockScore}/10 Correct</strong>
-                    </div>
-                    <div class="customer-reveal-goal">
-                      <span class="customer-reveal-label">Value Grows With Score</span>
-                      <strong>About ${core.formatCurrency(valuePerExtraCorrect)} more per extra correct answer</strong>
-                    </div>
-                  </div>
-                `
-            }
+            <div class="customer-reveal-goals">
+              <div class="customer-reveal-goal">
+                <span class="customer-reveal-label">Unlock Score</span>
+                <strong>Need ${unlockScore}/10 Correct</strong>
+              </div>
+              <div class="customer-reveal-goal">
+                <span class="customer-reveal-label">Value Grows With Score</span>
+                <strong>About ${core.formatCurrency(valuePerExtraCorrect)} more per extra correct answer</strong>
+              </div>
+            </div>
             <div class="customer-reveal-values">
               <div class="customer-reveal-value">
-                <span class="customer-reveal-label">${escapeHtml(salesDemoMode ? "Guest Value" : "Unlock Value")}</span>
+                <span class="customer-reveal-label">Unlock Value</span>
                 <strong>${core.formatCurrency(unlockValue)}</strong>
               </div>
               <div class="customer-reveal-value">
-                <span class="customer-reveal-label">${escapeHtml(salesDemoMode ? "Extra Value" : "Each Extra Correct")}</span>
+                <span class="customer-reveal-label">Each Extra Correct</span>
                 <strong>+${core.formatCurrency(valuePerExtraCorrect)}</strong>
               </div>
             </div>
             <div class="customer-reveal-mobile-summary">
               <div class="customer-reveal-combo">
-                <span class="customer-reveal-label">${escapeHtml(salesDemoMode ? "Guest Value" : "Unlock Score")}</span>
-                <strong>${escapeHtml(salesDemoMode ? core.formatCurrency(unlockValue) : `Need ${unlockScore}/10 Correct - Value ${core.formatCurrency(unlockValue)}`)}</strong>
+                <span class="customer-reveal-label">Unlock Score</span>
+                <strong>Need ${unlockScore}/10 Correct - Value ${core.formatCurrency(unlockValue)}</strong>
               </div>
               <div class="customer-reveal-combo">
-                <span class="customer-reveal-label">${escapeHtml(salesDemoMode ? "Extra Value" : "Each Extra Correct")}</span>
+                <span class="customer-reveal-label">Each Extra Correct</span>
                 <strong>+${core.formatCurrency(valuePerExtraCorrect)}</strong>
               </div>
             </div>
