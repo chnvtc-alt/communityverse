@@ -838,6 +838,24 @@
     }
   }
 
+  function clearMultiplayerStateForFreshGame() {
+    stopMultiplayerRefresh();
+    state.multiplayerRoom = null;
+    state.multiplayerPlayer = null;
+    state.multiplayerPlayers = [];
+    state.multiplayerError = "";
+    state.multiplayerMessage = "";
+    state.multiplayerLoading = false;
+    state.liveAdvanceInFlight = false;
+    if (window.history?.replaceState && (query.has("room") || query.has("multiplayer"))) {
+      const nextUrl = new URL(window.location.href);
+      nextUrl.searchParams.delete("room");
+      nextUrl.searchParams.delete("multiplayer");
+      nextUrl.searchParams.set("play", "1");
+      window.history.replaceState({}, "", nextUrl.toString());
+    }
+  }
+
   function isLiveRoundRoom() {
     return state.multiplayerRoom?.mode === "live";
   }
@@ -2817,6 +2835,7 @@
       });
 
       document.getElementById("guest-continue-button").addEventListener("click", () => {
+        clearMultiplayerStateForFreshGame();
         core.clearActiveSession();
         state.feedback = null;
         state.isLocked = false;
@@ -2938,6 +2957,7 @@
       });
     } else {
       document.getElementById("play-again-button").addEventListener("click", () => {
+        clearMultiplayerStateForFreshGame();
         core.clearActiveSession();
         clearResultVisibleSessionId();
         state.feedback = null;
