@@ -4432,7 +4432,7 @@
       collection
         .filter(
           (entry) =>
-            entry.status === "regular" &&
+            ["regular", "occasional"].includes(entry.status) &&
             (Number(entry.favoriteVisits) || 0) < FAVORITE_VISIT_GOAL
         )
         .map((entry) => entry.customerId)
@@ -4512,7 +4512,7 @@
       customer,
       isRepeatCustomer: Boolean(existingCollectionEntry),
       isRegularCustomerReplay: existingCollectionEntry
-        ? existingCollectionEntry.status === "regular" || existingCollectionEntry.status === "favorite"
+        ? ["regular", "occasional", "favorite"].includes(existingCollectionEntry.status)
         : false,
       replayCustomerId: preferredCustomer ? preferredCustomer.id : "",
       previousCustomerStatus: existingCollectionEntry ? existingCollectionEntry.status : "",
@@ -4657,7 +4657,13 @@
 
       if (existingCustomer) {
         const existingWasRegular =
-          existingCustomer.status === "regular" || existingCustomer.status === "favorite";
+          existingCustomer.status === "regular" ||
+          existingCustomer.status === "favorite" ||
+          (
+            existingCustomer.status === "occasional" &&
+            session.favoriteProgress?.wasEligible &&
+            (session.favoriteProgress.successful || session.result === "regular" || session.result === "favorite")
+          );
         const nextFavoriteVisits =
           session.favoriteProgress && session.favoriteProgress.wasEligible
             ? session.favoriteProgress.visits
@@ -4784,7 +4790,7 @@
       const scoreResult = getCustomerResultForScore(session.customer, session.score);
       const thresholds = getCustomerWinThresholds(session.customer);
       const isRegularReplay =
-        session.previousCustomerStatus === "regular" || session.previousCustomerStatus === "favorite";
+        ["regular", "occasional", "favorite"].includes(session.previousCustomerStatus);
       const favoriteWasAlreadyComplete = session.previousCustomerStatus === "favorite";
       const successfulFavoriteVisit = isRegularReplay && session.score >= thresholds.regular;
       const previousFavoriteVisits = Math.max(0, Math.min(FAVORITE_VISIT_GOAL, Number(session.previousFavoriteVisits) || 0));
@@ -4811,9 +4817,7 @@
             threshold: thresholds.regular,
           }
         : null;
-      session.result = isRegularReplay
-        ? (becameFavorite || favoriteWasAlreadyComplete ? "favorite" : "regular")
-        : scoreResult;
+      session.result = becameFavorite || favoriteWasAlreadyComplete ? "favorite" : scoreResult;
       const activeProfile = getProfiles().find((profile) => profile.id === session.profileId) || null;
       const boostedValues = getBoostedCustomerValues(session.customer, activeProfile);
       session.salesBoostPercent = boostedValues.boostPercent;

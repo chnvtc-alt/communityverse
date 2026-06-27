@@ -2176,6 +2176,10 @@
     return "Collectible Character";
   }
 
+  function canBuildFavoriteProgress(entry) {
+    return ["regular", "occasional"].includes(entry?.status);
+  }
+
   function renderCollection() {
     const compactMobile = isMobileHub();
     const profile = core.getActiveProfile();
@@ -2229,7 +2233,7 @@
         ? `<p class="customer-favorite-progress">Special feedback reward. Cannot be invited back.</p>`
         : selectedCustomer?.status === "favorite"
         ? `<p class="customer-favorite-progress">Favorite Character. Value: ${core.formatCurrency(selectedValue)}</p>`
-        : selectedCustomer?.status === "regular"
+        : canBuildFavoriteProgress(selectedCustomer)
           ? `<p class="customer-favorite-progress">Favorite Progress: ${selectedFavoriteVisits} / ${favoriteGoal} successful visits</p>`
           : "";
     const selectedDirectoryRestaurant = getSelectedDirectoryRestaurant(profile);
@@ -2324,7 +2328,7 @@
                         ? "Special feedback reward"
                         : entry.status === "favorite"
                         ? `Value: ${core.formatCurrency(entryValue)}`
-                        : entry.status === "regular"
+                        : canBuildFavoriteProgress(entry)
                           ? `Favorite Progress: ${entryFavoriteVisits}/${favoriteGoal}`
                           : "";
                     const statusClass =

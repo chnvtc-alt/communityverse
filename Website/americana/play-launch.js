@@ -1319,10 +1319,10 @@
           </div>
         `
         : "";
-    const isRegularReplay =
-      collectionEntry?.status === "regular" || collectionEntry?.status === "favorite";
+    const isFavoriteProgressReplay =
+      ["regular", "occasional", "favorite"].includes(collectionEntry?.status);
     const favoriteBonusMarkup =
-      isRegularReplay && collectionEntry.status !== "favorite"
+      isFavoriteProgressReplay && collectionEntry.status !== "favorite"
         ? `
           <div class="favorite-progress-note">
             <p class="kicker">Favorite Progress</p>
