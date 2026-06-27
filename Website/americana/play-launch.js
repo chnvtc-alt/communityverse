@@ -1037,8 +1037,8 @@
         state.feedbackRewardError = "";
         state.feedbackSurveyAnswers = [];
         state.feedbackRewardMessage = isSalesDemoMode()
-          ? `${outcome.customer?.name || "This character"} has joined your character collection.`
-          : outcome.message || `${outcome.customer?.name || "This customer"} has joined your collection.`;
+          ? `${outcome.customer?.name || "This character"} is now in your character collection.`
+          : outcome.message || `${outcome.customer?.name || "This character"} is now in your collection.`;
         renderAll();
         didRedraw = true;
       } catch (error) {
@@ -1627,11 +1627,11 @@
     }
 
     if (session.result === "regular") {
-      return `${session.customer.name} has joined your character collection.`;
+      return `${session.customer.name} is now in your character collection.`;
     }
 
     if (session.result === "occasional") {
-      return `${session.customer.name} has joined your character collection.`;
+      return `${session.customer.name} is now in your character collection.`;
     }
 
     return `${session.customer.name} was not unlocked this time. Try again when this character appears to add it to your collection.`;
@@ -1872,7 +1872,7 @@
               ? `
                 <div class="hero-card result-followup-card result-followup-card-form" style="margin-top: 0; padding: 16px;">
                   <p class="kicker" style="margin: 0 0 6px;">Save Collection</p>
-                  <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${demoCharacterUnlocked ? `${escapeHtml(session.customer.name)} Unlocked!` : salesDemoMode ? "Start your character collection." : `${escapeHtml(session.customer.name)} Has Joined Your Collection!`}</h3>
+                  <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${demoCharacterUnlocked ? `${escapeHtml(session.customer.name)} Unlocked!` : salesDemoMode ? "Start your character collection." : `${escapeHtml(session.customer.name)} Is In Your Collection!`}</h3>
                   <p class="copy result-save-mobile-note" style="margin: 0 0 14px;">${demoCharacterUnlocked ? `This is the first character in your collection. Save your progress to keep this character and unlock dozens more from restaurants throughout your community.` : "Save now to keep your characters, trivia record, and leaderboard progress."}</p>
                   <p class="copy" style="margin: 0 0 8px;">Save your collection to:</p>
                   <ul class="copy" style="margin: 0 0 16px; padding-left: 20px; line-height: 1.45;">
