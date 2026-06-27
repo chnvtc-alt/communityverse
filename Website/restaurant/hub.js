@@ -2199,8 +2199,15 @@
     const selectedCustomer =
       filteredCollection.find((entry) => entry.customerId === state.selectedCustomerId) ||
       filteredCollection[0] ||
-      collection[0] ||
       null;
+    const emptyCollectionMessage = state.collectionFilter === "favorite"
+      ? `
+        <div class="empty-state">
+          <strong>No Favorite Characters yet.</strong>
+          <span>Play again for characters already in your collection. Score high enough on repeat visits to build Favorite progress. Favorite Characters become more valuable and can help your restaurant climb the leaderboards.</span>
+        </div>
+      `
+      : `<p class="empty-state">No characters yet. Play a few rounds to build your roster.</p>`;
     const selectedCustomerBio = selectedCustomer ? getCustomerBio(selectedCustomer) : "";
     const selectedCustomerBioPreview = getBioPreview(selectedCustomerBio);
     const showFullBio = state.selectedCustomerBioExpanded || !selectedCustomerBioPreview.isTruncated;
@@ -2343,7 +2350,7 @@
                   }
                 )
                 .join("")
-            : `<p class="empty-state">No characters yet. Play a few rounds to build your roster.</p>`
+            : emptyCollectionMessage
         }
       </div>
 
@@ -2353,6 +2360,7 @@
     elements.collection.querySelectorAll("[data-collection-filter]").forEach((button) => {
       button.addEventListener("click", () => {
         state.collectionFilter = button.dataset.collectionFilter;
+        state.selectedCustomerBioExpanded = false;
         renderAll();
       });
     });
