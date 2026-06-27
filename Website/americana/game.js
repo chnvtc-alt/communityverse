@@ -1076,13 +1076,14 @@
     `;
   }
 
-  function roomLeaderboardMarkup(showGroupResults = false) {
+  function roomLeaderboardMarkup(showGroupResults = false, options = {}) {
     const players = getSortedRoomPlayers();
     if (!players.length) {
       return `<p class="copy">No room scores yet.</p>`;
     }
+    const includeWinner = options.includeWinner !== false;
     return `
-      ${roomWinnerMarkup(showGroupResults)}
+      ${includeWinner ? roomWinnerMarkup(showGroupResults) : ""}
       <div class="multiplayer-leaderboard-list">
         ${players
           .map((player, index) => {
@@ -1523,6 +1524,7 @@
     const isHost = Boolean(state.multiplayerPlayer?.host);
     const liveWaiting = isLiveRoom && room?.liveStatus === "waiting";
     const liveActive = isLiveRoom && room?.liveStatus === "active";
+    const includeWinnerInRoomCard = !(showGroupResults && activeSession?.completed);
     const liveStatusMarkup = isLiveRoom
       ? liveWaiting
         ? `<p class="helper" style="margin: 0 0 12px;">Live Round is waiting for the host to start. Everyone will get each question together.</p>`
@@ -1589,7 +1591,7 @@
             ${liveWaiting && isHost ? `<button class="button button-hot" id="start-live-round-button" type="button" ${state.multiplayerLoading ? "disabled" : ""}>Start Live Round</button>` : ""}
           </div>
           ${messageMarkup}
-          ${roomLeaderboardMarkup(showGroupResults)}
+          ${roomLeaderboardMarkup(showGroupResults, { includeWinner: includeWinnerInRoomCard })}
         </div>
       `;
     }
@@ -2764,6 +2766,7 @@
         : "";
     const netWorthPromptMarkup = renderResultNetWorthPrompt(profile, overallSummary?.stats || profile?.stats);
     const feedbackRewardMarkup = renderFeedbackRewardCard();
+    const multiplayerWinnerMarkup = state.multiplayerRoom ? roomWinnerMarkup(true) : "";
     const multiplayerMarkup = state.multiplayerRoom ? `<div id="multiplayer-card-slot">${renderMultiplayerCard()}</div>` : "";
 
     elements.result.innerHTML = `
@@ -2817,6 +2820,7 @@
           </div>
         </div>
 
+        ${multiplayerWinnerMarkup}
         <div class="divider"></div>
         ${multiplayerMarkup}
         ${triviaLeaderboardMilestoneMarkup}
