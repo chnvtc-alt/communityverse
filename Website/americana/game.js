@@ -3087,12 +3087,20 @@
         elements.game.classList.add("hidden");
         elements.result.classList.add("hidden");
         state.showGame = false;
-        if (query.get("multiplayer") === "1" || multiplayerRoomCodeParam) {
+        if (query.get("multiplayer") === "1" || multiplayerRoomCodeParam || multiplayerJoinMode) {
           renderSetup();
         }
         return;
       }
       updateSalesDemoCta(salesDemoMode, "See your own restaurant brought to life.");
+      if (query.get("multiplayer") === "1" || multiplayerRoomCodeParam || multiplayerJoinMode) {
+        elements.start.classList.remove("hidden");
+        elements.game.classList.add("hidden");
+        elements.result.classList.add("hidden");
+        state.showGame = false;
+        renderSetup();
+        return;
+      }
       renderSetup();
       renderStartPanel();
     } catch (error) {
