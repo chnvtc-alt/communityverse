@@ -805,11 +805,15 @@
       state.multiplayerError = "";
       if (redraw) {
         renderAll();
+      } else {
+        refreshMultiplayerCardSlot();
       }
     } catch (error) {
       state.multiplayerError = "Room updates are paused. Refresh the page to try again.";
       if (redraw) {
         renderAll();
+      } else {
+        refreshMultiplayerCardSlot();
       }
     }
   }
@@ -1592,6 +1596,15 @@
         void startLiveRound();
       });
     }
+  }
+
+  function refreshMultiplayerCardSlot() {
+    const slot = document.getElementById("multiplayer-card-slot");
+    if (!slot || !state.multiplayerRoom) {
+      return;
+    }
+    slot.innerHTML = renderMultiplayerCard();
+    bindMultiplayerCard();
   }
 
   async function copyMultiplayerRoomLink() {
@@ -2654,7 +2667,7 @@
         : "";
     const netWorthPromptMarkup = renderResultNetWorthPrompt(profile, overallSummary?.stats || profile?.stats);
     const feedbackRewardMarkup = renderFeedbackRewardCard();
-    const multiplayerMarkup = state.multiplayerRoom ? renderMultiplayerCard() : "";
+    const multiplayerMarkup = state.multiplayerRoom ? `<div id="multiplayer-card-slot">${renderMultiplayerCard()}</div>` : "";
 
     elements.result.innerHTML = `
       <div class="result-screen result-screen-${resultLayoutMode}">
