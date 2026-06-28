@@ -2675,8 +2675,8 @@
         : `You are ${core.formatCurrency(shortfall)} away from ${preview.next.label}. A few more unlocked characters could help you expand.`;
 
     return `
-      <details class="result-restaurant-growth">
-        <summary class="button button-muted">Grow Your Restaurant</summary>
+      <details class="result-restaurant-growth" id="result-restaurant-growth">
+        <summary class="button button-muted result-restaurant-growth-button">Grow Your Restaurant</summary>
         <div class="hero-card result-followup-card result-net-worth-prompt">
           <h3 class="section-title">Your restaurant can grow from here.</h3>
           <p class="copy">${escapeHtml(message)}</p>
@@ -2796,7 +2796,6 @@
         <div class="divider"></div>
         ${multiplayerMarkup}
         ${triviaLeaderboardMilestoneMarkup}
-        ${!isGuest && !state.showProfileForm && !salesDemoMode ? netWorthPromptMarkup : ""}
         ${
           isGuest && !state.showProfileForm
             ? `
@@ -2863,6 +2862,7 @@
                   <button class="button button-hot" id="play-again-button" type="button">Play Again</button>
                   <a class="button button-muted" href="/restaurant/?hub=1${salesDemoMode ? "&demo=1#leaderboard-panel" : ""}">${salesDemoMode ? "Character Collection / Leaderboard" : "View My Virtual Restaurant"}</a>
                   <button class="button button-muted" id="result-how-to-play-button" type="button" data-how-to-play-button>${salesDemoMode ? "See the Benefits" : "How to Play"}</button>
+                  ${!salesDemoMode ? netWorthPromptMarkup : ""}
                 </div>
               `
         }

@@ -3488,7 +3488,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .result-hero-panel {
   display: flex;
-  padding: 10px;
+  padding: 6px;
   overflow: hidden;
   border-radius: 28px;
   border: 1px solid rgba(93, 116, 105, 0.14);
@@ -3504,13 +3504,13 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   aspect-ratio: 16 / 10;
   object-fit: cover;
   object-position: center;
-  border-radius: 20px;
+  border-radius: 22px;
   display: block;
 }
 
 .result-top-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+  grid-template-columns: minmax(0, 1.18fr) minmax(0, 0.82fr);
   gap: 18px;
   align-items: stretch;
 }
@@ -3869,6 +3869,8 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 }
 
 .result-screen-return-actions .result-followup-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(170px, 1fr));
   justify-content: center;
 }
 
@@ -3884,6 +3886,15 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   display: grid;
   justify-content: center;
   margin-top: 0;
+}
+
+.result-followup-actions .result-restaurant-growth {
+  display: contents;
+}
+
+.result-followup-actions .result-net-worth-prompt {
+  grid-column: 1 / -1;
+  margin-top: 6px;
 }
 
 .result-restaurant-growth > summary {
