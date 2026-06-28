@@ -3576,9 +3576,8 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .feedback-reward-card {
   display: grid;
-  grid-template-columns: minmax(220px, 0.7fr) minmax(0, 1.3fr);
-  gap: clamp(18px, 4vw, 32px);
-  align-items: center;
+  grid-template-columns: 1fr;
+  gap: clamp(16px, 3vw, 24px);
   margin-top: 18px;
   padding: clamp(22px, 4vw, 34px);
   text-align: left;
@@ -3587,6 +3586,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 .feedback-reward-copy {
   display: grid;
   gap: 8px;
+  text-align: center;
 }
 
 .feedback-reward-copy .section-title {
@@ -3612,9 +3612,11 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .feedback-reward-customer {
   display: grid;
-  grid-template-columns: minmax(150px, 220px) minmax(0, 1fr);
-  gap: clamp(16px, 3vw, 28px);
+  grid-template-columns: minmax(170px, 240px) minmax(0, 1fr);
+  gap: clamp(20px, 4vw, 38px);
   align-items: center;
+  width: min(100%, 850px);
+  justify-self: center;
 }
 
 .feedback-reward-photo {
@@ -3627,7 +3629,8 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .feedback-reward-customer .section-title {
   margin: 0;
-  font-size: clamp(2rem, 4vw, 3.4rem);
+  font-size: clamp(2rem, 3.8vw, 3.25rem);
+  line-height: 1.02;
 }
 
 .feedback-reward-role {
@@ -3639,7 +3642,8 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 }
 
 .feedback-reward-unlock {
-  width: min(100%, 460px);
+  width: min(100%, 430px);
+  margin-top: 18px;
 }
 
 .feedback-reward-form {
@@ -4308,10 +4312,16 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
   .feedback-reward-photo {
     max-width: 240px;
+    justify-self: center;
+  }
+
+  .feedback-reward-customer {
+    text-align: center;
   }
 
   .feedback-reward-unlock {
     width: 100%;
+    margin-inline: auto;
   }
 
   .how-to-play-modal {

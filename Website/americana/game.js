@@ -1335,9 +1335,11 @@
         <div class="feedback-reward-customer">
           <img class="feedback-reward-photo" src="${reward.customer.image}" alt="${escapeHtml(reward.customer.name)}" />
           <div>
-            <h3 class="section-title">${escapeHtml(reward.customer.name)}</h3>
-            <p class="feedback-reward-role">Mystery Reviewer</p>
+            <h3 class="section-title">${escapeHtml(reward.customer.name)} - Mystery Reviewer</h3>
             <p class="copy">This rare character is only available by answering a 60-second survey.</p>
+            <div class="button-row">
+              <button class="button button-hot feedback-reward-unlock" id="feedback-reward-open" type="button">Unlock ${escapeHtml(reward.customer.name)}</button>
+            </div>
           </div>
         </div>
         ${
@@ -1357,9 +1359,6 @@
             `
             : `
               ${statusMarkup}
-              <div class="button-row">
-                <button class="button button-hot feedback-reward-unlock" id="feedback-reward-open" type="button">Unlock ${escapeHtml(reward.customer.name)}</button>
-              </div>
             `
         }
       </div>
