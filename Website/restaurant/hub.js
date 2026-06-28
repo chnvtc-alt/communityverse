@@ -62,6 +62,7 @@
     leaderboardScope: query.get("scope") === "restaurant" ? "restaurant" : "overall",
     leaderboardRestaurantSlug: core.slugify(query.get("restaurant") || "") || "americana",
     selectedDirectorySlug: "",
+    selectedGameMode: query.get("mode") === "friends" ? "friends" : "solo",
     splashStatsScope: "overall",
     collectionFilter: "all",
     inviteBackCustomerId: "",
@@ -129,9 +130,14 @@
     mobileHeader: null,
     splashRestaurantSelect: document.getElementById("splash-restaurant-select"),
     splashPlayButton: document.getElementById("splash-play-button"),
+    splashStartPlayingButton: document.getElementById("splash-start-playing-button"),
+    splashCreateRoomButton: document.getElementById("splash-create-room-button"),
     splashMyRestaurantButton: document.getElementById("splash-my-restaurant-button"),
     splashLeaderboardButton: document.getElementById("splash-leaderboard-button"),
     splashHowToPlayButton: document.getElementById("splash-how-to-play-button"),
+    challengeModeInputs: Array.from(document.querySelectorAll("input[name='challengeMode']")),
+    challengeSoloPanel: document.getElementById("challenge-solo-panel"),
+    challengeFriendsPanel: document.getElementById("challenge-friends-panel"),
     howToPlayModal: document.getElementById("how-to-play-modal"),
     contactModal: document.getElementById("contact-modal"),
     contactForm: document.getElementById("contact-form"),
@@ -265,12 +271,32 @@
       )
       .join("");
 
-    elements.splashPlayButton.setAttribute("aria-disabled", selectedRestaurant?.available ? "false" : "true");
-    elements.splashPlayButton.classList.toggle("is-disabled", !selectedRestaurant?.available);
-    elements.splashPlayButton.href = selectedRestaurant?.available && selectedRestaurant.href
+    const soloHref = selectedRestaurant?.available && selectedRestaurant.href
       ? withEntryPoint(selectedRestaurant.href)
       : "#splash-chooser";
-    elements.splashPlayButton.textContent = selectedRestaurant?.available ? "Start Playing" : "Coming Soon";
+    const createRoomHref = selectedRestaurant?.available
+      ? withEntryPoint(`/${selectedRestaurant.slug}/play/?multiplayer=1`)
+      : "#splash-chooser";
+    const primaryHref = state.selectedGameMode === "friends" ? createRoomHref : soloHref;
+    const primaryLabel = state.selectedGameMode === "friends"
+      ? "Create a friends room"
+      : "Start Restaurant Challenge Trivia";
+
+    elements.splashPlayButton.setAttribute("aria-disabled", selectedRestaurant?.available ? "false" : "true");
+    elements.splashPlayButton.classList.toggle("is-disabled", !selectedRestaurant?.available);
+    elements.splashPlayButton.href = primaryHref;
+    elements.splashPlayButton.setAttribute("aria-label", primaryLabel);
+    if (elements.splashStartPlayingButton) {
+      elements.splashStartPlayingButton.setAttribute("aria-disabled", selectedRestaurant?.available ? "false" : "true");
+      elements.splashStartPlayingButton.classList.toggle("is-disabled", !selectedRestaurant?.available);
+      elements.splashStartPlayingButton.href = soloHref;
+      elements.splashStartPlayingButton.textContent = selectedRestaurant?.available ? "Start Playing" : "Coming Soon";
+    }
+    if (elements.splashCreateRoomButton) {
+      elements.splashCreateRoomButton.setAttribute("aria-disabled", selectedRestaurant?.available ? "false" : "true");
+      elements.splashCreateRoomButton.classList.toggle("is-disabled", !selectedRestaurant?.available);
+      elements.splashCreateRoomButton.href = createRoomHref;
+    }
     if (elements.splashMyRestaurantButton) {
       elements.splashMyRestaurantButton.href = "/restaurant/?hub=1#hero-panel";
     }
@@ -288,6 +314,19 @@
       state.selectedDirectorySlug = event.currentTarget.value;
       renderSplashChooser();
     };
+    elements.challengeModeInputs.forEach((input) => {
+      input.checked = input.value === state.selectedGameMode;
+      input.onchange = (event) => {
+        state.selectedGameMode = event.currentTarget.value === "friends" ? "friends" : "solo";
+        renderSplashChooser();
+      };
+    });
+    if (elements.challengeSoloPanel) {
+      elements.challengeSoloPanel.classList.toggle("hidden", state.selectedGameMode !== "solo");
+    }
+    if (elements.challengeFriendsPanel) {
+      elements.challengeFriendsPanel.classList.toggle("hidden", state.selectedGameMode !== "friends");
+    }
   }
 
   function openHowToPlay() {

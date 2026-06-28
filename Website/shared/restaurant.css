@@ -398,7 +398,7 @@ img {
 }
 
 html.restaurant-hub-mode .challenge-splash,
-html.restaurant-hub-mode .challenge-owner-section {
+html.restaurant-hub-mode .challenge-info-section {
   display: none;
 }
 
@@ -408,6 +408,8 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 }
 
 .challenge-splash {
+  display: grid;
+  gap: 18px;
   margin-bottom: 18px;
   padding: 0;
   border: 0;
@@ -415,37 +417,53 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   box-shadow: none;
 }
 
-.challenge-splash-grid {
+.challenge-hero-link {
+  display: block;
+  overflow: hidden;
+  border: 1px solid rgba(93, 116, 105, 0.14);
+  border-radius: 22px;
+  background: #fffaf1;
+  box-shadow: var(--shadow);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.challenge-hero-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 24px 60px rgba(34, 47, 42, 0.18);
+}
+
+.challenge-hero-link:focus-visible {
+  outline: 4px solid rgba(213, 138, 43, 0.38);
+  outline-offset: 3px;
+}
+
+.challenge-hero-image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+}
+
+.challenge-play-panel,
+.challenge-info-section {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
-  align-items: start;
-  justify-items: center;
-  min-height: min(560px, calc(100vh - 118px));
-  padding: clamp(30px, 6vw, 64px) 24px;
+  padding: clamp(20px, 4vw, 32px);
   border: 1px solid var(--line);
-  border-radius: 32px;
-  background:
-    radial-gradient(circle at top left, rgba(213, 138, 43, 0.18), transparent 24%),
-    radial-gradient(circle at bottom right, rgba(47, 111, 82, 0.12), transparent 28%),
-    linear-gradient(135deg, rgba(255, 251, 243, 0.98), rgba(246, 238, 219, 0.94));
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.78);
   box-shadow: var(--shadow);
 }
 
-.challenge-splash-copy {
+.challenge-play-heading {
   display: grid;
-  gap: 14px;
-  align-content: start;
-  justify-items: center;
-  text-align: center;
-  width: min(100%, 980px);
-  max-width: 980px;
+  gap: 8px;
 }
 
 .challenge-splash-title {
   margin: 0;
-  font-size: clamp(2.5rem, 5vw, 4.9rem);
-  max-width: 16ch;
+  font-size: clamp(2rem, 4vw, 3.6rem);
+  max-width: 24ch;
 }
 
 .challenge-splash-lead,
@@ -461,61 +479,15 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   font-size: clamp(1rem, 1.5vw, 1.2rem);
 }
 
-.challenge-splash-note {
-  font-size: 0.96rem;
-}
-
-.challenge-splash-steps {
+.challenge-play-controls {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  width: min(100%, 860px);
-}
-
-.challenge-splash-step {
-  display: grid;
-  gap: 5px;
-  padding: 14px 16px;
-  border: 1px solid rgba(93, 116, 105, 0.14);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.52);
-  box-shadow: 0 12px 24px rgba(39, 55, 44, 0.06);
-}
-
-.challenge-splash-step h2,
-.challenge-splash-step p {
-  margin: 0;
-}
-
-.challenge-splash-step h2 {
-  color: var(--ink);
-  font-size: 1.08rem;
-  line-height: 1.12;
-}
-
-.challenge-splash-step p {
-  color: var(--muted);
-  font-family: Arial, sans-serif;
-  font-size: 0.94rem;
-  line-height: 1.35;
-}
-
-.challenge-splash-picker {
-  display: grid;
-  gap: 8px;
-  max-width: 760px;
-  margin-top: 8px;
-  width: 100%;
+  grid-template-columns: minmax(240px, 1fr) minmax(240px, 1fr);
+  gap: 18px;
+  align-items: end;
 }
 
 .challenge-splash-field {
   gap: 6px;
-  align-items: center;
-  text-align: center;
-}
-
-.challenge-splash-field .field-label {
-  width: 100%;
 }
 
 .challenge-splash-select-shell {
@@ -540,7 +512,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 .challenge-splash-field .select {
   min-height: 54px;
   padding: 0 52px 0 18px;
-  border-radius: 18px;
+  border-radius: 14px;
   border-color: rgba(47, 111, 82, 0.2);
   background: rgba(255, 255, 255, 0.94);
   box-shadow: 0 14px 26px rgba(32, 49, 42, 0.08);
@@ -551,12 +523,59 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   appearance: none;
 }
 
+.challenge-mode-field {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  min-height: 54px;
+  align-items: center;
+  margin: 0;
+  padding: 13px 16px;
+  border: 1px solid rgba(47, 111, 82, 0.2);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 14px 26px rgba(32, 49, 42, 0.08);
+}
+
+.challenge-mode-field legend {
+  padding: 0 4px;
+}
+
+.challenge-mode-option {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  color: var(--ink);
+  font-family: Arial, sans-serif;
+  font-size: 0.98rem;
+  font-weight: 800;
+}
+
+.challenge-mode-option input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--gold);
+}
+
+.challenge-mode-panel {
+  display: grid;
+  gap: 10px;
+  padding-top: 2px;
+}
+
+.challenge-friends-panel {
+  max-width: 760px;
+}
+
+.challenge-friends-panel .input-grid {
+  margin-top: 4px;
+}
+
 .challenge-splash-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-top: 6px;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .challenge-splash-primary {
@@ -572,25 +591,44 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   background: rgba(255, 255, 255, 0.92);
 }
 
-.challenge-owner-section {
-  display: grid;
-  gap: 12px;
+.challenge-info-section {
   margin-bottom: 18px;
 }
 
-.challenge-owner-section .section-title {
+.challenge-info-section .section-title {
   max-width: 760px;
 }
 
-.challenge-owner-grid {
+.challenge-info-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  max-width: 980px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
 }
 
-.challenge-owner-grid .copy {
+.challenge-info-item {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid rgba(93, 116, 105, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 250, 241, 0.72);
+}
+
+.challenge-info-item h3,
+.challenge-info-item p {
   margin: 0;
+}
+
+.challenge-info-item h3 {
+  color: var(--ink);
+  font-size: 1.08rem;
+}
+
+.challenge-info-item p {
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.45;
 }
 
 .how-to-play-open,
@@ -3892,19 +3930,30 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     padding-bottom: calc(28px + env(safe-area-inset-bottom));
   }
 
-  .challenge-splash-grid {
-    grid-template-columns: 1fr;
-    gap: 18px;
-    min-height: calc(100vh - 92px);
-    padding: 30px 18px;
+  .challenge-splash {
+    gap: 14px;
+  }
+
+  .challenge-hero-link {
+    border-radius: 16px;
+  }
+
+  .challenge-play-panel,
+  .challenge-info-section {
+    gap: 16px;
+    padding: 18px;
+    border-radius: 16px;
   }
 
   .challenge-splash-actions {
     margin-top: 2px;
+    display: grid;
+    grid-template-columns: 1fr;
   }
 
-  .challenge-splash-picker {
-    max-width: none;
+  .challenge-play-controls,
+  .challenge-info-grid {
+    grid-template-columns: 1fr;
   }
 
   .challenge-splash-field .select,
@@ -3913,35 +3962,28 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .challenge-splash-title {
-    max-width: 14ch;
-    font-size: clamp(2.25rem, 10vw, 3rem);
+    max-width: 16ch;
+    font-size: clamp(2rem, 9vw, 2.85rem);
   }
 
-  html.restaurant-hub-mode .challenge-splash-copy > .kicker,
+  html.restaurant-hub-mode .challenge-play-heading > .kicker,
   html.restaurant-hub-mode .challenge-splash-title {
     display: none;
   }
 
-  .challenge-splash-steps {
-    grid-template-columns: 1fr;
-    gap: 8px;
+  .challenge-mode-field {
+    align-items: start;
+    display: grid;
+    gap: 10px;
+    min-height: 0;
   }
 
-  .challenge-owner-grid {
-    grid-template-columns: 1fr;
+  .challenge-friends-panel {
+    max-width: none;
   }
 
-  .challenge-splash-step {
-    padding: 10px 12px;
-    border-radius: 14px;
-  }
-
-  .challenge-splash-step h2 {
-    font-size: 0.98rem;
-  }
-
-  .challenge-splash-step p {
-    font-size: 0.86rem;
+  .challenge-info-item {
+    padding: 14px;
   }
 
   .challenge-splash-actions {
@@ -3950,11 +3992,6 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
   .challenge-splash-actions .button {
     width: 100%;
-  }
-
-  #splash-my-restaurant-button,
-  #splash-leaderboard-button {
-    display: none;
   }
 
   .how-to-play-modal {

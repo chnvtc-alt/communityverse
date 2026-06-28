@@ -3,20 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Restaurant Challenge Trivia | 1,000+ Questions & Character Collection Game</title>
+    <title>Restaurant Challenge Trivia | 3-Minute Solo or Live Trivia Games</title>
     <meta
       name="description"
-      content="Play Restaurant Challenge Trivia, a free 3-minute trivia game with 1,000+ questions. Unlock characters for your restaurant and climb local leaderboards."
+      content="Play Restaurant Challenge Trivia, a free 3-minute trivia game with more than 1,300 questions. Play solo or live with friends, unlock collectible characters, and climb leaderboards."
     />
     <link rel="canonical" href="https://communityversegames.com/restaurant" />
     <meta property="og:title" content="Restaurant Challenge Trivia | CommunityVerse Games" />
     <meta
       property="og:description"
-      content="Choose a restaurant, play a quick 3-minute trivia game from a 1,000+ question pool, unlock characters for your collection, and climb a shared leaderboard."
+      content="Choose a restaurant, play a quick 3-minute trivia game solo or live with friends, unlock collectible characters, and climb a shared leaderboard."
     />
     <meta property="og:url" content="https://communityversegames.com/restaurant" />
     <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://communityversegames.com/assets/restaurant-challenge/restaurant-challenge-trivia-hero.jpg" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://communityversegames.com/assets/restaurant-challenge/restaurant-challenge-trivia-hero.jpg" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -25,7 +27,7 @@
         "applicationCategory": "GameApplication",
         "operatingSystem": "Any",
         "url": "https://communityversegames.com/restaurant",
-        "description": "Restaurant Challenge Trivia is a free 3-minute browser trivia game with more than 1,000 questions. Players answer quick trivia rounds, unlock characters for their virtual restaurant, and compete on local leaderboards.",
+        "description": "Restaurant Challenge Trivia is a free 3-minute browser trivia game with more than 1,300 questions. Players answer quick trivia rounds solo or live with friends, unlock collectible characters, and compete on local leaderboards.",
         "genre": "Trivia",
         "offers": {
           "@type": "Offer",
@@ -48,7 +50,7 @@
             "name": "What is Restaurant Challenge Trivia?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Restaurant Challenge Trivia is a free 3-minute browser trivia game where players choose a restaurant, answer quick trivia rounds, unlock collectible characters, and build a virtual restaurant."
+              "text": "Restaurant Challenge Trivia is a free 3-minute browser trivia game where players choose a restaurant, play solo or live with friends, answer quick trivia rounds, unlock collectible characters, and build a virtual restaurant."
             }
           },
           {
@@ -56,7 +58,7 @@
             "name": "How many questions are in Restaurant Challenge Trivia?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Restaurant Challenge Trivia includes more than 1,000 questions across general trivia, local trivia, state and national trivia, and restaurant-themed questions."
+              "text": "Restaurant Challenge Trivia includes more than 1,300 questions across general trivia, local trivia, state and national trivia, and restaurant-themed questions."
             }
           },
           {
@@ -78,9 +80,9 @@
         }
       })();
     </script>
-    <link rel="stylesheet" href="../shared/restaurant.css?v=multiplayer-room-results-v1" />
+    <link rel="stylesheet" href="../shared/restaurant.css?v=restaurant-redesign-v1" />
     <script defer src="../shared/app-core.js?v=multiplayer-rooms-v1"></script>
-    <script defer src="hub.js?v=join-link-v1"></script>
+    <script defer src="hub.js?v=restaurant-redesign-v1"></script>
   </head>
   <body data-page="hub">
     <main class="app-shell">
@@ -95,67 +97,94 @@
         </div>
       </header>
 
-      <section class="panel challenge-splash">
-        <div class="challenge-splash-grid">
-          <div class="challenge-splash-copy">
-            <p class="kicker">Restaurant Challenge Trivia</p>
-            <h1 class="page-title challenge-splash-title">Restaurant Challenge Trivia</h1>
-            <p class="challenge-splash-lead">Play a free 3-minute trivia game with more than 1,000 questions, unlock characters for your restaurant, and grow your character collection.</p>
-            <div class="challenge-splash-steps" aria-label="Restaurant Challenge overview">
-              <section class="challenge-splash-step">
-                <h2>Test Your Trivia Knowledge</h2>
-                <p>Answer 10 questions in about 3 minutes from a 1,000+ question pool.</p>
-              </section>
-              <section class="challenge-splash-step">
-                <h2>Unlock Characters</h2>
-                <p>Good scores can add valuable characters to your collection.</p>
-              </section>
-              <section class="challenge-splash-step">
-                <h2>Create a Virtual Restaurant</h2>
-                <p>Optional: use your characters to grow your virtual restaurant and climb the leaderboard.</p>
-              </section>
-            </div>
-            <div class="challenge-splash-picker" id="splash-chooser">
-              <label class="field challenge-splash-field" for="splash-restaurant-select">
-                <span class="field-label">Choose a Game</span>
-                <span class="challenge-splash-select-shell">
-                  <select class="select" id="splash-restaurant-select" aria-label="Choose a game">
-                    <option value="americana">Americana Diner</option>
-                  </select>
-                </span>
+      <section class="challenge-splash" aria-labelledby="restaurant-challenge-title">
+        <a class="challenge-hero-link" id="splash-play-button" href="/americana/" aria-label="Start Restaurant Challenge Trivia">
+          <img
+            class="challenge-hero-image"
+            src="/assets/restaurant-challenge/restaurant-challenge-trivia-hero.jpg"
+            alt="Restaurant Challenge Trivia, 3-minute solo or live games with friends"
+          />
+        </a>
+
+        <div class="challenge-play-panel" id="splash-chooser">
+          <div class="challenge-play-heading">
+            <p class="kicker">Ready to Play?</p>
+            <h1 class="page-title challenge-splash-title" id="restaurant-challenge-title">Restaurant Challenge Trivia</h1>
+            <p class="challenge-splash-lead">No two games are the same. With thousands of questions and live multiplayer, there's always another challenge waiting.</p>
+          </div>
+
+          <div class="challenge-play-controls">
+            <label class="field challenge-splash-field" for="splash-restaurant-select">
+              <span class="field-label">Choose a Restaurant</span>
+              <span class="challenge-splash-select-shell">
+                <select class="select" id="splash-restaurant-select" aria-label="Choose a restaurant">
+                  <option value="americana">Americana Diner</option>
+                </select>
+              </span>
+            </label>
+
+            <fieldset class="challenge-mode-field">
+              <legend class="field-label">Game Mode</legend>
+              <label class="challenge-mode-option">
+                <input type="radio" name="challengeMode" value="solo" checked />
+                <span>Solo</span>
               </label>
+              <label class="challenge-mode-option">
+                <input type="radio" name="challengeMode" value="friends" />
+                <span>Play With Friends</span>
+              </label>
+            </fieldset>
+          </div>
+
+          <div class="challenge-mode-panel" id="challenge-solo-panel">
+            <a class="button button-primary challenge-splash-primary" id="splash-start-playing-button" href="/americana/">Start Playing</a>
+          </div>
+
+          <div class="challenge-mode-panel challenge-friends-panel hidden" id="challenge-friends-panel">
+            <div class="button-row">
+              <a class="button button-primary challenge-splash-primary" id="splash-create-room-button" href="/americana/play/?multiplayer=1">Create New Game</a>
             </div>
-            <div class="challenge-splash-actions">
-              <a class="button button-primary challenge-splash-primary" id="splash-play-button" href="/americana/">Start Playing</a>
-              <a class="button button-muted challenge-splash-secondary" id="splash-my-restaurant-button" href="/restaurant/?hub=1#hero-panel">My Collection</a>
-              <a class="button button-muted challenge-splash-secondary" id="splash-leaderboard-button" href="/restaurant/?hub=1#leaderboard-panel">Leaderboard</a>
-              <button class="button button-muted challenge-splash-secondary" id="splash-how-to-play-button" type="button" data-how-to-play-button>How to Play</button>
-            </div>
-            <form class="input-grid" id="hub-join-room-form" style="margin-top: 16px;">
+            <p class="helper">Create a room to get a share link and room code.</p>
+            <form class="input-grid" id="hub-join-room-form">
               <div class="field">
-                <label class="field-label" for="hub-join-room-code">Join Friends' Game</label>
-                <input class="input" id="hub-join-room-code" name="roomCode" maxlength="240" placeholder="Enter room code or invite link" autocomplete="off" />
+                <label class="field-label" for="hub-join-room-code">Enter Room Code or Invite Link</label>
+                <input class="input" id="hub-join-room-code" name="roomCode" maxlength="240" placeholder="Pepper Meadow or invite link" autocomplete="off" />
               </div>
               <div class="button-row">
-                <button class="button button-muted" type="submit">Join Room</button>
+                <button class="button button-muted" type="submit">Join Game</button>
               </div>
               <p class="helper" id="hub-join-room-message" aria-live="polite"></p>
               <p class="error hidden" id="hub-join-room-error" aria-live="polite"></p>
             </form>
           </div>
+
+          <div class="challenge-splash-actions">
+            <a class="button button-muted challenge-splash-secondary" id="splash-leaderboard-button" href="/restaurant/?hub=1#leaderboard-panel">Leaderboards</a>
+            <button class="button button-muted challenge-splash-secondary" id="splash-how-to-play-button" type="button" data-how-to-play-button>How to Play</button>
+          </div>
         </div>
       </section>
 
-      <section class="panel panel-pad challenge-owner-section" aria-labelledby="restaurant-owner-title">
-        <p class="kicker">For Restaurant Owners</p>
-        <h2 class="section-title" id="restaurant-owner-title">A local trivia game that can help promote your restaurant</h2>
-        <div class="challenge-owner-grid">
-          <p class="copy">
-            Restaurant Challenge gives guests a playful reason to scan a QR code, answer trivia, unlock collectible characters, and come back to improve their collection.
-          </p>
-          <p class="copy">
-            Each restaurant can have its own game page, local leaderboard, character collection, and trivia mix, making it a simple way to turn restaurant promotion into repeat play.
-          </p>
+      <section class="challenge-info-section" aria-labelledby="challenge-info-title">
+        <p class="kicker">Why People Come Back</p>
+        <h2 class="section-title" id="challenge-info-title">A quick trivia game built for repeat play.</h2>
+        <div class="challenge-info-grid">
+          <section class="challenge-info-item">
+            <h3>Quick to Play</h3>
+            <p>Each game takes about 3 minutes, making it perfect while waiting for food or whenever you have a few minutes to spare.</p>
+          </section>
+          <section class="challenge-info-item">
+            <h3>Play Your Way</h3>
+            <p>Play solo or challenge friends in real time, even if they're in another city.</p>
+          </section>
+          <section class="challenge-info-item">
+            <h3>Keep Coming Back</h3>
+            <p>With over 1,300 questions and growing daily, every game feels different.</p>
+          </section>
+          <section class="challenge-info-item">
+            <h3>Earn Rewards</h3>
+            <p>Great scores unlock collectible characters, and if you'd like, you can build your own virtual restaurant and climb the leaderboards.</p>
+          </section>
         </div>
       </section>
 
