@@ -3576,20 +3576,32 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .feedback-reward-card {
   display: grid;
-  gap: 14px;
+  grid-template-columns: minmax(220px, 0.7fr) minmax(0, 1.3fr);
+  gap: clamp(18px, 4vw, 32px);
+  align-items: center;
   margin-top: 18px;
-  padding: 18px;
+  padding: clamp(22px, 4vw, 34px);
   text-align: left;
 }
 
 .feedback-reward-copy {
   display: grid;
-  gap: 6px;
+  gap: 8px;
 }
 
 .feedback-reward-copy .section-title {
   margin: 0;
   font-size: 1.2rem;
+}
+
+.feedback-reward-bonus-title {
+  margin: 0;
+  color: var(--green);
+  font-family: Arial, sans-serif;
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .feedback-reward-copy .copy,
@@ -3600,20 +3612,38 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .feedback-reward-customer {
   display: grid;
-  grid-template-columns: 64px minmax(0, 1fr);
-  gap: 12px;
+  grid-template-columns: minmax(150px, 220px) minmax(0, 1fr);
+  gap: clamp(16px, 3vw, 28px);
   align-items: center;
 }
 
 .feedback-reward-photo {
-  width: 64px;
-  height: 64px;
-  border-radius: 14px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 18px;
   object-fit: cover;
   box-shadow: var(--shadow-soft);
 }
 
+.feedback-reward-customer .section-title {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3.4rem);
+}
+
+.feedback-reward-role {
+  margin: 2px 0 12px;
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.2rem, 2.3vw, 1.8rem);
+  font-weight: 850;
+}
+
+.feedback-reward-unlock {
+  width: min(100%, 460px);
+}
+
 .feedback-reward-form {
+  grid-column: 1 / -1;
   display: grid;
   gap: 10px;
 }
@@ -4269,6 +4299,19 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   .multiplayer-character-intro img {
     width: 72px;
     height: 72px;
+  }
+
+  .feedback-reward-card,
+  .feedback-reward-customer {
+    grid-template-columns: 1fr;
+  }
+
+  .feedback-reward-photo {
+    max-width: 240px;
+  }
+
+  .feedback-reward-unlock {
+    width: 100%;
   }
 
   .how-to-play-modal {

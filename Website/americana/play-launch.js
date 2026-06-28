@@ -1319,7 +1319,7 @@
       return `
         <div class="hero-card feedback-reward-card">
           <div class="feedback-reward-copy">
-            <p class="kicker">Feedback Reward</p>
+            <p class="feedback-reward-bonus-title">⭐ Bonus Character Available</p>
             <h3 class="section-title">${escapeHtml(reward.customer.name)} is in your collection.</h3>
             ${statusMarkup}
           </div>
@@ -1330,15 +1330,14 @@
     return `
       <div class="hero-card feedback-reward-card">
         <div class="feedback-reward-copy">
-          <p class="kicker">${escapeHtml(isSalesDemoMode() ? "Feedback Demo" : "Optional Feedback Reward")}</p>
-          <h3 class="section-title">${escapeHtml(isSalesDemoMode() ? reward.prompt : `Share quick feedback for ${restaurant?.name || "this restaurant"}.`)}</h3>
-          <p class="copy">${escapeHtml(isSalesDemoMode() ? "Players unlock a collectible character and a leaderboard bonus after completing your survey, giving guests a clear reason to share feedback." : reward.prompt)}</p>
+          <p class="feedback-reward-bonus-title">⭐ Bonus Character Available</p>
         </div>
         <div class="feedback-reward-customer">
           <img class="feedback-reward-photo" src="${reward.customer.image}" alt="${escapeHtml(reward.customer.name)}" />
           <div>
-            <p class="customer-reveal-rarity">${escapeHtml(reward.customer.rarity || "Special")} character</p>
-            <strong>${escapeHtml(reward.customer.name)}</strong>
+            <h3 class="section-title">${escapeHtml(reward.customer.name)}</h3>
+            <p class="feedback-reward-role">Mystery Reviewer</p>
+            <p class="copy">This rare character is only available by answering a 60-second survey.</p>
           </div>
         </div>
         ${
@@ -1359,7 +1358,7 @@
             : `
               ${statusMarkup}
               <div class="button-row">
-                <button class="button button-muted" id="feedback-reward-open" type="button">${escapeHtml(isSalesDemoMode() ? "Try Feedback Demo" : "Give Feedback")}</button>
+                <button class="button button-hot feedback-reward-unlock" id="feedback-reward-open" type="button">Unlock ${escapeHtml(reward.customer.name)}</button>
               </div>
             `
         }
