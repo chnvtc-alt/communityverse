@@ -640,6 +640,62 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   line-height: 1.45;
 }
 
+.challenge-seo-section .copy {
+  max-width: 820px;
+}
+
+.challenge-link-grid,
+.challenge-faq-list {
+  display: grid;
+  gap: 12px;
+}
+
+.challenge-link-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.challenge-text-link,
+.challenge-faq-item {
+  border: 1px solid rgba(93, 116, 105, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 250, 241, 0.72);
+}
+
+.challenge-text-link {
+  display: flex;
+  min-height: 64px;
+  align-items: center;
+  padding: 14px 16px;
+  color: var(--green);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.challenge-text-link:hover {
+  color: var(--orange);
+}
+
+.challenge-faq-item {
+  padding: 16px;
+}
+
+.challenge-faq-item h3,
+.challenge-faq-item p {
+  margin: 0;
+}
+
+.challenge-faq-item h3 {
+  color: var(--ink);
+  font-size: 1.05rem;
+}
+
+.challenge-faq-item p {
+  margin-top: 8px;
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+  line-height: 1.5;
+}
+
 .how-to-play-open,
 .contact-open {
   overflow: hidden;
@@ -3966,7 +4022,8 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   }
 
   .challenge-play-controls,
-  .challenge-info-grid {
+  .challenge-info-grid,
+  .challenge-link-grid {
     grid-template-columns: 1fr;
   }
 

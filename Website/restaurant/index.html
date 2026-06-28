@@ -3,41 +3,91 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Restaurant Challenge Trivia | 3-Minute Solo or Live Trivia Games</title>
+    <title>Restaurant Challenge Trivia | Free 3-Minute Restaurant Trivia Game</title>
     <meta
       name="description"
-      content="Play Restaurant Challenge Trivia, a free 3-minute trivia game with more than 1,300 questions. Play solo or live with friends, unlock collectible characters, and climb leaderboards."
+      content="Play a free 3-minute restaurant trivia game. Choose a local restaurant, answer 10 quick questions, play solo or live with friends, unlock characters, and climb leaderboards."
     />
-    <link rel="canonical" href="https://communityversegames.com/restaurant" />
-    <meta property="og:title" content="Restaurant Challenge Trivia | CommunityVerse Games" />
+    <meta name="robots" content="index,follow,max-image-preview:large" />
+    <link rel="canonical" href="https://communityversegames.com/restaurant/" />
+    <meta property="og:site_name" content="CommunityVerse Games" />
+    <meta property="og:title" content="Restaurant Challenge Trivia | Free 3-Minute Trivia Game" />
     <meta
       property="og:description"
-      content="Choose a restaurant, play a quick 3-minute trivia game solo or live with friends, unlock collectible characters, and climb a shared leaderboard."
+      content="Choose a restaurant, answer 10 quick trivia questions, play solo or live with friends, unlock characters, and compete on leaderboards."
     />
-    <meta property="og:url" content="https://communityversegames.com/restaurant" />
+    <meta property="og:url" content="https://communityversegames.com/restaurant/" />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://communityversegames.com/assets/restaurant-challenge/restaurant-challenge-trivia-hero.jpg" />
+    <meta property="og:image:width" content="768" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:image:alt" content="Restaurant Challenge Trivia, a free 3-minute solo or live trivia game" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Restaurant Challenge Trivia | Free 3-Minute Trivia Game" />
+    <meta
+      name="twitter:description"
+      content="Choose a restaurant, answer 10 quick trivia questions, and play solo or live with friends."
+    />
     <meta name="twitter:image" content="https://communityversegames.com/assets/restaurant-challenge/restaurant-challenge-trivia-hero.jpg" />
+    <meta name="twitter:image:alt" content="Restaurant Challenge Trivia, a free 3-minute solo or live trivia game" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "Restaurant Challenge Trivia",
-        "applicationCategory": "GameApplication",
-        "operatingSystem": "Any",
-        "url": "https://communityversegames.com/restaurant",
-        "description": "Restaurant Challenge Trivia is a free 3-minute browser trivia game with more than 1,300 questions. Players answer quick trivia rounds solo or live with friends, unlock collectible characters, and compete on local leaderboards.",
-        "genre": "Trivia",
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "USD"
-        },
-        "publisher": {
-          "@type": "Organization",
-          "name": "CommunityVerse Games"
-        }
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://communityversegames.com/#organization",
+            "name": "CommunityVerse Games",
+            "url": "https://communityversegames.com/"
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://communityversegames.com/#website",
+            "name": "CommunityVerse Games",
+            "url": "https://communityversegames.com/",
+            "publisher": {
+              "@id": "https://communityversegames.com/#organization"
+            }
+          },
+          {
+            "@type": "WebApplication",
+            "@id": "https://communityversegames.com/restaurant/#app",
+            "name": "Restaurant Challenge Trivia",
+            "applicationCategory": "GameApplication",
+            "operatingSystem": "Any",
+            "url": "https://communityversegames.com/restaurant/",
+            "description": "Restaurant Challenge Trivia is a free 3-minute browser trivia game with more than 1,300 questions. Players choose a restaurant, answer 10 quick trivia questions, play solo or live with friends, unlock collectible characters, and compete on leaderboards.",
+            "genre": "Trivia",
+            "isAccessibleForFree": true,
+            "image": "https://communityversegames.com/assets/restaurant-challenge/restaurant-challenge-trivia-hero.jpg",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "publisher": {
+              "@id": "https://communityversegames.com/#organization"
+            }
+          },
+          {
+            "@type": "BreadcrumbList",
+            "@id": "https://communityversegames.com/restaurant/#breadcrumb",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "CommunityVerse Games",
+                "item": "https://communityversegames.com/"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Restaurant Challenge Trivia",
+                "item": "https://communityversegames.com/restaurant/"
+              }
+            ]
+          }
+        ]
       }
     </script>
     <script type="application/ld+json">
@@ -80,7 +130,7 @@
         }
       })();
     </script>
-    <link rel="stylesheet" href="../shared/restaurant.css?v=restaurant-hero-layout-v1" />
+    <link rel="stylesheet" href="../shared/restaurant.css?v=restaurant-seo-v1" />
     <script defer src="../shared/app-core.js?v=multiplayer-rooms-v1"></script>
     <script defer src="hub.js?v=restaurant-redesign-v1"></script>
   </head>
@@ -185,6 +235,38 @@
           <section class="challenge-info-item">
             <h3>Earn Rewards</h3>
             <p>Great scores unlock collectible characters, and if you'd like, you can build your own virtual restaurant and climb the leaderboards.</p>
+          </section>
+        </div>
+      </section>
+
+      <section class="challenge-info-section challenge-seo-section" aria-labelledby="challenge-restaurant-games-title">
+        <p class="kicker">Restaurant Trivia Games</p>
+        <h2 class="section-title" id="challenge-restaurant-games-title">Play local restaurant trivia online.</h2>
+        <p class="copy">
+          Restaurant Challenge Trivia is a free browser game for guests, friends, and local communities. Choose a restaurant, answer 10 quick trivia questions, and play a solo round or a live multiplayer room from any phone, tablet, or computer.
+        </p>
+        <div class="challenge-link-grid" aria-label="Featured restaurant trivia games">
+          <a class="challenge-text-link" href="/sam-and-roscos">Sam and Rosco's Restaurant Challenge</a>
+          <a class="challenge-text-link" href="/hudsons">Hudson's Restaurant Challenge</a>
+          <a class="challenge-text-link" href="/marcossp">Marco's Restaurant Challenge</a>
+        </div>
+      </section>
+
+      <section class="challenge-info-section challenge-seo-section" aria-labelledby="challenge-faq-title">
+        <p class="kicker">Restaurant Challenge FAQ</p>
+        <h2 class="section-title" id="challenge-faq-title">Common questions about the trivia game.</h2>
+        <div class="challenge-faq-list">
+          <section class="challenge-faq-item">
+            <h3>What is Restaurant Challenge Trivia?</h3>
+            <p>Restaurant Challenge Trivia is a free 3-minute browser trivia game where players choose a restaurant, answer quick trivia rounds, play solo or live with friends, unlock collectible characters, and build a virtual restaurant.</p>
+          </section>
+          <section class="challenge-faq-item">
+            <h3>How many questions are in Restaurant Challenge Trivia?</h3>
+            <p>Restaurant Challenge Trivia includes more than 1,300 questions across general trivia, local trivia, state and national trivia, and restaurant-themed questions.</p>
+          </section>
+          <section class="challenge-faq-item">
+            <h3>Can restaurants use Restaurant Challenge to promote their restaurant?</h3>
+            <p>Yes. A restaurant can use Restaurant Challenge as a local promotion by sending guests to a restaurant-branded trivia game where they can play, unlock collectible characters, and return to improve their collection and leaderboard position.</p>
           </section>
         </div>
       </section>
