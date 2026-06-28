@@ -1913,9 +1913,7 @@
           }
         </div>
         ${isSalesDemoMode() ? `<p class="sales-demo-expectation">${escapeHtml(demoExpectationLine)}</p>` : ""}
-        ${renderFeedbackRewardCard()}
       </div>`;
-    bindFeedbackRewardCard();
 
     const resumeButton = document.getElementById("resume-game-button");
     if (resumeButton) {
@@ -1992,9 +1990,7 @@
         </div>
         ${isSalesDemoMode() ? `<p class="sales-demo-expectation">${escapeHtml(demoExpectationLine)}</p>` : ""}
         ${renderMultiplayerCard()}
-        ${renderFeedbackRewardCard()}
       </div>`;
-    bindFeedbackRewardCard();
     bindMultiplayerCard();
 
   }

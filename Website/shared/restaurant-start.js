@@ -894,13 +894,11 @@
           <button class="button button-muted" id="start-how-to-play-button" type="button">${escapeHtml(howToPlayText)}</button>
         </div>
         ${salesDemoMode ? `<p class="sales-demo-expectation">${escapeHtml(demoExpectationLine)}</p>` : ""}
-        ${renderFeedbackRewardCard(restaurant)}
       </div>
       ${howToPlayModalHtml(salesDemoMode)}
     `;
     panel.classList.remove("hidden");
     bindHowToPlay();
-    bindFeedbackRewardCard(restaurant);
     if (salesDemoMode) {
       markSalesDemoVisit();
       updateSalesDemoCta(true, "See your own restaurant brought to life.");
