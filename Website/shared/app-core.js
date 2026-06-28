@@ -96,14 +96,14 @@
       "Lucky",
       "Friendly",
       "Harvest",
-      "Cedar",
+      "Sunny",
       "Bluebird",
       "Sunset",
       "Maple",
       "Hearth",
       "Silver",
       "Pepper",
-      "Juniper",
+      "Happy",
       "Riverbend",
       "Copper",
       "Crimson",
@@ -145,7 +145,7 @@
       "Redbud",
       "Rolling",
       "Rosemary",
-      "Saffron",
+      "Sugar",
       "Shady Grove",
       "Sweetwater",
       "Tin Roof",
@@ -2087,8 +2087,8 @@
     const existingSlugs = new Set(demoProfiles.map((profile) => profile.restaurantSlug));
     const existingIds = new Set(demoProfiles.map((profile) => profile.id));
     const adjectivePool = [
-      "Golden", "Maple", "Silver", "Cedar", "Bluebird", "Harvest", "Copper", "Sunset", "Willow", "Sage",
-      "River", "Prairie", "Canyon", "Lighthouse", "Juniper", "Magnolia", "Beacon", "Meadow", "Driftwood", "Hearth"
+      "Golden", "Maple", "Silver", "Sunny", "Bluebird", "Harvest", "Copper", "Sunset", "Willow", "Sage",
+      "River", "Prairie", "Canyon", "Lighthouse", "Happy", "Magnolia", "Beacon", "Meadow", "Driftwood", "Hearth"
     ];
     const nounPool = [
       "Kitchen", "Cafe", "Grill", "Diner", "Bistro", "Supper Club", "Smokehouse", "Table", "Tavern", "Roost",
