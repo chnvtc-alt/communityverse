@@ -830,10 +830,12 @@
     if (!roomCode) {
       return;
     }
+    const previousLiveStatus = String(state.multiplayerRoom?.liveStatus || "");
     try {
       await loadMultiplayerRoom(roomCode);
       state.multiplayerError = "";
-      if (redraw) {
+      const liveStatusChanged = previousLiveStatus && previousLiveStatus !== String(state.multiplayerRoom?.liveStatus || "");
+      if (redraw && liveStatusChanged) {
         renderAll();
       } else {
         refreshMultiplayerCardSlot();
@@ -1664,7 +1666,9 @@
             ${liveWaiting && isHost ? `<button class="button button-hot" id="start-live-round-button" type="button" ${state.multiplayerLoading ? "disabled" : ""}>Start Live Round</button>` : ""}
           </div>
           ${messageMarkup}
-          ${roomLeaderboardMarkup(showGroupResults, { includeWinner: includeWinnerInRoomCard })}
+          <div id="multiplayer-leaderboard-slot">
+            ${roomLeaderboardMarkup(showGroupResults, { includeWinner: includeWinnerInRoomCard })}
+          </div>
         </div>
       `;
     }
@@ -1732,6 +1736,14 @@
 
   function refreshMultiplayerCardSlot() {
     const slot = document.getElementById("multiplayer-card-slot");
+    const leaderboardSlot = document.getElementById("multiplayer-leaderboard-slot");
+    if (leaderboardSlot && state.multiplayerRoom.liveStatus === "waiting") {
+      const session = getSession();
+      const showGroupResults = Boolean(session?.completed || state.multiplayerRoom.status === "closed");
+      const includeWinner = !(showGroupResults && session?.completed);
+      leaderboardSlot.innerHTML = roomLeaderboardMarkup(showGroupResults, { includeWinner });
+      return;
+    }
     if (!slot || !state.multiplayerRoom) {
       return;
     }
