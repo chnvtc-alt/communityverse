@@ -1751,6 +1751,10 @@
 
   function refreshMultiplayerCardSlot() {
     const slot = document.getElementById("multiplayer-card-slot");
+    const winnerSlot = document.getElementById("multiplayer-winner-slot");
+    if (winnerSlot && state.multiplayerRoom) {
+      winnerSlot.innerHTML = roomWinnerMarkup(true);
+    }
     const leaderboardSlot = document.getElementById("multiplayer-leaderboard-slot");
     if (leaderboardSlot && state.multiplayerRoom.liveStatus === "waiting") {
       const session = getSession();
@@ -2863,7 +2867,7 @@
         : "";
     const netWorthPromptMarkup = renderResultNetWorthPrompt(profile, overallSummary?.stats || profile?.stats);
     const feedbackRewardMarkup = renderFeedbackRewardCard();
-    const multiplayerWinnerMarkup = state.multiplayerRoom ? roomWinnerMarkup(true) : "";
+    const multiplayerWinnerMarkup = state.multiplayerRoom ? `<div id="multiplayer-winner-slot">${roomWinnerMarkup(true)}</div>` : "";
     const multiplayerMarkup = state.multiplayerRoom ? `<div id="multiplayer-card-slot">${renderMultiplayerCard()}</div>` : "";
 
     elements.result.innerHTML = `
