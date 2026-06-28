@@ -1601,6 +1601,22 @@
 
     if (room && state.multiplayerPlayer) {
       const roomCustomer = activeSession?.customer || (room.customerId ? core.getCustomerById(room.customerId) : null);
+      const roomCustomerThresholds = roomCustomer ? core.getCustomerWinThresholds(roomCustomer) : null;
+      const roomCustomerUnlockScore = roomCustomer
+        ? core.getCustomerUnlockScore
+          ? core.getCustomerUnlockScore(roomCustomer)
+          : roomCustomerThresholds?.occasional
+        : 0;
+      const roomCustomerUnlockValue = roomCustomer
+        ? core.getCharacterScoreValue
+          ? core.getCharacterScoreValue(roomCustomer, roomCustomerUnlockScore)
+          : roomCustomer?.occasionalValue
+        : 0;
+      const roomCustomerValuePerExtraCorrect = roomCustomer
+        ? core.getCharacterValuePerExtraCorrect
+          ? core.getCharacterValuePerExtraCorrect(roomCustomer)
+          : Math.max(0, (Number(roomCustomer.regularValue) || 0) - (Number(roomCustomer.occasionalValue) || 0))
+        : 0;
       const characterIntroMarkup = roomCustomer
         ? `
           <div class="multiplayer-character-intro">
@@ -1608,6 +1624,7 @@
             <div>
               <p class="kicker">This Round's Character</p>
               <h4>${escapeHtml(roomCustomer.name || "Mystery Character")}</h4>
+              <p class="multiplayer-character-goal">Get <strong>${roomCustomerUnlockScore}</strong> correct answers to unlock ${escapeHtml(roomCustomer.name || "this character")}. Unlocking adds <strong>${core.formatCurrency(roomCustomerUnlockValue)}</strong> in virtual cash, plus <strong>${core.formatCurrency(roomCustomerValuePerExtraCorrect)}</strong> for each extra correct answer.</p>
               <p>Along with trivia, players can unlock collectible characters and virtual cash. Those rewards can be used later in the optional restaurant-building part of the game.</p>
             </div>
           </div>
