@@ -360,7 +360,8 @@
                 <ul>
                   <li>Menu photo questions that make featured items memorable.</li>
                   <li>Restaurant trivia that teaches people about your story, specials, and events.</li>
-                  <li>Over 1,200 built-in trivia questions, plus custom questions about your restaurant.</li>
+                  <li>Thousands of built-in trivia questions, plus custom questions about your restaurant.</li>
+                  <li>Live multiplayer mode gives the whole table something fun to play together.</li>
                   <li>Keeps guests engaged while they wait for their food.</li>
                   <li>Your own custom URL and branded game page.</li>
                   <li>Collectible characters that encourage guests to play again.</li>
