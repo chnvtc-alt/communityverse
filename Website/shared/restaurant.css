@@ -734,14 +734,33 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   padding: 16px;
 }
 
-.challenge-faq-item h3,
+.challenge-faq-item summary,
 .challenge-faq-item p {
   margin: 0;
 }
 
-.challenge-faq-item h3 {
+.challenge-faq-item summary {
+  cursor: pointer;
+  list-style: none;
   color: var(--ink);
   font-size: 1.05rem;
+  font-weight: 850;
+}
+
+.challenge-faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.challenge-faq-item summary::after {
+  content: "+";
+  float: right;
+  color: var(--green);
+  font-family: Arial, sans-serif;
+  font-weight: 900;
+}
+
+.challenge-faq-item[open] summary::after {
+  content: "-";
 }
 
 .challenge-faq-item p {
