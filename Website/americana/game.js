@@ -38,7 +38,6 @@
     showProfileForm: false,
     registrationMessage: "",
     emailInfoExpanded: false,
-    resultBioExpanded: false,
     showFeedbackRewardForm: false,
     feedbackRewardMessage: "",
     feedbackRewardError: "",
@@ -2162,7 +2161,6 @@
     clearResultVisibleSessionId();
     state.feedback = null;
     state.isLocked = false;
-    state.resultBioExpanded = false;
     state.showGame = false;
     renderAll();
     window.requestAnimationFrame(() => {
@@ -2216,7 +2214,6 @@
       clearResultVisibleSessionId();
       state.feedback = null;
       state.isLocked = false;
-      state.resultBioExpanded = false;
       state.showGame = false;
       renderAll();
     } catch (error) {
@@ -2299,7 +2296,6 @@
       clearResultVisibleSessionId();
       state.feedback = null;
       state.isLocked = false;
-      state.resultBioExpanded = false;
       state.showGame = false;
       renderAll();
     } catch (error) {
@@ -2647,44 +2643,6 @@
     }, answerFeedbackDelayMs);
   }
 
-  function resultMessage(session) {
-    const favoriteProgress = session.favoriteProgress;
-    const salesDemoMode = isSalesDemoMode();
-
-    if (salesDemoMode) {
-      if (["favorite", "regular", "occasional"].includes(session.result)) {
-        return `${session.customer.name} has been added to your collection.`;
-      }
-      return `${session.customer.name} was not unlocked this time.`;
-    }
-
-    if (favoriteProgress?.becameFavorite) {
-      return `${session.customer.name} is now a Favorite Character. Their value increased from ${core.formatCurrency(favoriteProgress.regularValue)} to ${core.formatCurrency(favoriteProgress.favoriteValue)}.`;
-    }
-
-    if (favoriteProgress?.wasEligible && favoriteProgress.successful) {
-      return `${session.customer.name} is now ${favoriteProgress.visits}/${favoriteProgress.goal} successful visits toward becoming a Favorite Character.`;
-    }
-
-    if (favoriteProgress?.wasEligible && !favoriteProgress.successful) {
-      return `Score ${favoriteProgress.threshold}/10 or better with ${session.customer.name} to build Favorite progress.`;
-    }
-
-    if (session.result === "favorite") {
-      return `${session.customer.name} is already a Favorite Character.`;
-    }
-
-    if (session.result === "regular") {
-      return `${session.customer.name} is now in your character collection.`;
-    }
-
-    if (session.result === "occasional") {
-      return `${session.customer.name} is now in your character collection.`;
-    }
-
-    return `${session.customer.name} was not unlocked this time. Try again when this character appears to add it to your collection.`;
-  }
-
   function renderResultNetWorthPrompt(profile, stats = null) {
     if (!profile || profile.isGuest || !core.getRestaurantExpansionPreview) {
       return "";
@@ -2760,10 +2718,6 @@
     const profile = getProfile();
     const summary = profile ? core.getProfileSummary(profile, restaurantSlug) : null;
     const overallSummary = profile ? core.getProfileSummary(profile) : null;
-    const overallSalesStats =
-      profile && typeof core.getPublicLeaderboardStats === "function"
-        ? core.getPublicLeaderboardStats(profile)
-        : overallSummary?.stats;
     const isGuest = Boolean(profile && profile.isGuest);
     const salesDemoMode = isSalesDemoMode();
     const demoCharacterUnlocked = salesDemoMode && ["favorite", "regular", "occasional"].includes(session.result);
@@ -2777,15 +2731,8 @@
         : session.result === "regular" || session.result === "occasional"
           ? "Character Unlocked"
           : "Character Not Unlocked";
-    const resultSummaryLabel =
-      session.result === "favorite"
-        ? "Favorite"
-        : session.result === "regular" || session.result === "occasional"
-          ? "Unlocked"
-          : "Not Unlocked";
     const customerBio = core.getCustomerBio(session.customer);
     const customerBioPreview = getBioPreview(customerBio);
-    const showFullBio = state.resultBioExpanded || !customerBioPreview.isTruncated;
     const favoriteProgress = session.favoriteProgress;
     const resultHeadline =
       salesDemoMode && session.result === "lost"
@@ -2812,24 +2759,6 @@
               ? "Character Unlocked"
               : "Character Not Unlocked";
     const customerValue = Math.max(0, Number(session.customerValue) || 0);
-    const salesBoostPercent = Math.max(0, Number(session.salesBoostPercent) || 0);
-    const baseCustomerValue =
-      session.result === "favorite"
-        ? Number(session.customerBaseValues?.favoriteValue) || 0
-        : session.result === "regular" || session.result === "occasional"
-          ? Number(session.customerBaseValues?.characterValue) || Number(session.customerBaseValues?.regularValue) || 0
-          : 0;
-    const salesBoostMarkup =
-      salesBoostPercent > 0 && customerValue > 0 && baseCustomerValue > 0
-        ? `
-          <div class="result-metric-row result-sales-boost-row">
-            <div class="result-metric-card result-metric-card-wide">
-              <span class="result-metric-label">Upgrade bonus:</span>
-              <span class="result-metric-value">${core.formatCurrency(baseCustomerValue)} +${salesBoostPercent.toFixed(0)}% = ${core.formatCurrency(customerValue)}</span>
-            </div>
-          </div>
-        `
-        : "";
     const triviaLeaderboardMilestoneMarkup =
       isFourthGame && !isGuest
         ? `
@@ -2855,48 +2784,20 @@
             <img class="result-hero-image" src="${getHeroImage()}" alt="${escapeHtml(getHeroAlt())}" />
           </div>
 
-          <div class="result-banner ${salesDemoMode ? "result-banner-demo" : ""}">
+          <a class="result-banner result-award-card ${salesDemoMode ? "result-banner-demo" : ""}" href="/restaurant/?hub=1" aria-label="View your character collection">
             <div class="result-celebration">
-              <p class="result-celebration-kicker">${escapeHtml(resultHeadline)}</p>
-              <h2 class="result-celebration-title">${escapeHtml(resultSubheadline)}</h2>
+              <p class="result-celebration-kicker">${escapeHtml(resultHeadline)} - ${escapeHtml(resultSubheadline)}</p>
+              <h2 class="result-celebration-title">${escapeHtml(session.customer.name)}</h2>
             </div>
             <div class="result-customer-spotlight">
               <img class="result-customer-image" src="${session.customer.image}" alt="${escapeHtml(session.customer.name)}" />
               <div class="result-customer-copy">
-                <h2>${escapeHtml(session.customer.name)}</h2>
-                <p class="customer-bio ${showFullBio ? "customer-bio-expanded" : ""}">${escapeHtml(showFullBio ? customerBio : customerBioPreview.text)}</p>
-                ${
-                  customerBioPreview.isTruncated
-                    ? `<button class="text-button result-bio-toggle" id="toggle-bio-button" type="button">${showFullBio ? "Read Less" : "Read More"}</button>`
-                    : ""
-                }
-                <p class="copy">${escapeHtml(resultMessage(session))}</p>
+                <p class="customer-bio">${escapeHtml(customerBioPreview.text)}</p>
+                <span class="button button-muted result-collection-button">View My Collection</span>
               </div>
             </div>
-            <div class="result-metrics">
-              <div class="result-metric-row">
-                <div class="result-metric-card">
-                  <span class="result-metric-label">Final score:</span>
-                  <span class="result-metric-value">${session.score}/${session.questions.length}</span>
-                </div>
-                <div class="result-metric-card">
-                  <span class="result-metric-label">Result:</span>
-                  <span class="result-metric-value">${escapeHtml(resultSummaryLabel)}</span>
-                </div>
-              </div>
-              <div class="result-metric-row">
-                <div class="result-metric-card">
-                  <span class="result-metric-label">${salesDemoMode ? "Guest value:" : "Character value:"}</span>
-                  <span class="result-metric-value">${core.formatCurrency(customerValue)}</span>
-                </div>
-                <div class="result-metric-card">
-                  <span class="result-metric-label">Player sales:</span>
-                  <span class="result-metric-value">${overallSalesStats ? core.formatCurrency(overallSalesStats.estimatedSales) : core.formatCurrency(0)}</span>
-                </div>
-              </div>
-              ${salesBoostMarkup}
-            </div>
-          </div>
+            <p class="result-award-summary">Score ${session.score}/${session.questions.length} • Reward ${core.formatCurrency(customerValue)}</p>
+          </a>
         </div>
 
         ${multiplayerWinnerMarkup}
@@ -2980,14 +2881,6 @@
     bindHowToPlay();
     bindFeedbackRewardCard();
     bindMultiplayerCard();
-
-    const toggleBioButton = document.getElementById("toggle-bio-button");
-    if (toggleBioButton) {
-      toggleBioButton.addEventListener("click", () => {
-        state.resultBioExpanded = !state.resultBioExpanded;
-        renderAll();
-      });
-    }
 
     if (isGuest && !state.showProfileForm) {
       document.getElementById("register-now-button").addEventListener("click", () => {
@@ -3125,7 +3018,6 @@
         state.feedback = null;
         state.isLocked = false;
         state.showProfileForm = false;
-        state.resultBioExpanded = false;
         void startGame();
       });
     }
