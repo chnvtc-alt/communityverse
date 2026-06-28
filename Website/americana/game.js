@@ -831,10 +831,19 @@
     if (!roomCode) {
       return;
     }
+    const activeElement = document.activeElement;
+    const userIsTypingInJoinForm = Boolean(
+      activeElement &&
+        activeElement.closest?.("#multiplayer-join-form") &&
+        (activeElement.tagName === "INPUT" || activeElement.tagName === "TEXTAREA" || activeElement.tagName === "SELECT")
+    );
     const previousLiveStatus = String(state.multiplayerRoom?.liveStatus || "");
     try {
       await loadMultiplayerRoom(roomCode);
       state.multiplayerError = "";
+      if (userIsTypingInJoinForm && !state.multiplayerPlayer) {
+        return;
+      }
       const liveStatusChanged = previousLiveStatus && previousLiveStatus !== String(state.multiplayerRoom?.liveStatus || "");
       if (redraw && liveStatusChanged) {
         renderAll();
@@ -988,6 +997,7 @@
       state.multiplayerRoom = data.room || state.multiplayerRoom;
       state.multiplayerPlayers = Array.isArray(data.players) ? data.players : state.multiplayerPlayers;
       syncLiveRoomToSession();
+      renderAll();
     } catch (error) {
       state.multiplayerError = "Live round updates are paused. Refresh the page to try again.";
     } finally {

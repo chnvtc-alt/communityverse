@@ -5718,6 +5718,13 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     border-radius: 18px;
   }
 
+  .button.button-hot,
+  button.button.button-hot {
+    background: linear-gradient(135deg, var(--accent), var(--gold-deep));
+    border-color: var(--gold-deep);
+    color: #fffdf8;
+  }
+
   .opening-start-shell {
     gap: 11px;
   }
