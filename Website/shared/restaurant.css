@@ -419,6 +419,8 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .challenge-hero-link {
   display: block;
+  justify-self: center;
+  width: min(100%, 920px);
   overflow: hidden;
   border: 1px solid rgba(93, 116, 105, 0.14);
   border-radius: 22px;
