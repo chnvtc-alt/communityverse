@@ -1600,6 +1600,19 @@
     }
 
     if (room && state.multiplayerPlayer) {
+      const roomCustomer = activeSession?.customer || (room.customerId ? core.getCustomerById(room.customerId) : null);
+      const characterIntroMarkup = roomCustomer
+        ? `
+          <div class="multiplayer-character-intro">
+            <img src="${escapeHtml(roomCustomer.image || "")}" alt="${escapeHtml(roomCustomer.name || "This round's character")}" />
+            <div>
+              <p class="kicker">This Round's Character</p>
+              <h4>${escapeHtml(roomCustomer.name || "Mystery Character")}</h4>
+              <p>Along with trivia, players can unlock collectible characters and virtual cash. Those rewards can be used later in the optional restaurant-building part of the game.</p>
+            </div>
+          </div>
+        `
+        : "";
       const liveWaitingHostInstructions = liveWaiting && isHost
         ? `
           <div class="multiplayer-host-steps" aria-label="How to start the live round">
@@ -1633,6 +1646,7 @@
           </div>
           <p class="helper" style="margin: 0 0 12px;">Room codes are not case-sensitive. Friends can type a space instead of the dash.</p>
           ${liveStatusMarkup}
+          ${characterIntroMarkup}
           ${liveWaitingHostInstructions}
           <div class="input-grid">
             <div class="field">
