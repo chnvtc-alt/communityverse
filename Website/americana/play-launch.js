@@ -891,6 +891,20 @@
     return state.multiplayerRoom?.mode === "live";
   }
 
+  function isMultiplayerSetupMode() {
+    return !replayCustomer && !isSalesDemoMode() && (query.get("multiplayer") === "1" || multiplayerRoomCodeParam || multiplayerJoinMode);
+  }
+
+  function shouldShowMultiplayerSetupBeforeReveal(session) {
+    if (!session || session.completed || state.showGame || !isMultiplayerSetupMode()) {
+      return false;
+    }
+    if (!state.multiplayerRoom) {
+      return true;
+    }
+    return state.multiplayerRoom.liveStatus !== "active" && state.multiplayerRoom.liveStatus !== "review";
+  }
+
   function shouldRedrawMultiplayerRefresh() {
     const session = getSession();
     if (session?.completed || state.multiplayerRoom?.liveStatus === "completed") {
@@ -1727,7 +1741,7 @@
   function renderSetup() {
     const profile = getProfile();
     const session = getSession();
-    const multiplayerFocusMode = query.get("multiplayer") === "1" || multiplayerRoomCodeParam || multiplayerJoinMode;
+    const multiplayerFocusMode = isMultiplayerSetupMode();
     const openingCustomers = getDisplayedOpeningCustomers();
     const safeOpeningCustomers = Array.isArray(openingCustomers) ? openingCustomers : [];
     const startHref = replayCustomer
@@ -3083,6 +3097,16 @@
           elements.game.classList.add("hidden");
           elements.result.classList.remove("hidden");
           renderResultPanel(session);
+          return;
+        }
+
+        if (shouldShowMultiplayerSetupBeforeReveal(session)) {
+          updateSalesDemoCta(salesDemoMode, "See your own restaurant brought to life.");
+          elements.start.classList.remove("hidden");
+          elements.game.classList.add("hidden");
+          elements.result.classList.add("hidden");
+          state.showGame = false;
+          renderSetup();
           return;
         }
 
