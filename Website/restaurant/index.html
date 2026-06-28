@@ -80,7 +80,7 @@
         }
       })();
     </script>
-    <link rel="stylesheet" href="../shared/restaurant.css?v=restaurant-hero-size-v1" />
+    <link rel="stylesheet" href="../shared/restaurant.css?v=restaurant-hero-layout-v1" />
     <script defer src="../shared/app-core.js?v=multiplayer-rooms-v1"></script>
     <script defer src="hub.js?v=restaurant-redesign-v1"></script>
   </head>
@@ -98,21 +98,22 @@
       </header>
 
       <section class="challenge-splash" aria-labelledby="restaurant-challenge-title">
-        <a class="challenge-hero-link" id="splash-play-button" href="/americana/" aria-label="Start Restaurant Challenge Trivia">
-          <img
-            class="challenge-hero-image"
-            src="/assets/restaurant-challenge/restaurant-challenge-trivia-hero.jpg"
-            alt="Restaurant Challenge Trivia, 3-minute solo or live games with friends"
-          />
-        </a>
-
-        <div class="challenge-play-panel" id="splash-chooser">
+        <div class="challenge-hero-row">
+          <a class="challenge-hero-link" id="splash-play-button" href="/americana/" aria-label="Start Restaurant Challenge Trivia">
+            <img
+              class="challenge-hero-image"
+              src="/assets/restaurant-challenge/restaurant-challenge-trivia-hero.jpg"
+              alt="Restaurant Challenge Trivia, 3-minute solo or live games with friends"
+            />
+          </a>
           <div class="challenge-play-heading">
             <p class="kicker">Ready to Play?</p>
             <h1 class="page-title challenge-splash-title" id="restaurant-challenge-title">Restaurant Challenge Trivia</h1>
             <p class="challenge-splash-lead">No two games are the same. With thousands of questions and live multiplayer, there's always another challenge waiting.</p>
           </div>
+        </div>
 
+        <div class="challenge-play-panel" id="splash-chooser">
           <div class="challenge-play-controls">
             <label class="field challenge-splash-field" for="splash-restaurant-select">
               <span class="field-label">Choose a Restaurant</span>
