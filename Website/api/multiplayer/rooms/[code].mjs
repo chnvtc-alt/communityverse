@@ -54,7 +54,7 @@ export async function POST(request) {
       return jsonResponse({ ok: true, ...(await startLiveRoom(code)) });
     }
     if (body.action === "advance-live") {
-      return jsonResponse({ ok: true, ...(await advanceLiveRoom(code)) });
+      return jsonResponse({ ok: true, ...(await advanceLiveRoom(code, body)) });
     }
     if (body.action === "join") {
       return jsonResponse({ ok: true, ...(await joinRoom(code, body)) }, 201);

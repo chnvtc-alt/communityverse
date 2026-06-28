@@ -374,7 +374,7 @@ export async function startLiveRoom(code) {
   };
 }
 
-export async function advanceLiveRoom(code) {
+export async function advanceLiveRoom(code, options = {}) {
   const state = await getRoomState(code);
   if (!state?.room) {
     throw new Error("Room not found.");
@@ -386,6 +386,15 @@ export async function advanceLiveRoom(code) {
     return state;
   }
   const currentIndex = Math.max(0, Number(state.room.currentQuestionIndex) || 0);
+  const expectedLiveStatus = String(options.expectedLiveStatus || "").trim();
+  const expectedQuestionIndex = Number(options.expectedQuestionIndex);
+  if (
+    expectedLiveStatus &&
+    (expectedLiveStatus !== state.room.liveStatus ||
+      (Number.isFinite(expectedQuestionIndex) && expectedQuestionIndex !== currentIndex))
+  ) {
+    return state;
+  }
   if (state.room.liveStatus === "active") {
     const reviewStartedAt = nowIso();
     const room = await saveRoom({
@@ -403,6 +412,10 @@ export async function advanceLiveRoom(code) {
       },
       players: await fetchPlayersForRoom(room.id, room),
     };
+  }
+  const reviewEndsAt = Date.parse(state.room.reviewEndsAt || "");
+  if (reviewEndsAt && reviewEndsAt > Date.now()) {
+    return state;
   }
   const nextIndex = currentIndex + 1;
   const totalQuestions = normalizeQuestionIds(state.room.questionIds).length || 10;

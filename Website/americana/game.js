@@ -992,7 +992,11 @@
     try {
       const data = await requestApiJson(`/multiplayer/rooms/${encodeURIComponent(roomCode)}`, {
         method: "POST",
-        body: JSON.stringify({ action: "advance-live" }),
+        body: JSON.stringify({
+          action: "advance-live",
+          expectedLiveStatus: state.multiplayerRoom?.liveStatus || "",
+          expectedQuestionIndex: Number(state.multiplayerRoom?.currentQuestionIndex) || 0,
+        }),
       });
       state.multiplayerRoom = data.room || state.multiplayerRoom;
       state.multiplayerPlayers = Array.isArray(data.players) ? data.players : state.multiplayerPlayers;
