@@ -86,6 +86,12 @@
     return `/${restaurantSlug}/play/`;
   }
 
+  function goToFreshMultiplayerSetup() {
+    const nextUrl = new URL(restaurantPlayPath(), window.location.origin);
+    nextUrl.searchParams.set("multiplayer", "1");
+    window.location.href = nextUrl.toString();
+  }
+
   function getGameTitle() {
     if (isSalesDemoMode()) {
       return "The (YOUR RESTAURANT NAME HERE) Game";
@@ -2970,10 +2976,16 @@
       });
 
       document.getElementById("guest-continue-button").addEventListener("click", () => {
+        const replayingMultiplayer = Boolean(state.multiplayerRoom || multiplayerRoomCodeParam || multiplayerJoinMode || query.get("multiplayer") === "1");
         clearMultiplayerStateForFreshGame();
         core.clearActiveSession();
+        clearResultVisibleSessionId();
         state.feedback = null;
         state.isLocked = false;
+        if (replayingMultiplayer) {
+          goToFreshMultiplayerSetup();
+          return;
+        }
         renderAll();
         startGame();
       });
@@ -3092,12 +3104,17 @@
       });
     } else {
       document.getElementById("play-again-button").addEventListener("click", () => {
+        const replayingMultiplayer = Boolean(state.multiplayerRoom || multiplayerRoomCodeParam || multiplayerJoinMode || query.get("multiplayer") === "1");
         clearMultiplayerStateForFreshGame();
         core.clearActiveSession();
         clearResultVisibleSessionId();
         state.feedback = null;
         state.isLocked = false;
         state.showProfileForm = false;
+        if (replayingMultiplayer) {
+          goToFreshMultiplayerSetup();
+          return;
+        }
         void startGame();
       });
     }
