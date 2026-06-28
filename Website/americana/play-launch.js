@@ -1635,7 +1635,7 @@
           <div class="multiplayer-host-steps" aria-label="How to start the live round">
             <div class="multiplayer-host-step">
               <strong>1. Share the invite</strong>
-              <span>Send the link, or tell friends to enter room code ${escapeHtml(roomCode)}.</span>
+              <span>Send the link, or tell friends to press Join Friends' Game and enter room code ${escapeHtml(roomCode)}.</span>
             </div>
             <div class="multiplayer-host-step">
               <strong>2. Wait for everyone to join</strong>
