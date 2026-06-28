@@ -890,7 +890,7 @@
               ? `<a class="button button-muted" href="/restaurant/?hub=1">View My Restaurant</a>`
               : ""
           }
-          ${!salesDemoMode && !customerId ? `<a class="button button-muted" href="${escapeHtml(multiplayerHref)}">Play With Friends</a>` : ""}
+          ${!customerId ? `<a class="button button-muted" href="${escapeHtml(multiplayerHref)}">Play With Friends</a>` : ""}
           <button class="button button-muted" id="start-how-to-play-button" type="button">${escapeHtml(howToPlayText)}</button>
         </div>
         ${salesDemoMode ? `<p class="sales-demo-expectation">${escapeHtml(demoExpectationLine)}</p>` : ""}

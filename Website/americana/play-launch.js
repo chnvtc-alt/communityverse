@@ -891,7 +891,7 @@
   }
 
   function isMultiplayerSetupMode() {
-    return !replayCustomer && !isSalesDemoMode() && (query.get("multiplayer") === "1" || multiplayerRoomCodeParam || multiplayerJoinMode);
+    return !replayCustomer && (query.get("multiplayer") === "1" || multiplayerRoomCodeParam || multiplayerJoinMode);
   }
 
   function shouldShowMultiplayerSetupBeforeReveal(session) {
@@ -1525,7 +1525,7 @@
   }
 
   function renderMultiplayerCard() {
-    if (isSalesDemoMode() || replayCustomer) {
+    if (replayCustomer) {
       return "";
     }
     const room = state.multiplayerRoom;
@@ -1807,7 +1807,7 @@
       : isSalesDemoMode()
         ? "PLAY THE THREE MINUTE DEMO"
         : "START THE GAME";
-    if (multiplayerFocusMode && !replayCustomer && !isSalesDemoMode()) {
+    if (multiplayerFocusMode && !replayCustomer) {
       elements.start.innerHTML = `
         <div class="opening-start-shell">
           <div class="opening-start-heading">
@@ -1890,7 +1890,7 @@
                 `
               : ""
           }
-          ${!replayCustomer && !isSalesDemoMode() ? `<a class="button button-muted" href="${restaurantPlayPath()}?multiplayer=1">Play With Friends</a>` : ""}
+          ${!replayCustomer ? `<a class="button button-muted" href="${restaurantPlayPath()}?multiplayer=1">Play With Friends</a>` : ""}
           ${
             session && !session.completed && !state.showGame
               ? `
@@ -1974,6 +1974,7 @@
               ? `<a class="button button-muted" href="/restaurant/?hub=1">View My Virtual Restaurant</a>`
               : ""
           }
+          ${!isSalesDemoMode() ? "" : `<a class="button button-muted" href="${restaurantPlayPath()}?multiplayer=1">Play With Friends</a>`}
         </div>
         ${isSalesDemoMode() ? `<p class="sales-demo-expectation">${escapeHtml(demoExpectationLine)}</p>` : ""}
         ${renderMultiplayerCard()}
