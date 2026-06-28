@@ -751,6 +751,10 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   line-height: 1.5;
 }
 
+.challenge-faq-contact {
+  margin-top: 14px;
+}
+
 .how-to-play-open,
 .contact-open {
   overflow: hidden;
