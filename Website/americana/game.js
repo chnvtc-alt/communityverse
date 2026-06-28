@@ -1600,13 +1600,40 @@
     }
 
     if (room && state.multiplayerPlayer) {
+      const liveWaitingHostInstructions = liveWaiting && isHost
+        ? `
+          <div class="multiplayer-host-steps" aria-label="How to start the live round">
+            <div class="multiplayer-host-step">
+              <strong>1. Share the invite</strong>
+              <span>Send the link, or tell friends to enter room code ${escapeHtml(roomCode)}.</span>
+            </div>
+            <div class="multiplayer-host-step">
+              <strong>2. Wait for everyone to join</strong>
+              <span>Players will show in the list below. You can start with any number of players.</span>
+            </div>
+            <div class="multiplayer-host-step">
+              <strong>3. Start the live round</strong>
+              <span>Press Start Live Round when your group is ready. Everyone will get the same questions at the same time.</span>
+            </div>
+          </div>
+        `
+        : "";
       return `
-        <div class="hero-card result-followup-card" style="margin-top: 16px; padding: 16px;">
-          <p class="kicker">Play With Friends</p>
-          <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">Room ${escapeHtml(roomCode)}</h3>
-          <p class="copy" style="margin: 0 0 12px;">${escapeHtml(roomStatus)}</p>
+        <div class="hero-card result-followup-card multiplayer-room-card" style="margin-top: 16px; padding: 16px;">
+          <div class="multiplayer-room-heading">
+            <div>
+              <p class="kicker">Play With Friends</p>
+              <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${liveWaiting && isHost ? "Your live room is ready." : `Room ${escapeHtml(roomCode)}`}</h3>
+              <p class="copy" style="margin: 0 0 12px;">${escapeHtml(roomStatus)}. Share this room with friends, then start when everyone is ready.</p>
+            </div>
+            <div class="multiplayer-room-code-box" aria-label="Room code">
+              <span>Room Code</span>
+              <strong>${escapeHtml(roomCode)}</strong>
+            </div>
+          </div>
           <p class="helper" style="margin: 0 0 12px;">Room codes are not case-sensitive. Friends can type a space instead of the dash.</p>
           ${liveStatusMarkup}
+          ${liveWaitingHostInstructions}
           <div class="input-grid">
             <div class="field">
               <label class="field-label" for="multiplayer-share-link">Share link</label>

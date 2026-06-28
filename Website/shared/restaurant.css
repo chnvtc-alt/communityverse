@@ -2182,6 +2182,69 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   margin: 0;
 }
 
+.multiplayer-room-card {
+  display: grid;
+  gap: 14px;
+}
+
+.multiplayer-room-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: start;
+}
+
+.multiplayer-room-code-box {
+  display: grid;
+  gap: 4px;
+  min-width: 210px;
+  padding: 12px 14px;
+  border: 1px solid rgba(213, 138, 43, 0.28);
+  border-radius: 14px;
+  background: rgba(213, 138, 43, 0.1);
+}
+
+.multiplayer-room-code-box span {
+  color: var(--green);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.multiplayer-room-code-box strong {
+  color: var(--ink);
+  font-size: 1.18rem;
+  overflow-wrap: anywhere;
+}
+
+.multiplayer-host-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 2px;
+}
+
+.multiplayer-host-step {
+  display: grid;
+  gap: 5px;
+  padding: 12px;
+  border: 1px solid rgba(93, 116, 105, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 250, 241, 0.72);
+}
+
+.multiplayer-host-step strong {
+  color: var(--ink);
+}
+
+.multiplayer-host-step span {
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+  font-size: 0.93rem;
+  line-height: 1.4;
+}
+
 .multiplayer-leaderboard-list {
   display: grid;
   gap: 8px;
@@ -4128,6 +4191,15 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
   .challenge-splash-actions .button {
     width: 100%;
+  }
+
+  .multiplayer-room-heading,
+  .multiplayer-host-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .multiplayer-room-code-box {
+    min-width: 0;
   }
 
   .how-to-play-modal {
