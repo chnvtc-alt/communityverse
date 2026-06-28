@@ -2966,6 +2966,16 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   max-width: 44rem;
 }
 
+@media (min-width: 961px) {
+  .opening-start-heading {
+    width: 100%;
+  }
+
+  .opening-title-copy {
+    max-width: none;
+  }
+}
+
 .opening-start-grid {
   display: grid;
   grid-template-columns: minmax(0, 2.22fr) minmax(330px, 382px);
