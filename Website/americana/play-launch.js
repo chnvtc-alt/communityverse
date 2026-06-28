@@ -1302,29 +1302,19 @@
       return "";
     }
 
+    if (reward.alreadyAwarded) {
+      return "";
+    }
+
     const statusMarkup = state.feedbackRewardMessage
       ? `<p class="helper feedback-reward-status" aria-live="polite">${escapeHtml(state.feedbackRewardMessage)}</p>`
-      : reward.alreadyAwarded
-        ? `<p class="helper feedback-reward-status">${escapeHtml(reward.customer.name)} is already in your collection.</p>`
-        : "";
+      : "";
     const errorMarkup = state.feedbackRewardError
       ? `<p class="error feedback-reward-error" aria-live="polite">${escapeHtml(state.feedbackRewardError)}</p>`
       : "";
     const surveyQuestions = (restaurant?.feedbackSurveyQuestions || []).filter((question) => question.active !== false);
     const feedbackSurveyIntro = "Create your own survey questions using ratings, Yes/No, multiple choice, 1-5 scale, or written responses. View your survey results anytime in your private dashboard.";
     const feedbackSubmitText = "Send Feedback & Claim Character";
-
-    if (reward.alreadyAwarded && !state.feedbackRewardMessage) {
-      return `
-        <div class="hero-card feedback-reward-card">
-          <div class="feedback-reward-copy">
-            <p class="feedback-reward-bonus-title">⭐ Bonus Character Available</p>
-            <h3 class="section-title">${escapeHtml(reward.customer.name)} is in your collection.</h3>
-            ${statusMarkup}
-          </div>
-        </div>
-      `;
-    }
 
     return `
       <div class="hero-card feedback-reward-card">
@@ -2685,14 +2675,16 @@
         : `You are ${core.formatCurrency(shortfall)} away from ${preview.next.label}. A few more unlocked characters could help you expand.`;
 
     return `
-      <div class="hero-card result-followup-card result-net-worth-prompt">
-        <p class="kicker">Grow Your Net Worth</p>
-        <h3 class="section-title">Your restaurant can grow from here.</h3>
-        <p class="copy">${escapeHtml(message)} Visit My Virtual Restaurant to expand or buy upgrades.</p>
-        <div class="button-row">
-          <a class="button button-hot" href="/restaurant/?hub=1#hero-panel">View My Virtual Restaurant</a>
+      <details class="result-restaurant-growth">
+        <summary class="button button-muted">Grow Your Restaurant</summary>
+        <div class="hero-card result-followup-card result-net-worth-prompt">
+          <h3 class="section-title">Your restaurant can grow from here.</h3>
+          <p class="copy">${escapeHtml(message)}</p>
+          <div class="button-row">
+            <a class="button button-hot" href="/restaurant/?hub=1#hero-panel">Open My Virtual Restaurant</a>
+          </div>
         </div>
-      </div>
+      </details>
     `;
   }
 
