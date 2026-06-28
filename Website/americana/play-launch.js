@@ -1559,7 +1559,7 @@
         <div class="hero-card result-followup-card" style="margin-top: 16px; padding: 16px;">
           <p class="kicker">Play With Friends</p>
           <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${targetRoomCode ? `Join room ${escapeHtml(targetRoomCode)}` : "Join friends' game"}</h3>
-          <p class="copy" style="margin: 0 0 12px;">Everyone plays the same character and same questions.</p>
+          <p class="copy" style="margin: 0 0 12px;">${isSalesDemoMode() ? "Everyone gets the same questions at the same time." : "Everyone plays the same character and same questions."}</p>
           <p class="helper" style="margin: 0 0 12px;">Room codes are not case-sensitive. A space works instead of the dash.</p>
           <form class="input-grid" id="multiplayer-join-form">
             ${
@@ -1606,7 +1606,7 @@
           ? core.getCharacterValuePerExtraCorrect(roomCustomer)
           : Math.max(0, (Number(roomCustomer.regularValue) || 0) - (Number(roomCustomer.occasionalValue) || 0))
         : 0;
-      const characterIntroMarkup = roomCustomer
+      const characterIntroMarkup = !isSalesDemoMode() && roomCustomer
         ? `
           <div class="multiplayer-character-intro">
             <img src="${escapeHtml(roomCustomer.image || "")}" alt="${escapeHtml(roomCustomer.name || "This round's character")}" />
@@ -1825,7 +1825,7 @@
           <div class="opening-start-heading">
             <p class="kicker" style="margin: 0 0 4px;">Play With Friends</p>
             <h2 class="opening-title">${escapeHtml(getGameTitle())}</h2>
-            <p class="copy opening-title-copy">Create or join a room, then everyone plays the same character and same questions.</p>
+            <p class="copy opening-title-copy">${isSalesDemoMode() ? "Create or join a room, then everyone gets the same questions at the same time." : "Create or join a room, then everyone plays the same character and same questions."}</p>
           </div>
           ${renderMultiplayerCard()}
           <div class="button-row opening-start-actions opening-start-actions-bottom">
@@ -2076,6 +2076,41 @@
       ["regular", "occasional", "favorite"].includes(collectionEntry?.status);
     const liveWaiting = isLiveRoundRoom() && state.multiplayerRoom?.liveStatus === "waiting";
     const liveActive = isLiveRoundRoom() && state.multiplayerRoom?.liveStatus === "active";
+    if (salesDemoMode) {
+      elements.start.innerHTML = `
+        <div class="customer-reveal-shell customer-reveal-shell-demo">
+          <div class="customer-reveal-copy">
+            <p class="kicker">Restaurant Demo Game</p>
+            <h2 class="opening-title">Ready to play the demo?</h2>
+            <p class="copy opening-title-copy">Answer 10 quick trivia questions and see how a restaurant-branded game can work for guests.</p>
+            <div class="button-row customer-reveal-actions">
+              ${
+                isLiveRoundRoom()
+                  ? `<button class="button button-hot" id="begin-questions-button" type="button" ${liveWaiting ? "disabled" : ""}>${liveWaiting ? "Waiting For Host" : liveActive ? "Join Live Question" : "View Live Results"}</button>`
+                  : `<button class="button button-hot" id="begin-questions-button" type="button">Begin Questions</button>`
+              }
+              <button class="button button-muted" id="reveal-how-to-play-button" type="button" data-how-to-play-button>${escapeHtml(howToPlayText)}</button>
+            </div>
+          </div>
+        </div>
+        ${state.multiplayerRoom ? renderMultiplayerCard() : ""}
+        ${howToPlayModalHtml(true)}
+      `;
+      bindHowToPlay();
+      bindMultiplayerCard();
+      const beginButton = document.getElementById("begin-questions-button");
+      if (beginButton) {
+        beginButton.addEventListener("click", () => {
+          if (isLiveRoundRoom() && state.multiplayerRoom?.liveStatus === "review") {
+            renderLiveReviewPanel(session);
+            return;
+          }
+          state.showGame = true;
+          renderAll();
+        });
+      }
+      return;
+    }
     const favoriteBonusMarkup =
       isFavoriteProgressReplay && collectionEntry.status !== "favorite"
         ? `
@@ -2494,12 +2529,16 @@
       : isCharacterUnlocked
         ? customerUnlockValue
         : 0;
-    const unlockStatusChip = isCharacterUnlocked
-      ? `<span class="chip">Unlocked</span>`
-      : `<span class="chip">Need ${Math.max(0, customerUnlockScore - session.score)} more</span>`;
-    const currentValueChip = isCharacterUnlocked
-      ? `<span class="chip">Current value ${core.formatCurrency(currentCharacterValue)}</span>`
-      : "";
+    const unlockStatusChip = isSalesDemoMode()
+      ? ""
+      : isCharacterUnlocked
+        ? `<span class="chip">Unlocked</span>`
+        : `<span class="chip">Need ${Math.max(0, customerUnlockScore - session.score)} more</span>`;
+    const currentValueChip = isSalesDemoMode()
+      ? ""
+      : isCharacterUnlocked
+        ? `<span class="chip">Current value ${core.formatCurrency(currentCharacterValue)}</span>`
+        : "";
     const customerInfoCardMarkup = isSalesDemoMode()
       ? ""
       : `
@@ -2764,6 +2803,36 @@
               ? "Character Unlocked"
               : "Character Not Unlocked";
     const customerValue = Math.max(0, Number(session.customerValue) || 0);
+    const resultAwardMarkup = salesDemoMode
+      ? `
+          <div class="result-banner result-award-card result-banner-demo">
+            <div class="result-celebration">
+              <p class="result-celebration-kicker">Restaurant Demo Game</p>
+              <h2 class="result-celebration-title">Demo Complete</h2>
+            </div>
+            <div class="result-customer-copy" style="justify-items: center; text-align: center;">
+              <p class="customer-bio">This is how a fast, restaurant-branded trivia game can work for guests.</p>
+              <a class="button button-muted result-collection-button" href="/get-your-own-game/">Get Your Own Game</a>
+            </div>
+            <p class="result-award-summary">Score ${session.score}/${session.questions.length}</p>
+          </div>
+        `
+      : `
+          <a class="result-banner result-award-card" href="/restaurant/?hub=1" aria-label="View your character collection">
+            <div class="result-celebration">
+              <p class="result-celebration-kicker">${escapeHtml(resultHeadline)} - ${escapeHtml(resultSubheadline)}</p>
+              <h2 class="result-celebration-title">${escapeHtml(session.customer.name)}</h2>
+            </div>
+            <div class="result-customer-spotlight">
+              <img class="result-customer-image" src="${session.customer.image}" alt="${escapeHtml(session.customer.name)}" />
+              <div class="result-customer-copy">
+                <p class="customer-bio">${escapeHtml(customerBioPreview.text)}</p>
+                <span class="button button-muted result-collection-button">View My Collection</span>
+              </div>
+            </div>
+            <p class="result-award-summary">Score ${session.score}/${session.questions.length} • Reward ${core.formatCurrency(customerValue)}</p>
+          </a>
+        `;
     const triviaLeaderboardMilestoneMarkup =
       isFourthGame && !isGuest
         ? `
@@ -2789,20 +2858,7 @@
             <img class="result-hero-image" src="${getHeroImage()}" alt="${escapeHtml(getHeroAlt())}" />
           </div>
 
-          <a class="result-banner result-award-card ${salesDemoMode ? "result-banner-demo" : ""}" href="/restaurant/?hub=1" aria-label="View your character collection">
-            <div class="result-celebration">
-              <p class="result-celebration-kicker">${escapeHtml(resultHeadline)} - ${escapeHtml(resultSubheadline)}</p>
-              <h2 class="result-celebration-title">${escapeHtml(session.customer.name)}</h2>
-            </div>
-            <div class="result-customer-spotlight">
-              <img class="result-customer-image" src="${session.customer.image}" alt="${escapeHtml(session.customer.name)}" />
-              <div class="result-customer-copy">
-                <p class="customer-bio">${escapeHtml(customerBioPreview.text)}</p>
-                <span class="button button-muted result-collection-button">View My Collection</span>
-              </div>
-            </div>
-            <p class="result-award-summary">Score ${session.score}/${session.questions.length} • Reward ${core.formatCurrency(customerValue)}</p>
-          </a>
+          ${resultAwardMarkup}
         </div>
 
         ${multiplayerWinnerMarkup}
@@ -2813,12 +2869,12 @@
           isGuest && !state.showProfileForm
             ? `
               <div class="hero-card result-followup-card result-followup-card-guest" style="margin-top: 0; padding: 16px;">
-                <p class="kicker" style="margin: 0 0 6px;">${isFourthGame ? "Trivia % Leaderboard" : "Save Your Character Collection"}</p>
-                <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${isFourthGame ? "Congratulations! You completed your 4th game." : demoCharacterUnlocked ? `You unlocked ${escapeHtml(session.customer.name)}.` : salesDemoMode ? "Start your character collection." : `You just unlocked ${escapeHtml(session.customer.name)}.`}</h3>
-                <p class="copy" style="margin: 0 0 12px;">${isFourthGame ? "Save your restaurant to view and keep your Trivia % leaderboard progress so far. No email required." : salesDemoMode ? "Save your collection and continue unlocking collectible characters from restaurants throughout your community." : "Save your collection to keep and view your existing characters, track your trivia progress, and compete on the leaderboards. No email address is required."}</p>
+                <p class="kicker" style="margin: 0 0 6px;">${isFourthGame ? "Trivia % Leaderboard" : salesDemoMode ? "Save Demo Progress" : "Save Your Character Collection"}</p>
+                <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${isFourthGame ? "Congratulations! You completed your 4th game." : salesDemoMode ? "Keep your demo score." : `You just unlocked ${escapeHtml(session.customer.name)}.`}</h3>
+                <p class="copy" style="margin: 0 0 12px;">${isFourthGame ? "Save your restaurant to view and keep your Trivia % leaderboard progress so far. No email required." : salesDemoMode ? "Save your demo progress if you want to see how profiles and leaderboards can work." : "Save your collection to keep and view your existing characters, track your trivia progress, and compete on the leaderboards. No email address is required."}</p>
                 <div class="button-row">
                   <button class="button button-hot result-save-progress-button" id="register-now-button" type="button">
-                    <span>${isFourthGame ? "Save My Restaurant" : salesDemoMode ? "Save My Collection" : "Save My Character Collection"}</span>
+                    <span>${isFourthGame ? "Save My Restaurant" : salesDemoMode ? "Save Demo Progress" : "Save My Character Collection"}</span>
                     <small>No email required</small>
                   </button>
                   <button class="button button-muted" id="guest-continue-button" type="button">Keep Playing as Guest</button>
@@ -2829,11 +2885,11 @@
               ? `
                 <div class="hero-card result-followup-card result-followup-card-form" style="margin-top: 0; padding: 16px;">
                   <p class="kicker" style="margin: 0 0 6px;">Save Collection</p>
-                  <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${demoCharacterUnlocked ? `${escapeHtml(session.customer.name)} Unlocked!` : salesDemoMode ? "Start your character collection." : `${escapeHtml(session.customer.name)} Is In Your Collection!`}</h3>
-                  <p class="copy result-save-mobile-note" style="margin: 0 0 14px;">${demoCharacterUnlocked ? `This is the first character in your collection. Save your progress to keep this character and unlock dozens more from restaurants throughout your community.` : "Save now to keep your characters, trivia record, and leaderboard progress."}</p>
-                  <p class="copy" style="margin: 0 0 8px;">Save your collection to:</p>
+                  <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${salesDemoMode ? "Save your demo progress." : `${escapeHtml(session.customer.name)} Is In Your Collection!`}</h3>
+                  <p class="copy result-save-mobile-note" style="margin: 0 0 14px;">${salesDemoMode ? "Save now to keep your demo score and leaderboard progress." : "Save now to keep your characters, trivia record, and leaderboard progress."}</p>
+                  <p class="copy" style="margin: 0 0 8px;">${salesDemoMode ? "Save your progress to:" : "Save your collection to:"}</p>
                   <ul class="copy" style="margin: 0 0 16px; padding-left: 20px; line-height: 1.45;">
-                    <li>${salesDemoMode ? "Track characters you unlock" : "Keep all characters you unlock"}</li>
+                    <li>${salesDemoMode ? "Track your demo score" : "Keep all characters you unlock"}</li>
                     <li>Track your trivia record</li>
                     <li>Appear on the leaderboards</li>
                     <li>Grow a virtual restaurant if you want</li>
@@ -2873,7 +2929,7 @@
               : `
                 <div class="button-row result-followup-actions">
                   <button class="button button-hot" id="play-again-button" type="button">Play Again</button>
-                  <a class="button button-muted" href="/restaurant/?hub=1${salesDemoMode ? "&demo=1#leaderboard-panel" : ""}">${salesDemoMode ? "Character Collection / Leaderboard" : "View My Virtual Restaurant"}</a>
+                  <a class="button button-muted" href="${salesDemoMode ? "/get-your-own-game/" : "/restaurant/?hub=1"}">${salesDemoMode ? "Get Your Own Game" : "View My Virtual Restaurant"}</a>
                   <button class="button button-muted" id="result-how-to-play-button" type="button" data-how-to-play-button>${salesDemoMode ? "See the Benefits" : "How to Play"}</button>
                   ${!salesDemoMode ? netWorthPromptMarkup : ""}
                 </div>
@@ -3070,7 +3126,7 @@
         }
 
         if (session && !state.showGame) {
-          updateSalesDemoCta(salesDemoMode, "Imagine this character featuring your restaurant.");
+          updateSalesDemoCta(salesDemoMode, "Imagine this game featuring your restaurant.");
           elements.start.classList.remove("hidden");
           elements.game.classList.add("hidden");
           elements.result.classList.add("hidden");
