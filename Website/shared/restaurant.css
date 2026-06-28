@@ -566,25 +566,80 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   accent-color: var(--gold);
 }
 
+.challenge-action-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: start;
+}
+
 .challenge-mode-panel {
   display: grid;
-  gap: 10px;
+  gap: 12px;
+  min-width: 0;
   padding-top: 2px;
 }
 
 .challenge-friends-panel {
-  max-width: 760px;
+  max-width: none;
+}
+
+.challenge-friends-step {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid rgba(93, 116, 105, 0.14);
+  border-radius: 16px;
+  background: rgba(255, 250, 241, 0.74);
+}
+
+.challenge-join-step {
+  align-items: start;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
+}
+
+.challenge-friends-step h2,
+.challenge-friends-step p {
+  margin: 0;
+}
+
+.challenge-friends-step h2 {
+  color: var(--ink);
+  font-size: 1.12rem;
+}
+
+.challenge-friends-step p {
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+  line-height: 1.45;
+}
+
+.challenge-friends-step h2 + p {
+  margin-top: 5px;
+}
+
+.challenge-step-label {
+  margin-bottom: 5px !important;
+  color: var(--green) !important;
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .challenge-friends-panel .input-grid {
-  margin-top: 4px;
+  width: 100%;
+  min-width: 0;
+  margin-top: 0;
 }
 
 .challenge-splash-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  justify-content: flex-start;
+  justify-content: flex-end;
 }
 
 .challenge-splash-primary {
@@ -4015,16 +4070,23 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     border-radius: 16px;
   }
 
-  .challenge-splash-actions {
-    margin-top: 2px;
-    display: grid;
-    grid-template-columns: 1fr;
-  }
-
   .challenge-play-controls,
   .challenge-info-grid,
   .challenge-link-grid {
     grid-template-columns: 1fr;
+  }
+
+  .challenge-action-row,
+  .challenge-friends-step {
+    grid-template-columns: 1fr;
+  }
+
+  .challenge-action-row {
+    gap: 12px;
+  }
+
+  .challenge-friends-step {
+    padding: 14px;
   }
 
   .challenge-splash-field .select,
@@ -4049,16 +4111,15 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     min-height: 0;
   }
 
-  .challenge-friends-panel {
-    max-width: none;
-  }
-
   .challenge-info-item {
     padding: 14px;
   }
 
   .challenge-splash-actions {
+    display: grid;
+    grid-template-columns: 1fr;
     gap: 10px;
+    justify-content: stretch;
   }
 
   .challenge-splash-actions .button {

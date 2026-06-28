@@ -130,9 +130,9 @@
         }
       })();
     </script>
-    <link rel="stylesheet" href="../shared/restaurant.css?v=restaurant-seo-v1" />
+    <link rel="stylesheet" href="../shared/restaurant.css?v=restaurant-friends-layout-v1" />
     <script defer src="../shared/app-core.js?v=multiplayer-rooms-v1"></script>
-    <script defer src="hub.js?v=restaurant-redesign-v1"></script>
+    <script defer src="hub.js?v=restaurant-friends-layout-v1"></script>
   </head>
   <body data-page="hub">
     <main class="app-shell">
@@ -187,31 +187,45 @@
             </fieldset>
           </div>
 
-          <div class="challenge-mode-panel" id="challenge-solo-panel">
-            <a class="button button-primary challenge-splash-primary" id="splash-start-playing-button" href="/americana/">Start Playing</a>
-          </div>
-
-          <div class="challenge-mode-panel challenge-friends-panel hidden" id="challenge-friends-panel">
-            <div class="button-row">
-              <a class="button button-primary challenge-splash-primary" id="splash-create-room-button" href="/americana/play/?multiplayer=1">Create New Game</a>
+          <div class="challenge-action-row">
+            <div class="challenge-mode-panel" id="challenge-solo-panel">
+              <a class="button button-primary challenge-splash-primary" id="splash-start-playing-button" href="/americana/">Start Game</a>
             </div>
-            <p class="helper">Create a room to get a share link and room code.</p>
-            <form class="input-grid" id="hub-join-room-form">
-              <div class="field">
-                <label class="field-label" for="hub-join-room-code">Enter Room Code or Invite Link</label>
-                <input class="input" id="hub-join-room-code" name="roomCode" maxlength="240" placeholder="Pepper Meadow or invite link" autocomplete="off" />
-              </div>
-              <div class="button-row">
-                <button class="button button-muted" type="submit">Join Game</button>
-              </div>
-              <p class="helper" id="hub-join-room-message" aria-live="polite"></p>
-              <p class="error hidden" id="hub-join-room-error" aria-live="polite"></p>
-            </form>
-          </div>
 
-          <div class="challenge-splash-actions">
-            <a class="button button-muted challenge-splash-secondary" id="splash-leaderboard-button" href="/restaurant/?hub=1#leaderboard-panel">Leaderboards</a>
-            <button class="button button-muted challenge-splash-secondary" id="splash-how-to-play-button" type="button" data-how-to-play-button>How to Play</button>
+            <div class="challenge-mode-panel challenge-friends-panel hidden" id="challenge-friends-panel">
+              <section class="challenge-friends-step" aria-labelledby="challenge-host-title">
+                <div>
+                  <p class="challenge-step-label">Hosting friends?</p>
+                  <h2 id="challenge-host-title">Create a room and share the code.</h2>
+                  <p>Start a live trivia room for this restaurant. You will get a room code and invite link to send to friends.</p>
+                </div>
+                <a class="button button-primary challenge-splash-primary" id="splash-create-room-button" href="/americana/play/?multiplayer=1">Create New Game</a>
+              </section>
+
+              <section class="challenge-friends-step challenge-join-step" aria-labelledby="challenge-join-title">
+                <div>
+                  <p class="challenge-step-label">Joining someone?</p>
+                  <h2 id="challenge-join-title">Enter the room code or paste the invite link.</h2>
+                  <p>Room codes are not case-sensitive. You can type a space instead of the dash, like Pepper Meadow.</p>
+                </div>
+                <form class="input-grid" id="hub-join-room-form">
+                  <div class="field">
+                    <label class="field-label" for="hub-join-room-code">Room Code or Invite Link</label>
+                    <input class="input" id="hub-join-room-code" name="roomCode" maxlength="240" placeholder="Pepper Meadow or invite link" autocomplete="off" />
+                  </div>
+                  <div class="button-row">
+                    <button class="button button-muted" type="submit">Join Game</button>
+                  </div>
+                  <p class="helper" id="hub-join-room-message" aria-live="polite"></p>
+                  <p class="error hidden" id="hub-join-room-error" aria-live="polite"></p>
+                </form>
+              </section>
+            </div>
+
+            <div class="challenge-splash-actions">
+              <a class="button button-muted challenge-splash-secondary" id="splash-leaderboard-button" href="/restaurant/?hub=1#leaderboard-panel">Leaderboards</a>
+              <button class="button button-muted challenge-splash-secondary" id="splash-how-to-play-button" type="button" data-how-to-play-button>How to Play</button>
+            </div>
           </div>
         </div>
       </section>

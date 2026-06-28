@@ -290,7 +290,7 @@
       elements.splashStartPlayingButton.setAttribute("aria-disabled", selectedRestaurant?.available ? "false" : "true");
       elements.splashStartPlayingButton.classList.toggle("is-disabled", !selectedRestaurant?.available);
       elements.splashStartPlayingButton.href = soloHref;
-      elements.splashStartPlayingButton.textContent = selectedRestaurant?.available ? "Start Playing" : "Coming Soon";
+      elements.splashStartPlayingButton.textContent = selectedRestaurant?.available ? "Start Game" : "Coming Soon";
     }
     if (elements.splashCreateRoomButton) {
       elements.splashCreateRoomButton.setAttribute("aria-disabled", selectedRestaurant?.available ? "false" : "true");
