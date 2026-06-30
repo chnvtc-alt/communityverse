@@ -1580,7 +1580,7 @@
         <div class="hero-card result-followup-card" style="margin-top: 16px; padding: 16px;">
           <p class="kicker">Play With Friends</p>
           <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${targetRoomCode ? `Join room ${escapeHtml(targetRoomCode)}` : "Join friends' game"}</h3>
-          <p class="copy" style="margin: 0 0 12px;">${isSalesDemoMode() ? "Everyone gets the same questions at the same time." : "Everyone plays the same character and same questions."}</p>
+          <p class="copy" style="margin: 0 0 12px;">Everyone gets the same questions at the same time.</p>
           <p class="helper" style="margin: 0 0 12px;">Room codes are not case-sensitive. A space works instead of the dash.</p>
           <form class="input-grid" id="multiplayer-join-form">
             ${
@@ -1610,36 +1610,6 @@
     }
 
     if (room && state.multiplayerPlayer) {
-      const roomCustomer = activeSession?.customer || (room.customerId ? core.getCustomerById(room.customerId) : null);
-      const roomCustomerThresholds = roomCustomer ? core.getCustomerWinThresholds(roomCustomer) : null;
-      const roomCustomerUnlockScore = roomCustomer
-        ? core.getCustomerUnlockScore
-          ? core.getCustomerUnlockScore(roomCustomer)
-          : roomCustomerThresholds?.occasional
-        : 0;
-      const roomCustomerUnlockValue = roomCustomer
-        ? core.getCharacterScoreValue
-          ? core.getCharacterScoreValue(roomCustomer, roomCustomerUnlockScore)
-          : roomCustomer?.occasionalValue
-        : 0;
-      const roomCustomerValuePerExtraCorrect = roomCustomer
-        ? core.getCharacterValuePerExtraCorrect
-          ? core.getCharacterValuePerExtraCorrect(roomCustomer)
-          : Math.max(0, (Number(roomCustomer.regularValue) || 0) - (Number(roomCustomer.occasionalValue) || 0))
-        : 0;
-      const characterIntroMarkup = !isSalesDemoMode() && roomCustomer
-        ? `
-          <div class="multiplayer-character-intro">
-            <img src="${escapeHtml(roomCustomer.image || "")}" alt="${escapeHtml(roomCustomer.name || "This round's character")}" />
-            <div>
-              <p class="kicker">This Round's Character</p>
-              <h4>${escapeHtml(roomCustomer.name || "Mystery Character")}</h4>
-              <p class="multiplayer-character-goal">Get <strong>${roomCustomerUnlockScore}</strong> correct answers to unlock ${escapeHtml(roomCustomer.name || "this character")}. Unlocking adds <strong>${core.formatCurrency(roomCustomerUnlockValue)}</strong> in virtual cash, plus <strong>${core.formatCurrency(roomCustomerValuePerExtraCorrect)}</strong> for each extra correct answer.</p>
-              <p>Along with trivia, players can unlock collectible characters and virtual cash. Those rewards can be used later in the optional restaurant-building part of the game.</p>
-            </div>
-          </div>
-        `
-        : "";
       const liveWaitingHostInstructions = liveWaiting && isHost
         ? `
           <div class="multiplayer-host-steps" aria-label="How to start the live round">
@@ -1673,7 +1643,6 @@
           </div>
           <p class="helper" style="margin: 0 0 12px;">Room codes are not case-sensitive. Friends can type a space instead of the dash.</p>
           ${liveStatusMarkup}
-          ${characterIntroMarkup}
           ${liveWaitingHostInstructions}
           <div class="input-grid">
             <div class="field">
@@ -1698,7 +1667,7 @@
       <div class="hero-card result-followup-card" style="margin-top: 16px; padding: 16px;">
         <p class="kicker">Play With Friends</p>
         <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">Create or join a Live Round.</h3>
-        <p class="copy" style="margin: 0 0 12px;">Friends join by code or link, then everyone gets each question together.</p>
+        <p class="copy" style="margin: 0 0 12px;">Friends join by code or link, then everyone gets the same questions at the same time.</p>
         ${errorMarkup}
         ${messageMarkup}
         <div class="button-row">
@@ -1850,7 +1819,7 @@
           <div class="opening-start-heading">
             <p class="kicker" style="margin: 0 0 4px;">Play With Friends</p>
             <h2 class="opening-title">${escapeHtml(getGameTitle())}</h2>
-            <p class="copy opening-title-copy">${isSalesDemoMode() ? "Create or join a room, then everyone gets the same questions at the same time." : "Create or join a room, then everyone plays the same character and same questions."}</p>
+            <p class="copy opening-title-copy">Create or join a room, then everyone gets the same questions at the same time.</p>
           </div>
           ${renderMultiplayerCard()}
           <div class="button-row opening-start-actions opening-start-actions-bottom">
