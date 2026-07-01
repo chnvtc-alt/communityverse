@@ -1447,14 +1447,10 @@
       profile && hasSavedProgress
         ? `
           <div class="hero-profile-meta ${compactMobile ? "hero-profile-meta-compact" : ""}">
-            <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
             <span class="chip hero-stat-chip">🏦 Total Score ${core.formatCurrency(totalScore)}</span>
             <span class="chip hero-stat-chip">💵 Spendable ${core.formatCurrency(cashOnHand)}</span>
             <span class="chip hero-stat-chip">👥 Characters ${collectedCustomers}</span>
           </div>
-          <p class="hero-profile-rating-note hero-profile-rating-note-full">Rating based on trivia accuracy.</p>
-          <p class="hero-profile-rating-note hero-profile-rating-note-full">Game points have no money value.</p>
-          <p class="hero-profile-rating-note hero-profile-rating-note-compact">Game points have no money value.</p>
           ${renderExpansionImageMarkup(profile)}
           ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
           ${renderExpansionPreviewMarkup(profile, safeSummary.stats)}
@@ -1492,9 +1488,6 @@
                           <span class="hero-profile-subline-sep">·</span>
                           <span>${safeSummary.stats.gamesPlayed} plays</span>
                         </p>
-                        <p class="hero-profile-rating-note hero-profile-rating-note-full">Rating based on trivia accuracy.</p>
-                        <p class="hero-profile-rating-note hero-profile-rating-note-full">Game points have no money value.</p>
-                        <p class="hero-profile-rating-note hero-profile-rating-note-compact">Game points have no money value.</p>
                       </div>
                         <div class="hero-profile-actions hero-profile-actions-top">
                           ${!emailConnected ? `<button class="button button-primary button-sm" type="button" data-show-connect-email>Save With Email</button>` : ""}
@@ -1504,7 +1497,6 @@
                     ${!state.profileEditMode && !emailConnected ? renderConnectInfoMarkup(profile) : ``}
                     ${renderExpansionImageMarkup(profile)}
                     <div class="hero-profile-meta hero-profile-meta-compact">
-                      <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
                       <span class="chip hero-stat-chip">🏦 Total Score ${core.formatCurrency(totalScore)}</span>
                       <span class="chip hero-stat-chip">💵 Spendable ${core.formatCurrency(cashOnHand)}</span>
                       <span class="chip hero-stat-chip">👥 Characters ${collectedCustomers}</span>
@@ -1552,9 +1544,6 @@
                         <span class="hero-profile-subline-sep">·</span>
                         <span>${safeSummary.stats.gamesPlayed} plays</span>
                       </p>
-                      <p class="hero-profile-rating-note hero-profile-rating-note-full">Rating based on trivia accuracy.</p>
-                      <p class="hero-profile-rating-note hero-profile-rating-note-full">Game points have no money value.</p>
-                      <p class="hero-profile-rating-note hero-profile-rating-note-compact">Game points have no money value.</p>
                     </div>
                     <div class="hero-profile-actions hero-profile-actions-top">
                       ${!emailConnected ? `<button class="button button-primary button-sm" type="button" data-show-connect-email>Save With Email</button>` : ""}
@@ -1564,7 +1553,6 @@
                   ${!state.profileEditMode && !emailConnected ? renderConnectInfoMarkup(profile) : ``}
                   ${renderExpansionImageMarkup(profile)}
                   <div class="hero-profile-meta">
-                    <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
                     <span class="chip hero-stat-chip">🏦 Total Score ${core.formatCurrency(totalScore)}</span>
                     <span class="chip hero-stat-chip">💵 Spendable ${core.formatCurrency(cashOnHand)}</span>
                     <span class="chip hero-stat-chip">👥 Characters ${collectedCustomers}</span>
