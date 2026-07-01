@@ -1023,7 +1023,6 @@
       { label: "Restaurant Type", detail: breakdown.expansionLabel || "Food Truck", value: breakdown.expansionValue },
       { label: "Characters", detail: characterDetail, value: breakdown.loyaltyValue },
       { label: "Spendable Points *", value: cashOnHand },
-      { label: "Recent reward bonus", detail: `${Math.round((Number(breakdown.recentPerformanceRate) || 0) * 100)}% of recent rewards`, value: breakdown.recentPerformanceValue },
       { label: "Rating bonus", detail: "Trivia accuracy", value: breakdown.ratingValue },
       { label: "Upgrades", value: breakdown.upgradeValue },
     ];

@@ -53,7 +53,7 @@ const EXPANSION_LEVELS = [
 
 const DEFAULT_EXPANSION_LEVEL = EXPANSION_LEVELS[0].id;
 const RECENT_PERFORMANCE_DAYS = 30;
-const RECENT_PERFORMANCE_VALUE_RATE = 0.25;
+const RECENT_PERFORMANCE_VALUE_RATE = 0;
 
 function normalizeRestaurantSlug(value) {
   return String(value || "")
