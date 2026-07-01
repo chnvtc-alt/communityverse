@@ -428,7 +428,7 @@
               <h3>STEP 2: UNLOCK CHARACTERS</h3>
               <p>Before each game begins, you will see the character you are playing for.</p>
               <p>Reach the unlock score to add that character to your collection.</p>
-              <p>Every extra correct answer after that increases the character's score.</p>
+              <p>Every extra correct answer after that increases the character reward.</p>
               <p>Characters increase your collection, points, and future restaurant score.</p>
             </section>
             <section class="how-to-play-topic">
@@ -464,7 +464,7 @@
             </section>
             <section class="how-to-play-topic">
               <h3>VIRTUAL GAME POINTS</h3>
-              <p>All points, character scores, restaurant scores, and Total Score figures are virtual game values used for gameplay and leaderboards.</p>
+              <p>All points, character rewards, restaurant scores, and Total Score figures are virtual game values used for gameplay and leaderboards.</p>
               <p>They have no real money value.</p>
             </section>
             <section class="how-to-play-topic">
@@ -1799,7 +1799,7 @@
       ? `${restaurantBasePath()}?play=1&customerId=${encodeURIComponent(replayCustomer.id)}`
       : `${restaurantBasePath()}?play=1`;
     const introCopy = replayCustomer
-      ? `This is a replay for ${replayCustomer.name}. If you score higher, you can increase this character's score. A lower score will not replace your best character score.`
+      ? `This is a replay for ${replayCustomer.name}. If you score higher, you can increase this character's reward. A lower score will not replace your best reward.`
       : getOpenerCopy();
     const introCopyMarkup = introCopy
       ? `<p class="copy opening-title-copy">${escapeHtml(introCopy)}</p>`
@@ -1838,7 +1838,7 @@
             replayCustomer
               ? `
                 <p class="helper opening-start-helper opening-title-helper">
-                  You are playing again for <strong>${escapeHtml(replayCustomer.name)}</strong>. Your best character score is protected.
+                  You are playing again for <strong>${escapeHtml(replayCustomer.name)}</strong>. Your best reward is protected.
                 </p>
               `
               : ""
@@ -2055,12 +2055,12 @@
         ? `
           <div class="favorite-progress-note">
             <p class="kicker">Current Best</p>
-            <p class="copy">${bestScore ? `Best score: <strong>${bestScore}/10</strong>. ` : ""}Best character score: <strong>${core.formatCurrency(bestValue)}</strong>.</p>
+            <p class="copy">${bestScore ? `Best score: <strong>${bestScore}/10</strong>. ` : ""}Best reward: <strong>${core.formatCurrency(bestValue)}</strong>.</p>
             ${
               bestScore > 0 && bestScore < 10
-                ? `<p class="helper">Each correct answer above ${bestScore}/10 can add ${core.formatCurrency(valuePerExtraCorrect)}. Score ${nextValueScore}/10 or better to increase this character's score.</p>`
+                ? `<p class="helper">Each correct answer above ${bestScore}/10 can add ${core.formatCurrency(valuePerExtraCorrect)}. Score ${nextValueScore}/10 or better to increase this reward.</p>`
                 : bestScore === 0
-                  ? `<p class="helper">Score higher than your previous best to increase this character's score.</p>`
+                  ? `<p class="helper">Score higher than your previous best to increase this reward.</p>`
                 : `<p class="helper">You have already reached the top score for this character.</p>`
             }
           </div>
@@ -2118,7 +2118,7 @@
           ? `
             <div class="favorite-progress-note favorite-progress-note-complete">
               <p class="kicker">Favorite Character</p>
-              <p class="copy">${escapeHtml(customer.name)} is already a Favorite Character. Their score is <strong>${core.formatCurrency(core.getFavoriteCustomerValue(customer))}</strong>.</p>
+              <p class="copy">${escapeHtml(customer.name)} is already a Favorite Character. Their reward is <strong>${core.formatCurrency(core.getFavoriteCustomerValue(customer))}</strong>.</p>
             </div>
           `
           : "";
@@ -2531,7 +2531,7 @@
     const currentValueChip = isSalesDemoMode()
       ? ""
       : isCharacterUnlocked
-        ? `<span class="chip">Current score ${core.formatCurrency(currentCharacterValue)}</span>`
+        ? `<span class="chip">Current reward ${core.formatCurrency(currentCharacterValue)}</span>`
         : "";
     const customerInfoCardMarkup = isSalesDemoMode()
       ? ""
@@ -2545,7 +2545,7 @@
               <div class="chip-row" style="margin-top: 10px;">
                 <span class="chip">${escapeHtml(session.customer.rarity || "Rare")} character</span>
                 <span class="chip">Unlock at ${customerUnlockScore}/10</span>
-                <span class="chip">Unlock score ${core.formatCurrency(customerUnlockValue)}</span>
+                <span class="chip">Unlock reward ${core.formatCurrency(customerUnlockValue)}</span>
                 <span class="chip">+${core.formatCurrency(customerValuePerExtraCorrect)} per extra correct</span>
               </div>
             </div>

@@ -1013,13 +1013,19 @@
       ? core.getRestaurantCashOnHand(profile, summary.stats)
       : Math.max(0, Number(summary.stats.estimatedSales) || 0);
     const netWorth = Math.max(0, Number(breakdown.total) || 0) + cashOnHand;
+    const unlockedCharacters =
+      (Number(summary.stats.regularCustomers) || 0) + (Number(summary.stats.occasionalCustomers) || 0);
+    const characterDetail =
+      Number(breakdown.loyaltyValue) === unlockedCharacters * 100
+        ? `${unlockedCharacters} x 100 pts`
+        : `${unlockedCharacters} characters`;
     const rows = [
       { label: "Restaurant Type", detail: breakdown.expansionLabel || "Food Truck", value: breakdown.expansionValue },
-      { label: "Character Score", value: breakdown.loyaltyValue },
-      { label: `Recent points bonus ${Math.round((Number(breakdown.recentPerformanceRate) || 0) * 100)}%`, value: breakdown.recentPerformanceValue },
-      { label: "Rating bonus", value: breakdown.ratingValue },
+      { label: "Characters", detail: characterDetail, value: breakdown.loyaltyValue },
+      { label: "Recent reward bonus", detail: `${Math.round((Number(breakdown.recentPerformanceRate) || 0) * 100)}% of recent rewards`, value: breakdown.recentPerformanceValue },
+      { label: "Rating bonus", detail: "Trivia accuracy", value: breakdown.ratingValue },
       { label: "Upgrades", value: breakdown.upgradeValue },
-      { label: "Spendable Points", value: cashOnHand },
+      { label: "Spendable Points", detail: "Rewards left after spending", value: cashOnHand },
     ];
 
     return `
@@ -1043,6 +1049,9 @@
             )
             .join("")}
         </div>
+        <p class="restaurant-value-breakdown-note">
+          Total Score adds the cards above. Characters usually count as 100 pts each in this score. Spendable Points are reward points earned from character wins, minus points used for expansions and upgrades.
+        </p>
       </div>
     `;
   }
@@ -2203,7 +2212,7 @@
       selectedIsFeedbackReward
         ? `<p class="customer-favorite-progress">Special feedback reward. Cannot be invited back.</p>`
         : selectedCustomer?.status === "favorite"
-        ? `<p class="customer-favorite-progress">Favorite Character. Score: ${core.formatCurrency(selectedValue)}</p>`
+        ? `<p class="customer-favorite-progress">Favorite Character. Reward: ${core.formatCurrency(selectedValue)}</p>`
         : canBuildFavoriteProgress(selectedCustomer)
           ? `<p class="customer-favorite-progress">Favorite Progress: ${selectedFavoriteVisits} / ${favoriteGoal} successful visits</p>`
           : "";
@@ -2241,7 +2250,7 @@
                 <div class="collection-selected-mobile-row">
                   <img class="customer-avatar collection-selected-avatar" src="${resolveCustomerImage(selectedCustomer)}" alt="${escapeHtml(selectedCustomer.customerName)}" onerror="this.onerror=null;this.src='../assets/restaurant-challenge/customers/customer-placeholder.svg';" />
                   <div class="collection-selected-mobile-actions">
-                    <span class="collection-selected-value">${core.formatCurrency(selectedValue)}</span>
+                    <span class="collection-selected-value">Reward ${core.formatCurrency(selectedValue)}</span>
                     <span class="chip collection-selected-rarity-chip">${selectedCustomer.rarity}</span>
                     ${selectedInviteBackHref ? `<a class="button button-primary" id="selected-invite-back-button" href="${selectedInviteBackHref}">Play Again</a>` : ""}
                   </div>
@@ -2269,7 +2278,7 @@
                 </div>
                 <div class="chip-row" style="margin-top: 10px;">
                   <span class="chip">${selectedCustomer.rarity}</span>
-                  <span class="chip">${core.formatCurrency(selectedValue)}</span>
+                  <span class="chip">Reward ${core.formatCurrency(selectedValue)}</span>
                 </div>
                 <div class="button-row" style="margin-top: 10px;">
                   ${selectedInviteBackHref ? `<a class="button button-primary" id="selected-invite-back-button" href="${selectedInviteBackHref}">Play Again</a>` : ""}
@@ -2298,7 +2307,7 @@
                       entryIsFeedbackReward
                         ? "Special feedback reward"
                         : entry.status === "favorite"
-                        ? `Score: ${core.formatCurrency(entryValue)}`
+                        ? `Reward: ${core.formatCurrency(entryValue)}`
                         : canBuildFavoriteProgress(entry)
                           ? `Favorite Progress: ${entryFavoriteVisits}/${favoriteGoal}`
                           : "";

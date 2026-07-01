@@ -1301,6 +1301,16 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   white-space: nowrap;
 }
 
+.restaurant-value-breakdown-note {
+  margin: 2px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid rgba(47, 111, 82, 0.1);
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
 .restaurant-net-worth-row {
   display: flex;
   align-items: center;
