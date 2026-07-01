@@ -1050,7 +1050,7 @@
         </div>
         <p class="restaurant-value-breakdown-note">
           * Spendable Points = Trivia Rewards from earning characters minus points spent on restaurant expansions and upgrades.<br />
-          ** Trivia Accuracy = a small bonus based on your trivia rating. A perfect 5.0 rating adds 2.5% to your score before this bonus.
+          ** Trivia Accuracy = bonus based on your correct-answer rate. 100% accuracy adds 2.5% to Restaurant Type + Characters + Upgrades, not Spendable Points.
         </p>
       </div>
     `;
