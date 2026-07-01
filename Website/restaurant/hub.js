@@ -32,12 +32,6 @@
       description: "Total collectible characters unlocked.",
     },
     {
-      value: "estimatedSales",
-      label: "Trivia Rewards",
-      rankLabel: "Trivia Rewards",
-      description: "Total Trivia Rewards earned from character wins, before spending on expansions and upgrades.",
-    },
-    {
       value: "gamesPlayed",
       label: "Games",
       rankLabel: "Games",
