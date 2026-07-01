@@ -1611,6 +1611,7 @@
     }
 
     if (room && state.multiplayerPlayer) {
+      const roomFinished = showGroupResults;
       const liveWaitingHostInstructions = liveWaiting && isHost
         ? `
           <div class="multiplayer-host-steps" aria-label="How to start the live round">
@@ -1629,22 +1630,15 @@
           </div>
         `
         : "";
-      return `
-        <div class="hero-card result-followup-card multiplayer-room-card" style="margin-top: 16px; padding: 16px;">
-          <div class="multiplayer-room-heading">
-            <div>
-              <p class="kicker">Play With Friends</p>
-              <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${liveWaiting && isHost ? "Your live room is ready." : `Room ${escapeHtml(roomCode)}`}</h3>
-              <p class="copy" style="margin: 0 0 12px;">${escapeHtml(roomStatus)}. Share this room with friends, then start when everyone is ready.</p>
-            </div>
-            <div class="multiplayer-room-code-box" aria-label="Room code">
-              <span>Room Code</span>
-              <strong>${escapeHtml(roomCode)}</strong>
-            </div>
+      const multiplayerActionsMarkup = roomFinished
+        ? `
+          <p class="helper" style="margin: 0 0 12px;">This room is finished. You can go back to the game screen or start a fresh multiplayer room.</p>
+          <div class="button-row">
+            <a class="button button-muted" href="${restaurantBasePath()}">Back to Game</a>
+            <a class="button button-hot" href="${restaurantPlayPath()}?multiplayer=1">Create New Multiplayer Game</a>
           </div>
-          <p class="helper" style="margin: 0 0 12px;">Room codes are not case-sensitive. Friends can type a space instead of the dash.</p>
-          ${liveStatusMarkup}
-          ${liveWaitingHostInstructions}
+        `
+        : `
           <div class="input-grid">
             <div class="field">
               <label class="field-label" for="multiplayer-share-link">Share link</label>
@@ -1656,6 +1650,24 @@
             <button class="button button-muted" id="copy-multiplayer-room-button" type="button">Copy Link</button>
             ${liveWaiting && isHost ? `<button class="button button-hot" id="start-live-round-button" type="button" ${state.multiplayerLoading ? "disabled" : ""}>Start Live Round</button>` : ""}
           </div>
+        `;
+      return `
+        <div class="hero-card result-followup-card multiplayer-room-card" style="margin-top: 16px; padding: 16px;">
+          <div class="multiplayer-room-heading">
+            <div>
+              <p class="kicker">Play With Friends</p>
+              <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${liveWaiting && isHost ? "Your live room is ready." : `Room ${escapeHtml(roomCode)}`}</h3>
+              <p class="copy" style="margin: 0 0 12px;">${roomFinished ? "Group results are ready." : `${escapeHtml(roomStatus)}. Share this room with friends, then start when everyone is ready.`}</p>
+            </div>
+            <div class="multiplayer-room-code-box" aria-label="Room code">
+              <span>Room Code</span>
+              <strong>${escapeHtml(roomCode)}</strong>
+            </div>
+          </div>
+          <p class="helper" style="margin: 0 0 12px;">Room codes are not case-sensitive. Friends can type a space instead of the dash.</p>
+          ${liveStatusMarkup}
+          ${liveWaitingHostInstructions}
+          ${multiplayerActionsMarkup}
           ${messageMarkup}
           <div id="multiplayer-leaderboard-slot">
             ${roomLeaderboardMarkup(showGroupResults, { includeWinner: includeWinnerInRoomCard })}
