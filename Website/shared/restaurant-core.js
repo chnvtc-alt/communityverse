@@ -2804,7 +2804,7 @@
     if (cashOnHand < cost) {
       return {
         ok: false,
-        message: `You need ${formatCurrency(cost - cashOnHand)} more available points for ${upgrade.label}.`,
+        message: `You need ${formatCurrency(cost - cashOnHand)} more Spendable Points for ${upgrade.label}.`,
         profile: safeProfile,
       };
     }
@@ -2866,7 +2866,7 @@
     if (cashOnHand < cost) {
       return {
         ok: false,
-        message: `You need ${formatCurrency(cost - cashOnHand)} more available points for this expansion.`,
+        message: `You need ${formatCurrency(cost - cashOnHand)} more Spendable Points for this expansion.`,
         profile: safeProfile,
       };
     }

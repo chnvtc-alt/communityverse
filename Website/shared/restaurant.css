@@ -1306,6 +1306,10 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   color: var(--green);
 }
 
+.restaurant-net-worth-row span {
+  min-width: 0;
+}
+
 .restaurant-net-worth-row strong {
   color: var(--ink);
   font-size: 1rem;

@@ -17,7 +17,7 @@
       value: "netWorth",
       label: "Total Score",
       rankLabel: "Total Score",
-      description: "Restaurant Score plus available points.",
+      description: "Restaurant Score plus Spendable Points.",
     },
     {
       value: "rating",
@@ -1040,7 +1040,7 @@
             .join("")}
         </div>
         <div class="restaurant-net-worth-row">
-          <span>Total Score</span>
+          <span>Total Score = Restaurant Score + Spendable Points</span>
           <strong>${core.formatCurrency(netWorth)}</strong>
         </div>
       </div>
@@ -1233,26 +1233,26 @@
     const nextUpgradeShortfall = nextUpgradeCost === null ? 0 : Math.max(0, nextUpgradeCost - cashOnHand);
     const cashNote = (() => {
       if (cashOnHand <= 0) {
-        return `Available points: ${core.formatCurrency(0)}. Unlock more characters to open expansions and upgrades.`;
+        return `Spendable Points: ${core.formatCurrency(0)}. Unlock more characters to open expansions and upgrades.`;
       }
       if (canBuyNext && affordableUpgrade) {
-        return `You have ${core.formatCurrency(cashOnHand)} available. You can expand or add an upgrade now.`;
+        return `You have ${core.formatCurrency(cashOnHand)} spendable. You can expand or add an upgrade now.`;
       }
       if (canBuyNext) {
-        return `You have ${core.formatCurrency(cashOnHand)} available. You can expand your virtual restaurant now.`;
+        return `You have ${core.formatCurrency(cashOnHand)} spendable. You can expand your virtual restaurant now.`;
       }
       if (affordableUpgrade) {
         return preview.next
-          ? `You have ${core.formatCurrency(cashOnHand)} available. You can add an upgrade now, or save ${core.formatCurrency(shortfall)} more to expand.`
-          : `You have ${core.formatCurrency(cashOnHand)} available. You can add an upgrade now.`;
+          ? `You have ${core.formatCurrency(cashOnHand)} spendable. You can add an upgrade now, or save ${core.formatCurrency(shortfall)} more to expand.`
+          : `You have ${core.formatCurrency(cashOnHand)} spendable. You can add an upgrade now.`;
       }
       if (preview.next) {
         const upgradeText = nextUpgradeShortfall > 0
           ? ` or ${core.formatCurrency(nextUpgradeShortfall)} more for your next upgrade`
           : "";
-        return `You have ${core.formatCurrency(cashOnHand)} available. Save ${core.formatCurrency(shortfall)} more to expand${upgradeText}.`;
+        return `You have ${core.formatCurrency(cashOnHand)} spendable. Save ${core.formatCurrency(shortfall)} more to expand${upgradeText}.`;
       }
-      return `You have ${core.formatCurrency(cashOnHand)} available. Keep unlocking characters to add upgrades.`;
+      return `You have ${core.formatCurrency(cashOnHand)} spendable. Keep unlocking characters to add upgrades.`;
     })();
 
     return `
@@ -1454,7 +1454,7 @@
           <div class="hero-profile-meta ${compactMobile ? "hero-profile-meta-compact" : ""}">
             <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
             <span class="chip hero-stat-chip">🏦 Score ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
-            <span class="chip hero-stat-chip">💵 Available ${core.formatCurrency(cashOnHand)}</span>
+            <span class="chip hero-stat-chip">💵 Spendable ${core.formatCurrency(cashOnHand)}</span>
             <span class="chip hero-stat-chip">👥 Characters ${collectedCustomers}</span>
             <span class="chip hero-stat-chip">💰 Points ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
             <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
@@ -1514,7 +1514,7 @@
                     <div class="hero-profile-meta hero-profile-meta-compact">
                       <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
                       <span class="chip hero-stat-chip">🏦 Score ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
-                      <span class="chip hero-stat-chip">💵 Available ${core.formatCurrency(cashOnHand)}</span>
+                      <span class="chip hero-stat-chip">💵 Spendable ${core.formatCurrency(cashOnHand)}</span>
                       <span class="chip hero-stat-chip">👥 Characters ${collectedCustomers}</span>
                       <span class="chip hero-stat-chip">💰 Points ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
                       <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
@@ -1577,7 +1577,7 @@
                   <div class="hero-profile-meta">
                     <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
                     <span class="chip hero-stat-chip">🏦 Score ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
-                    <span class="chip hero-stat-chip">💵 Available ${core.formatCurrency(cashOnHand)}</span>
+                    <span class="chip hero-stat-chip">💵 Spendable ${core.formatCurrency(cashOnHand)}</span>
                     <span class="chip hero-stat-chip">👥 Characters ${collectedCustomers}</span>
                     <span class="chip hero-stat-chip">💰 Points ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
                     <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
