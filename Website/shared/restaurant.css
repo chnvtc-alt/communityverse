@@ -1270,8 +1270,8 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  justify-content: center;
-  min-height: 58px;
+  justify-content: space-between;
+  min-height: 64px;
   padding: 8px 9px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.64);
