@@ -17,7 +17,7 @@
       value: "netWorth",
       label: "Total Score",
       rankLabel: "Total Score",
-      description: "Restaurant Score plus Spendable Points.",
+      description: "Total of your score breakdown.",
     },
     {
       value: "rating",
@@ -1015,18 +1015,18 @@
     const netWorth = Math.max(0, Number(breakdown.total) || 0) + cashOnHand;
     const rows = [
       [`${breakdown.expansionLabel || "Food Truck"} base`, breakdown.expansionValue],
-      ["Character collection", breakdown.loyaltyValue],
-      [`Recent character points ${Math.round((Number(breakdown.recentPerformanceRate) || 0) * 100)}%`, breakdown.recentPerformanceValue],
-      [`Rating bonus ${((Number(breakdown.ratingRate) || 0) * 100).toFixed(2)}% of score`, breakdown.ratingValue],
+      ["Collection bonus", breakdown.loyaltyValue],
+      [`Recent points bonus ${Math.round((Number(breakdown.recentPerformanceRate) || 0) * 100)}%`, breakdown.recentPerformanceValue],
+      ["Rating bonus", breakdown.ratingValue],
       ["Upgrades", breakdown.upgradeValue],
       ["Spendable Points", cashOnHand],
     ];
 
     return `
-      <div class="restaurant-value-breakdown" aria-label="Restaurant Score breakdown">
+      <div class="restaurant-value-breakdown" aria-label="Total Score breakdown">
         <div class="restaurant-value-breakdown-head">
-          <span>Restaurant Score</span>
-          <strong>${core.formatCurrency(breakdown.total)}</strong>
+          <span>Total Score</span>
+          <strong>${core.formatCurrency(netWorth)}</strong>
         </div>
         <div class="restaurant-value-breakdown-grid">
           ${rows
@@ -1039,10 +1039,6 @@
               `
             )
             .join("")}
-        </div>
-        <div class="restaurant-net-worth-row">
-          <span>Total Score</span>
-          <strong>${core.formatCurrency(netWorth)}</strong>
         </div>
       </div>
     `;
@@ -1432,14 +1428,12 @@
               occasionalCustomers: 0,
             },
           };
-    const overallRank = profile ? core.getPlayerRank(profile.id, "estimatedSales") : null;
     const collectedCustomers =
       (safeSummary.stats.regularCustomers || 0) + (safeSummary.stats.occasionalCustomers || 0);
-    const favoriteCustomers = safeSummary.stats.favoriteCustomers || 0;
     const cashOnHand = core.getRestaurantCashOnHand
       ? core.getRestaurantCashOnHand(profile, safeSummary.stats)
       : safeSummary.stats.estimatedSales || 0;
-    const bestRankLabel = overallRank ? `🏆 Best Rank #${overallRank}` : "🏆 Best Rank --";
+    const totalScore = Math.max(0, Number(safeSummary.stats.restaurantValue) || 0) + cashOnHand;
     const selectedDirectoryRestaurant = getSelectedDirectoryRestaurant(profile);
     const customerCompleteMarkup = renderCustomerCollectionCompleteMarkup(profile, selectedDirectoryRestaurant);
     const baseRestaurantSlug = String(profile?.baseRestaurantSlug || "").trim();
@@ -1454,12 +1448,9 @@
         ? `
           <div class="hero-profile-meta ${compactMobile ? "hero-profile-meta-compact" : ""}">
             <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
-            <span class="chip hero-stat-chip">🏦 Score ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
+            <span class="chip hero-stat-chip">🏦 Total Score ${core.formatCurrency(totalScore)}</span>
             <span class="chip hero-stat-chip">💵 Spendable ${core.formatCurrency(cashOnHand)}</span>
             <span class="chip hero-stat-chip">👥 Characters ${collectedCustomers}</span>
-            <span class="chip hero-stat-chip">💰 Points ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
-            <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
-            <span class="chip hero-stat-chip">${bestRankLabel}</span>
           </div>
           <p class="hero-profile-rating-note hero-profile-rating-note-full">Rating based on trivia accuracy.</p>
           <p class="hero-profile-rating-note hero-profile-rating-note-full">Game points have no money value.</p>
@@ -1514,12 +1505,9 @@
                     ${renderExpansionImageMarkup(profile)}
                     <div class="hero-profile-meta hero-profile-meta-compact">
                       <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
-                      <span class="chip hero-stat-chip">🏦 Score ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
+                      <span class="chip hero-stat-chip">🏦 Total Score ${core.formatCurrency(totalScore)}</span>
                       <span class="chip hero-stat-chip">💵 Spendable ${core.formatCurrency(cashOnHand)}</span>
                       <span class="chip hero-stat-chip">👥 Characters ${collectedCustomers}</span>
-                      <span class="chip hero-stat-chip">💰 Points ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
-                      <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
-                      <span class="chip hero-stat-chip">${bestRankLabel}</span>
                     </div>
                     ${customerCompleteMarkup}
                     ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
@@ -1577,12 +1565,9 @@
                   ${renderExpansionImageMarkup(profile)}
                   <div class="hero-profile-meta">
                     <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
-                    <span class="chip hero-stat-chip">🏦 Score ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
+                    <span class="chip hero-stat-chip">🏦 Total Score ${core.formatCurrency(totalScore)}</span>
                     <span class="chip hero-stat-chip">💵 Spendable ${core.formatCurrency(cashOnHand)}</span>
                     <span class="chip hero-stat-chip">👥 Characters ${collectedCustomers}</span>
-                    <span class="chip hero-stat-chip">💰 Points ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
-                    <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
-                    <span class="chip hero-stat-chip">${bestRankLabel}</span>
                   </div>
                   ${customerCompleteMarkup}
                   ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
