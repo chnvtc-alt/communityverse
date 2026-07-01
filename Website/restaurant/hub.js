@@ -1493,6 +1493,7 @@
                           <span class="hero-profile-subline-sep">·</span>
                           <span>${safeSummary.stats.gamesPlayed} plays</span>
                         </p>
+                        <p class="hero-profile-rating-note">Restaurant rating is solely based on your trivia accuracy.</p>
                       </div>
                         <div class="hero-profile-actions hero-profile-actions-top">
                           ${!emailConnected ? `<button class="button button-primary button-sm" type="button" data-show-connect-email>Save With Email</button>` : ""}
@@ -1549,6 +1550,7 @@
                         <span class="hero-profile-subline-sep">·</span>
                         <span>${safeSummary.stats.gamesPlayed} plays</span>
                       </p>
+                      <p class="hero-profile-rating-note">Restaurant rating is solely based on your trivia accuracy.</p>
                     </div>
                     <div class="hero-profile-actions hero-profile-actions-top">
                       ${!emailConnected ? `<button class="button button-primary button-sm" type="button" data-show-connect-email>Save With Email</button>` : ""}
