@@ -300,7 +300,7 @@
                 <li>Answer 10 trivia questions.</li>
                 <li>Unlock a character for your collection.</li>
                 <li>Save your progress to keep characters and track your scores.</li>
-                <li>Climb the trivia and net worth leaderboards.</li>
+                <li>Climb the trivia and Total Score leaderboards.</li>
                 <li>Optionally, build and grow a virtual restaurant.</li>
               </ul>
               <p>You can enjoy Restaurant Challenge simply as a trivia game, or you can explore the restaurant-building features later.</p>
@@ -321,8 +321,8 @@
               <h3>STEP 2: UNLOCK CHARACTERS</h3>
               <p>Before each game begins, you will see the character you are playing for.</p>
               <p>Reach the unlock score to add that character to your collection.</p>
-              <p>Every extra correct answer after that increases the character's value.</p>
-              <p>Characters increase your collection, sales, and future restaurant value.</p>
+              <p>Every extra correct answer after that increases the character's score.</p>
+              <p>Characters increase your collection, points, and future restaurant score.</p>
             </section>
             <section class="how-to-play-topic">
               <h3>STEP 3: SAVE YOUR COLLECTION</h3>
@@ -352,13 +352,13 @@
               <h3>STEP 5: BUILD A VIRTUAL RESTAURANT (OPTIONAL)</h3>
               <p>Many players enjoy collecting characters and competing on the trivia leaderboard.</p>
               <p>Others choose to build a virtual restaurant.</p>
-              <p>Characters increase your restaurant's value and generate sales.</p>
-              <p>You can expand from a Food Truck into a Local Landmark by unlocking characters, saving cash, and purchasing upgrades.</p>
+              <p>Characters increase your restaurant score and generate points.</p>
+              <p>You can expand from a Food Truck into a Local Landmark by unlocking characters, saving points, and adding upgrades.</p>
             </section>
             <section class="how-to-play-topic">
-              <h3>VIRTUAL GAME VALUES</h3>
-              <p>All cash, sales, character values, and net worth figures are virtual game values used for gameplay and leaderboards.</p>
-              <p>They have no real cash value.</p>
+              <h3>VIRTUAL GAME POINTS</h3>
+              <p>All points, character scores, restaurant scores, and Total Score figures are virtual game values used for gameplay and leaderboards.</p>
+              <p>They have no real money value.</p>
             </section>
             <section class="how-to-play-topic">
               <h3>DO I WIN REAL PRIZES?</h3>

@@ -407,7 +407,7 @@
                 <li>Answer 10 trivia questions.</li>
                 <li>Unlock a character for your collection.</li>
                 <li>Save your progress to keep characters and track your scores.</li>
-                <li>Climb the trivia and net worth leaderboards.</li>
+                <li>Climb the trivia and Total Score leaderboards.</li>
                 <li>Optionally, build and grow a virtual restaurant.</li>
               </ul>
               <p>You can enjoy Restaurant Challenge simply as a trivia game, or you can explore the restaurant-building features later.</p>
@@ -428,8 +428,8 @@
               <h3>STEP 2: UNLOCK CHARACTERS</h3>
               <p>Before each game begins, you will see the character you are playing for.</p>
               <p>Reach the unlock score to add that character to your collection.</p>
-              <p>Every extra correct answer after that increases the character's value.</p>
-              <p>Characters increase your collection, sales, and future restaurant value.</p>
+              <p>Every extra correct answer after that increases the character's score.</p>
+              <p>Characters increase your collection, points, and future restaurant score.</p>
             </section>
             <section class="how-to-play-topic">
               <h3>STEP 3: SAVE YOUR COLLECTION</h3>
@@ -459,13 +459,13 @@
               <h3>STEP 5: BUILD A VIRTUAL RESTAURANT (OPTIONAL)</h3>
               <p>Many players enjoy collecting characters and competing on the trivia leaderboard.</p>
               <p>Others choose to build a virtual restaurant.</p>
-              <p>Characters increase your restaurant's value and generate sales.</p>
-              <p>You can expand from a Food Truck into a Local Landmark by unlocking characters, saving cash, and purchasing upgrades.</p>
+              <p>Characters increase your restaurant score and generate points.</p>
+              <p>You can expand from a Food Truck into a Local Landmark by unlocking characters, saving points, and adding upgrades.</p>
             </section>
             <section class="how-to-play-topic">
-              <h3>VIRTUAL GAME VALUES</h3>
-              <p>All cash, sales, character values, and net worth figures are virtual game values used for gameplay and leaderboards.</p>
-              <p>They have no real cash value.</p>
+              <h3>VIRTUAL GAME POINTS</h3>
+              <p>All points, character scores, restaurant scores, and Total Score figures are virtual game values used for gameplay and leaderboards.</p>
+              <p>They have no real money value.</p>
             </section>
             <section class="how-to-play-topic">
               <h3>DO I WIN REAL PRIZES?</h3>
@@ -1799,7 +1799,7 @@
       ? `${restaurantBasePath()}?play=1&customerId=${encodeURIComponent(replayCustomer.id)}`
       : `${restaurantBasePath()}?play=1`;
     const introCopy = replayCustomer
-      ? `This is a replay for ${replayCustomer.name}. If you score higher, you can increase this character's value. A lower score will not replace your best value.`
+      ? `This is a replay for ${replayCustomer.name}. If you score higher, you can increase this character's score. A lower score will not replace your best character score.`
       : getOpenerCopy();
     const introCopyMarkup = introCopy
       ? `<p class="copy opening-title-copy">${escapeHtml(introCopy)}</p>`
@@ -1838,7 +1838,7 @@
             replayCustomer
               ? `
                 <p class="helper opening-start-helper opening-title-helper">
-                  You are playing again for <strong>${escapeHtml(replayCustomer.name)}</strong>. Your best value is protected.
+                  You are playing again for <strong>${escapeHtml(replayCustomer.name)}</strong>. Your best character score is protected.
                 </p>
               `
               : ""
@@ -2055,12 +2055,12 @@
         ? `
           <div class="favorite-progress-note">
             <p class="kicker">Current Best</p>
-            <p class="copy">${bestScore ? `Best score: <strong>${bestScore}/10</strong>. ` : ""}Best value: <strong>${core.formatCurrency(bestValue)}</strong>.</p>
+            <p class="copy">${bestScore ? `Best score: <strong>${bestScore}/10</strong>. ` : ""}Best character score: <strong>${core.formatCurrency(bestValue)}</strong>.</p>
             ${
               bestScore > 0 && bestScore < 10
-                ? `<p class="helper">Each correct answer above ${bestScore}/10 can add ${core.formatCurrency(valuePerExtraCorrect)}. Score ${nextValueScore}/10 or better to increase this character's value.</p>`
+                ? `<p class="helper">Each correct answer above ${bestScore}/10 can add ${core.formatCurrency(valuePerExtraCorrect)}. Score ${nextValueScore}/10 or better to increase this character's score.</p>`
                 : bestScore === 0
-                  ? `<p class="helper">Score higher than your previous best to increase this character's value.</p>`
+                  ? `<p class="helper">Score higher than your previous best to increase this character's score.</p>`
                 : `<p class="helper">You have already reached the top score for this character.</p>`
             }
           </div>
@@ -2110,7 +2110,7 @@
         ? `
           <div class="favorite-progress-note">
             <p class="kicker">Favorite Progress</p>
-            <p class="copy">Score <strong>${thresholds.regular}/10 or better</strong> with this character to build Favorite progress. After <strong>${favoriteGoal} successful visits</strong>, they become a Favorite Character and their value increases.</p>
+            <p class="copy">Score <strong>${thresholds.regular}/10 or better</strong> with this character to build Favorite progress. After <strong>${favoriteGoal} successful visits</strong>, they become a Favorite Character and their score increases.</p>
             <p class="helper">Current Favorite progress: ${favoriteVisits}/${favoriteGoal}</p>
           </div>
         `
@@ -2118,7 +2118,7 @@
           ? `
             <div class="favorite-progress-note favorite-progress-note-complete">
               <p class="kicker">Favorite Character</p>
-              <p class="copy">${escapeHtml(customer.name)} is already a Favorite Character. Their value is <strong>${core.formatCurrency(core.getFavoriteCustomerValue(customer))}</strong>.</p>
+              <p class="copy">${escapeHtml(customer.name)} is already a Favorite Character. Their score is <strong>${core.formatCurrency(core.getFavoriteCustomerValue(customer))}</strong>.</p>
             </div>
           `
           : "";
@@ -2531,7 +2531,7 @@
     const currentValueChip = isSalesDemoMode()
       ? ""
       : isCharacterUnlocked
-        ? `<span class="chip">Current value ${core.formatCurrency(currentCharacterValue)}</span>`
+        ? `<span class="chip">Current score ${core.formatCurrency(currentCharacterValue)}</span>`
         : "";
     const customerInfoCardMarkup = isSalesDemoMode()
       ? ""
@@ -2545,7 +2545,7 @@
               <div class="chip-row" style="margin-top: 10px;">
                 <span class="chip">${escapeHtml(session.customer.rarity || "Rare")} character</span>
                 <span class="chip">Unlock at ${customerUnlockScore}/10</span>
-                <span class="chip">Unlock value ${core.formatCurrency(customerUnlockValue)}</span>
+                <span class="chip">Unlock score ${core.formatCurrency(customerUnlockValue)}</span>
                 <span class="chip">+${core.formatCurrency(customerValuePerExtraCorrect)} per extra correct</span>
               </div>
             </div>
@@ -2715,9 +2715,9 @@
     }
 
     const message = cashOnHand >= nextCost
-      ? `You can expand to ${preview.next.label} now and add ${core.formatCurrency(preview.valueAdded)} to your restaurant value.`
+      ? `You can expand to ${preview.next.label} now and add ${core.formatCurrency(preview.valueAdded)} to your restaurant score.`
       : affordableUpgrade
-        ? `${affordableUpgrade.label} is available now. Upgrades add value and can boost future sales.`
+        ? `${affordableUpgrade.label} is available now. Upgrades add score and can boost future points.`
         : `You are ${core.formatCurrency(shortfall)} away from ${preview.next.label}. A few more unlocked characters could help you expand.`;
 
     return `

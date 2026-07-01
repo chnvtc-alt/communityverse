@@ -15,9 +15,9 @@
   const metricOptions = [
     {
       value: "netWorth",
-      label: "Net Worth",
-      rankLabel: "Net Worth",
-      description: "Restaurant Value plus cash on hand.",
+      label: "Total Score",
+      rankLabel: "Total Score",
+      description: "Restaurant Score plus available points.",
     },
     {
       value: "rating",
@@ -33,9 +33,9 @@
     },
     {
       value: "estimatedSales",
-      label: "Sales",
-      rankLabel: "Sales",
-      description: "Total sales from the characters each restaurant has unlocked.",
+      label: "Character Points",
+      rankLabel: "Character Points",
+      description: "Total points earned from the characters each restaurant has unlocked.",
     },
     {
       value: "gamesPlayed",
@@ -1016,15 +1016,15 @@
     const rows = [
       [`${breakdown.expansionLabel || "Food Truck"} base`, breakdown.expansionValue],
       ["Character collection", breakdown.loyaltyValue],
-      [`Recent sales ${Math.round((Number(breakdown.recentPerformanceRate) || 0) * 100)}%`, breakdown.recentPerformanceValue],
-      [`Rating bonus ${((Number(breakdown.ratingRate) || 0) * 100).toFixed(2)}% of value`, breakdown.ratingValue],
+      [`Recent character points ${Math.round((Number(breakdown.recentPerformanceRate) || 0) * 100)}%`, breakdown.recentPerformanceValue],
+      [`Rating bonus ${((Number(breakdown.ratingRate) || 0) * 100).toFixed(2)}% of score`, breakdown.ratingValue],
       ["Upgrades", breakdown.upgradeValue],
     ];
 
     return `
-      <div class="restaurant-value-breakdown" aria-label="Restaurant Value breakdown">
+      <div class="restaurant-value-breakdown" aria-label="Restaurant Score breakdown">
         <div class="restaurant-value-breakdown-head">
-          <span>Restaurant Value</span>
+          <span>Restaurant Score</span>
           <strong>${core.formatCurrency(breakdown.total)}</strong>
         </div>
         <div class="restaurant-value-breakdown-grid">
@@ -1040,7 +1040,7 @@
             .join("")}
         </div>
         <div class="restaurant-net-worth-row">
-          <span>Total Net Worth</span>
+          <span>Total Score</span>
           <strong>${core.formatCurrency(netWorth)}</strong>
         </div>
       </div>
@@ -1196,7 +1196,7 @@
     return `
       <div class="restaurant-complete-note">
         <strong>You unlocked every character currently available in ${escapeHtml(restaurant.name)}.</strong>
-        <span>Keep playing here to improve trivia, build Favorites, earn sales, and grow your virtual restaurant. You can also try another Restaurant Challenge when you're ready.</span>
+        <span>Keep playing here to improve trivia, build Favorites, earn points, and grow your virtual restaurant. You can also try another Restaurant Challenge when you're ready.</span>
       </div>
     `;
   }
@@ -1233,26 +1233,26 @@
     const nextUpgradeShortfall = nextUpgradeCost === null ? 0 : Math.max(0, nextUpgradeCost - cashOnHand);
     const cashNote = (() => {
       if (cashOnHand <= 0) {
-        return `Cash on hand: ${core.formatCurrency(0)}. Unlock more characters to open expansions and upgrades.`;
+        return `Available points: ${core.formatCurrency(0)}. Unlock more characters to open expansions and upgrades.`;
       }
       if (canBuyNext && affordableUpgrade) {
-        return `You have ${core.formatCurrency(cashOnHand)} cash on hand. You can expand or buy an upgrade now.`;
+        return `You have ${core.formatCurrency(cashOnHand)} available. You can expand or add an upgrade now.`;
       }
       if (canBuyNext) {
-        return `You have ${core.formatCurrency(cashOnHand)} cash on hand. You can expand your virtual restaurant now.`;
+        return `You have ${core.formatCurrency(cashOnHand)} available. You can expand your virtual restaurant now.`;
       }
       if (affordableUpgrade) {
         return preview.next
-          ? `You have ${core.formatCurrency(cashOnHand)} cash on hand. You can buy an upgrade now, or save ${core.formatCurrency(shortfall)} more to expand.`
-          : `You have ${core.formatCurrency(cashOnHand)} cash on hand. You can buy an upgrade now.`;
+          ? `You have ${core.formatCurrency(cashOnHand)} available. You can add an upgrade now, or save ${core.formatCurrency(shortfall)} more to expand.`
+          : `You have ${core.formatCurrency(cashOnHand)} available. You can add an upgrade now.`;
       }
       if (preview.next) {
         const upgradeText = nextUpgradeShortfall > 0
           ? ` or ${core.formatCurrency(nextUpgradeShortfall)} more for your next upgrade`
           : "";
-        return `You have ${core.formatCurrency(cashOnHand)} cash on hand. Save ${core.formatCurrency(shortfall)} more to expand${upgradeText}.`;
+        return `You have ${core.formatCurrency(cashOnHand)} available. Save ${core.formatCurrency(shortfall)} more to expand${upgradeText}.`;
       }
-      return `You have ${core.formatCurrency(cashOnHand)} cash on hand. Keep unlocking characters to buy upgrades.`;
+      return `You have ${core.formatCurrency(cashOnHand)} available. Keep unlocking characters to add upgrades.`;
     })();
 
     return `
@@ -1270,16 +1270,16 @@
                 <strong>${escapeHtml(preview.next.label)}</strong>
               </div>
               <div>
-                <span class="restaurant-expansion-label">Cost</span>
+                <span class="restaurant-expansion-label">Points needed</span>
                 <strong>${core.formatCurrency(preview.next.cost)}</strong>
               </div>
               <div>
-                <span class="restaurant-expansion-label">Adds value</span>
+                <span class="restaurant-expansion-label">Adds score</span>
                 <strong>${core.formatCurrency(preview.valueAdded)}</strong>
               </div>
               <div class="restaurant-expansion-action">
                 <button class="button ${canBuyNext ? "button-primary" : "button-muted"} button-sm restaurant-expansion-button" type="button" data-buy-expansion ${canBuyNext ? "" : "disabled"}>
-                  ${canBuyNext ? "Buy Expansion" : `Need ${core.formatCurrency(shortfall)} more`}
+                  ${canBuyNext ? "Add Expansion" : `Need ${core.formatCurrency(shortfall)} more`}
                 </button>
               </div>
             `
@@ -1335,14 +1335,14 @@
     }
 
     const message = cashOnHand >= nextCost
-      ? `You can expand to ${preview.next.label} now. Expanding adds ${core.formatCurrency(preview.valueAdded)} to your restaurant value and grows your Net Worth.`
+      ? `You can expand to ${preview.next.label} now. Expanding adds ${core.formatCurrency(preview.valueAdded)} to your restaurant score and grows your Total Score.`
       : affordableUpgrade
-        ? `${affordableUpgrade.label} is available now. Upgrades add value, boost future sales, and grow your Net Worth.`
-        : `You are ${core.formatCurrency(shortfall)} away from ${preview.next.label}. A few more characters could help you expand and grow your Net Worth.`;
+        ? `${affordableUpgrade.label} is available now. Upgrades add score, boost future points, and grow your Total Score.`
+        : `You are ${core.formatCurrency(shortfall)} away from ${preview.next.label}. A few more characters could help you expand and grow your Total Score.`;
 
     return `
       <div class="restaurant-growth-prompt">
-        <strong>Ready to grow your Net Worth?</strong>
+        <strong>Ready to grow your Total Score?</strong>
         <span>${escapeHtml(message)}</span>
       </div>
     `;
@@ -1376,7 +1376,7 @@
             upgradesLocked
               ? `<span>Available after expansion to Counter Service.</span>`
               : ownedBoostPercent > 0
-                ? `<span>Owned upgrades: +${Number(ownedBoostPercent).toFixed(0)}% future sales.</span>`
+                ? `<span>Owned upgrades: +${Number(ownedBoostPercent).toFixed(0)}% future points.</span>`
                 : ""
           }
         </div>
@@ -1389,13 +1389,13 @@
                 return `
                 <div class="restaurant-upgrade-preview-card">
                   <strong>${escapeHtml(upgrade.label)}</strong>
-                  <span>Cost ${core.formatCurrency(upgrade.cost)}</span>
-                  <span>Adds value ${core.formatCurrency(upgrade.value)}</span>
-                  <span>Future sales +${Number(upgrade.salesBoostPercent) || 0}%</span>
+                  <span>Needs ${core.formatCurrency(upgrade.cost)}</span>
+                  <span>Adds score ${core.formatCurrency(upgrade.value)}</span>
+                  <span>Future points +${Number(upgrade.salesBoostPercent) || 0}%</span>
                   ${
                     upgradesLocked
                       ? ""
-                      : `<button class="button ${canBuyUpgrade ? "button-primary" : "button-muted"} button-sm restaurant-upgrade-button" type="button" data-buy-upgrade="${escapeHtml(upgrade.id)}" ${canBuyUpgrade ? "" : "disabled"}>${canBuyUpgrade ? "Buy Upgrade" : `Need ${core.formatCurrency(cost - cashOnHand)}`}</button>`
+                      : `<button class="button ${canBuyUpgrade ? "button-primary" : "button-muted"} button-sm restaurant-upgrade-button" type="button" data-buy-upgrade="${escapeHtml(upgrade.id)}" ${canBuyUpgrade ? "" : "disabled"}>${canBuyUpgrade ? "Add Upgrade" : `Need ${core.formatCurrency(cost - cashOnHand)}`}</button>`
                   }
                 </div>
               `;
@@ -1453,16 +1453,16 @@
         ? `
           <div class="hero-profile-meta ${compactMobile ? "hero-profile-meta-compact" : ""}">
             <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
-            <span class="chip hero-stat-chip">🏦 Value ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
-            <span class="chip hero-stat-chip">💵 Cash ${core.formatCurrency(cashOnHand)}</span>
+            <span class="chip hero-stat-chip">🏦 Score ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
+            <span class="chip hero-stat-chip">💵 Available ${core.formatCurrency(cashOnHand)}</span>
             <span class="chip hero-stat-chip">👥 Characters ${collectedCustomers}</span>
-            <span class="chip hero-stat-chip">💰 Sales ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
+            <span class="chip hero-stat-chip">💰 Points ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
             <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
             <span class="chip hero-stat-chip">${bestRankLabel}</span>
           </div>
           <p class="hero-profile-rating-note hero-profile-rating-note-full">Rating based on trivia accuracy.</p>
-          <p class="hero-profile-rating-note hero-profile-rating-note-full">Game values have no cash value.</p>
-          <p class="hero-profile-rating-note hero-profile-rating-note-compact">Game values have no cash value.</p>
+          <p class="hero-profile-rating-note hero-profile-rating-note-full">Game points have no money value.</p>
+          <p class="hero-profile-rating-note hero-profile-rating-note-compact">Game points have no money value.</p>
           ${renderExpansionImageMarkup(profile)}
           ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
           ${renderExpansionPreviewMarkup(profile, safeSummary.stats)}
@@ -1501,8 +1501,8 @@
                           <span>${safeSummary.stats.gamesPlayed} plays</span>
                         </p>
                         <p class="hero-profile-rating-note hero-profile-rating-note-full">Rating based on trivia accuracy.</p>
-                        <p class="hero-profile-rating-note hero-profile-rating-note-full">Game values have no cash value.</p>
-                        <p class="hero-profile-rating-note hero-profile-rating-note-compact">Game values have no cash value.</p>
+                        <p class="hero-profile-rating-note hero-profile-rating-note-full">Game points have no money value.</p>
+                        <p class="hero-profile-rating-note hero-profile-rating-note-compact">Game points have no money value.</p>
                       </div>
                         <div class="hero-profile-actions hero-profile-actions-top">
                           ${!emailConnected ? `<button class="button button-primary button-sm" type="button" data-show-connect-email>Save With Email</button>` : ""}
@@ -1513,10 +1513,10 @@
                     ${renderExpansionImageMarkup(profile)}
                     <div class="hero-profile-meta hero-profile-meta-compact">
                       <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
-                      <span class="chip hero-stat-chip">🏦 Value ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
-                      <span class="chip hero-stat-chip">💵 Cash ${core.formatCurrency(cashOnHand)}</span>
+                      <span class="chip hero-stat-chip">🏦 Score ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
+                      <span class="chip hero-stat-chip">💵 Available ${core.formatCurrency(cashOnHand)}</span>
                       <span class="chip hero-stat-chip">👥 Characters ${collectedCustomers}</span>
-                      <span class="chip hero-stat-chip">💰 Sales ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
+                      <span class="chip hero-stat-chip">💰 Points ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
                       <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
                       <span class="chip hero-stat-chip">${bestRankLabel}</span>
                     </div>
@@ -1564,8 +1564,8 @@
                         <span>${safeSummary.stats.gamesPlayed} plays</span>
                       </p>
                       <p class="hero-profile-rating-note hero-profile-rating-note-full">Rating based on trivia accuracy.</p>
-                      <p class="hero-profile-rating-note hero-profile-rating-note-full">Game values have no cash value.</p>
-                      <p class="hero-profile-rating-note hero-profile-rating-note-compact">Game values have no cash value.</p>
+                      <p class="hero-profile-rating-note hero-profile-rating-note-full">Game points have no money value.</p>
+                      <p class="hero-profile-rating-note hero-profile-rating-note-compact">Game points have no money value.</p>
                     </div>
                     <div class="hero-profile-actions hero-profile-actions-top">
                       ${!emailConnected ? `<button class="button button-primary button-sm" type="button" data-show-connect-email>Save With Email</button>` : ""}
@@ -1576,10 +1576,10 @@
                   ${renderExpansionImageMarkup(profile)}
                   <div class="hero-profile-meta">
                     <span class="chip hero-stat-chip">⭐ Rating ${core.formatRating(safeSummary.rating || 0)}</span>
-                    <span class="chip hero-stat-chip">🏦 Value ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
-                    <span class="chip hero-stat-chip">💵 Cash ${core.formatCurrency(cashOnHand)}</span>
+                    <span class="chip hero-stat-chip">🏦 Score ${core.formatCurrency(safeSummary.stats.restaurantValue || 0)}</span>
+                    <span class="chip hero-stat-chip">💵 Available ${core.formatCurrency(cashOnHand)}</span>
                     <span class="chip hero-stat-chip">👥 Characters ${collectedCustomers}</span>
-                    <span class="chip hero-stat-chip">💰 Sales ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
+                    <span class="chip hero-stat-chip">💰 Points ${core.formatCurrency(safeSummary.stats.estimatedSales)}</span>
                     <span class="chip hero-stat-chip">⭐ Favorites ${favoriteCustomers}</span>
                     <span class="chip hero-stat-chip">${bestRankLabel}</span>
                   </div>
@@ -1953,9 +1953,9 @@
 
         const result = core.buyNextRestaurantExpansion(profile.id);
         state.expansionMessage = result?.ok
-          ? `${result.expansion?.label || "Expansion"} bought. Cash spent: ${core.formatCurrency(result.cost || 0)}.`
+          ? `${result.expansion?.label || "Expansion"} added. Points used: ${core.formatCurrency(result.cost || 0)}.`
           : "";
-        state.expansionError = result?.ok ? "" : result?.message || "Unable to buy this expansion yet.";
+        state.expansionError = result?.ok ? "" : result?.message || "Unable to add this expansion yet.";
         state.upgradeMessage = "";
         state.upgradeError = "";
         renderAll();
@@ -1970,9 +1970,9 @@
 
         const result = core.buyRestaurantUpgrade(profile.id, button.dataset.buyUpgrade);
         state.upgradeMessage = result?.ok
-          ? `${result.upgrade?.label || "Upgrade"} bought. Cash spent: ${core.formatCurrency(result.cost || 0)}.`
+          ? `${result.upgrade?.label || "Upgrade"} added. Points used: ${core.formatCurrency(result.cost || 0)}.`
           : "";
-        state.upgradeError = result?.ok ? "" : result?.message || "Unable to buy this upgrade yet.";
+        state.upgradeError = result?.ok ? "" : result?.message || "Unable to add this upgrade yet.";
         state.expansionMessage = "";
         state.expansionError = "";
         renderAll();
@@ -2271,7 +2271,7 @@
       selectedIsFeedbackReward
         ? `<p class="customer-favorite-progress">Special feedback reward. Cannot be invited back.</p>`
         : selectedCustomer?.status === "favorite"
-        ? `<p class="customer-favorite-progress">Favorite Character. Value: ${core.formatCurrency(selectedValue)}</p>`
+        ? `<p class="customer-favorite-progress">Favorite Character. Score: ${core.formatCurrency(selectedValue)}</p>`
         : canBuildFavoriteProgress(selectedCustomer)
           ? `<p class="customer-favorite-progress">Favorite Progress: ${selectedFavoriteVisits} / ${favoriteGoal} successful visits</p>`
           : "";
@@ -2366,7 +2366,7 @@
                       entryIsFeedbackReward
                         ? "Special feedback reward"
                         : entry.status === "favorite"
-                        ? `Value: ${core.formatCurrency(entryValue)}`
+                        ? `Score: ${core.formatCurrency(entryValue)}`
                         : canBuildFavoriteProgress(entry)
                           ? `Favorite Progress: ${entryFavoriteVisits}/${favoriteGoal}`
                           : "";

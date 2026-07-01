@@ -2172,9 +2172,7 @@
   const DEMO_PROFILE_IDS = new Set(demoProfiles.map((profile) => profile.id));
   const DEMO_PROFILE_SET = new Set(demoProfiles.map((profile) => profile.id));
 
-  const currencyFormatter = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
+  const pointsFormatter = new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 0,
   });
 
@@ -2470,7 +2468,7 @@
   }
 
   function formatCurrency(value) {
-    return currencyFormatter.format(Math.round(Number(value) || 0));
+    return `${pointsFormatter.format(Math.round(Number(value) || 0))} pts`;
   }
 
   function formatPercent(value) {
@@ -2819,7 +2817,7 @@
 
     const economy = normalizeRestaurantEconomy(safeProfile.restaurantEconomy);
     if (economy.upgrades[targetUpgradeId]) {
-      return { ok: false, message: "This upgrade has already been bought.", profile: safeProfile };
+      return { ok: false, message: "This upgrade has already been added.", profile: safeProfile };
     }
 
     const upgrade = RESTAURANT_UPGRADES.find((entry) => entry.id === targetUpgradeId) || null;
@@ -2835,7 +2833,7 @@
     if (cashOnHand < cost) {
       return {
         ok: false,
-        message: `You need ${formatCurrency(cost - cashOnHand)} more cash for ${upgrade.label}.`,
+        message: `You need ${formatCurrency(cost - cashOnHand)} more available points for ${upgrade.label}.`,
         profile: safeProfile,
       };
     }
@@ -2897,7 +2895,7 @@
     if (cashOnHand < cost) {
       return {
         ok: false,
-        message: `You need ${formatCurrency(cost - cashOnHand)} more cash for this expansion.`,
+        message: `You need ${formatCurrency(cost - cashOnHand)} more available points for this expansion.`,
         profile: safeProfile,
       };
     }
