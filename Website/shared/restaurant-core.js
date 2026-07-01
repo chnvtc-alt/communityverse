@@ -4048,6 +4048,27 @@
   function isAreaQuestionForRestaurant(question, restaurant, restaurantAreaSlugs) {
     const questionAreaSlug = slugify(question.areaSlug || "");
     const questionTags = Array.isArray(question.tags) ? question.tags.map(slugify) : [];
+    const placeLikeTags = questionTags.filter((tag) => /(^|-)county$|(^|-)city$|(^|-)town$/.test(tag));
+    const questionSpecificPieces = new Set(
+      [questionAreaSlug, ...placeLikeTags].filter(Boolean).flatMap((areaSlug) =>
+        String(areaSlug || "")
+          .split("-")
+          .map(slugify)
+          .filter((piece) => piece.length >= 4 && !["area", "city", "town", "county", "state", "georgia", "game"].includes(piece))
+      )
+    );
+    const restaurantSpecificPieces = new Set(
+      [...restaurantAreaSlugs].flatMap((areaSlug) =>
+        String(areaSlug || "")
+          .split("-")
+          .map(slugify)
+          .filter((piece) => piece.length >= 4 && !["area", "city", "town", "county", "state", "georgia", "game"].includes(piece))
+      )
+    );
+
+    if (questionSpecificPieces.size) {
+      return [...questionSpecificPieces].some((piece) => restaurantSpecificPieces.has(piece));
+    }
 
     return (
       restaurantAreaSlugs.has(questionAreaSlug) ||

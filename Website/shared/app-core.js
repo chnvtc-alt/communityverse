@@ -4379,6 +4379,17 @@
   function isAreaQuestionForRestaurant(question, restaurant, restaurantAreaSlugs) {
     const questionAreaSlug = slugify(question.areaSlug || "");
     const questionTags = Array.isArray(question.tags) ? question.tags.map(slugify) : [];
+    const placeLikeTags = questionTags.filter((tag) => /(^|-)county$|(^|-)city$|(^|-)town$/.test(tag));
+    const questionSpecificPieces = new Set(
+      [questionAreaSlug, ...placeLikeTags].filter(Boolean).flatMap(getSpecificAreaPieces)
+    );
+    const restaurantSpecificPieces = new Set(
+      [...restaurantAreaSlugs].flatMap((areaSlug) => getSpecificAreaPieces(areaSlug))
+    );
+
+    if (questionSpecificPieces.size) {
+      return [...questionSpecificPieces].some((piece) => restaurantSpecificPieces.has(piece));
+    }
 
     return (
       restaurantAreaSlugs.has(questionAreaSlug) ||
