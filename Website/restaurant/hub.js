@@ -1231,122 +1231,75 @@
       return lowest === null || cost < lowest ? cost : lowest;
     }, null);
     const nextUpgradeShortfall = nextUpgradeCost === null ? 0 : Math.max(0, nextUpgradeCost - cashOnHand);
-    const cashNote = (() => {
-      if (cashOnHand <= 0) {
-        return `Spendable Points: ${core.formatCurrency(0)}. Unlock more characters to open expansions and upgrades.`;
+    const valueAdded = Math.max(0, Number(preview.valueAdded) || 0);
+    const totalScoreIncrease = Math.max(0, valueAdded - nextCost);
+    const expansionNote = (() => {
+      if (!preview.next) {
+        return `You have ${core.formatCurrency(cashOnHand)} in Spendable Points. Your restaurant is fully expanded.`;
       }
-      if (canBuyNext && affordableUpgrade) {
-        return `You have ${core.formatCurrency(cashOnHand)} in Spendable Points. You can expand or add an upgrade now.`;
+      if (cashOnHand <= 0) {
+        return `Spendable Points: ${core.formatCurrency(0)}. Unlock more characters to open expansions.`;
       }
       if (canBuyNext) {
-        return `You have ${core.formatCurrency(cashOnHand)} in Spendable Points. You can expand your virtual restaurant now.`;
+        return `You have ${core.formatCurrency(cashOnHand)} in Spendable Points. You can expand from ${preview.current.label} to ${preview.next.label} now. Expanding costs ${core.formatCurrency(nextCost)} but adds ${core.formatCurrency(valueAdded)} to your Restaurant Type, so your Total Score will increase by ${core.formatCurrency(totalScoreIncrease)}.`;
       }
       if (affordableUpgrade) {
         return preview.next
-          ? `You have ${core.formatCurrency(cashOnHand)} in Spendable Points. You can add an upgrade now, or save ${core.formatCurrency(shortfall)} more to expand.`
-          : `You have ${core.formatCurrency(cashOnHand)} in Spendable Points. You can add an upgrade now.`;
+          ? `You have ${core.formatCurrency(cashOnHand)} in Spendable Points. You can add an upgrade now, or save ${core.formatCurrency(shortfall)} more to expand from ${preview.current.label} to ${preview.next.label}.`
+          : `You have ${core.formatCurrency(cashOnHand)} in Spendable Points. Your restaurant is fully expanded.`;
       }
-      if (preview.next) {
-        const upgradeText = nextUpgradeShortfall > 0
-          ? ` or ${core.formatCurrency(nextUpgradeShortfall)} more for your next upgrade`
-          : "";
-        return `You have ${core.formatCurrency(cashOnHand)} in Spendable Points. Save ${core.formatCurrency(shortfall)} more to expand${upgradeText}.`;
-      }
-      return `You have ${core.formatCurrency(cashOnHand)} in Spendable Points. Keep unlocking characters to add upgrades.`;
+      const upgradeText = nextUpgradeShortfall > 0
+        ? ` or ${core.formatCurrency(nextUpgradeShortfall)} more for your next upgrade`
+        : "";
+      return `You have ${core.formatCurrency(cashOnHand)} in Spendable Points. Save ${core.formatCurrency(shortfall)} more to expand from ${preview.current.label} to ${preview.next.label}${upgradeText}.`;
     })();
 
     return `
-      <p class="restaurant-cash-note">${escapeHtml(cashNote)}</p>
       <div class="restaurant-expansion-preview" aria-label="Restaurant expansion preview">
-        <div>
-          <span class="restaurant-expansion-label">Current size</span>
-          <strong>${escapeHtml(preview.current.label || "Food Truck")}</strong>
+        <div class="restaurant-expansion-preview-head">
+          <span>Expansions</span>
+          <span>${escapeHtml(expansionNote)}</span>
         </div>
+        <div class="restaurant-expansion-preview-grid">
+          <div class="restaurant-expansion-preview-card">
+            <span class="restaurant-expansion-label">Current size</span>
+            <strong>${escapeHtml(preview.current.label || "Food Truck")}</strong>
+          </div>
         ${
           preview.next
             ? `
-              <div>
+              <div class="restaurant-expansion-preview-card">
                 <span class="restaurant-expansion-label">Next expansion</span>
                 <strong>${escapeHtml(preview.next.label)}</strong>
               </div>
-              <div>
-                <span class="restaurant-expansion-label">Points needed</span>
+              <div class="restaurant-expansion-preview-card">
+                <span class="restaurant-expansion-label">Cost</span>
                 <strong>${core.formatCurrency(preview.next.cost)}</strong>
               </div>
-              <div>
-                <span class="restaurant-expansion-label">Adds score</span>
+              <div class="restaurant-expansion-preview-card">
+                <span class="restaurant-expansion-label">Adds to type</span>
                 <strong>${core.formatCurrency(preview.valueAdded)}</strong>
               </div>
-              <div class="restaurant-expansion-action">
+              <div class="restaurant-expansion-preview-card restaurant-expansion-action">
                 <button class="button ${canBuyNext ? "button-primary" : "button-muted"} button-sm restaurant-expansion-button" type="button" data-buy-expansion ${canBuyNext ? "" : "disabled"}>
                   ${canBuyNext ? "Add Expansion" : `Need ${core.formatCurrency(shortfall)} more`}
                 </button>
               </div>
             `
             : `
-              <div>
+              <div class="restaurant-expansion-preview-card">
                 <span class="restaurant-expansion-label">Next expansion</span>
                 <strong>Fully expanded</strong>
               </div>
             `
         }
+        </div>
       </div>
       ${
         state.expansionMessage || state.expansionError
           ? `<p class="restaurant-expansion-status ${state.expansionError ? "restaurant-expansion-status-error" : ""}">${escapeHtml(state.expansionError || state.expansionMessage)}</p>`
           : ""
       }
-    `;
-  }
-
-  function renderNetWorthGrowthPrompt(profile, stats = null) {
-    if (!profile || !core.getRestaurantExpansionPreview) {
-      return "";
-    }
-
-    const gamesPlayed = Math.max(0, Number((stats || profile.stats)?.gamesPlayed) || 0);
-    if (gamesPlayed < 3) {
-      return "";
-    }
-
-    const preview = core.getRestaurantExpansionPreview(profile);
-    if (!preview?.next) {
-      return "";
-    }
-
-    const currentId = String(preview.current?.id || "");
-    if (!["food-truck", "counter-service", "small-diner"].includes(currentId)) {
-      return "";
-    }
-
-    const cashOnHand = core.getRestaurantCashOnHand
-      ? core.getRestaurantCashOnHand(profile, stats || profile.stats)
-      : Math.max(0, Number((stats || profile.stats)?.estimatedSales) || 0);
-    const nextCost = Math.max(0, Number(preview.next.cost) || 0);
-    const shortfall = Math.max(0, nextCost - cashOnHand);
-    const closeEnough = nextCost > 0 && cashOnHand >= nextCost * 0.6;
-    const upgrades = core.getRestaurantUpgradePreview ? core.getRestaurantUpgradePreview(profile, 3) : [];
-    const affordableUpgrade = upgrades.find((upgrade) => {
-      return currentId !== "food-truck" && cashOnHand >= Math.max(0, Number(upgrade.cost) || 0);
-    });
-
-    if (!affordableUpgrade && !closeEnough && cashOnHand < nextCost) {
-      return "";
-    }
-
-    const valueAdded = Math.max(0, Number(preview.valueAdded) || 0);
-    const totalScoreIncrease = Math.max(0, valueAdded - nextCost);
-    const message = cashOnHand >= nextCost
-      ? `You can expand to ${preview.next.label} now. Expanding costs ${core.formatCurrency(nextCost)} but adds ${core.formatCurrency(valueAdded)} to your Restaurant Type, so your Total Score will increase by ${core.formatCurrency(totalScoreIncrease)}.`
-      : affordableUpgrade
-        ? `${affordableUpgrade.label} is available now. Upgrades add score, boost future points, and grow your Total Score.`
-        : `You are ${core.formatCurrency(shortfall)} away from ${preview.next.label}. A few more characters could help you expand and grow your Total Score.`;
-
-    return `
-      <div class="restaurant-growth-prompt">
-        <strong>Ready to grow your Total Score?</strong>
-        <span>${escapeHtml(message)}</span>
-      </div>
     `;
   }
 
@@ -1509,7 +1462,6 @@
                     </div>
                     ${customerCompleteMarkup}
                     ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
-                    ${renderNetWorthGrowthPrompt(profile, safeSummary.stats)}
                     ${renderExpansionPreviewMarkup(profile, safeSummary.stats)}
                     ${renderUpgradePreviewMarkup(profile, safeSummary.stats)}
                     ${
@@ -1566,7 +1518,6 @@
                   </div>
                   ${customerCompleteMarkup}
                   ${renderRestaurantValueBreakdownMarkup(profile, safeSummary)}
-                  ${renderNetWorthGrowthPrompt(profile, safeSummary.stats)}
                   ${renderExpansionPreviewMarkup(profile, safeSummary.stats)}
                   ${renderUpgradePreviewMarkup(profile, safeSummary.stats)}
                   ${
