@@ -122,9 +122,10 @@ function getRestaurantCashOnHand(profile, stats = null) {
 }
 
 function getCustomerLoyaltyValue(stats) {
-  const favoriteCustomers = Math.max(0, Number(stats.favoriteCustomers) || 0);
-  const regularOnlyCustomers = Math.max(0, (Number(stats.regularCustomers) || 0) - favoriteCustomers);
-  return regularOnlyCustomers * 100 + favoriteCustomers * 300;
+  const collectedCharacters =
+    Math.max(0, Number(stats.regularCustomers) || 0) +
+    Math.max(0, Number(stats.occasionalCustomers) || 0);
+  return collectedCharacters * 100;
 }
 
 function getRatingMultiplier(stats) {
