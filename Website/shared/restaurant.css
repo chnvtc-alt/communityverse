@@ -1262,29 +1262,34 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .restaurant-value-breakdown-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: 6px;
 }
 
 .restaurant-value-breakdown-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  min-height: 36px;
-  padding: 7px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 58px;
+  padding: 8px 9px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.64);
   color: var(--muted);
   font-size: 0.78rem;
-  line-height: 1.15;
+  line-height: 1.2;
 }
 
 .restaurant-value-breakdown-row span {
   min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .restaurant-value-breakdown-row strong {
   color: var(--ink);
-  font-size: 0.82rem;
+  margin-top: 4px;
+  font-size: 0.88rem;
+  line-height: 1.1;
   white-space: nowrap;
 }
 
