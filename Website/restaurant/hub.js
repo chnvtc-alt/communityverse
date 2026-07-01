@@ -1019,6 +1019,7 @@
       [`Recent character points ${Math.round((Number(breakdown.recentPerformanceRate) || 0) * 100)}%`, breakdown.recentPerformanceValue],
       [`Rating bonus ${((Number(breakdown.ratingRate) || 0) * 100).toFixed(2)}% of score`, breakdown.ratingValue],
       ["Upgrades", breakdown.upgradeValue],
+      ["Spendable Points", cashOnHand],
     ];
 
     return `
@@ -1040,7 +1041,7 @@
             .join("")}
         </div>
         <div class="restaurant-net-worth-row">
-          <span>Total Score = Restaurant Score + Spendable Points</span>
+          <span>Total Score</span>
           <strong>${core.formatCurrency(netWorth)}</strong>
         </div>
       </div>
