@@ -1015,7 +1015,7 @@
     const netWorth = Math.max(0, Number(breakdown.total) || 0) + cashOnHand;
     const rows = [
       [`${breakdown.expansionLabel || "Food Truck"} base`, breakdown.expansionValue],
-      ["Collection bonus", breakdown.loyaltyValue],
+      ["Character Score", breakdown.loyaltyValue],
       [`Recent points bonus ${Math.round((Number(breakdown.recentPerformanceRate) || 0) * 100)}%`, breakdown.recentPerformanceValue],
       ["Rating bonus", breakdown.ratingValue],
       ["Upgrades", breakdown.upgradeValue],
@@ -1233,23 +1233,23 @@
         return `Spendable Points: ${core.formatCurrency(0)}. Unlock more characters to open expansions and upgrades.`;
       }
       if (canBuyNext && affordableUpgrade) {
-        return `You have ${core.formatCurrency(cashOnHand)} spendable. You can expand or add an upgrade now.`;
+        return `You have ${core.formatCurrency(cashOnHand)} in Spendable Points. You can expand or add an upgrade now.`;
       }
       if (canBuyNext) {
-        return `You have ${core.formatCurrency(cashOnHand)} spendable. You can expand your virtual restaurant now.`;
+        return `You have ${core.formatCurrency(cashOnHand)} in Spendable Points. You can expand your virtual restaurant now.`;
       }
       if (affordableUpgrade) {
         return preview.next
-          ? `You have ${core.formatCurrency(cashOnHand)} spendable. You can add an upgrade now, or save ${core.formatCurrency(shortfall)} more to expand.`
-          : `You have ${core.formatCurrency(cashOnHand)} spendable. You can add an upgrade now.`;
+          ? `You have ${core.formatCurrency(cashOnHand)} in Spendable Points. You can add an upgrade now, or save ${core.formatCurrency(shortfall)} more to expand.`
+          : `You have ${core.formatCurrency(cashOnHand)} in Spendable Points. You can add an upgrade now.`;
       }
       if (preview.next) {
         const upgradeText = nextUpgradeShortfall > 0
           ? ` or ${core.formatCurrency(nextUpgradeShortfall)} more for your next upgrade`
           : "";
-        return `You have ${core.formatCurrency(cashOnHand)} spendable. Save ${core.formatCurrency(shortfall)} more to expand${upgradeText}.`;
+        return `You have ${core.formatCurrency(cashOnHand)} in Spendable Points. Save ${core.formatCurrency(shortfall)} more to expand${upgradeText}.`;
       }
-      return `You have ${core.formatCurrency(cashOnHand)} spendable. Keep unlocking characters to add upgrades.`;
+      return `You have ${core.formatCurrency(cashOnHand)} in Spendable Points. Keep unlocking characters to add upgrades.`;
     })();
 
     return `
