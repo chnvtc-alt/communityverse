@@ -1576,15 +1576,16 @@
 
     if ((roomCode || multiplayerJoinMode) && !state.multiplayerPlayer) {
       const targetRoomCode = roomCode || "";
+      const knownRoom = Boolean(targetRoomCode);
       return `
         <div class="hero-card result-followup-card" style="margin-top: 16px; padding: 16px;">
           <p class="kicker">Play With Friends</p>
-          <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${targetRoomCode ? `Join room ${escapeHtml(targetRoomCode)}` : "Join friends' game"}</h3>
-          <p class="copy" style="margin: 0 0 12px;">Everyone gets the same questions at the same time.</p>
-          <p class="helper" style="margin: 0 0 12px;">Room codes are not case-sensitive. A space works instead of the dash.</p>
+          <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${knownRoom ? `Confirm your name for room ${escapeHtml(targetRoomCode)}` : "Join friends' game"}</h3>
+          <p class="copy" style="margin: 0 0 12px;">${knownRoom ? "Choose the name everyone will see, then enter the room." : "Everyone gets the same questions at the same time."}</p>
+          ${knownRoom ? "" : `<p class="helper" style="margin: 0 0 12px;">Room codes are not case-sensitive. A space works instead of the dash.</p>`}
           <form class="input-grid" id="multiplayer-join-form">
             ${
-              targetRoomCode
+              knownRoom
                 ? ""
                 : `
                   <div class="field">
@@ -1601,7 +1602,7 @@
             ${errorMarkup}
             ${messageMarkup}
             <div class="button-row">
-              <button class="button button-hot" type="submit" ${state.multiplayerLoading ? "disabled" : ""}>Join Room</button>
+              <button class="button button-hot" type="submit" ${state.multiplayerLoading ? "disabled" : ""}>${knownRoom ? "Enter Room" : "Join Room"}</button>
               <a class="button button-muted" href="${restaurantBasePath()}">Play Solo Instead</a>
             </div>
           </form>
