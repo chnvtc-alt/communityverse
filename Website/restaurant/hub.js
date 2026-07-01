@@ -1254,7 +1254,7 @@
       }
       if (affordableUpgrade) {
         return preview.next
-          ? `You have ${core.formatCurrency(cashOnHand)} in Spendable Points. You can add an upgrade now, or save ${core.formatCurrency(shortfall)} more to expand from ${preview.current.label} to ${preview.next.label}.`
+          ? `You have ${core.formatCurrency(cashOnHand)} in Spendable Points. Save ${core.formatCurrency(shortfall)} more to expand from ${preview.current.label} to ${preview.next.label}.`
           : `You have ${core.formatCurrency(cashOnHand)} in Spendable Points. Your restaurant is fully expanded.`;
       }
       const upgradeText = nextUpgradeShortfall > 0
@@ -1340,8 +1340,8 @@
             upgradesLocked
               ? `<span>Available after expansion to Counter Service.</span>`
               : ownedBoostPercent > 0
-                ? `<span>Owned upgrades: +${Number(ownedBoostPercent).toFixed(0)}% future points.</span>`
-                : ""
+                ? `<span>Owned upgrades make future Trivia Rewards ${Number(ownedBoostPercent).toFixed(0)}% higher.</span>`
+                : `<span>Upgrades add Score and make future Trivia Rewards higher.</span>`
           }
         </div>
         <div class="restaurant-upgrade-preview-grid">
@@ -1353,9 +1353,9 @@
                 return `
                 <div class="restaurant-upgrade-preview-card">
                   <strong>${escapeHtml(upgrade.label)}</strong>
-                  <span>Needs ${core.formatCurrency(upgrade.cost)}</span>
-                  <span>Adds score ${core.formatCurrency(upgrade.value)}</span>
-                  <span>Future points +${Number(upgrade.salesBoostPercent) || 0}%</span>
+                  <span>Cost ${core.formatCurrency(upgrade.cost)}</span>
+                  <span>Adds ${core.formatCurrency(upgrade.value)} to Score</span>
+                  <span>Future Trivia Rewards +${Number(upgrade.salesBoostPercent) || 0}%</span>
                   ${
                     upgradesLocked
                       ? ""
