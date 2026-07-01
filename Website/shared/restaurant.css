@@ -1285,6 +1285,14 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   overflow-wrap: anywhere;
 }
 
+.restaurant-value-breakdown-row small {
+  display: block;
+  margin-top: 3px;
+  color: var(--ink);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
 .restaurant-value-breakdown-row strong {
   color: var(--ink);
   margin-top: 4px;

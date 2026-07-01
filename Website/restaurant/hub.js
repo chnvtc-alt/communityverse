@@ -1014,12 +1014,12 @@
       : Math.max(0, Number(summary.stats.estimatedSales) || 0);
     const netWorth = Math.max(0, Number(breakdown.total) || 0) + cashOnHand;
     const rows = [
-      [`${breakdown.expansionLabel || "Food Truck"} base`, breakdown.expansionValue],
-      ["Character Score", breakdown.loyaltyValue],
-      [`Recent points bonus ${Math.round((Number(breakdown.recentPerformanceRate) || 0) * 100)}%`, breakdown.recentPerformanceValue],
-      ["Rating bonus", breakdown.ratingValue],
-      ["Upgrades", breakdown.upgradeValue],
-      ["Spendable Points", cashOnHand],
+      { label: "Restaurant Type", detail: breakdown.expansionLabel || "Food Truck", value: breakdown.expansionValue },
+      { label: "Character Score", value: breakdown.loyaltyValue },
+      { label: `Recent points bonus ${Math.round((Number(breakdown.recentPerformanceRate) || 0) * 100)}%`, value: breakdown.recentPerformanceValue },
+      { label: "Rating bonus", value: breakdown.ratingValue },
+      { label: "Upgrades", value: breakdown.upgradeValue },
+      { label: "Spendable Points", value: cashOnHand },
     ];
 
     return `
@@ -1031,9 +1031,12 @@
         <div class="restaurant-value-breakdown-grid">
           ${rows
             .map(
-              ([label, value]) => `
+              ({ label, detail = "", value }) => `
                 <div class="restaurant-value-breakdown-row">
-                  <span>${escapeHtml(label)}</span>
+                  <span>
+                    ${escapeHtml(label)}
+                    ${detail ? `<small>${escapeHtml(detail)}</small>` : ""}
+                  </span>
                   <strong>${core.formatCurrency(value)}</strong>
                 </div>
               `
@@ -1110,7 +1113,7 @@
     return `
       <div class="restaurant-expansion-image-card">
         <div class="restaurant-expansion-image-copy">
-          <span>Current restaurant</span>
+          <span>Restaurant Type</span>
           <strong>${escapeHtml(imageConfig.label)}</strong>
         </div>
         <div class="restaurant-expansion-art ${imageConfig.className}" role="img" aria-label="${escapeHtml(`${imageConfig.label} for ${restaurantName}`)}">
@@ -1331,8 +1334,10 @@
       return "";
     }
 
+    const valueAdded = Math.max(0, Number(preview.valueAdded) || 0);
+    const totalScoreIncrease = Math.max(0, valueAdded - nextCost);
     const message = cashOnHand >= nextCost
-      ? `You can expand to ${preview.next.label} now. Expanding adds ${core.formatCurrency(preview.valueAdded)} to your restaurant score and grows your Total Score.`
+      ? `You can expand to ${preview.next.label} now. Expanding costs ${core.formatCurrency(nextCost)} but adds ${core.formatCurrency(valueAdded)} to your Restaurant Type, so your Total Score will increase by ${core.formatCurrency(totalScoreIncrease)}.`
       : affordableUpgrade
         ? `${affordableUpgrade.label} is available now. Upgrades add score, boost future points, and grow your Total Score.`
         : `You are ${core.formatCurrency(shortfall)} away from ${preview.next.label}. A few more characters could help you expand and grow your Total Score.`;
