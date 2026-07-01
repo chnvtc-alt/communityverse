@@ -1021,10 +1021,10 @@
         : `${unlockedCharacters} characters`;
     const rows = [
       { label: "Restaurant Type", detail: breakdown.expansionLabel || "Food Truck", value: breakdown.expansionValue },
+      { label: "Upgrades", value: breakdown.upgradeValue },
       { label: "Characters", detail: characterDetail, value: breakdown.loyaltyValue },
       { label: "Spendable Points *", value: cashOnHand },
       { label: "Trivia Accuracy **", value: breakdown.ratingValue },
-      { label: "Upgrades", value: breakdown.upgradeValue },
     ];
 
     return `
