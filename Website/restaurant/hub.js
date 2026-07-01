@@ -1022,16 +1022,16 @@
     const rows = [
       { label: "Restaurant Type", detail: breakdown.expansionLabel || "Food Truck", value: breakdown.expansionValue },
       { label: "Characters", detail: characterDetail, value: breakdown.loyaltyValue },
+      { label: "Spendable Points *", value: cashOnHand },
       { label: "Recent reward bonus", detail: `${Math.round((Number(breakdown.recentPerformanceRate) || 0) * 100)}% of recent rewards`, value: breakdown.recentPerformanceValue },
       { label: "Rating bonus", detail: "Trivia accuracy", value: breakdown.ratingValue },
       { label: "Upgrades", value: breakdown.upgradeValue },
-      { label: "Spendable Points", detail: "Rewards left after spending", value: cashOnHand },
     ];
 
     return `
       <div class="restaurant-value-breakdown" aria-label="Total Score breakdown">
         <div class="restaurant-value-breakdown-head">
-          <span>Total Score</span>
+          <span>Total Score = Sum of the score cards below</span>
           <strong>${core.formatCurrency(netWorth)}</strong>
         </div>
         <div class="restaurant-value-breakdown-grid">
@@ -1050,7 +1050,7 @@
             .join("")}
         </div>
         <p class="restaurant-value-breakdown-note">
-          Total Score adds the cards above. Characters usually count as 100 pts each in this score. Spendable Points are reward points earned from character wins, minus points used for expansions and upgrades.
+          * Spendable Points = Trivia Rewards from earning characters minus points spent on restaurant expansions and upgrades.
         </p>
       </div>
     `;

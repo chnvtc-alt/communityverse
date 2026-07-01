@@ -1253,6 +1253,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   font-size: 0.92rem;
   font-weight: 800;
   color: var(--green);
+  line-height: 1.2;
 }
 
 .restaurant-value-breakdown-head strong {
