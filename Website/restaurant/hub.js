@@ -1023,7 +1023,7 @@
       { label: "Restaurant Type", detail: breakdown.expansionLabel || "Food Truck", value: breakdown.expansionValue },
       { label: "Characters", detail: characterDetail, value: breakdown.loyaltyValue },
       { label: "Spendable Points *", value: cashOnHand },
-      { label: "Rating bonus", detail: "Trivia accuracy", value: breakdown.ratingValue },
+      { label: "Trivia Accuracy **", value: breakdown.ratingValue },
       { label: "Upgrades", value: breakdown.upgradeValue },
     ];
 
@@ -1049,7 +1049,8 @@
             .join("")}
         </div>
         <p class="restaurant-value-breakdown-note">
-          * Spendable Points = Trivia Rewards from earning characters minus points spent on restaurant expansions and upgrades.
+          * Spendable Points = Trivia Rewards from earning characters minus points spent on restaurant expansions and upgrades.<br />
+          ** Trivia Accuracy = a small bonus based on your trivia rating. A perfect 5.0 rating adds 2.5% to your score before this bonus.
         </p>
       </div>
     `;
