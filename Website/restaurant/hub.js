@@ -33,9 +33,9 @@
     },
     {
       value: "estimatedSales",
-      label: "Character Points",
-      rankLabel: "Character Points",
-      description: "Total points earned from the characters each restaurant has unlocked.",
+      label: "Trivia Rewards",
+      rankLabel: "Trivia Rewards",
+      description: "Total Trivia Rewards earned from character wins, before spending on expansions and upgrades.",
     },
     {
       value: "gamesPlayed",
