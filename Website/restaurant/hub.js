@@ -2140,11 +2140,16 @@
       return "";
     }
 
+    const liveCustomer = core.getCustomerById(record.customerId);
+    if (liveCustomer) {
+      return core.getCustomerBio(liveCustomer);
+    }
+
     if (record.bio) {
       return record.bio;
     }
 
-    return core.getCustomerBio(core.getCustomerById(record.customerId) || {
+    return core.getCustomerBio({
       id: record.customerId,
       name: getCustomerDisplayName(record),
     });
