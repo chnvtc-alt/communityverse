@@ -802,6 +802,14 @@
     );
   }
 
+  function getCustomerDisplayName(record) {
+    if (!record) {
+      return "Character";
+    }
+
+    return core.getCustomerById(record.customerId)?.name || record.customerName || record.name || "Character";
+  }
+
   function getBioPreview(text, maxLength = 170) {
     const value = String(text || "").trim();
     if (value.length <= maxLength) {
@@ -954,8 +962,8 @@
       ? customers
           .map((entry) => `
             <button class="hub-overview-mini-row" type="button" data-overview-customer="${escapeHtml(entry.customerId)}">
-              <img class="hub-overview-avatar" src="${resolveCustomerImage(entry)}" alt="${escapeHtml(entry.customerName)}" onerror="this.onerror=null;this.src='../assets/restaurant-challenge/customers/customer-placeholder.svg';" />
-              <span>${escapeHtml(entry.customerName)}</span>
+              <img class="hub-overview-avatar" src="${resolveCustomerImage(entry)}" alt="${escapeHtml(getCustomerDisplayName(entry))}" onerror="this.onerror=null;this.src='../assets/restaurant-challenge/customers/customer-placeholder.svg';" />
+              <span>${escapeHtml(getCustomerDisplayName(entry))}</span>
             </button>
           `)
           .join("")
@@ -2138,7 +2146,7 @@
 
     return core.getCustomerBio(core.getCustomerById(record.customerId) || {
       id: record.customerId,
-      name: record.customerName,
+      name: getCustomerDisplayName(record),
     });
   }
 
@@ -2214,6 +2222,7 @@
     const selectedInviteBackHref = selectedCustomer && !selectedIsFeedbackReward
       ? getCustomerInviteBackHref(selectedCustomer, selectedDirectoryRestaurant)
       : "";
+    const selectedCustomerName = getCustomerDisplayName(selectedCustomer);
       elements.collection.innerHTML = `
       <h2 class="section-title">Character Collection</h2>
       <p class="copy">Your unlocked characters are stored here. Tap a card to view it or play for that character again.</p>
@@ -2229,7 +2238,7 @@
               <div class="collection-selected-card collection-selected-card-mobile ${selectedCustomer.status === "favorite" ? "collection-selected-card-favorite" : ""}">
                 <div class="collection-selected-copy collection-selected-copy-mobile">
                   <p class="kicker" style="margin: 0 0 4px;">Selected Character</p>
-                  <h3 class="section-title" style="margin: 0; font-size: 1.45rem;">${escapeHtml(selectedCustomer.customerName)}</h3>
+                  <h3 class="section-title" style="margin: 0; font-size: 1.45rem;">${escapeHtml(selectedCustomerName)}</h3>
                   <p class="customer-meta" style="margin-top: 4px;">${escapeHtml(selectedStatusLabel)}</p>
                   ${selectedFavoriteProgress}
                   <p class="collection-selected-bio">${escapeHtml(showFullBio ? selectedCustomerBio : selectedCustomerBioPreview.text)}</p>
@@ -2242,7 +2251,7 @@
                   }
                 </div>
                 <div class="collection-selected-mobile-row">
-                  <img class="customer-avatar collection-selected-avatar" src="${resolveCustomerImage(selectedCustomer)}" alt="${escapeHtml(selectedCustomer.customerName)}" onerror="this.onerror=null;this.src='../assets/restaurant-challenge/customers/customer-placeholder.svg';" />
+                  <img class="customer-avatar collection-selected-avatar" src="${resolveCustomerImage(selectedCustomer)}" alt="${escapeHtml(selectedCustomerName)}" onerror="this.onerror=null;this.src='../assets/restaurant-challenge/customers/customer-placeholder.svg';" />
                   <div class="collection-selected-mobile-actions">
                     <span class="collection-selected-value">Reward ${core.formatCurrency(selectedValue)}</span>
                     <span class="chip collection-selected-rarity-chip">${selectedCustomer.rarity}</span>
@@ -2254,10 +2263,10 @@
             : `
               <div class="collection-selected-card ${selectedCustomer.status === "favorite" ? "collection-selected-card-favorite" : ""}">
                 <div class="collection-selected-top">
-                  <img class="customer-avatar collection-selected-avatar" src="${resolveCustomerImage(selectedCustomer)}" alt="${escapeHtml(selectedCustomer.customerName)}" onerror="this.onerror=null;this.src='../assets/restaurant-challenge/customers/customer-placeholder.svg';" />
+                  <img class="customer-avatar collection-selected-avatar" src="${resolveCustomerImage(selectedCustomer)}" alt="${escapeHtml(selectedCustomerName)}" onerror="this.onerror=null;this.src='../assets/restaurant-challenge/customers/customer-placeholder.svg';" />
                   <div class="collection-selected-copy">
                     <p class="kicker" style="margin: 0 0 4px;">Selected Character</p>
-                    <h3 class="section-title" style="margin: 0; font-size: 1.45rem;">${escapeHtml(selectedCustomer.customerName)}</h3>
+                    <h3 class="section-title" style="margin: 0; font-size: 1.45rem;">${escapeHtml(selectedCustomerName)}</h3>
                     <p class="customer-meta" style="margin-top: 4px;">${escapeHtml(selectedStatusLabel)}</p>
                     ${selectedFavoriteProgress}
                     <p class="collection-selected-bio">${escapeHtml(showFullBio ? selectedCustomerBio : selectedCustomerBioPreview.text)}</p>
@@ -2289,6 +2298,7 @@
                 .map(
                   (entry) => {
                     const image = resolveCustomerImage(entry);
+                    const entryName = getCustomerDisplayName(entry);
                     const entryValue = core.getCollectionEntryValue
                       ? core.getCollectionEntryValue(entry)
                       : entry.status === "regular"
@@ -2315,9 +2325,9 @@
                     return `
                     <button class="customer-mini-card ${statusClass} ${isSelected ? "customer-mini-card-selected" : ""}" type="button" data-customer-id="${escapeHtml(entry.customerId)}" aria-pressed="${isSelected ? "true" : "false"}">
                       <div class="customer-mini-summary">
-                        <img class="customer-avatar customer-avatar-compact" src="${image}" alt="${escapeHtml(entry.customerName)}" onerror="this.onerror=null;this.src='../assets/restaurant-challenge/customers/customer-placeholder.svg';" />
+                        <img class="customer-avatar customer-avatar-compact" src="${image}" alt="${escapeHtml(entryName)}" onerror="this.onerror=null;this.src='../assets/restaurant-challenge/customers/customer-placeholder.svg';" />
                         <div class="customer-mini-copy">
-                          <p class="customer-name">${escapeHtml(entry.customerName)}</p>
+                          <p class="customer-name">${escapeHtml(entryName)}</p>
                           <p class="customer-meta">${escapeHtml(entryStatusLabel)}</p>
                         </div>
                         ${isSelected ? `<span class="customer-mini-selected-label">Selected</span>` : ""}
