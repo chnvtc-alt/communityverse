@@ -132,7 +132,7 @@
     </script>
     <link rel="stylesheet" href="../shared/restaurant.css?v=hub-game-picker-v1" />
     <script defer src="../shared/app-core.js?v=character-bonus-flat-v1"></script>
-    <script defer src="hub.js?v=live-character-bios-v1"></script>
+    <script defer src="hub.js?v=restaurant-picker-fallback-v1"></script>
   </head>
   <body data-page="hub">
     <main class="app-shell">
@@ -149,7 +149,7 @@
 
       <section class="challenge-splash" aria-labelledby="restaurant-challenge-title">
         <div class="challenge-hero-row">
-          <a class="challenge-hero-link" id="splash-play-button" href="/americana/" aria-label="Start Restaurant Challenge Trivia">
+          <a class="challenge-hero-link" id="splash-play-button" href="#splash-chooser" aria-label="Choose a Restaurant Challenge game">
             <img
               class="challenge-hero-image"
               src="/assets/restaurant-challenge/restaurant-challenge-trivia-hero.jpg"
@@ -188,7 +188,7 @@
 
           <div class="challenge-action-row">
             <div class="challenge-mode-panel" id="challenge-solo-panel">
-              <a class="button button-primary challenge-splash-primary" id="splash-start-playing-button" href="/americana/">Start Game</a>
+              <a class="button button-primary challenge-splash-primary" id="splash-start-playing-button" href="#splash-chooser">Start Game</a>
             </div>
 
             <div class="challenge-mode-panel challenge-friends-panel hidden" id="challenge-friends-panel">
@@ -198,7 +198,7 @@
                   <h2 id="challenge-host-title">Create a room and share the code.</h2>
                   <p>Start a live trivia room for this restaurant. You will get a room code and invite link to send to friends.</p>
                 </div>
-                <a class="button button-primary challenge-splash-primary" id="splash-create-room-button" href="/americana/play/?multiplayer=1">Create New Game</a>
+                <a class="button button-primary challenge-splash-primary" id="splash-create-room-button" href="#splash-chooser">Create New Game</a>
               </section>
 
               <section class="challenge-friends-step challenge-join-step" aria-labelledby="challenge-join-title">
