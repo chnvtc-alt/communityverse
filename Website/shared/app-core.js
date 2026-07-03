@@ -1266,6 +1266,33 @@
       .sort((left, right) => (Number(left.sortOrder) || 0) - (Number(right.sortOrder) || 0));
   }
 
+  const QUESTION_MIX_SLOT_COUNT = 10;
+  const QUESTION_MIX_SLOT_TYPES = new Set(["auto", "random", "food", "restaurant", "area", "character", "tag"]);
+
+  function normalizeQuestionMixSlot(slot, index = 0) {
+    const safeSlot = typeof slot === "object" && slot ? structuredClone(slot) : {};
+    const type = QUESTION_MIX_SLOT_TYPES.has(String(safeSlot.type || "").trim())
+      ? String(safeSlot.type || "").trim()
+      : "auto";
+
+    return {
+      type,
+      tag: type === "tag" ? slugify(safeSlot.tag || "") : "",
+      sortOrder: Number.isFinite(Number(safeSlot.sortOrder)) ? Number(safeSlot.sortOrder) : index,
+    };
+  }
+
+  function normalizeQuestionMix(questionMix) {
+    const safeMix = typeof questionMix === "object" && questionMix ? structuredClone(questionMix) : {};
+    const rawSlots = Array.isArray(safeMix.slots) ? safeMix.slots : [];
+    return {
+      enabled: safeMix.enabled === true,
+      slots: Array.from({ length: QUESTION_MIX_SLOT_COUNT }, (_, index) =>
+        normalizeQuestionMixSlot(rawSlots[index], index)
+      ),
+    };
+  }
+
   function normalizeRestaurantRecord(restaurant) {
     const safeRestaurant = typeof restaurant === "object" && restaurant ? structuredClone(restaurant) : {};
     const slug = slugify(safeRestaurant.slug || safeRestaurant.name);
@@ -1293,6 +1320,7 @@
       !["americana", "wafflemaster"].includes(safeRestaurant.slug);
     safeRestaurant.includeAreaQuestions = safeRestaurant.includeAreaQuestions !== false;
     safeRestaurant.salesDemoMode = safeRestaurant.salesDemoMode === true || safeRestaurant.sales_demo_mode === true;
+    safeRestaurant.questionMix = normalizeQuestionMix(safeRestaurant.questionMix || safeRestaurant.question_mix);
     safeRestaurant.feedbackEnabled = safeRestaurant.feedbackEnabled === true;
     safeRestaurant.feedbackPrompt = String(safeRestaurant.feedbackPrompt || "").trim();
     safeRestaurant.feedbackRewardCustomerId = String(safeRestaurant.feedbackRewardCustomerId || "").trim();
@@ -4591,16 +4619,88 @@
     };
   }
 
-  function buildSessionQuestions(restaurant, customer, profile) {
-    const pools = getQuestionPoolForSession(restaurant, customer);
-    const chosen = Array(10).fill(null);
-    const usedIds = new Set();
-    const seenIds = new Set(
-      Array.isArray(profile?.seenQuestionIds)
-        ? profile.seenQuestionIds.map((id) => String(id || "").trim()).filter(Boolean)
-        : []
-    );
-    const isAmericanaDemo = restaurant.slug === "americana";
+  function placeQuestionInSessionSlot(chosen, question, preferredSlots, usedIds) {
+    if (!question) {
+      return false;
+    }
+
+    const openPreferredSlot = preferredSlots.find((slot) => !chosen[slot]);
+    const slot = openPreferredSlot ?? chosen.findIndex((entry) => !entry);
+    if (slot < 0) {
+      return false;
+    }
+
+    usedIds.add(question.id);
+    chosen[slot] = question;
+    return true;
+  }
+
+  function questionHasTag(question, tag) {
+    const targetTag = slugify(tag || "");
+    if (!targetTag) {
+      return false;
+    }
+
+    return (Array.isArray(question.tags) ? question.tags : [])
+      .map(slugify)
+      .includes(targetTag);
+  }
+
+  function getCustomQuestionMixPool(slot, pools, restaurant, isAmericanaDemo) {
+    const type = String(slot?.type || "auto").trim();
+    if (type === "random") {
+      return isAmericanaDemo
+        ? pools.globalQuestions.filter(isGeneralTriviaQuestion)
+        : pools.globalQuestions;
+    }
+    if (type === "food") {
+      return pools.restaurantQuestions.filter(isFoodPhotoQuestion);
+    }
+    if (type === "restaurant") {
+      return pools.restaurantQuestions.filter((question) => !isFoodPhotoQuestion(question));
+    }
+    if (type === "area") {
+      return pools.areaQuestions;
+    }
+    if (type === "character") {
+      return [...pools.customerQuestions, ...pools.focusedQuestions];
+    }
+    if (type === "tag") {
+      return questions.filter(
+        (question) =>
+          questionHasTag(question, slot.tag) &&
+          isQuestionAllowedForRestaurant(question, restaurant)
+      );
+    }
+    return [];
+  }
+
+  function applyCustomQuestionMix(chosen, restaurant, pools, usedIds, seenIds, isAmericanaDemo) {
+    const questionMix = normalizeQuestionMix(restaurant.questionMix);
+    if (!questionMix.enabled) {
+      return;
+    }
+
+    questionMix.slots.forEach((slot, index) => {
+      if (slot.type === "auto" || chosen[index]) {
+        return;
+      }
+
+      const selectedQuestion = pickManyPreferUnseen(
+        getCustomQuestionMixPool(slot, pools, restaurant, isAmericanaDemo),
+        1,
+        usedIds,
+        seenIds
+      )[0];
+
+      if (selectedQuestion) {
+        usedIds.add(selectedQuestion.id);
+        chosen[index] = selectedQuestion;
+      }
+    });
+  }
+
+  function fillAutomaticSessionQuestions(chosen, restaurant, customer, profile, pools, usedIds, seenIds, isAmericanaDemo) {
     const restaurantSlots = isAmericanaDemo ? [3] : [2, 6];
     const openerSlots = [0];
 
@@ -4610,9 +4710,10 @@
       restaurantImageQuestions,
       getRestaurantQuestionMemory(profile, restaurant.slug).lastImageQuestionId
     );
-
+    const openRestaurantSlots = restaurantSlots.filter((slot) => !chosen[slot]);
     const restaurantSelection = [];
-    if (restaurantImageQuestion) {
+
+    if (restaurantImageQuestion && openRestaurantSlots.length && !usedIds.has(restaurantImageQuestion.id)) {
       restaurantSelection.push(restaurantImageQuestion);
     }
 
@@ -4622,19 +4723,18 @@
           (!restaurantImageQuestion || question.id !== restaurantImageQuestion.id) &&
           !(question.image || question.imagePrompt)
       ),
-      restaurantSlots.length - restaurantSelection.length,
+      openRestaurantSlots.length - restaurantSelection.length,
       usedIds,
       seenIds
     ).forEach((question) => {
       restaurantSelection.push(question);
     });
 
-    restaurantSelection.slice(0, restaurantSlots.length).forEach((question, index) => {
-      usedIds.add(question.id);
-      chosen[restaurantSlots[index]] = question;
+    restaurantSelection.slice(0, openRestaurantSlots.length).forEach((question) => {
+      placeQuestionInSessionSlot(chosen, question, restaurantSlots, usedIds);
     });
 
-    if (isAmericanaDemo) {
+    if (isAmericanaDemo && !chosen[openerSlots[0]]) {
       const openerQuestion = pickManyPreferUnseen(
         pools.globalQuestions.filter(
           (question) => isGeneralTriviaQuestion(question) && !usedIds.has(question.id)
@@ -4644,10 +4744,7 @@
         seenIds
       )[0];
 
-      if (openerQuestion) {
-        usedIds.add(openerQuestion.id);
-        chosen[openerSlots[0]] = openerQuestion;
-      }
+      placeQuestionInSessionSlot(chosen, openerQuestion, openerSlots, usedIds);
     }
 
     const challengingCustomer = customer.characterType === "historical" || customer.characterType === "storybook";
@@ -4701,6 +4798,20 @@
         remainingIndex += 1;
       });
     }
+  }
+
+  function buildSessionQuestions(restaurant, customer, profile) {
+    const pools = getQuestionPoolForSession(restaurant, customer);
+    const chosen = Array(10).fill(null);
+    const usedIds = new Set();
+    const seenIds = new Set(
+      Array.isArray(profile?.seenQuestionIds)
+        ? profile.seenQuestionIds.map((id) => String(id || "").trim()).filter(Boolean)
+        : []
+    );
+    const isAmericanaDemo = restaurant.slug === "americana";
+    applyCustomQuestionMix(chosen, restaurant, pools, usedIds, seenIds, isAmericanaDemo);
+    fillAutomaticSessionQuestions(chosen, restaurant, customer, profile, pools, usedIds, seenIds, isAmericanaDemo);
 
     return chosen.filter(Boolean).map(prepareQuestion);
   }

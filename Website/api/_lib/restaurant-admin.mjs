@@ -56,6 +56,33 @@ function normalizeSurveyQuestions(questions = []) {
     .sort((left, right) => (Number(left.sortOrder) || 0) - (Number(right.sortOrder) || 0));
 }
 
+const QUESTION_MIX_SLOT_COUNT = 10;
+const QUESTION_MIX_SLOT_TYPES = new Set(["auto", "random", "food", "restaurant", "area", "character", "tag"]);
+
+function normalizeQuestionMixSlot(slot, index = 0) {
+  const safeSlot = typeof slot === "object" && slot ? structuredClone(slot) : {};
+  const type = QUESTION_MIX_SLOT_TYPES.has(String(safeSlot.type || "").trim())
+    ? String(safeSlot.type || "").trim()
+    : "auto";
+
+  return {
+    type,
+    tag: type === "tag" ? slugifyRestaurant(safeSlot.tag || "") : "",
+    sortOrder: Number.isFinite(Number(safeSlot.sortOrder)) ? Number(safeSlot.sortOrder) : index,
+  };
+}
+
+function normalizeQuestionMix(questionMix) {
+  const safeMix = typeof questionMix === "object" && questionMix ? structuredClone(questionMix) : {};
+  const rawSlots = Array.isArray(safeMix.slots) ? safeMix.slots : [];
+  return {
+    enabled: safeMix.enabled === true,
+    slots: Array.from({ length: QUESTION_MIX_SLOT_COUNT }, (_, index) =>
+      normalizeQuestionMixSlot(rawSlots[index], index)
+    ),
+  };
+}
+
 export function normalizeRestaurant(restaurant) {
   const safeRestaurant = typeof restaurant === "object" && restaurant ? structuredClone(restaurant) : {};
   const slug = slugifyRestaurant(safeRestaurant.slug || safeRestaurant.name);
@@ -94,6 +121,7 @@ export function normalizeRestaurant(restaurant) {
     !["americana", "wafflemaster"].includes(safeRestaurant.slug);
   safeRestaurant.includeAreaQuestions = safeRestaurant.includeAreaQuestions !== false;
   safeRestaurant.salesDemoMode = safeRestaurant.salesDemoMode === true || safeRestaurant.sales_demo_mode === true;
+  safeRestaurant.questionMix = normalizeQuestionMix(safeRestaurant.questionMix || safeRestaurant.question_mix);
   safeRestaurant.sortOrder = Number(safeRestaurant.sortOrder) || 0;
 
   return safeRestaurant;

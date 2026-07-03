@@ -735,6 +735,20 @@
             Sales demo mode
             <span class="optional">Use this for a sample restaurant game made for prospects. It lets us hide or simplify player-only features later.</span>
           </label>
+          <label class="checkbox-label form-span">
+            <input id="restaurant-question-mix-enabled" type="checkbox" />
+            Use custom question mix
+            <span class="optional">Turn this on only when this restaurant should force certain kinds of questions into each 10-question game.</span>
+          </label>
+          <section id="restaurant-question-mix-panel" class="form-span question-mix-panel" aria-labelledby="restaurant-question-mix-title" hidden>
+            <div class="question-mix-heading">
+              <div>
+                <h3 id="restaurant-question-mix-title">Game question mix</h3>
+                <p class="optional">Leave a row on Current automatic choice unless you want that exact question spot to try a specific kind of question. If a row cannot find a match, the game fills it normally.</p>
+              </div>
+            </div>
+            <div id="restaurant-question-mix-slots" class="question-mix-slots"></div>
+          </section>
           <label class="form-span">
             Game title
             <input id="restaurant-public-game-name" placeholder="The Community Cafe Game" />
@@ -846,6 +860,6 @@
         </div>
       </form>
     </dialog>
-    <script type="module" src="/admin/questions/admin.js?v=feedback-delete-v1"></script>
+    <script type="module" src="/admin/questions/admin.js?v=question-mix-v1"></script>
   </body>
 </html>

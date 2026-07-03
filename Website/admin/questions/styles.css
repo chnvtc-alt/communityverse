@@ -947,6 +947,47 @@ dialog::backdrop {
   background: rgba(255, 255, 255, 0.35);
 }
 
+.question-mix-panel {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.question-mix-heading h3 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.question-mix-slots {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.question-mix-slot {
+  display: grid;
+  grid-template-columns: 40px minmax(220px, 1fr) minmax(180px, 0.8fr);
+  gap: 12px;
+  align-items: end;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--paper);
+}
+
+.question-mix-slot strong {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: rgba(47, 119, 86, 0.1);
+  color: var(--green);
+}
+
 .survey-editor-heading,
 .survey-question-row-top {
   display: flex;
@@ -1082,6 +1123,10 @@ dialog::backdrop {
   .survey-question-row-top {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .question-mix-slot {
+    grid-template-columns: 1fr;
   }
 
   .survey-question-grid {

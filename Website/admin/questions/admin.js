@@ -24,6 +24,17 @@ const RESTAURANT_NAME_FALLBACKS = {
   marcossp: "Marco's Pizza - South Paulding",
   wafflemaster: "Waffle Master",
 };
+const QUESTION_MIX_SLOT_COUNT = 10;
+const QUESTION_MIX_SLOT_TYPES = [
+  { value: "auto", label: "Current automatic choice" },
+  { value: "random", label: "Random general trivia" },
+  { value: "food", label: "Food photo question" },
+  { value: "restaurant", label: "Restaurant question" },
+  { value: "area", label: "Area/local question" },
+  { value: "character", label: "Character question" },
+  { value: "tag", label: "Question with tag" },
+];
+const QUESTION_MIX_SLOT_TYPE_VALUES = new Set(QUESTION_MIX_SLOT_TYPES.map((type) => type.value));
 
 const elements = {
   tabs: [...document.querySelectorAll(".workshop-tab")],
@@ -105,6 +116,9 @@ const elements = {
   restaurantAreaSlug: document.querySelector("#restaurant-area-slug"),
   restaurantIncludeAreaQuestions: document.querySelector("#restaurant-include-area-questions"),
   restaurantSalesDemoMode: document.querySelector("#restaurant-sales-demo-mode"),
+  restaurantQuestionMixEnabled: document.querySelector("#restaurant-question-mix-enabled"),
+  restaurantQuestionMixPanel: document.querySelector("#restaurant-question-mix-panel"),
+  restaurantQuestionMixSlots: document.querySelector("#restaurant-question-mix-slots"),
   restaurantDescription: document.querySelector("#restaurant-description"),
   restaurantOpeningCopy: document.querySelector("#restaurant-opening-copy"),
   restaurantFeedbackEnabled: document.querySelector("#restaurant-feedback-enabled"),
@@ -796,6 +810,30 @@ function normalizeSurveyQuestions(questions = []) {
     .sort((left, right) => (Number(left.sortOrder) || 0) - (Number(right.sortOrder) || 0));
 }
 
+function normalizeQuestionMixSlot(slot, index = 0) {
+  const safeSlot = typeof slot === "object" && slot ? structuredClone(slot) : {};
+  const type = QUESTION_MIX_SLOT_TYPE_VALUES.has(String(safeSlot.type || "").trim())
+    ? String(safeSlot.type || "").trim()
+    : "auto";
+
+  return {
+    type,
+    tag: type === "tag" ? slugify(safeSlot.tag || "") : "",
+    sortOrder: Number.isFinite(Number(safeSlot.sortOrder)) ? Number(safeSlot.sortOrder) : index,
+  };
+}
+
+function normalizeQuestionMix(questionMix) {
+  const safeMix = typeof questionMix === "object" && questionMix ? structuredClone(questionMix) : {};
+  const rawSlots = Array.isArray(safeMix.slots) ? safeMix.slots : [];
+  return {
+    enabled: safeMix.enabled === true,
+    slots: Array.from({ length: QUESTION_MIX_SLOT_COUNT }, (_, index) =>
+      normalizeQuestionMixSlot(rawSlots[index], index)
+    ),
+  };
+}
+
 function normalizeCustomer(customer) {
   const safeCustomer = typeof customer === "object" && customer ? structuredClone(customer) : {};
   safeCustomer.id = String(safeCustomer.id || "").trim();
@@ -861,6 +899,7 @@ function normalizeRestaurantRecord(restaurant) {
     !["americana", "wafflemaster"].includes(safeRestaurant.slug);
   safeRestaurant.includeAreaQuestions = safeRestaurant.includeAreaQuestions !== false;
   safeRestaurant.salesDemoMode = safeRestaurant.salesDemoMode === true || safeRestaurant.sales_demo_mode === true;
+  safeRestaurant.questionMix = normalizeQuestionMix(safeRestaurant.questionMix || safeRestaurant.question_mix);
   return safeRestaurant;
 }
 
@@ -2498,6 +2537,80 @@ function addSurveyQuestion() {
   renderSurveyQuestions(questions);
 }
 
+function questionMixSlotRow(slot, index) {
+  const safeSlot = normalizeQuestionMixSlot(slot, index);
+  const typeOptions = QUESTION_MIX_SLOT_TYPES.map((type) => {
+    const selected = type.value === safeSlot.type ? " selected" : "";
+    return `<option value="${type.value}"${selected}>${escapeHtml(type.label)}</option>`;
+  }).join("");
+  const tagHidden = safeSlot.type === "tag" ? "" : " hidden";
+
+  return `
+    <article class="question-mix-slot" data-question-mix-slot="${index}">
+      <strong>${index + 1}</strong>
+      <label>
+        Question type
+        <select class="question-mix-type">${typeOptions}</select>
+      </label>
+      <label class="question-mix-tag-wrap"${tagHidden}>
+        Tag
+        <input class="question-mix-tag" list="tag-options" placeholder="britain" value="${escapeHtml(safeSlot.tag)}" />
+      </label>
+    </article>
+  `;
+}
+
+function renderQuestionMix(questionMix) {
+  if (!elements.restaurantQuestionMixEnabled || !elements.restaurantQuestionMixPanel || !elements.restaurantQuestionMixSlots) {
+    return;
+  }
+
+  const normalized = normalizeQuestionMix(questionMix);
+  elements.restaurantQuestionMixEnabled.checked = normalized.enabled;
+  elements.restaurantQuestionMixPanel.hidden = !normalized.enabled;
+  elements.restaurantQuestionMixSlots.innerHTML = normalized.slots
+    .map((slot, index) => questionMixSlotRow(slot, index))
+    .join("");
+}
+
+function questionMixFromForm() {
+  if (!elements.restaurantQuestionMixEnabled || !elements.restaurantQuestionMixSlots) {
+    return normalizeQuestionMix();
+  }
+
+  const slots = [...elements.restaurantQuestionMixSlots.querySelectorAll(".question-mix-slot")]
+    .map((row, index) => normalizeQuestionMixSlot({
+      type: row.querySelector(".question-mix-type")?.value || "auto",
+      tag: row.querySelector(".question-mix-tag")?.value || "",
+      sortOrder: index,
+    }, index));
+
+  return normalizeQuestionMix({
+    enabled: elements.restaurantQuestionMixEnabled.checked,
+    slots,
+  });
+}
+
+function toggleQuestionMixPanel() {
+  if (!elements.restaurantQuestionMixEnabled || !elements.restaurantQuestionMixPanel) {
+    return;
+  }
+
+  elements.restaurantQuestionMixPanel.hidden = !elements.restaurantQuestionMixEnabled.checked;
+}
+
+function updateQuestionMixSlotTag(row) {
+  if (!row) {
+    return;
+  }
+
+  const type = row.querySelector(".question-mix-type")?.value || "auto";
+  const tagWrap = row.querySelector(".question-mix-tag-wrap");
+  if (tagWrap) {
+    tagWrap.hidden = type !== "tag";
+  }
+}
+
 function moveSurveyQuestion(index, direction) {
   const questions = surveyQuestionsFromForm();
   const nextIndex = direction === "up" ? index - 1 : index + 1;
@@ -2538,6 +2651,7 @@ function resetRestaurantEditor(restaurant = null) {
   elements.restaurantAreaSlug.value = restaurant?.areaSlug || "";
   elements.restaurantIncludeAreaQuestions.checked = restaurant?.includeAreaQuestions !== false;
   elements.restaurantSalesDemoMode.checked = restaurant?.salesDemoMode === true;
+  renderQuestionMix(restaurant?.questionMix);
   elements.restaurantDescription.value = restaurant?.description || "";
   elements.restaurantOpeningCopy.value = restaurant?.openingCopy || "";
   elements.restaurantFeedbackEnabled.checked = restaurant?.feedbackEnabled === true;
@@ -2571,6 +2685,7 @@ function restaurantFromForm() {
     areaSlug: elements.restaurantAreaSlug.value.trim(),
     includeAreaQuestions: elements.restaurantIncludeAreaQuestions.checked,
     salesDemoMode: elements.restaurantSalesDemoMode.checked,
+    questionMix: questionMixFromForm(),
     description: elements.restaurantDescription.value.trim(),
     openingCopy: elements.restaurantOpeningCopy.value.trim(),
     feedbackEnabled: elements.restaurantFeedbackEnabled.checked,
@@ -3458,6 +3573,13 @@ elements.restaurantForm.addEventListener("submit", saveRestaurantEditor);
 elements.deleteRestaurantButton.addEventListener("click", deleteCurrentRestaurant);
 elements.closeRestaurantEditorButton.addEventListener("click", () => elements.restaurantDialog.close());
 elements.cancelRestaurantButton.addEventListener("click", () => elements.restaurantDialog.close());
+elements.restaurantQuestionMixEnabled.addEventListener("change", toggleQuestionMixPanel);
+elements.restaurantQuestionMixSlots.addEventListener("change", (event) => {
+  if (!event.target.classList.contains("question-mix-type")) {
+    return;
+  }
+  updateQuestionMixSlotTag(event.target.closest(".question-mix-slot"));
+});
 elements.addSurveyQuestionButton.addEventListener("click", addSurveyQuestion);
 elements.restaurantSurveyQuestionList.addEventListener("click", (event) => {
   const row = event.target.closest(".survey-question-row");
