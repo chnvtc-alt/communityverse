@@ -408,6 +408,18 @@ th {
   grid-column: 1 / -1;
 }
 
+.form-section-title {
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  color: var(--green);
+  font-family: "DM Mono", monospace;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
 .action-spacer {
   flex: 1;
 }

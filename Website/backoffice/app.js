@@ -17,6 +17,35 @@
     former: "Former",
   };
 
+  const prospectStageLabels = {
+    "new-lead": "New Lead",
+    contacted: "Contacted",
+    "demo-needed": "Demo Needed",
+    "proposal-sent": "Proposal Sent",
+    "follow-up": "Follow-Up",
+    "not-interested": "Not Interested",
+  };
+
+  const interestLabels = {
+    hot: "Hot",
+    warm: "Warm",
+    cold: "Cold",
+  };
+
+  const paymentStatusLabels = {
+    "not-invoiced": "Not Invoiced",
+    "invoice-sent": "Invoice Sent",
+    paid: "Paid",
+    "past-due": "Past Due",
+  };
+
+  const setupStatusLabels = {
+    "not-started": "Not Started",
+    "info-needed": "Info Needed",
+    "in-progress": "In Progress",
+    live: "Live",
+  };
+
   const elements = {
     sectionTitle: document.querySelector("#section-title"),
     navItems: [...document.querySelectorAll(".nav-item")],
@@ -32,6 +61,7 @@
     recentRestaurants: document.querySelector("#recent-restaurants"),
     followupList: document.querySelector("#followup-list"),
     prospectList: document.querySelector("#prospect-list"),
+    salesList: document.querySelector("#sales-list"),
     metricTotal: document.querySelector("#metric-total"),
     metricCustomers: document.querySelector("#metric-customers"),
     metricProspects: document.querySelector("#metric-prospects"),
@@ -58,6 +88,20 @@
     lastContacted: document.querySelector("#last-contacted"),
     nextFollowUp: document.querySelector("#next-follow-up"),
     notes: document.querySelector("#restaurant-notes"),
+    prospectStage: document.querySelector("#prospect-stage"),
+    interestLevel: document.querySelector("#interest-level"),
+    leadSource: document.querySelector("#lead-source"),
+    assignedTo: document.querySelector("#assigned-to"),
+    prospectNotes: document.querySelector("#prospect-notes"),
+    saleDate: document.querySelector("#sale-date"),
+    packageName: document.querySelector("#package-name"),
+    monthlyAmount: document.querySelector("#monthly-amount"),
+    setupFee: document.querySelector("#setup-fee"),
+    paymentStatus: document.querySelector("#payment-status"),
+    firstInvoiceDate: document.querySelector("#first-invoice-date"),
+    salesperson: document.querySelector("#salesperson"),
+    setupStatus: document.querySelector("#setup-status"),
+    salesNotes: document.querySelector("#sales-notes"),
   };
 
   const state = {
@@ -101,6 +145,20 @@
       lastContacted: String(record.lastContacted || "").trim(),
       nextFollowUp: String(record.nextFollowUp || "").trim(),
       notes: String(record.notes || "").trim(),
+      prospectStage: prospectStageLabels[record.prospectStage] ? record.prospectStage : "",
+      interestLevel: interestLabels[record.interestLevel] ? record.interestLevel : "",
+      leadSource: String(record.leadSource || "").trim(),
+      assignedTo: String(record.assignedTo || "").trim(),
+      prospectNotes: String(record.prospectNotes || "").trim(),
+      saleDate: String(record.saleDate || "").trim(),
+      packageName: String(record.packageName || "").trim(),
+      monthlyAmount: String(record.monthlyAmount || "").trim(),
+      setupFee: String(record.setupFee || "").trim(),
+      paymentStatus: paymentStatusLabels[record.paymentStatus] ? record.paymentStatus : "",
+      firstInvoiceDate: String(record.firstInvoiceDate || "").trim(),
+      salesperson: String(record.salesperson || "").trim(),
+      setupStatus: setupStatusLabels[record.setupStatus] ? record.setupStatus : "",
+      salesNotes: String(record.salesNotes || "").trim(),
       updatedAt: String(record.updatedAt || new Date().toISOString()).trim(),
     };
   }
@@ -149,6 +207,20 @@
           contactName(restaurant),
           restaurant.contactEmail,
           restaurant.contactCell,
+          restaurant.prospectStage,
+          restaurant.interestLevel,
+          restaurant.leadSource,
+          restaurant.assignedTo,
+          restaurant.prospectNotes,
+          restaurant.saleDate,
+          restaurant.packageName,
+          restaurant.monthlyAmount,
+          restaurant.setupFee,
+          restaurant.paymentStatus,
+          restaurant.firstInvoiceDate,
+          restaurant.salesperson,
+          restaurant.setupStatus,
+          restaurant.salesNotes,
           restaurant.notes,
         ].some((value) => String(value || "").toLowerCase().includes(query));
       })
@@ -168,6 +240,26 @@
 
   function statusPill(status) {
     return `<span class="status-pill status-${escapeHtml(status)}">${escapeHtml(statusLabels[status] || status)}</span>`;
+  }
+
+  function labelFor(labels, value, fallback = "") {
+    return labels[value] || fallback;
+  }
+
+  function moneyValue(value) {
+    const trimmed = String(value || "").trim();
+    if (!trimmed) {
+      return "";
+    }
+    const amount = Number(trimmed.replace(/[$,]/g, ""));
+    if (!Number.isFinite(amount)) {
+      return trimmed;
+    }
+    return amount.toLocaleString("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: amount % 1 ? 2 : 0,
+    });
   }
 
   function contactName(restaurant) {
@@ -251,8 +343,42 @@
   function renderProspects() {
     const prospects = getFilteredRestaurants({ forceStatus: "prospect" });
     elements.prospectList.innerHTML = prospects.length
-      ? prospects.map(recordItem).join("")
-      : '<div class="empty-state">No prospects yet. Add one from New Restaurant or New Prospect.</div>';
+      ? prospects.map((restaurant) => `
+          <tr>
+            <td>
+              <strong>${escapeHtml(restaurant.name)}</strong>
+              <div class="helper">${escapeHtml(restaurant.leadSource || "No lead source yet")}</div>
+            </td>
+            <td>${escapeHtml(labelFor(prospectStageLabels, restaurant.prospectStage, "Not set"))}</td>
+            <td>${escapeHtml(labelFor(interestLabels, restaurant.interestLevel, "Not set"))}</td>
+            <td>${escapeHtml(restaurant.lastContacted || "")}</td>
+            <td>${escapeHtml(restaurant.nextFollowUp || "")}</td>
+            <td>${escapeHtml(compactContact(restaurant))}</td>
+            <td><button class="text-button" type="button" data-edit-id="${escapeHtml(restaurant.id)}">Edit</button></td>
+          </tr>
+        `).join("")
+      : '<tr><td colspan="7"><div class="empty-state">No prospects yet. Add one from New Restaurant or New Prospect.</div></td></tr>';
+  }
+
+  function renderSales() {
+    const customers = getFilteredRestaurants({ forceStatus: "customer" });
+    elements.salesList.innerHTML = customers.length
+      ? customers.map((restaurant) => `
+          <tr>
+            <td>
+              <strong>${escapeHtml(restaurant.name)}</strong>
+              <div class="helper">${escapeHtml(contactName(restaurant) || "No contact yet")}</div>
+            </td>
+            <td>${escapeHtml(restaurant.saleDate || "")}</td>
+            <td>${escapeHtml(restaurant.packageName || "")}</td>
+            <td>${escapeHtml(moneyValue(restaurant.monthlyAmount))}</td>
+            <td>${escapeHtml(labelFor(paymentStatusLabels, restaurant.paymentStatus, "Not set"))}</td>
+            <td>${escapeHtml(labelFor(setupStatusLabels, restaurant.setupStatus, "Not set"))}</td>
+            <td>${escapeHtml(restaurant.salesperson || restaurant.assignedTo || "")}</td>
+            <td><button class="text-button" type="button" data-edit-id="${escapeHtml(restaurant.id)}">Edit</button></td>
+          </tr>
+        `).join("")
+      : '<tr><td colspan="8"><div class="empty-state">No sales yet. Change a restaurant status to Customer or use New Sale.</div></td></tr>';
   }
 
   function render() {
@@ -260,6 +386,7 @@
     renderDashboardLists();
     renderRestaurantTable();
     renderProspects();
+    renderSales();
   }
 
   function fillRestaurantForm(restaurant = null, defaultStatus = "prospect") {
@@ -280,6 +407,20 @@
     elements.lastContacted.value = restaurant ? record.lastContacted : "";
     elements.nextFollowUp.value = restaurant ? record.nextFollowUp : "";
     elements.notes.value = restaurant ? record.notes : "";
+    elements.prospectStage.value = restaurant ? record.prospectStage : "";
+    elements.interestLevel.value = restaurant ? record.interestLevel : "";
+    elements.leadSource.value = restaurant ? record.leadSource : "";
+    elements.assignedTo.value = restaurant ? record.assignedTo : "";
+    elements.prospectNotes.value = restaurant ? record.prospectNotes : "";
+    elements.saleDate.value = restaurant ? record.saleDate : "";
+    elements.packageName.value = restaurant ? record.packageName : "";
+    elements.monthlyAmount.value = restaurant ? record.monthlyAmount : "";
+    elements.setupFee.value = restaurant ? record.setupFee : "";
+    elements.paymentStatus.value = restaurant ? record.paymentStatus : "";
+    elements.firstInvoiceDate.value = restaurant ? record.firstInvoiceDate : "";
+    elements.salesperson.value = restaurant ? record.salesperson : "";
+    elements.setupStatus.value = restaurant ? record.setupStatus : "";
+    elements.salesNotes.value = restaurant ? record.salesNotes : "";
     elements.deleteRestaurantButton.hidden = !restaurant;
     elements.editorTitle.textContent = restaurant ? "Edit Restaurant" : "New Restaurant";
   }
@@ -302,6 +443,20 @@
       lastContacted: elements.lastContacted.value,
       nextFollowUp: elements.nextFollowUp.value,
       notes: elements.notes.value,
+      prospectStage: elements.prospectStage.value,
+      interestLevel: elements.interestLevel.value,
+      leadSource: elements.leadSource.value,
+      assignedTo: elements.assignedTo.value,
+      prospectNotes: elements.prospectNotes.value,
+      saleDate: elements.saleDate.value,
+      packageName: elements.packageName.value,
+      monthlyAmount: elements.monthlyAmount.value,
+      setupFee: elements.setupFee.value,
+      paymentStatus: elements.paymentStatus.value,
+      firstInvoiceDate: elements.firstInvoiceDate.value,
+      salesperson: elements.salesperson.value,
+      setupStatus: elements.setupStatus.value,
+      salesNotes: elements.salesNotes.value,
       updatedAt: new Date().toISOString(),
     });
   }

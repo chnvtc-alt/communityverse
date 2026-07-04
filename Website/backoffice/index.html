@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,650;9..144,760&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v2" />
+    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v3" />
   </head>
   <body>
     <div class="app-shell">
@@ -141,19 +141,55 @@
             <div class="card-heading">
               <div>
                 <h3>Prospects</h3>
-                <p class="helper">Restaurants marked Prospect in the Restaurant List.</p>
+                <p class="helper">Restaurants marked Prospect in the Restaurant List, with sales follow-up details.</p>
               </div>
               <button class="button button-primary" type="button" data-new-status="prospect">New Prospect</button>
             </div>
-            <div class="record-list" id="prospect-list"></div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Restaurant</th>
+                    <th>Stage</th>
+                    <th>Interest</th>
+                    <th>Last Contact</th>
+                    <th>Next Follow-Up</th>
+                    <th>Contact</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="prospect-list"></tbody>
+              </table>
+            </div>
           </section>
         </section>
 
         <section class="section-view" id="sales-section" hidden>
-          <section class="placeholder-panel">
-            <p class="eyebrow">Sales</p>
-            <h3>Track deals and sold restaurant games here.</h3>
-            <p>Next step: add sale date, package, price, discount, salesperson, and restaurant setup status.</p>
+          <section class="card table-card">
+            <div class="card-heading">
+              <div>
+                <h3>Sales</h3>
+                <p class="helper">Restaurants marked Customer, with sale and payment setup details.</p>
+              </div>
+              <button class="button button-primary" type="button" data-new-status="customer">New Sale</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Restaurant</th>
+                    <th>Sale Date</th>
+                    <th>Package</th>
+                    <th>Monthly</th>
+                    <th>Payment</th>
+                    <th>Setup</th>
+                    <th>Salesperson</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="sales-list"></tbody>
+              </table>
+            </div>
           </section>
         </section>
 
@@ -260,6 +296,91 @@
             Notes
             <textarea id="restaurant-notes" rows="4" placeholder="Sales notes, preferences, who referred them, setup details..."></textarea>
           </label>
+
+          <div class="form-section-title form-span">Prospect Details</div>
+          <label>
+            Prospect Stage
+            <select id="prospect-stage">
+              <option value="">Not set</option>
+              <option value="new-lead">New Lead</option>
+              <option value="contacted">Contacted</option>
+              <option value="demo-needed">Demo Needed</option>
+              <option value="proposal-sent">Proposal Sent</option>
+              <option value="follow-up">Follow-Up</option>
+              <option value="not-interested">Not Interested</option>
+            </select>
+          </label>
+          <label>
+            Interest Level
+            <select id="interest-level">
+              <option value="">Not set</option>
+              <option value="hot">Hot</option>
+              <option value="warm">Warm</option>
+              <option value="cold">Cold</option>
+            </select>
+          </label>
+          <label>
+            Lead Source
+            <input id="lead-source" placeholder="Walk-in, referral, Facebook..." />
+          </label>
+          <label>
+            Assigned To
+            <input id="assigned-to" placeholder="Salesperson or owner" />
+          </label>
+          <label class="form-span">
+            Prospect Notes
+            <textarea id="prospect-notes" rows="3" placeholder="What they said, objection, best time to call, next step..."></textarea>
+          </label>
+
+          <div class="form-section-title form-span">Sale Details</div>
+          <label>
+            Sale Date
+            <input id="sale-date" type="date" />
+          </label>
+          <label>
+            Package / Plan
+            <input id="package-name" placeholder="Starter, monthly, custom..." />
+          </label>
+          <label>
+            Monthly Amount
+            <input id="monthly-amount" inputmode="decimal" placeholder="199" />
+          </label>
+          <label>
+            Setup Fee
+            <input id="setup-fee" inputmode="decimal" placeholder="0" />
+          </label>
+          <label>
+            Payment Status
+            <select id="payment-status">
+              <option value="">Not set</option>
+              <option value="not-invoiced">Not Invoiced</option>
+              <option value="invoice-sent">Invoice Sent</option>
+              <option value="paid">Paid</option>
+              <option value="past-due">Past Due</option>
+            </select>
+          </label>
+          <label>
+            First Invoice Date
+            <input id="first-invoice-date" type="date" />
+          </label>
+          <label>
+            Salesperson
+            <input id="salesperson" />
+          </label>
+          <label>
+            Setup Status
+            <select id="setup-status">
+              <option value="">Not set</option>
+              <option value="not-started">Not Started</option>
+              <option value="info-needed">Info Needed</option>
+              <option value="in-progress">In Progress</option>
+              <option value="live">Live</option>
+            </select>
+          </label>
+          <label class="form-span">
+            Sale Notes
+            <textarea id="sales-notes" rows="3" placeholder="Price agreement, launch notes, commission notes, payment details..."></textarea>
+          </label>
         </div>
 
         <div class="dialog-actions">
@@ -272,6 +393,6 @@
     </dialog>
 
     <input id="import-file" type="file" accept="application/json" hidden />
-    <script src="/backoffice/app.js?v=backoffice-v2" defer></script>
+    <script src="/backoffice/app.js?v=backoffice-v3" defer></script>
   </body>
 </html>
