@@ -365,9 +365,17 @@ h3 {
 
 .contact-history-inputs {
   display: grid;
-  grid-template-columns: 130px 150px 105px 150px minmax(180px, 1fr) auto;
+  grid-template-columns: minmax(110px, 130px) minmax(130px, 150px) minmax(90px, 105px) minmax(130px, 150px) minmax(180px, 1fr);
   gap: 10px;
   align-items: end;
+}
+
+.contact-history-inputs .button {
+  justify-self: start;
+}
+
+.contact-note-field {
+  min-width: 0;
 }
 
 label {
