@@ -5,6 +5,13 @@
   const KEY_STORAGE = "communityverseBackofficeAdminKey";
   const API_URL = "/api/backoffice";
   const DEFAULT_OWNER = "Tim";
+  const INVOICE_SENDER = {
+    name: "Tim Collins",
+    business: "CommunityVerse Games",
+    street: "3155 Waterplace Cove",
+    cityStateZip: "Villa Rica, GA 30180",
+    phone: "404-428-6302",
+  };
   const SECTION_LABELS = {
     dashboard: "Dashboard",
     restaurants: "Restaurant List",
@@ -1329,8 +1336,10 @@
           </div>
           <div>
             <p class="invoice-label">From</p>
-            <strong>CommunityVerse Games</strong>
-            <span>Restaurant Challenge</span>
+            <strong>${escapeHtml(INVOICE_SENDER.name)} / ${escapeHtml(INVOICE_SENDER.business)}</strong>
+            <span>${escapeHtml(INVOICE_SENDER.street)}</span>
+            <span>${escapeHtml(INVOICE_SENDER.cityStateZip)}</span>
+            <span>${escapeHtml(INVOICE_SENDER.phone)}</span>
           </div>
         </section>
         <table class="invoice-lines">
@@ -1385,8 +1394,10 @@
       "",
       "Please see the invoice details below.",
       "",
-      "COMMUNITYVERSE GAMES",
-      "Restaurant Challenge",
+      `${INVOICE_SENDER.name} / ${INVOICE_SENDER.business}`,
+      INVOICE_SENDER.street,
+      INVOICE_SENDER.cityStateZip,
+      INVOICE_SENDER.phone,
       "",
       "INVOICE",
       `Invoice #: ${invoiceNumber}`,
@@ -1400,7 +1411,9 @@
       `Total Due: ${amount}`,
       "",
       "Thank you,",
-      "CommunityVerse Games",
+      `${INVOICE_SENDER.name}`,
+      INVOICE_SENDER.business,
+      INVOICE_SENDER.phone,
     ].join("\n");
     window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   }
