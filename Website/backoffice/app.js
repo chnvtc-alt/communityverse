@@ -889,6 +889,7 @@
             <td>${escapeHtml(shortDate(record.paidDate))}</td>
             <td>${escapeHtml(record.notes)}</td>
             <td class="table-actions">
+              <button class="text-button" type="button" data-email-collection-id="${escapeHtml(record.id)}">Email Invoice</button>
               <button class="text-button" type="button" data-print-collection-id="${escapeHtml(record.id)}">Print Invoice</button>
               <button class="text-button" type="button" data-delete-collection-id="${escapeHtml(record.id)}">Remove</button>
             </td>
@@ -1361,6 +1362,37 @@
     elements.invoicePreviewDialog.close();
   }
 
+  function openInvoiceEmail(id) {
+    const record = state.collections.find((collection) => collection.id === id);
+    if (!record) {
+      return;
+    }
+    const restaurant = state.restaurants.find((item) => item.id === record.restaurantId);
+    const email = restaurant?.contactEmail || "";
+    if (!email) {
+      window.alert("This customer does not have an email address saved yet.");
+      return;
+    }
+    const customerName = record.restaurantName || restaurant?.name || "there";
+    const invoiceNumber = record.invoiceNumber || "your invoice";
+    const amount = moneyValue(record.amount);
+    const dueDate = shortDate(record.dueDate) || "the due date shown on the invoice";
+    const description = record.notes || "Restaurant Challenge monthly subscription.";
+    const subject = `Invoice ${invoiceNumber} from CommunityVerse Games`;
+    const body = [
+      `Hi ${customerName},`,
+      "",
+      `Here is invoice ${invoiceNumber} for ${amount}.`,
+      `Due date: ${dueDate}`,
+      "",
+      description,
+      "",
+      "Thank you,",
+      "CommunityVerse Games",
+    ].join("\n");
+    window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  }
+
   async function addExpense(event) {
     event.preventDefault();
     const record = normalizeExpense({
@@ -1610,6 +1642,10 @@
     const printCollectionButton = event.target.closest("[data-print-collection-id]");
     if (printCollectionButton) {
       openInvoicePreview(printCollectionButton.dataset.printCollectionId);
+    }
+    const emailCollectionButton = event.target.closest("[data-email-collection-id]");
+    if (emailCollectionButton) {
+      openInvoiceEmail(emailCollectionButton.dataset.emailCollectionId);
     }
     const deleteExpenseButton = event.target.closest("[data-delete-expense-id]");
     if (deleteExpenseButton) {
