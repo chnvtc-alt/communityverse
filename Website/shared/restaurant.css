@@ -3085,8 +3085,10 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 }
 
 .opening-start-hero .hero-banner-image-start {
-  height: 100%;
-  min-height: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  min-height: 0;
+  object-fit: contain;
 }
 
 .opening-start-side {
