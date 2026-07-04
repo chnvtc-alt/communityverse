@@ -76,6 +76,7 @@
 
   const expenseCategoryLabels = {
     software: "Software",
+    "restaurant-materials": "Restaurant Materials",
     marketing: "Marketing",
     meals: "Meals",
     travel: "Travel",
