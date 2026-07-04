@@ -988,6 +988,10 @@ dialog::backdrop {
   color: var(--green);
 }
 
+.question-mix-tag-wrap[hidden] {
+  display: none;
+}
+
 .survey-editor-heading,
 .survey-question-row-top {
   display: flex;

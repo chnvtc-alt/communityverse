@@ -35,6 +35,18 @@ const QUESTION_MIX_SLOT_TYPES = [
   { value: "tag", label: "Question with tag" },
 ];
 const QUESTION_MIX_SLOT_TYPE_VALUES = new Set(QUESTION_MIX_SLOT_TYPES.map((type) => type.value));
+const DEFAULT_QUESTION_MIX_SLOTS = [
+  { type: "character" },
+  { type: "character" },
+  { type: "food" },
+  { type: "random" },
+  { type: "random" },
+  { type: "random" },
+  { type: "restaurant" },
+  { type: "area" },
+  { type: "auto" },
+  { type: "auto" },
+];
 
 const elements = {
   tabs: [...document.querySelectorAll(".workshop-tab")],
@@ -832,6 +844,25 @@ function normalizeQuestionMix(questionMix) {
       normalizeQuestionMixSlot(rawSlots[index], index)
     ),
   };
+}
+
+function questionMixHasSavedChoices(questionMix) {
+  return Array.isArray(questionMix?.slots) && questionMix.slots.some((slot) => {
+    const normalizedSlot = normalizeQuestionMixSlot(slot);
+    return normalizedSlot.type !== "auto" || Boolean(normalizedSlot.tag);
+  });
+}
+
+function questionMixForEditor(questionMix) {
+  const normalized = normalizeQuestionMix(questionMix);
+  if (questionMixHasSavedChoices(normalized)) {
+    return normalized;
+  }
+
+  return normalizeQuestionMix({
+    enabled: normalized.enabled,
+    slots: DEFAULT_QUESTION_MIX_SLOTS,
+  });
 }
 
 function normalizeCustomer(customer) {
@@ -2565,7 +2596,7 @@ function renderQuestionMix(questionMix) {
     return;
   }
 
-  const normalized = normalizeQuestionMix(questionMix);
+  const normalized = questionMixForEditor(questionMix);
   elements.restaurantQuestionMixEnabled.checked = normalized.enabled;
   elements.restaurantQuestionMixPanel.hidden = !normalized.enabled;
   elements.restaurantQuestionMixSlots.innerHTML = normalized.slots
