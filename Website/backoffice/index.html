@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,650;9..144,760&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v6" />
+    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v7" />
   </head>
   <body>
     <div class="app-shell">
@@ -175,7 +175,7 @@
               <label>
                 Score From
                 <select id="prospect-score-min">
-                  <option value="1">1 - Not a prospect</option>
+                  <option value="1">1</option>
                   <option value="2">2</option>
                   <option value="3" selected>3</option>
                   <option value="4">4</option>
@@ -184,13 +184,13 @@
                   <option value="7">7</option>
                   <option value="8">8</option>
                   <option value="9">9</option>
-                  <option value="10">10 - Very high</option>
+                  <option value="10">10</option>
                 </select>
               </label>
               <label>
                 Score To
                 <select id="prospect-score-max">
-                  <option value="1">1 - Not a prospect</option>
+                  <option value="1">1</option>
                   <option value="2">2</option>
                   <option value="3">3</option>
                   <option value="4">4</option>
@@ -199,7 +199,7 @@
                   <option value="7">7</option>
                   <option value="8">8</option>
                   <option value="9">9</option>
-                  <option value="10" selected>10 - Very high</option>
+                  <option value="10" selected>10</option>
                 </select>
               </label>
             </div>
@@ -214,8 +214,7 @@
                     <th>Stage</th>
                     <th>Score</th>
                     <th>Last Contact</th>
-                    <th>Next Follow-Up</th>
-                    <th>Assigned To</th>
+                    <th>Follow Up</th>
                   </tr>
                 </thead>
                 <tbody id="prospect-list"></tbody>
@@ -365,7 +364,7 @@
               <option value="new-lead">New Lead</option>
               <option value="contacted">Contacted</option>
               <option value="demo-needed">Demo Needed</option>
-              <option value="proposal-sent">Proposal Sent</option>
+              <option value="proposal-sent">Proposal</option>
               <option value="follow-up">Follow-Up</option>
               <option value="not-interested">Not Interested</option>
             </select>
@@ -374,7 +373,7 @@
             Prospect Score
             <select id="prospect-score">
               <option value="">Not set</option>
-              <option value="1">1 - Not a prospect</option>
+              <option value="1">1</option>
               <option value="2">2</option>
               <option value="3">3</option>
               <option value="4">4</option>
@@ -383,7 +382,7 @@
               <option value="7">7</option>
               <option value="8">8</option>
               <option value="9">9</option>
-              <option value="10">10 - Very high</option>
+              <option value="10">10</option>
             </select>
           </label>
           <label>
@@ -460,6 +459,6 @@
     </dialog>
 
     <input id="import-file" type="file" accept="application/json" hidden />
-    <script src="/backoffice/app.js?v=backoffice-v6" defer></script>
+    <script src="/backoffice/app.js?v=backoffice-v7" defer></script>
   </body>
 </html>

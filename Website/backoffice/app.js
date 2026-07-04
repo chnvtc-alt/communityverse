@@ -21,13 +21,13 @@
     "new-lead": "New Lead",
     contacted: "Contacted",
     "demo-needed": "Demo Needed",
-    "proposal-sent": "Proposal Sent",
+    "proposal-sent": "Proposal",
     "follow-up": "Follow-Up",
     "not-interested": "Not Interested",
   };
 
   const prospectScoreLabels = {
-    1: "1 - Not a prospect",
+    1: "1",
     2: "2",
     3: "3",
     4: "4",
@@ -36,7 +36,7 @@
     7: "7",
     8: "8",
     9: "9",
-    10: "10 - Very high",
+    10: "10",
   };
 
   const paymentStatusLabels = {
@@ -278,6 +278,11 @@
     });
   }
 
+  function shortDate(value) {
+    const match = String(value || "").match(/^(\d{2})(\d{2})-(\d{2})-(\d{2})$/);
+    return match ? `${match[3]}-${match[4]}-${match[2]}` : String(value || "");
+  }
+
   function contactName(restaurant) {
     return [restaurant.contactFirstName, restaurant.contactLastName].filter(Boolean).join(" ");
   }
@@ -384,19 +389,17 @@
           <tr>
             <td>
               <button class="link-button" type="button" data-edit-id="${escapeHtml(restaurant.id)}">${escapeHtml(restaurant.name)}</button>
-              <div class="helper">${escapeHtml(restaurant.leadSource || "No lead source yet")}</div>
             </td>
             <td>${escapeHtml(contactName(restaurant) || "")}</td>
             <td>${restaurant.contactEmail ? `<a href="mailto:${escapeHtml(restaurant.contactEmail)}">${escapeHtml(restaurant.contactEmail)}</a>` : ""}</td>
             <td>${escapeHtml(restaurant.contactCell || restaurant.phone || "")}</td>
             <td>${escapeHtml(labelFor(prospectStageLabels, restaurant.prospectStage, "Not set"))}</td>
             <td>${escapeHtml(labelFor(prospectScoreLabels, restaurant.prospectScore, "Not set"))}</td>
-            <td>${escapeHtml(restaurant.lastContacted || "")}</td>
-            <td>${escapeHtml(restaurant.nextFollowUp || "")}</td>
-            <td>${escapeHtml(restaurant.assignedTo || "")}</td>
+            <td>${escapeHtml(shortDate(restaurant.lastContacted))}</td>
+            <td>${escapeHtml(shortDate(restaurant.nextFollowUp))}</td>
           </tr>
         `).join("")
-      : '<tr><td colspan="9"><div class="empty-state">No prospects match this score range.</div></td></tr>';
+      : '<tr><td colspan="8"><div class="empty-state">No prospects match this score range.</div></td></tr>';
   }
 
   function renderSales() {
