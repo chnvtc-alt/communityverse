@@ -891,7 +891,7 @@
             <td>${escapeHtml(record.notes)}</td>
             <td class="table-actions">
               <button class="text-button" type="button" data-email-collection-id="${escapeHtml(record.id)}">Email Invoice</button>
-              <button class="text-button" type="button" data-print-collection-id="${escapeHtml(record.id)}">Print Invoice</button>
+              <button class="text-button" type="button" data-print-collection-id="${escapeHtml(record.id)}">Print / PDF</button>
               <button class="text-button" type="button" data-delete-collection-id="${escapeHtml(record.id)}">Remove</button>
             </td>
           </tr>
@@ -1383,10 +1383,21 @@
     const body = [
       `Hi ${customerName},`,
       "",
-      `Here is invoice ${invoiceNumber} for ${amount}.`,
-      `Due date: ${dueDate}`,
+      "Please see the invoice details below.",
       "",
+      "COMMUNITYVERSE GAMES",
+      "Restaurant Challenge",
+      "",
+      "INVOICE",
+      `Invoice #: ${invoiceNumber}`,
+      `Bill To: ${customerName}`,
+      `Due Date: ${dueDate}`,
+      "",
+      "Description:",
       description,
+      "",
+      `Amount: ${amount}`,
+      `Total Due: ${amount}`,
       "",
       "Thank you,",
       "CommunityVerse Games",
