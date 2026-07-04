@@ -1,5 +1,6 @@
 User-agent: *
 Disallow: /admin/
+Disallow: /backoffice/
 Allow: /
 
 Sitemap: https://communityversegames.com/sitemap.xml
