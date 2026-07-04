@@ -26,10 +26,17 @@
     "not-interested": "Not Interested",
   };
 
-  const interestLabels = {
-    hot: "Hot",
-    warm: "Warm",
-    cold: "Cold",
+  const prospectScoreLabels = {
+    1: "1 - Not a prospect",
+    2: "2",
+    3: "3",
+    4: "4",
+    5: "5",
+    6: "6",
+    7: "7",
+    8: "8",
+    9: "9",
+    10: "10 - Very high",
   };
 
   const paymentStatusLabels = {
@@ -89,7 +96,7 @@
     nextFollowUp: document.querySelector("#next-follow-up"),
     notes: document.querySelector("#restaurant-notes"),
     prospectStage: document.querySelector("#prospect-stage"),
-    interestLevel: document.querySelector("#interest-level"),
+    prospectScore: document.querySelector("#prospect-score"),
     leadSource: document.querySelector("#lead-source"),
     assignedTo: document.querySelector("#assigned-to"),
     prospectNotes: document.querySelector("#prospect-notes"),
@@ -128,6 +135,12 @@
 
   function normalizeRestaurant(record = {}) {
     const legacyNameParts = String(record.contactPerson || "").trim().split(/\s+/).filter(Boolean);
+    const legacyScore = {
+      hot: "10",
+      warm: "7",
+      cold: "3",
+    }[record.interestLevel];
+    const score = String(record.prospectScore || legacyScore || "").trim();
     return {
       id: String(record.id || "").trim() || makeId(),
       name: String(record.name || "").trim(),
@@ -146,7 +159,7 @@
       nextFollowUp: String(record.nextFollowUp || "").trim(),
       notes: String(record.notes || "").trim(),
       prospectStage: prospectStageLabels[record.prospectStage] ? record.prospectStage : "",
-      interestLevel: interestLabels[record.interestLevel] ? record.interestLevel : "",
+      prospectScore: prospectScoreLabels[score] ? score : "",
       leadSource: String(record.leadSource || "").trim(),
       assignedTo: String(record.assignedTo || "").trim(),
       prospectNotes: String(record.prospectNotes || "").trim(),
@@ -208,7 +221,7 @@
           restaurant.contactEmail,
           restaurant.contactCell,
           restaurant.prospectStage,
-          restaurant.interestLevel,
+          restaurant.prospectScore,
           restaurant.leadSource,
           restaurant.assignedTo,
           restaurant.prospectNotes,
@@ -282,12 +295,16 @@
   function renderMetrics() {
     const total = state.restaurants.length;
     const customers = state.restaurants.filter((restaurant) => restaurant.status === "customer").length;
-    const prospects = state.restaurants.filter((restaurant) => restaurant.status === "prospect").length;
+    const prospects = state.restaurants.filter(isVisibleProspect).length;
     const due = state.restaurants.filter(isFollowUpDue).length;
     elements.metricTotal.textContent = total;
     elements.metricCustomers.textContent = customers;
     elements.metricProspects.textContent = prospects;
     elements.metricFollowups.textContent = due;
+  }
+
+  function isVisibleProspect(restaurant) {
+    return restaurant.status === "prospect" && restaurant.prospectScore !== "1";
   }
 
   function dashboardRow(restaurant, dateLabel = "No follow-up") {
@@ -344,7 +361,8 @@
   }
 
   function renderProspects() {
-    const prospects = getFilteredRestaurants({ forceStatus: "prospect" });
+    const prospects = getFilteredRestaurants({ forceStatus: "prospect" })
+      .filter(isVisibleProspect);
     elements.prospectList.innerHTML = prospects.length
       ? prospects.map((restaurant) => `
           <tr>
@@ -353,10 +371,10 @@
               <div class="helper">${escapeHtml(restaurant.leadSource || "No lead source yet")}</div>
             </td>
             <td>${escapeHtml(labelFor(prospectStageLabels, restaurant.prospectStage, "Not set"))}</td>
-            <td>${escapeHtml(labelFor(interestLabels, restaurant.interestLevel, "Not set"))}</td>
+            <td>${escapeHtml(labelFor(prospectScoreLabels, restaurant.prospectScore, "Not set"))}</td>
             <td>${escapeHtml(restaurant.lastContacted || "")}</td>
             <td>${escapeHtml(restaurant.nextFollowUp || "")}</td>
-            <td>${escapeHtml(compactContact(restaurant))}</td>
+            <td>${escapeHtml(restaurant.assignedTo || "")}</td>
             <td><button class="text-button" type="button" data-edit-id="${escapeHtml(restaurant.id)}">Edit</button></td>
           </tr>
         `).join("")
@@ -411,7 +429,7 @@
     elements.nextFollowUp.value = restaurant ? record.nextFollowUp : "";
     elements.notes.value = restaurant ? record.notes : "";
     elements.prospectStage.value = restaurant ? record.prospectStage : "";
-    elements.interestLevel.value = restaurant ? record.interestLevel : "";
+    elements.prospectScore.value = restaurant ? record.prospectScore : "";
     elements.leadSource.value = restaurant ? record.leadSource : "";
     elements.assignedTo.value = restaurant ? record.assignedTo : "";
     elements.prospectNotes.value = restaurant ? record.prospectNotes : "";
@@ -447,7 +465,7 @@
       nextFollowUp: elements.nextFollowUp.value,
       notes: elements.notes.value,
       prospectStage: elements.prospectStage.value,
-      interestLevel: elements.interestLevel.value,
+      prospectScore: elements.prospectScore.value,
       leadSource: elements.leadSource.value,
       assignedTo: elements.assignedTo.value,
       prospectNotes: elements.prospectNotes.value,
