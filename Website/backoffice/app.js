@@ -94,6 +94,7 @@
     navItems: [...document.querySelectorAll(".nav-item")],
     sections: [...document.querySelectorAll(".section-view")],
     restaurantSortButtons: [...document.querySelectorAll("[data-restaurant-sort]")],
+    salesSortButtons: [...document.querySelectorAll("[data-sales-sort]")],
     newRestaurantButton: document.querySelector("#new-restaurant-button"),
     importButton: document.querySelector("#import-button"),
     exportButton: document.querySelector("#export-button"),
@@ -198,6 +199,8 @@
     loading: false,
     restaurantSortKey: "followup",
     restaurantSortDirection: "asc",
+    salesSortKey: "saleDate",
+    salesSortDirection: "desc",
   };
 
   let adminKey = sessionStorage.getItem(KEY_STORAGE) || "";
@@ -568,6 +571,49 @@
     renderRestaurantTable();
   }
 
+  function salesSortValue(restaurant, key) {
+    if (key === "saleDate") return restaurant.saleDate || "0000-00-00";
+    if (key === "package") return restaurant.packageName;
+    if (key === "monthly") return Number(restaurant.monthlyAmount || 0);
+    if (key === "payment") return labelFor(paymentStatusLabels, restaurant.paymentStatus, "Not set");
+    if (key === "setup") return labelFor(setupStatusLabels, restaurant.setupStatus, "Not set");
+    return restaurant.name;
+  }
+
+  function compareSales(left, right) {
+    const direction = state.salesSortDirection === "desc" ? -1 : 1;
+    const key = state.salesSortKey;
+    const leftValue = salesSortValue(left, key);
+    const rightValue = salesSortValue(right, key);
+    const compared = String(leftValue || "").localeCompare(String(rightValue || ""), undefined, {
+      numeric: true,
+      sensitivity: "base",
+    });
+    if (compared !== 0) {
+      return compared * direction;
+    }
+    return left.name.localeCompare(right.name, undefined, { sensitivity: "base" });
+  }
+
+  function updateSalesSortButtons() {
+    elements.salesSortButtons.forEach((button) => {
+      const active = button.dataset.salesSort === state.salesSortKey;
+      button.classList.toggle("is-active", active);
+      button.dataset.direction = active ? state.salesSortDirection : "";
+      button.setAttribute("aria-sort", active ? (state.salesSortDirection === "asc" ? "ascending" : "descending") : "none");
+    });
+  }
+
+  function setSalesSort(key) {
+    if (state.salesSortKey === key) {
+      state.salesSortDirection = state.salesSortDirection === "asc" ? "desc" : "asc";
+    } else {
+      state.salesSortKey = key;
+      state.salesSortDirection = key === "saleDate" ? "desc" : "asc";
+    }
+    renderSales();
+  }
+
   function isFollowUpDue(restaurant) {
     return Boolean(restaurant.nextFollowUp && restaurant.nextFollowUp <= today());
   }
@@ -743,7 +789,8 @@
   }
 
   function renderSales() {
-    const customers = getFilteredRestaurants({ forceStatus: "customer" });
+    updateSalesSortButtons();
+    const customers = getFilteredRestaurants({ forceStatus: "customer" }).sort(compareSales);
     elements.salesList.innerHTML = customers.length
       ? customers.map((restaurant) => `
           <tr>
@@ -1285,6 +1332,9 @@
 
   elements.restaurantSortButtons.forEach((button) => {
     button.addEventListener("click", () => setRestaurantSort(button.dataset.restaurantSort));
+  });
+  elements.salesSortButtons.forEach((button) => {
+    button.addEventListener("click", () => setSalesSort(button.dataset.salesSort));
   });
 
   elements.loginForm.addEventListener("submit", (event) => {
