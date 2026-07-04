@@ -360,7 +360,7 @@ h3 {
 
 .contact-history-inputs {
   display: grid;
-  grid-template-columns: 130px 160px 110px minmax(180px, 1fr) auto;
+  grid-template-columns: 130px 150px 105px 150px minmax(180px, 1fr) auto;
   gap: 10px;
   align-items: end;
 }
