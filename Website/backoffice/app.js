@@ -975,7 +975,7 @@
     elements.quickContactType.value = "C";
     elements.quickContactDate.value = today();
     elements.quickContactResponse.checked = false;
-    elements.quickContactNextFollowUp.value = restaurant.nextFollowUp || "";
+    elements.quickContactNextFollowUp.value = "";
     elements.quickContactScore.value = restaurant.prospectScore || defaultProspectScore;
     elements.quickContactNote.value = "";
     renderQuickContactHistory(restaurant);
