@@ -169,6 +169,20 @@
     firstInvoiceDate: document.querySelector("#first-invoice-date"),
     setupStatus: document.querySelector("#setup-status"),
     salesNotes: document.querySelector("#sales-notes"),
+    quickContactDialog: document.querySelector("#quick-contact-dialog"),
+    quickContactForm: document.querySelector("#quick-contact-form"),
+    quickContactTitle: document.querySelector("#quick-contact-title"),
+    quickContactDetails: document.querySelector("#quick-contact-details"),
+    quickContactId: document.querySelector("#quick-contact-id"),
+    quickContactType: document.querySelector("#quick-contact-type"),
+    quickContactDate: document.querySelector("#quick-contact-date"),
+    quickContactResponse: document.querySelector("#quick-contact-response"),
+    quickContactNextFollowUp: document.querySelector("#quick-contact-next-follow-up"),
+    quickContactNote: document.querySelector("#quick-contact-note"),
+    quickContactHistoryList: document.querySelector("#quick-contact-history-list"),
+    quickContactFullCardButton: document.querySelector("#quick-contact-full-card-button"),
+    closeQuickContactButton: document.querySelector("#close-quick-contact-button"),
+    cancelQuickContactButton: document.querySelector("#cancel-quick-contact-button"),
   };
 
   const state = {
@@ -351,6 +365,7 @@
       elements.exportButton,
       elements.deleteRestaurantButton,
       elements.addContactHistoryButton,
+      elements.quickContactFullCardButton,
     ].forEach((element) => {
       if (element) element.disabled = loading;
     });
@@ -709,7 +724,7 @@
       ? prospects.map((restaurant) => `
           <tr>
             <td>
-              <button class="link-button" type="button" data-edit-id="${escapeHtml(restaurant.id)}">${escapeHtml(restaurant.name)}</button>
+              <button class="link-button" type="button" data-contact-id="${escapeHtml(restaurant.id)}">${escapeHtml(restaurant.name)}</button>
             </td>
             <td>${escapeHtml(contactName(restaurant) || "")}</td>
             <td>${restaurant.contactEmail ? `<a href="mailto:${escapeHtml(restaurant.contactEmail)}">${escapeHtml(restaurant.contactEmail)}</a>` : ""}</td>
@@ -889,6 +904,52 @@
     elements.dialog.close();
   }
 
+  function openQuickContact(id = "") {
+    const restaurant = state.restaurants.find((record) => record.id === id);
+    if (!restaurant) {
+      return;
+    }
+    elements.quickContactId.value = restaurant.id;
+    elements.quickContactTitle.textContent = restaurant.name;
+    elements.quickContactDetails.textContent = [
+      contactName(restaurant),
+      restaurant.contactEmail,
+      restaurant.contactCell || restaurant.phone,
+    ].filter(Boolean).join(" / ") || "No contact details yet";
+    elements.quickContactType.value = "C";
+    elements.quickContactDate.value = today();
+    elements.quickContactResponse.checked = false;
+    elements.quickContactNextFollowUp.value = restaurant.nextFollowUp || "";
+    elements.quickContactNote.value = "";
+    renderQuickContactHistory(restaurant);
+    elements.quickContactDialog.showModal();
+  }
+
+  function closeQuickContact() {
+    elements.quickContactDialog.close();
+  }
+
+  function renderQuickContactHistory(restaurant) {
+    const records = [...(restaurant.contactHistory || [])]
+      .sort((left, right) => String(right.date || "").localeCompare(String(left.date || "")))
+      .slice(0, 5);
+    elements.quickContactHistoryList.innerHTML = records.length
+      ? records.map((record) => `
+          <div class="contact-history-item quick-history-item">
+            <strong>${escapeHtml(record.type)} ${escapeHtml(shortDate(record.date))}</strong>
+            <span>${escapeHtml(record.response ? "Response" : "No response")}</span>
+            ${record.note ? `<p>${escapeHtml(record.note)}</p>` : ""}
+          </div>
+        `).join("")
+      : '<div class="empty-state">No contacts logged yet.</div>';
+  }
+
+  function openFullCardFromQuickContact() {
+    const id = elements.quickContactId.value;
+    closeQuickContact();
+    openRestaurantEditor(id);
+  }
+
   function contactHistoryItem(record) {
     const response = record.response ? "Response" : "No response";
     return `
@@ -933,6 +994,47 @@
   function removeContactHistory(id) {
     state.editingContactHistory = state.editingContactHistory.filter((record) => record.id !== id);
     renderContactHistoryEditor();
+  }
+
+  async function saveQuickContact(event) {
+    event.preventDefault();
+    const id = elements.quickContactId.value;
+    const restaurant = state.restaurants.find((record) => record.id === id);
+    if (!restaurant) {
+      return;
+    }
+    const newContact = normalizeContactHistory([{
+      id: makeContactId(),
+      type: elements.quickContactType.value,
+      date: elements.quickContactDate.value || today(),
+      response: elements.quickContactResponse.checked,
+      note: elements.quickContactNote.value,
+    }])[0];
+    const updatedRestaurant = normalizeRestaurant({
+      ...restaurant,
+      contactHistory: newContact
+        ? [newContact, ...(restaurant.contactHistory || [])]
+        : restaurant.contactHistory,
+      lastContacted:
+        newContact?.date && (!restaurant.lastContacted || newContact.date > restaurant.lastContacted)
+          ? newContact.date
+          : restaurant.lastContacted,
+      nextFollowUp: elements.quickContactNextFollowUp.value,
+      prospectStage: ["", "new-lead"].includes(restaurant.prospectStage) ? "contacted" : restaurant.prospectStage,
+      updatedAt: new Date().toISOString(),
+    });
+    const data = await saveAction("saveRestaurant", { restaurant: updatedRestaurant });
+    if (!data?.restaurant) {
+      return;
+    }
+    const savedRecord = normalizeRestaurant(data.restaurant);
+    const existingIndex = state.restaurants.findIndex((record) => record.id === savedRecord.id);
+    if (existingIndex >= 0) {
+      state.restaurants[existingIndex] = savedRecord;
+    }
+    cacheBackofficeData();
+    closeQuickContact();
+    render();
   }
 
   async function addCollection(event) {
@@ -1123,9 +1225,13 @@
   elements.newRestaurantButton.addEventListener("click", () => openRestaurantEditor());
   elements.closeEditorButton.addEventListener("click", closeRestaurantEditor);
   elements.cancelEditorButton.addEventListener("click", closeRestaurantEditor);
+  elements.closeQuickContactButton.addEventListener("click", closeQuickContact);
+  elements.cancelQuickContactButton.addEventListener("click", closeQuickContact);
+  elements.quickContactFullCardButton.addEventListener("click", openFullCardFromQuickContact);
   elements.deleteRestaurantButton.addEventListener("click", deleteCurrentRestaurant);
   elements.addContactHistoryButton.addEventListener("click", addContactHistory);
   elements.form.addEventListener("submit", saveRestaurant);
+  elements.quickContactForm.addEventListener("submit", saveQuickContact);
   elements.collectionForm.addEventListener("submit", addCollection);
   elements.expenseForm.addEventListener("submit", addExpense);
   elements.search.addEventListener("input", renderRestaurantTable);
@@ -1143,6 +1249,10 @@
     const editButton = event.target.closest("[data-edit-id]");
     if (editButton) {
       openRestaurantEditor(editButton.dataset.editId);
+    }
+    const contactButton = event.target.closest("[data-contact-id]");
+    if (contactButton) {
+      openQuickContact(contactButton.dataset.contactId);
     }
     const removeContactButton = event.target.closest("[data-remove-contact-id]");
     if (removeContactButton) {

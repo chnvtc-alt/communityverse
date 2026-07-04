@@ -525,6 +525,21 @@ th {
   line-height: 1.35;
 }
 
+.quick-contact-dialog {
+  width: min(680px, calc(100vw - 28px));
+}
+
+.quick-contact-grid {
+  display: grid;
+  grid-template-columns: 150px 170px 110px minmax(160px, 1fr);
+  gap: 12px;
+  align-items: end;
+}
+
+.quick-history-item {
+  grid-template-columns: 110px 110px minmax(0, 1fr);
+}
+
 .placeholder-panel {
   max-width: 820px;
   padding: 26px;
@@ -625,6 +640,7 @@ th {
   .toolbar,
   .prospect-filters,
   .quick-entry-form,
+  .quick-contact-grid,
   .contact-history-inputs,
   .contact-history-item,
   .form-grid {
