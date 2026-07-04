@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,650;9..144,760&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v1" />
+    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v2" />
   </head>
   <body>
     <div class="app-shell">
@@ -209,16 +209,32 @@
             </select>
           </label>
           <label class="form-span">
-            Address
-            <input id="restaurant-address" placeholder="Street, city, state, ZIP" />
+            Street Address
+            <input id="restaurant-street" placeholder="123 Main Street" />
+          </label>
+          <label>
+            City
+            <input id="restaurant-city" placeholder="Villa Rica" />
+          </label>
+          <label>
+            State
+            <input id="restaurant-state" maxlength="24" placeholder="GA" />
+          </label>
+          <label>
+            ZIP
+            <input id="restaurant-zip" inputmode="numeric" placeholder="30180" />
           </label>
           <label>
             Restaurant Phone
             <input id="restaurant-phone" type="tel" />
           </label>
           <label>
-            Contact Person
-            <input id="contact-person" />
+            Contact First Name
+            <input id="contact-first-name" />
+          </label>
+          <label>
+            Contact Last Name
+            <input id="contact-last-name" />
           </label>
           <label>
             Contact Email
@@ -256,6 +272,6 @@
     </dialog>
 
     <input id="import-file" type="file" accept="application/json" hidden />
-    <script src="/backoffice/app.js?v=backoffice-v1" defer></script>
+    <script src="/backoffice/app.js?v=backoffice-v2" defer></script>
   </body>
 </html>

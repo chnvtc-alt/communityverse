@@ -45,9 +45,13 @@
     id: document.querySelector("#restaurant-id"),
     name: document.querySelector("#restaurant-name"),
     status: document.querySelector("#restaurant-status"),
-    address: document.querySelector("#restaurant-address"),
+    street: document.querySelector("#restaurant-street"),
+    city: document.querySelector("#restaurant-city"),
+    state: document.querySelector("#restaurant-state"),
+    zip: document.querySelector("#restaurant-zip"),
     phone: document.querySelector("#restaurant-phone"),
-    contactPerson: document.querySelector("#contact-person"),
+    contactFirstName: document.querySelector("#contact-first-name"),
+    contactLastName: document.querySelector("#contact-last-name"),
     contactEmail: document.querySelector("#contact-email"),
     contactCell: document.querySelector("#contact-cell"),
     dateAdded: document.querySelector("#date-added"),
@@ -79,13 +83,18 @@
   }
 
   function normalizeRestaurant(record = {}) {
+    const legacyNameParts = String(record.contactPerson || "").trim().split(/\s+/).filter(Boolean);
     return {
       id: String(record.id || "").trim() || makeId(),
       name: String(record.name || "").trim(),
       status: statusLabels[record.status] ? record.status : "prospect",
-      address: String(record.address || "").trim(),
+      street: String(record.street || record.address || "").trim(),
+      city: String(record.city || "").trim(),
+      state: String(record.state || "").trim(),
+      zip: String(record.zip || "").trim(),
       phone: String(record.phone || "").trim(),
-      contactPerson: String(record.contactPerson || "").trim(),
+      contactFirstName: String(record.contactFirstName || legacyNameParts[0] || "").trim(),
+      contactLastName: String(record.contactLastName || legacyNameParts.slice(1).join(" ") || "").trim(),
       contactEmail: String(record.contactEmail || "").trim(),
       contactCell: String(record.contactCell || "").trim(),
       dateAdded: String(record.dateAdded || today()).trim(),
@@ -132,9 +141,12 @@
         }
         return [
           restaurant.name,
-          restaurant.address,
+          restaurant.street,
+          restaurant.city,
+          restaurant.state,
+          restaurant.zip,
           restaurant.phone,
-          restaurant.contactPerson,
+          contactName(restaurant),
           restaurant.contactEmail,
           restaurant.contactCell,
           restaurant.notes,
@@ -158,8 +170,20 @@
     return `<span class="status-pill status-${escapeHtml(status)}">${escapeHtml(statusLabels[status] || status)}</span>`;
   }
 
+  function contactName(restaurant) {
+    return [restaurant.contactFirstName, restaurant.contactLastName].filter(Boolean).join(" ");
+  }
+
+  function formattedAddress(restaurant) {
+    const cityStateZip = [
+      restaurant.city,
+      [restaurant.state, restaurant.zip].filter(Boolean).join(" "),
+    ].filter(Boolean).join(", ");
+    return [restaurant.street, cityStateZip].filter(Boolean).join(", ");
+  }
+
   function compactContact(restaurant) {
-    const parts = [restaurant.contactPerson, restaurant.contactCell].filter(Boolean);
+    const parts = [contactName(restaurant), restaurant.contactCell].filter(Boolean);
     return parts.length ? parts.join(" / ") : "No contact yet";
   }
 
@@ -211,10 +235,10 @@
           <tr>
             <td>
               <strong>${escapeHtml(restaurant.name)}</strong>
-              <div class="helper">${escapeHtml(restaurant.address || "No address yet")}</div>
+              <div class="helper">${escapeHtml(formattedAddress(restaurant) || "No address yet")}</div>
             </td>
             <td>${statusPill(restaurant.status)}</td>
-            <td>${escapeHtml(restaurant.contactPerson || "No contact yet")}</td>
+            <td>${escapeHtml(contactName(restaurant) || "No contact yet")}</td>
             <td>${restaurant.contactEmail ? `<a href="mailto:${escapeHtml(restaurant.contactEmail)}">${escapeHtml(restaurant.contactEmail)}</a>` : ""}</td>
             <td>${escapeHtml(restaurant.phone || restaurant.contactCell || "")}</td>
             <td>${escapeHtml(restaurant.nextFollowUp || "")}</td>
@@ -243,9 +267,13 @@
     elements.id.value = restaurant ? record.id : "";
     elements.name.value = restaurant ? record.name : "";
     elements.status.value = record.status;
-    elements.address.value = restaurant ? record.address : "";
+    elements.street.value = restaurant ? record.street : "";
+    elements.city.value = restaurant ? record.city : "";
+    elements.state.value = restaurant ? record.state : "";
+    elements.zip.value = restaurant ? record.zip : "";
     elements.phone.value = restaurant ? record.phone : "";
-    elements.contactPerson.value = restaurant ? record.contactPerson : "";
+    elements.contactFirstName.value = restaurant ? record.contactFirstName : "";
+    elements.contactLastName.value = restaurant ? record.contactLastName : "";
     elements.contactEmail.value = restaurant ? record.contactEmail : "";
     elements.contactCell.value = restaurant ? record.contactCell : "";
     elements.dateAdded.value = record.dateAdded || today();
@@ -261,9 +289,13 @@
       id: elements.id.value || makeId(),
       name: elements.name.value,
       status: elements.status.value,
-      address: elements.address.value,
+      street: elements.street.value,
+      city: elements.city.value,
+      state: elements.state.value,
+      zip: elements.zip.value,
       phone: elements.phone.value,
-      contactPerson: elements.contactPerson.value,
+      contactFirstName: elements.contactFirstName.value,
+      contactLastName: elements.contactLastName.value,
       contactEmail: elements.contactEmail.value,
       contactCell: elements.contactCell.value,
       dateAdded: elements.dateAdded.value,
