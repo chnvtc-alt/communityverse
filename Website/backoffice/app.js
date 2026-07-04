@@ -290,15 +290,15 @@
     elements.metricFollowups.textContent = due;
   }
 
-  function recordItem(restaurant) {
-    const contact = compactContact(restaurant);
-    const followUp = restaurant.nextFollowUp ? `Next follow-up: ${restaurant.nextFollowUp}` : "No follow-up date";
+  function dashboardRow(restaurant, dateLabel = "No follow-up") {
     return `
-      <button class="record-item" type="button" data-edit-id="${escapeHtml(restaurant.id)}">
-        <strong>${escapeHtml(restaurant.name)}</strong>
-        <span>${statusLabels[restaurant.status] || restaurant.status} - ${escapeHtml(contact)}</span>
-        <span>${escapeHtml(followUp)}</span>
-      </button>
+      <tr>
+        <td><strong>${escapeHtml(restaurant.name)}</strong></td>
+        <td>${statusPill(restaurant.status)}</td>
+        <td>${escapeHtml(compactContact(restaurant))}</td>
+        <td>${escapeHtml(dateLabel)}</td>
+        <td><button class="text-button" type="button" data-edit-id="${escapeHtml(restaurant.id)}">Edit</button></td>
+      </tr>
     `;
   }
 
@@ -307,16 +307,19 @@
       .sort((left, right) => String(right.updatedAt || "").localeCompare(String(left.updatedAt || "")))
       .slice(0, 6);
     elements.recentRestaurants.innerHTML = recent.length
-      ? recent.map(recordItem).join("")
-      : '<div class="empty-state">No restaurant records yet.</div>';
+      ? recent.map((restaurant) => dashboardRow(
+          restaurant,
+          restaurant.nextFollowUp || "No follow-up"
+        )).join("")
+      : '<tr><td colspan="5"><div class="empty-state">No restaurant records yet.</div></td></tr>';
 
     const followups = state.restaurants
       .filter((restaurant) => restaurant.nextFollowUp)
       .sort((left, right) => left.nextFollowUp.localeCompare(right.nextFollowUp))
       .slice(0, 8);
     elements.followupList.innerHTML = followups.length
-      ? followups.map(recordItem).join("")
-      : '<div class="empty-state">No follow-up dates yet.</div>';
+      ? followups.map((restaurant) => dashboardRow(restaurant, restaurant.nextFollowUp)).join("")
+      : '<tr><td colspan="5"><div class="empty-state">No follow-up dates yet.</div></td></tr>';
   }
 
   function renderRestaurantTable() {

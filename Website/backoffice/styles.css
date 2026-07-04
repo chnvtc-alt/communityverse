@@ -303,6 +303,11 @@ table {
   border-collapse: collapse;
 }
 
+.compact-table {
+  min-width: 100%;
+  table-layout: fixed;
+}
+
 th,
 td {
   border-bottom: 1px solid var(--line);
@@ -315,6 +320,23 @@ th {
   color: var(--muted);
   font-size: 0.78rem;
   text-transform: uppercase;
+}
+
+.compact-table th,
+.compact-table td {
+  overflow: hidden;
+  padding: 9px 8px;
+  font-size: 0.9rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.compact-table .status-pill {
+  white-space: nowrap;
+}
+
+.dashboard-table-wrap {
+  margin-top: 10px;
 }
 
 .status-pill {
