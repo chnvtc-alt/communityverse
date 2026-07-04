@@ -39,9 +39,9 @@
         </div>
 
         <nav class="nav-list">
-          <button class="nav-item is-active" type="button" data-section="dashboard">Dashboard</button>
+          <button class="nav-item" type="button" data-section="dashboard">Dashboard</button>
           <button class="nav-item" type="button" data-section="restaurants">Restaurant List</button>
-          <button class="nav-item" type="button" data-section="prospects">Prospects</button>
+          <button class="nav-item is-active" type="button" data-section="prospects">Prospects</button>
           <button class="nav-item" type="button" data-section="sales">Sales</button>
           <button class="nav-item" type="button" data-section="collections">Collections</button>
           <button class="nav-item" type="button" data-section="expenses">Expenses</button>
@@ -58,7 +58,7 @@
         <header class="topbar">
           <div>
             <p class="eyebrow">backoffice.communityversegames.com</p>
-            <h2 id="section-title">Dashboard</h2>
+            <h2 id="section-title">Prospects</h2>
           </div>
           <div class="topbar-actions">
             <span class="sync-status" id="sync-status">Not loaded</span>
@@ -68,7 +68,7 @@
           </div>
         </header>
 
-        <section class="section-view" id="dashboard-section">
+        <section class="section-view" id="dashboard-section" hidden>
           <div class="metric-grid">
             <article class="metric-card">
               <span>Total Restaurants</span>
@@ -177,7 +177,7 @@
           </section>
         </section>
 
-        <section class="section-view" id="prospects-section" hidden>
+        <section class="section-view" id="prospects-section">
           <section class="card table-card">
             <div class="card-heading">
               <div>

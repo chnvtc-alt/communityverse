@@ -186,7 +186,7 @@
   };
 
   const state = {
-    section: "dashboard",
+    section: "prospects",
     restaurants: [],
     collections: [],
     expenses: [],
