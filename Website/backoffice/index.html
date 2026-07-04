@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,650;9..144,760&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v22" />
+    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v23" />
   </head>
   <body>
     <section class="login-panel" id="login-panel">
@@ -272,6 +272,21 @@
                 <h3>Collections</h3>
                 <p class="helper">Invoice and payment follow-up for sold accounts.</p>
               </div>
+            </div>
+            <div class="invoice-template-panel">
+              <label>
+                Billing Month
+                <input id="invoice-template-month" type="month" />
+              </label>
+              <label>
+                Description
+                <input id="invoice-template-description" value="Restaurant Challenge monthly subscription" />
+              </label>
+              <label>
+                Amount
+                <input id="invoice-template-amount" inputmode="decimal" value="19" />
+              </label>
+              <button class="button button-muted" id="fill-monthly-invoice-button" type="button">Fill Monthly Invoice</button>
             </div>
             <form class="quick-entry-form" id="collection-form">
               <label>
@@ -675,7 +690,17 @@
       </form>
     </dialog>
 
+    <dialog id="invoice-preview-dialog" class="editor-dialog invoice-preview-dialog">
+      <div class="invoice-preview-shell">
+        <div id="invoice-preview-content"></div>
+        <div class="dialog-actions invoice-preview-actions">
+          <button class="button button-muted" id="close-invoice-preview-button" type="button">Close</button>
+          <button class="button button-primary" id="print-invoice-button" type="button">Print Invoice</button>
+        </div>
+      </div>
+    </dialog>
+
     <input id="import-file" type="file" accept="application/json" hidden />
-    <script src="/backoffice/app.js?v=backoffice-v22" defer></script>
+    <script src="/backoffice/app.js?v=backoffice-v23" defer></script>
   </body>
 </html>

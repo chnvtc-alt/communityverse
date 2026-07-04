@@ -119,6 +119,14 @@
     collectionPaidDate: document.querySelector("#collection-paid-date"),
     collectionNotes: document.querySelector("#collection-notes"),
     collectionsList: document.querySelector("#collections-list"),
+    invoiceTemplateMonth: document.querySelector("#invoice-template-month"),
+    invoiceTemplateDescription: document.querySelector("#invoice-template-description"),
+    invoiceTemplateAmount: document.querySelector("#invoice-template-amount"),
+    fillMonthlyInvoiceButton: document.querySelector("#fill-monthly-invoice-button"),
+    invoicePreviewDialog: document.querySelector("#invoice-preview-dialog"),
+    invoicePreviewContent: document.querySelector("#invoice-preview-content"),
+    closeInvoicePreviewButton: document.querySelector("#close-invoice-preview-button"),
+    printInvoiceButton: document.querySelector("#print-invoice-button"),
     expenseForm: document.querySelector("#expense-form"),
     expenseDate: document.querySelector("#expense-date"),
     expenseVendor: document.querySelector("#expense-vendor"),
@@ -214,6 +222,27 @@
 
   function today() {
     return new Date().toISOString().slice(0, 10);
+  }
+
+  function currentMonth() {
+    return today().slice(0, 7);
+  }
+
+  function monthDateRange(monthValue = currentMonth()) {
+    const [yearText, monthText] = String(monthValue || currentMonth()).split("-");
+    const year = Number(yearText);
+    const monthIndex = Number(monthText) - 1;
+    if (!year || monthIndex < 0) {
+      return monthDateRange(currentMonth());
+    }
+    const start = new Date(year, monthIndex, 1);
+    const end = new Date(year, monthIndex + 1, 0);
+    return {
+      start: start.toISOString().slice(0, 10),
+      end: end.toISOString().slice(0, 10),
+      label: `${start.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })} - ${end.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}`,
+      invoiceMonth: `${yearText}${monthText}`,
+    };
   }
 
   function makeId() {
@@ -819,6 +848,29 @@
     ].join("");
   }
 
+  function monthlyInvoiceNumber(restaurant, monthValue) {
+    const range = monthDateRange(monthValue);
+    const namePart = String(restaurant?.name || "CUSTOMER")
+      .toUpperCase()
+      .replace(/[^A-Z0-9]+/g, "")
+      .slice(0, 8) || "CUSTOMER";
+    return `RC-${range.invoiceMonth}-${namePart}`;
+  }
+
+  function fillMonthlyInvoiceTemplate() {
+    const restaurant = state.restaurants.find((record) => record.id === elements.collectionRestaurant.value);
+    const monthValue = elements.invoiceTemplateMonth.value || currentMonth();
+    const range = monthDateRange(monthValue);
+    const description = elements.invoiceTemplateDescription.value.trim() || "Restaurant Challenge monthly subscription";
+    const amount = elements.invoiceTemplateAmount.value.trim() || "19";
+    elements.invoiceTemplateMonth.value = monthValue;
+    elements.collectionInvoice.value = monthlyInvoiceNumber(restaurant, monthValue);
+    elements.collectionDueDate.value = range.end;
+    elements.collectionAmount.value = amount;
+    elements.collectionStatus.value = "not-sent";
+    elements.collectionNotes.value = `${description}. Service period: ${range.label}.`;
+  }
+
   function renderCollections() {
     renderCollectionRestaurantOptions();
     const records = [...state.collections].sort((left, right) => {
@@ -836,7 +888,10 @@
             <td>${escapeHtml(labelFor(collectionStatusLabels, record.status, "Not Sent"))}</td>
             <td>${escapeHtml(shortDate(record.paidDate))}</td>
             <td>${escapeHtml(record.notes)}</td>
-            <td><button class="text-button" type="button" data-delete-collection-id="${escapeHtml(record.id)}">Remove</button></td>
+            <td class="table-actions">
+              <button class="text-button" type="button" data-print-collection-id="${escapeHtml(record.id)}">Print Invoice</button>
+              <button class="text-button" type="button" data-delete-collection-id="${escapeHtml(record.id)}">Remove</button>
+            </td>
           </tr>
         `).join("")
       : '<tr><td colspan="8"><div class="empty-state">No collection records yet.</div></td></tr>';
@@ -1237,6 +1292,75 @@
     renderCollections();
   }
 
+  function invoiceCustomerAddress(restaurant) {
+    return formattedAddress(restaurant) || "";
+  }
+
+  function openInvoicePreview(id) {
+    const record = state.collections.find((collection) => collection.id === id);
+    if (!record) {
+      return;
+    }
+    const restaurant = state.restaurants.find((item) => item.id === record.restaurantId);
+    const customerName = record.restaurantName || restaurant?.name || "Restaurant";
+    const contact = restaurant ? contactName(restaurant) : "";
+    const address = restaurant ? invoiceCustomerAddress(restaurant) : "";
+    const description = record.notes || "Restaurant Challenge monthly subscription.";
+    elements.invoicePreviewContent.innerHTML = `
+      <article class="invoice-document">
+        <header class="invoice-header">
+          <div>
+            <p class="eyebrow">CommunityVerse Games</p>
+            <h2>Invoice</h2>
+          </div>
+          <div class="invoice-meta">
+            <strong>${escapeHtml(record.invoiceNumber || "Invoice")}</strong>
+            <span>Due ${escapeHtml(shortDate(record.dueDate) || "Not set")}</span>
+          </div>
+        </header>
+        <section class="invoice-parties">
+          <div>
+            <p class="invoice-label">Bill To</p>
+            <strong>${escapeHtml(customerName)}</strong>
+            ${contact ? `<span>${escapeHtml(contact)}</span>` : ""}
+            ${address ? `<span>${escapeHtml(address)}</span>` : ""}
+          </div>
+          <div>
+            <p class="invoice-label">From</p>
+            <strong>CommunityVerse Games</strong>
+            <span>Restaurant Challenge</span>
+          </div>
+        </section>
+        <table class="invoice-lines">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>${escapeHtml(description)}</td>
+              <td>${escapeHtml(moneyValue(record.amount))}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <th>Total Due</th>
+              <th>${escapeHtml(moneyValue(record.amount))}</th>
+            </tr>
+          </tfoot>
+        </table>
+        <p class="invoice-status">Status: ${escapeHtml(labelFor(collectionStatusLabels, record.status, "Not Sent"))}</p>
+      </article>
+    `;
+    elements.invoicePreviewDialog.showModal();
+  }
+
+  function closeInvoicePreview() {
+    elements.invoicePreviewDialog.close();
+  }
+
   async function addExpense(event) {
     event.preventDefault();
     const record = normalizeExpense({
@@ -1439,6 +1563,9 @@
   elements.status.addEventListener("change", updateSaleDetailsVisibility);
   elements.quickContactForm.addEventListener("submit", saveQuickContact);
   elements.collectionForm.addEventListener("submit", addCollection);
+  elements.fillMonthlyInvoiceButton.addEventListener("click", fillMonthlyInvoiceTemplate);
+  elements.closeInvoicePreviewButton.addEventListener("click", closeInvoicePreview);
+  elements.printInvoiceButton.addEventListener("click", () => window.print());
   elements.expenseForm.addEventListener("submit", addExpense);
   elements.search.addEventListener("input", renderRestaurantTable);
   elements.statusFilter.addEventListener("change", renderRestaurantTable);
@@ -1480,6 +1607,10 @@
     if (deleteCollectionButton) {
       deleteCollection(deleteCollectionButton.dataset.deleteCollectionId);
     }
+    const printCollectionButton = event.target.closest("[data-print-collection-id]");
+    if (printCollectionButton) {
+      openInvoicePreview(printCollectionButton.dataset.printCollectionId);
+    }
     const deleteExpenseButton = event.target.closest("[data-delete-expense-id]");
     if (deleteExpenseButton) {
       deleteExpense(deleteExpenseButton.dataset.deleteExpenseId);
@@ -1499,6 +1630,7 @@
   });
 
   elements.expenseDate.value = today();
+  elements.invoiceTemplateMonth.value = currentMonth();
   if (adminKey) {
     loadBackofficeData();
   } else {

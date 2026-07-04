@@ -358,6 +358,22 @@ h3 {
   justify-self: start;
 }
 
+.invoice-template-panel {
+  display: grid;
+  grid-template-columns: 180px minmax(240px, 1fr) 120px auto;
+  gap: 12px;
+  align-items: end;
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(240, 234, 220, 0.45);
+}
+
+.invoice-template-panel .button {
+  justify-self: start;
+}
+
 .contact-history-editor {
   display: grid;
   gap: 12px;
@@ -561,6 +577,64 @@ th {
   width: min(820px, calc(100vw - 28px));
 }
 
+.invoice-preview-dialog {
+  width: min(760px, calc(100vw - 28px));
+}
+
+.invoice-preview-shell {
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+  background: #fffdf7;
+}
+
+.invoice-document {
+  display: grid;
+  gap: 24px;
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 30px;
+}
+
+.invoice-header,
+.invoice-parties {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.invoice-header h2 {
+  margin: 0;
+  font-size: 2.4rem;
+}
+
+.invoice-meta,
+.invoice-parties div {
+  display: grid;
+  gap: 5px;
+}
+
+.invoice-meta {
+  text-align: right;
+}
+
+.invoice-label,
+.invoice-status {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.invoice-lines {
+  min-width: 100%;
+}
+
+.invoice-lines tfoot th {
+  font-size: 1rem;
+}
+
 .quick-contact-grid {
   display: grid;
   grid-template-columns: 150px 170px 110px minmax(160px, 1fr) 110px;
@@ -696,6 +770,7 @@ th {
   .dashboard-grid,
   .toolbar,
   .prospect-filters,
+  .invoice-template-panel,
   .quick-entry-form,
   .quick-contact-grid,
   .contact-history-inputs,
@@ -707,5 +782,37 @@ th {
 
   .main-panel {
     padding: 16px;
+  }
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .invoice-preview-dialog[open],
+  .invoice-preview-dialog[open] * {
+    visibility: visible;
+  }
+
+  .invoice-preview-dialog[open] {
+    position: static;
+    width: 100%;
+    max-width: none;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .invoice-preview-shell {
+    padding: 0;
+  }
+
+  .invoice-preview-actions {
+    display: none;
+  }
+
+  .invoice-document {
+    border: 0;
+    padding: 0;
   }
 }
