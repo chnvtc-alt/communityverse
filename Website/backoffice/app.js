@@ -2,6 +2,8 @@
   const STORAGE_KEY = "communityverseBackofficeRestaurants";
   const COLLECTIONS_KEY = "communityverseBackofficeCollections";
   const EXPENSES_KEY = "communityverseBackofficeExpenses";
+  const KEY_STORAGE = "communityverseBackofficeAdminKey";
+  const API_URL = "/api/backoffice";
   const DEFAULT_OWNER = "Tim";
   const SECTION_LABELS = {
     dashboard: "Dashboard",
@@ -82,6 +84,12 @@
   };
 
   const elements = {
+    appShell: document.querySelector("#app-shell"),
+    loginPanel: document.querySelector("#login-panel"),
+    loginForm: document.querySelector("#login-form"),
+    adminKey: document.querySelector("#admin-key"),
+    loginError: document.querySelector("#login-error"),
+    syncStatus: document.querySelector("#sync-status"),
     sectionTitle: document.querySelector("#section-title"),
     navItems: [...document.querySelectorAll(".nav-item")],
     sections: [...document.querySelectorAll(".section-view")],
@@ -164,10 +172,18 @@
 
   const state = {
     section: "dashboard",
+    restaurants: [],
+    collections: [],
+    expenses: [],
+    editingContactHistory: [],
+    loading: false,
+  };
+
+  let adminKey = sessionStorage.getItem(KEY_STORAGE) || "";
+  const localBackupAtStart = {
     restaurants: loadRestaurants(),
     collections: loadRecords(COLLECTIONS_KEY, normalizeCollection),
     expenses: loadRecords(EXPENSES_KEY, normalizeExpense),
-    editingContactHistory: [],
   };
 
   function today() {
@@ -312,6 +328,129 @@
 
   function saveExpenses() {
     localStorage.setItem(EXPENSES_KEY, JSON.stringify(state.expenses, null, 2));
+  }
+
+  function cacheBackofficeData() {
+    saveRestaurants();
+    saveCollections();
+    saveExpenses();
+  }
+
+  function setSyncStatus(message) {
+    elements.syncStatus.textContent = message;
+  }
+
+  function setLoading(loading) {
+    state.loading = loading;
+    [
+      elements.newRestaurantButton,
+      elements.importButton,
+      elements.exportButton,
+      elements.deleteRestaurantButton,
+      elements.addContactHistoryButton,
+    ].forEach((element) => {
+      if (element) element.disabled = loading;
+    });
+  }
+
+  async function apiRequest(action = "", payload = {}) {
+    const options = {
+      headers: {
+        Authorization: `Bearer ${adminKey}`,
+      },
+    };
+
+    if (action) {
+      options.method = "POST";
+      options.headers["Content-Type"] = "application/json";
+      options.body = JSON.stringify({ action, ...payload });
+    }
+
+    const response = await fetch(API_URL, options);
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || data.ok === false) {
+      const error = new Error(data.error || "Back Office database request failed.");
+      error.status = response.status;
+      throw error;
+    }
+    return data;
+  }
+
+  function showLogin(message = "") {
+    elements.appShell.hidden = true;
+    elements.loginPanel.hidden = false;
+    elements.loginError.textContent = message;
+    elements.adminKey.value = "";
+    elements.adminKey.focus();
+  }
+
+  function showApp() {
+    elements.loginPanel.hidden = true;
+    elements.appShell.hidden = false;
+  }
+
+  function applyBackofficeData(data = {}) {
+    state.restaurants = Array.isArray(data.restaurants)
+      ? data.restaurants.map(normalizeRestaurant).filter((record) => record.name)
+      : [];
+    state.collections = Array.isArray(data.collections) ? data.collections.map(normalizeCollection) : [];
+    state.expenses = Array.isArray(data.expenses) ? data.expenses.map(normalizeExpense) : [];
+    cacheBackofficeData();
+    render();
+  }
+
+  function hasLocalBackupData() {
+    return Boolean(
+      localBackupAtStart.restaurants.length ||
+      localBackupAtStart.collections.length ||
+      localBackupAtStart.expenses.length
+    );
+  }
+
+  async function loadBackofficeData({ importLocalIfEmpty = true } = {}) {
+    setLoading(true);
+    setSyncStatus("Loading...");
+    try {
+      const data = await apiRequest();
+      applyBackofficeData(data);
+      showApp();
+      setSection(state.section);
+      setSyncStatus("Saved to Supabase");
+
+      const databaseIsEmpty = !state.restaurants.length && !state.collections.length && !state.expenses.length;
+      if (importLocalIfEmpty && databaseIsEmpty && hasLocalBackupData()) {
+        const confirmed = window.confirm("I found Back Office records saved in this browser. Import them into Supabase now?");
+        if (confirmed) {
+          await importBackupData(localBackupAtStart);
+        }
+      }
+    } catch (error) {
+      if (error.status === 401) {
+        adminKey = "";
+        sessionStorage.removeItem(KEY_STORAGE);
+        showLogin("That admin key was not accepted.");
+      } else {
+        showLogin(error instanceof Error ? error.message : "Back Office could not load.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function saveAction(action, payload, successMessage = "Saved to Supabase") {
+    setLoading(true);
+    setSyncStatus("Saving...");
+    try {
+      const data = await apiRequest(action, payload);
+      setSyncStatus(successMessage);
+      return data;
+    } catch (error) {
+      setSyncStatus("Save failed");
+      window.alert(error instanceof Error ? error.message : "That record could not be saved.");
+      return null;
+    } finally {
+      setLoading(false);
+    }
   }
 
   function setSection(section) {
@@ -756,7 +895,7 @@
     renderContactHistoryEditor();
   }
 
-  function addCollection(event) {
+  async function addCollection(event) {
     event.preventDefault();
     const restaurant = state.restaurants.find((record) => record.id === elements.collectionRestaurant.value);
     const record = normalizeCollection({
@@ -773,20 +912,28 @@
     if (!record.restaurantName && !record.invoiceNumber && !record.amount) {
       return;
     }
-    state.collections.unshift(record);
-    saveCollections();
+    const data = await saveAction("saveCollection", { collection: record });
+    if (!data?.collection) {
+      return;
+    }
+    state.collections.unshift(normalizeCollection(data.collection));
+    cacheBackofficeData();
     elements.collectionForm.reset();
     elements.collectionStatus.value = "not-sent";
     renderCollections();
   }
 
-  function deleteCollection(id) {
+  async function deleteCollection(id) {
+    const data = await saveAction("deleteCollection", { id }, "Removed from Supabase");
+    if (!data) {
+      return;
+    }
     state.collections = state.collections.filter((record) => record.id !== id);
-    saveCollections();
+    cacheBackofficeData();
     renderCollections();
   }
 
-  function addExpense(event) {
+  async function addExpense(event) {
     event.preventDefault();
     const record = normalizeExpense({
       id: makeExpenseId(),
@@ -800,35 +947,48 @@
     if (!record.vendor && !record.amount && !record.notes) {
       return;
     }
-    state.expenses.unshift(record);
-    saveExpenses();
+    const data = await saveAction("saveExpense", { expense: record });
+    if (!data?.expense) {
+      return;
+    }
+    state.expenses.unshift(normalizeExpense(data.expense));
+    cacheBackofficeData();
     elements.expenseForm.reset();
     elements.expenseDate.value = today();
     elements.expenseCategory.value = "software";
     renderExpenses();
   }
 
-  function deleteExpense(id) {
+  async function deleteExpense(id) {
+    const data = await saveAction("deleteExpense", { id }, "Removed from Supabase");
+    if (!data) {
+      return;
+    }
     state.expenses = state.expenses.filter((record) => record.id !== id);
-    saveExpenses();
+    cacheBackofficeData();
     renderExpenses();
   }
 
-  function saveRestaurant(event) {
+  async function saveRestaurant(event) {
     event.preventDefault();
     const record = restaurantFromForm();
+    const data = await saveAction("saveRestaurant", { restaurant: record });
+    if (!data?.restaurant) {
+      return;
+    }
+    const savedRecord = normalizeRestaurant(data.restaurant);
     const existingIndex = state.restaurants.findIndex((restaurant) => restaurant.id === record.id);
     if (existingIndex >= 0) {
-      state.restaurants[existingIndex] = record;
+      state.restaurants[existingIndex] = savedRecord;
     } else {
-      state.restaurants.unshift(record);
+      state.restaurants.unshift(savedRecord);
     }
-    saveRestaurants();
+    cacheBackofficeData();
     closeRestaurantEditor();
     render();
   }
 
-  function deleteCurrentRestaurant() {
+  async function deleteCurrentRestaurant() {
     const id = elements.id.value;
     if (!id) {
       return;
@@ -838,8 +998,15 @@
     if (!confirmed) {
       return;
     }
+    const data = await saveAction("deleteRestaurant", { id }, "Removed from Supabase");
+    if (!data) {
+      return;
+    }
     state.restaurants = state.restaurants.filter((record) => record.id !== id);
-    saveRestaurants();
+    state.collections = state.collections.map((record) =>
+      record.restaurantId === id ? { ...record, restaurantId: "" } : record
+    );
+    cacheBackofficeData();
     closeRestaurantEditor();
     render();
   }
@@ -859,23 +1026,29 @@
     URL.revokeObjectURL(link.href);
   }
 
+  async function importBackupData(backup) {
+    const data = await saveAction("importBackup", { backup }, "Imported to Supabase");
+    if (!data) {
+      return;
+    }
+    applyBackofficeData(data);
+    window.alert(`Imported ${state.restaurants.length} restaurants, ${state.collections.length} collections, and ${state.expenses.length} expenses.`);
+  }
+
   function importBackupFile(file) {
     if (!file) {
       return;
     }
     const reader = new FileReader();
-    reader.addEventListener("load", () => {
+    reader.addEventListener("load", async () => {
       try {
         const parsed = JSON.parse(String(reader.result || "{}"));
         const records = Array.isArray(parsed.restaurants) ? parsed.restaurants : Array.isArray(parsed) ? parsed : [];
-        state.restaurants = records.map(normalizeRestaurant).filter((record) => record.name);
-        state.collections = Array.isArray(parsed.collections) ? parsed.collections.map(normalizeCollection) : [];
-        state.expenses = Array.isArray(parsed.expenses) ? parsed.expenses.map(normalizeExpense) : [];
-        saveRestaurants();
-        saveCollections();
-        saveExpenses();
-        render();
-        window.alert(`Imported ${state.restaurants.length} restaurants, ${state.collections.length} collections, and ${state.expenses.length} expenses.`);
+        await importBackupData({
+          restaurants: records,
+          collections: Array.isArray(parsed.collections) ? parsed.collections : [],
+          expenses: Array.isArray(parsed.expenses) ? parsed.expenses : [],
+        });
       } catch {
         window.alert("That backup file could not be imported.");
       }
@@ -885,6 +1058,14 @@
 
   elements.navItems.forEach((item) => {
     item.addEventListener("click", () => setSection(item.dataset.section));
+  });
+
+  elements.loginForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    adminKey = elements.adminKey.value.trim();
+    sessionStorage.setItem(KEY_STORAGE, adminKey);
+    elements.loginError.textContent = "";
+    loadBackofficeData();
   });
 
   document.querySelectorAll("[data-jump-section]").forEach((button) => {
@@ -934,5 +1115,9 @@
   });
 
   elements.expenseDate.value = today();
-  setSection("dashboard");
+  if (adminKey) {
+    loadBackofficeData();
+  } else {
+    showLogin();
+  }
 })();

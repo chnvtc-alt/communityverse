@@ -11,10 +11,24 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,650;9..144,760&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v10" />
+    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v11" />
   </head>
   <body>
-    <div class="app-shell">
+    <section class="login-panel" id="login-panel">
+      <form class="login-card" id="login-form">
+        <p class="eyebrow">CommunityVerse</p>
+        <h1>Back Office</h1>
+        <p class="helper">Enter the admin key to load and save Back Office records from Supabase.</p>
+        <label>
+          Admin Key
+          <input id="admin-key" type="password" autocomplete="current-password" required />
+        </label>
+        <button class="button button-primary" type="submit">Open Back Office</button>
+        <p class="form-error" id="login-error" role="alert"></p>
+      </form>
+    </section>
+
+    <div class="app-shell" id="app-shell" hidden>
       <aside class="side-nav" aria-label="Back Office sections">
         <div class="brand-block">
           <span class="brand-mark" aria-hidden="true">CV</span>
@@ -35,8 +49,8 @@
         </nav>
 
         <div class="sidebar-note">
-          <strong>First version</strong>
-          <span>Records save in this browser for now. Use Export Backup before doing real data entry.</span>
+          <strong>Database version</strong>
+          <span>Records save to Supabase. Use Export Backup before big data-entry sessions.</span>
         </div>
       </aside>
 
@@ -47,6 +61,7 @@
             <h2 id="section-title">Dashboard</h2>
           </div>
           <div class="topbar-actions">
+            <span class="sync-status" id="sync-status">Not loaded</span>
             <button class="button button-muted" id="import-button" type="button">Import Backup</button>
             <button class="button button-muted" id="export-button" type="button">Export Backup</button>
             <button class="button button-primary" id="new-restaurant-button" type="button">New Restaurant</button>
@@ -590,6 +605,6 @@
     </dialog>
 
     <input id="import-file" type="file" accept="application/json" hidden />
-    <script src="/backoffice/app.js?v=backoffice-v10" defer></script>
+    <script src="/backoffice/app.js?v=backoffice-v11" defer></script>
   </body>
 </html>
