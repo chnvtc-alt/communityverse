@@ -848,23 +848,24 @@
     ].join("");
   }
 
-  function monthlyInvoiceNumber(restaurant, monthValue) {
-    const range = monthDateRange(monthValue);
-    const namePart = String(restaurant?.name || "CUSTOMER")
-      .toUpperCase()
-      .replace(/[^A-Z0-9]+/g, "")
-      .slice(0, 8) || "CUSTOMER";
-    return `RC-${range.invoiceMonth}-${namePart}`;
+  function nextInvoiceNumber() {
+    const largestNumber = state.collections.reduce((largest, record) => {
+      const match = String(record.invoiceNumber || "").match(/\d+/);
+      const invoiceNumber = match ? Number(match[0]) : 0;
+      return Math.max(largest, invoiceNumber);
+    }, 0);
+    return String(largestNumber + 1).padStart(3, "0");
   }
 
   function fillMonthlyInvoiceTemplate() {
     const restaurant = state.restaurants.find((record) => record.id === elements.collectionRestaurant.value);
     const monthValue = elements.invoiceTemplateMonth.value || currentMonth();
     const range = monthDateRange(monthValue);
-    const description = elements.invoiceTemplateDescription.value.trim() || "Restaurant Challenge monthly subscription";
+    const restaurantName = restaurant?.name || "Restaurant Challenge";
+    const description = elements.invoiceTemplateDescription.value.trim() || `${restaurantName} Game Monthly Subscription`;
     const amount = elements.invoiceTemplateAmount.value.trim() || "19";
     elements.invoiceTemplateMonth.value = monthValue;
-    elements.collectionInvoice.value = monthlyInvoiceNumber(restaurant, monthValue);
+    elements.collectionInvoice.value = nextInvoiceNumber();
     elements.collectionDueDate.value = range.end;
     elements.collectionAmount.value = amount;
     elements.collectionStatus.value = "not-sent";
