@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,650;9..144,760&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v5" />
+    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v6" />
   </head>
   <body>
     <div class="app-shell">
@@ -171,17 +171,51 @@
               </div>
               <button class="button button-primary" type="button" data-new-status="prospect">New Prospect</button>
             </div>
+            <div class="prospect-filters">
+              <label>
+                Score From
+                <select id="prospect-score-min">
+                  <option value="1">1 - Not a prospect</option>
+                  <option value="2">2</option>
+                  <option value="3" selected>3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                  <option value="9">9</option>
+                  <option value="10">10 - Very high</option>
+                </select>
+              </label>
+              <label>
+                Score To
+                <select id="prospect-score-max">
+                  <option value="1">1 - Not a prospect</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                  <option value="9">9</option>
+                  <option value="10" selected>10 - Very high</option>
+                </select>
+              </label>
+            </div>
             <div class="table-wrap">
               <table>
                 <thead>
                   <tr>
                     <th>Restaurant</th>
+                    <th>Contact</th>
+                    <th>Email</th>
+                    <th>Phone</th>
                     <th>Stage</th>
                     <th>Score</th>
                     <th>Last Contact</th>
                     <th>Next Follow-Up</th>
                     <th>Assigned To</th>
-                    <th></th>
                   </tr>
                 </thead>
                 <tbody id="prospect-list"></tbody>
@@ -426,6 +460,6 @@
     </dialog>
 
     <input id="import-file" type="file" accept="application/json" hidden />
-    <script src="/backoffice/app.js?v=backoffice-v5" defer></script>
+    <script src="/backoffice/app.js?v=backoffice-v6" defer></script>
   </body>
 </html>

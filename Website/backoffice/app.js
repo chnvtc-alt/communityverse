@@ -68,6 +68,8 @@
     recentRestaurants: document.querySelector("#recent-restaurants"),
     followupList: document.querySelector("#followup-list"),
     prospectList: document.querySelector("#prospect-list"),
+    prospectScoreMin: document.querySelector("#prospect-score-min"),
+    prospectScoreMax: document.querySelector("#prospect-score-max"),
     salesList: document.querySelector("#sales-list"),
     metricTotal: document.querySelector("#metric-total"),
     metricCustomers: document.querySelector("#metric-customers"),
@@ -140,7 +142,8 @@
       warm: "7",
       cold: "3",
     }[record.interestLevel];
-    const score = String(record.prospectScore || legacyScore || "").trim();
+    const defaultProspectScore = record.status === "prospect" ? "5" : "";
+    const score = String(record.prospectScore || legacyScore || defaultProspectScore).trim();
     return {
       id: String(record.id || "").trim() || makeId(),
       name: String(record.name || "").trim(),
@@ -307,6 +310,11 @@
     return restaurant.status === "prospect" && restaurant.prospectScore !== "1";
   }
 
+  function prospectScoreNumber(restaurant) {
+    const score = Number(restaurant.prospectScore || 0);
+    return Number.isFinite(score) ? score : 0;
+  }
+
   function dashboardRow(restaurant, dateLabel = "No follow-up") {
     return `
       <tr>
@@ -361,24 +369,34 @@
   }
 
   function renderProspects() {
+    const scoreMin = Number(elements.prospectScoreMin?.value || 1);
+    const scoreMax = Number(elements.prospectScoreMax?.value || 10);
+    const min = Math.min(scoreMin, scoreMax);
+    const max = Math.max(scoreMin, scoreMax);
     const prospects = getFilteredRestaurants({ forceStatus: "prospect" })
-      .filter(isVisibleProspect);
+      .filter(isVisibleProspect)
+      .filter((restaurant) => {
+        const score = prospectScoreNumber(restaurant);
+        return score >= min && score <= max;
+      });
     elements.prospectList.innerHTML = prospects.length
       ? prospects.map((restaurant) => `
           <tr>
             <td>
-              <strong>${escapeHtml(restaurant.name)}</strong>
+              <button class="link-button" type="button" data-edit-id="${escapeHtml(restaurant.id)}">${escapeHtml(restaurant.name)}</button>
               <div class="helper">${escapeHtml(restaurant.leadSource || "No lead source yet")}</div>
             </td>
+            <td>${escapeHtml(contactName(restaurant) || "")}</td>
+            <td>${restaurant.contactEmail ? `<a href="mailto:${escapeHtml(restaurant.contactEmail)}">${escapeHtml(restaurant.contactEmail)}</a>` : ""}</td>
+            <td>${escapeHtml(restaurant.contactCell || restaurant.phone || "")}</td>
             <td>${escapeHtml(labelFor(prospectStageLabels, restaurant.prospectStage, "Not set"))}</td>
             <td>${escapeHtml(labelFor(prospectScoreLabels, restaurant.prospectScore, "Not set"))}</td>
             <td>${escapeHtml(restaurant.lastContacted || "")}</td>
             <td>${escapeHtml(restaurant.nextFollowUp || "")}</td>
             <td>${escapeHtml(restaurant.assignedTo || "")}</td>
-            <td><button class="text-button" type="button" data-edit-id="${escapeHtml(restaurant.id)}">Edit</button></td>
           </tr>
         `).join("")
-      : '<tr><td colspan="7"><div class="empty-state">No prospects yet. Add one from New Restaurant or New Prospect.</div></td></tr>';
+      : '<tr><td colspan="9"><div class="empty-state">No prospects match this score range.</div></td></tr>';
   }
 
   function renderSales() {
@@ -429,7 +447,7 @@
     elements.nextFollowUp.value = restaurant ? record.nextFollowUp : "";
     elements.notes.value = restaurant ? record.notes : "";
     elements.prospectStage.value = restaurant ? record.prospectStage : "";
-    elements.prospectScore.value = restaurant ? record.prospectScore : "";
+    elements.prospectScore.value = record.prospectScore || "";
     elements.leadSource.value = restaurant ? record.leadSource : "";
     elements.assignedTo.value = restaurant ? record.assignedTo : "";
     elements.prospectNotes.value = restaurant ? record.prospectNotes : "";
@@ -574,6 +592,8 @@
   elements.form.addEventListener("submit", saveRestaurant);
   elements.search.addEventListener("input", renderRestaurantTable);
   elements.statusFilter.addEventListener("change", renderRestaurantTable);
+  elements.prospectScoreMin.addEventListener("change", renderProspects);
+  elements.prospectScoreMax.addEventListener("change", renderProspects);
   elements.exportButton.addEventListener("click", exportBackup);
   elements.importButton.addEventListener("click", () => elements.importFile.click());
   elements.importFile.addEventListener("change", (event) => {

@@ -161,6 +161,7 @@ h3 {
 
 .button,
 .text-button,
+.link-button,
 .icon-button {
   border: 0;
   font-weight: 800;
@@ -193,6 +194,13 @@ h3 {
 .text-button {
   color: var(--orange);
   background: transparent;
+}
+
+.link-button {
+  padding: 0;
+  color: var(--blue);
+  background: transparent;
+  text-align: left;
 }
 
 .icon-button {
@@ -258,6 +266,13 @@ h3 {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 220px;
   gap: 12px;
+}
+
+.prospect-filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(140px, 190px));
+  gap: 12px;
+  margin-top: 14px;
 }
 
 label {
@@ -487,6 +502,7 @@ th {
   .metric-grid,
   .dashboard-grid,
   .toolbar,
+  .prospect-filters,
   .form-grid {
     grid-template-columns: 1fr;
   }
