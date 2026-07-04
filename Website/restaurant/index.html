@@ -130,9 +130,9 @@
         }
       })();
     </script>
-    <link rel="stylesheet" href="../shared/restaurant.css?v=hub-game-picker-v1" />
+    <link rel="stylesheet" href="../shared/restaurant.css?v=restaurant-directory-v1" />
     <script defer src="../shared/app-core.js?v=question-mix-v1"></script>
-    <script defer src="hub.js?v=restaurant-picker-fallback-v1"></script>
+    <script defer src="hub.js?v=restaurant-directory-v1"></script>
   </head>
   <body data-page="hub">
     <main class="app-shell">
@@ -254,14 +254,12 @@
 
       <section class="challenge-info-section challenge-seo-section" aria-labelledby="challenge-restaurant-games-title">
         <p class="kicker">Restaurant Trivia Games</p>
-        <h2 class="section-title" id="challenge-restaurant-games-title">Play local restaurant trivia online.</h2>
+        <h2 class="section-title" id="challenge-restaurant-games-title">Restaurant game directory.</h2>
         <p class="copy">
-          Restaurant Challenge Trivia is a free browser game for guests, friends, and local communities. Choose a restaurant, answer 10 quick trivia questions, and play a solo round or a live multiplayer room from any phone, tablet, or computer.
+          Choose a local restaurant game, answer 10 quick trivia questions, and play a solo round or a live multiplayer room from any phone, tablet, or computer.
         </p>
-        <div class="challenge-link-grid" aria-label="Featured restaurant trivia games">
-          <a class="challenge-text-link" href="/sam-and-roscos">Play Sam &amp; Rosco's</a>
-          <a class="challenge-text-link" href="/hudsons">Play Hudson's</a>
-          <a class="challenge-text-link" href="/marcossp">Play Marco's</a>
+        <div class="challenge-directory-grid" id="challenge-restaurant-directory" aria-label="Restaurant trivia game directory">
+          <p class="copy challenge-directory-loading">Loading restaurant games...</p>
         </div>
       </section>
 

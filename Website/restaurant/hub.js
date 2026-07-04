@@ -129,6 +129,7 @@
     splashMyRestaurantButton: document.getElementById("splash-my-restaurant-button"),
     splashLeaderboardButton: document.getElementById("splash-leaderboard-button"),
     splashHowToPlayButton: document.getElementById("splash-how-to-play-button"),
+    restaurantDirectory: document.getElementById("challenge-restaurant-directory"),
     challengeModeInputs: Array.from(document.querySelectorAll("input[name='challengeMode']")),
     challengeSoloPanel: document.getElementById("challenge-solo-panel"),
     challengeFriendsPanel: document.getElementById("challenge-friends-panel"),
@@ -691,6 +692,8 @@
     return {
       slug: restaurant.slug,
       name: restaurant.name,
+      description: restaurant.description || restaurant.openingCopy || "",
+      location: restaurant.location || "",
       image: restaurant.logoSquare || restaurant.squareImage || restaurant.logoHorizontal || restaurant.heroImage,
       href: `/${restaurant.slug}/`,
       available: true,
@@ -765,6 +768,47 @@
       directoryRestaurants[0] ||
       null
     );
+  }
+
+  function renderRestaurantDirectory() {
+    if (!elements.restaurantDirectory || hubMode) {
+      return;
+    }
+
+    const profile = core.getActiveProfile();
+    const directoryRestaurants = getDirectoryRestaurants(profile);
+    elements.restaurantDirectory.innerHTML = directoryRestaurants
+      .map((restaurant) => {
+        const description = restaurant.description || restaurant.location || "Play a quick 10-question trivia game for this restaurant.";
+        const location = restaurant.location ? `<p class="challenge-directory-location">${escapeHtml(restaurant.location)}</p>` : "";
+        const image = restaurant.image
+          ? `<img class="challenge-directory-logo" src="${escapeHtml(restaurant.image)}" alt="${escapeHtml(`${restaurant.name} logo`)}" loading="lazy" />`
+          : `<span class="challenge-directory-logo challenge-directory-logo-fallback" aria-hidden="true">${escapeHtml(restaurant.name.charAt(0) || "R")}</span>`;
+
+        return `
+          <article class="challenge-directory-card">
+            <a class="challenge-directory-link" href="${escapeHtml(restaurant.href)}">
+              ${image}
+              <span class="challenge-directory-content">
+                <strong>${escapeHtml(restaurant.name)}</strong>
+                ${location}
+                <span>${escapeHtml(description)}</span>
+              </span>
+            </a>
+          </article>
+        `;
+      })
+      .join("");
+
+    elements.restaurantDirectory.querySelectorAll(".challenge-directory-logo").forEach((image) => {
+      image.addEventListener("error", () => {
+        const fallback = document.createElement("span");
+        fallback.className = "challenge-directory-logo challenge-directory-logo-fallback";
+        fallback.setAttribute("aria-hidden", "true");
+        fallback.textContent = image.getAttribute("alt")?.trim().charAt(0) || "R";
+        image.replaceWith(fallback);
+      }, { once: true });
+    });
   }
 
   function getPlayAgainTarget(profile) {
@@ -2378,6 +2422,7 @@
   function renderAll() {
     try {
       renderSplashChooser();
+      renderRestaurantDirectory();
       renderMobileHeader();
       renderMobileTabs();
       renderHero();
