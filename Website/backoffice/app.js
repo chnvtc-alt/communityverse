@@ -866,7 +866,7 @@
     const amount = elements.invoiceTemplateAmount.value.trim() || "19";
     elements.invoiceTemplateMonth.value = monthValue;
     elements.collectionInvoice.value = nextInvoiceNumber();
-    elements.collectionDueDate.value = range.end;
+    elements.collectionDueDate.value = today();
     elements.collectionAmount.value = amount;
     elements.collectionStatus.value = "not-sent";
     elements.collectionNotes.value = `${description}. Service period: ${range.label}.`;
