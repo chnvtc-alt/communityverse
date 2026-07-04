@@ -93,6 +93,7 @@
     sectionTitle: document.querySelector("#section-title"),
     navItems: [...document.querySelectorAll(".nav-item")],
     sections: [...document.querySelectorAll(".section-view")],
+    restaurantSortButtons: [...document.querySelectorAll("[data-restaurant-sort]")],
     newRestaurantButton: document.querySelector("#new-restaurant-button"),
     importButton: document.querySelector("#import-button"),
     exportButton: document.querySelector("#export-button"),
@@ -177,6 +178,8 @@
     expenses: [],
     editingContactHistory: [],
     loading: false,
+    restaurantSortKey: "followup",
+    restaurantSortDirection: "asc",
   };
 
   let adminKey = sessionStorage.getItem(KEY_STORAGE) || "";
@@ -500,14 +503,50 @@
           restaurant.notes,
         ].some((value) => String(value || "").toLowerCase().includes(query));
       })
-      .sort((left, right) => {
-        const leftDate = left.nextFollowUp || "9999-12-31";
-        const rightDate = right.nextFollowUp || "9999-12-31";
-        if (leftDate !== rightDate) {
-          return leftDate.localeCompare(rightDate);
-        }
-        return left.name.localeCompare(right.name);
-      });
+      .sort(compareRestaurants);
+  }
+
+  function restaurantSortValue(restaurant, key) {
+    if (key === "status") return labelFor(statusLabels, restaurant.status, restaurant.status);
+    if (key === "contact") return contactName(restaurant);
+    if (key === "email") return restaurant.contactEmail;
+    if (key === "phone") return restaurant.phone || restaurant.contactCell;
+    if (key === "followup") return restaurant.nextFollowUp || "9999-12-31";
+    return restaurant.name;
+  }
+
+  function compareRestaurants(left, right) {
+    const direction = state.restaurantSortDirection === "desc" ? -1 : 1;
+    const key = state.restaurantSortKey;
+    const leftValue = restaurantSortValue(left, key);
+    const rightValue = restaurantSortValue(right, key);
+    const compared = String(leftValue || "").localeCompare(String(rightValue || ""), undefined, {
+      numeric: true,
+      sensitivity: "base",
+    });
+    if (compared !== 0) {
+      return compared * direction;
+    }
+    return left.name.localeCompare(right.name, undefined, { sensitivity: "base" });
+  }
+
+  function updateRestaurantSortButtons() {
+    elements.restaurantSortButtons.forEach((button) => {
+      const active = button.dataset.restaurantSort === state.restaurantSortKey;
+      button.classList.toggle("is-active", active);
+      button.dataset.direction = active ? state.restaurantSortDirection : "";
+      button.setAttribute("aria-sort", active ? (state.restaurantSortDirection === "asc" ? "ascending" : "descending") : "none");
+    });
+  }
+
+  function setRestaurantSort(key) {
+    if (state.restaurantSortKey === key) {
+      state.restaurantSortDirection = state.restaurantSortDirection === "asc" ? "desc" : "asc";
+    } else {
+      state.restaurantSortKey = key;
+      state.restaurantSortDirection = "asc";
+    }
+    renderRestaurantTable();
   }
 
   function isFollowUpDue(restaurant) {
@@ -635,6 +674,7 @@
 
   function renderRestaurantTable() {
     const restaurants = getFilteredRestaurants();
+    updateRestaurantSortButtons();
     elements.restaurantCount.textContent = `${restaurants.length} ${restaurants.length === 1 ? "record" : "records"}`;
     elements.restaurantTableBody.innerHTML = restaurants.length
       ? restaurants.map((restaurant) => `
@@ -1058,6 +1098,10 @@
 
   elements.navItems.forEach((item) => {
     item.addEventListener("click", () => setSection(item.dataset.section));
+  });
+
+  elements.restaurantSortButtons.forEach((button) => {
+    button.addEventListener("click", () => setRestaurantSort(button.dataset.restaurantSort));
   });
 
   elements.loginForm.addEventListener("submit", (event) => {

@@ -244,6 +244,31 @@ h3 {
   text-align: left;
 }
 
+.sort-button {
+  border: 0;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  font-weight: inherit;
+  text-align: left;
+  text-transform: inherit;
+}
+
+.sort-button::after {
+  content: "";
+  display: inline-block;
+  width: 1em;
+}
+
+.sort-button.is-active::after {
+  content: "↑";
+}
+
+.sort-button.is-active[data-direction="desc"]::after {
+  content: "↓";
+}
+
 .icon-button {
   width: 34px;
   height: 34px;
