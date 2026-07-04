@@ -179,6 +179,7 @@
     quickContactDate: document.querySelector("#quick-contact-date"),
     quickContactResponse: document.querySelector("#quick-contact-response"),
     quickContactNextFollowUp: document.querySelector("#quick-contact-next-follow-up"),
+    quickContactClearFollowUp: document.querySelector("#quick-contact-clear-follow-up"),
     quickContactScore: document.querySelector("#quick-contact-score"),
     quickContactNote: document.querySelector("#quick-contact-note"),
     quickContactHistoryList: document.querySelector("#quick-contact-history-list"),
@@ -939,6 +940,10 @@
     elements.quickContactDialog.close();
   }
 
+  function clearQuickContactFollowUp() {
+    elements.quickContactNextFollowUp.value = "";
+  }
+
   function renderQuickContactHistory(restaurant) {
     const records = [...(restaurant.contactHistory || [])]
       .sort((left, right) => String(right.date || "").localeCompare(String(left.date || "")))
@@ -1303,6 +1308,7 @@
   elements.cancelEditorButton.addEventListener("click", closeRestaurantEditor);
   elements.closeQuickContactButton.addEventListener("click", closeQuickContact);
   elements.cancelQuickContactButton.addEventListener("click", closeQuickContact);
+  elements.quickContactClearFollowUp.addEventListener("click", clearQuickContactFollowUp);
   elements.quickContactFullCardButton.addEventListener("click", openFullCardFromQuickContact);
   elements.deleteRestaurantButton.addEventListener("click", deleteCurrentRestaurant);
   elements.addContactHistoryButton.addEventListener("click", addContactHistory);

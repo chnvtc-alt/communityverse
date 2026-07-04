@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,650;9..144,760&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v15" />
+    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v16" />
   </head>
   <body>
     <section class="login-panel" id="login-panel">
@@ -636,7 +636,10 @@
           </label>
           <label>
             Next Follow-Up
-            <input id="quick-contact-next-follow-up" type="date" />
+            <span class="input-with-action">
+              <input id="quick-contact-next-follow-up" type="date" />
+              <button class="mini-button" id="quick-contact-clear-follow-up" type="button">None</button>
+            </span>
           </label>
           <label>
             Score
@@ -673,6 +676,6 @@
     </dialog>
 
     <input id="import-file" type="file" accept="application/json" hidden />
-    <script src="/backoffice/app.js?v=backoffice-v15" defer></script>
+    <script src="/backoffice/app.js?v=backoffice-v16" defer></script>
   </body>
 </html>

@@ -547,6 +547,21 @@ th {
   align-items: end;
 }
 
+.input-with-action {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.mini-button {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: var(--ink);
+  background: #f0eadc;
+  font: 700 0.85rem Arial, sans-serif;
+}
+
 .quick-history-item {
   grid-template-columns: 110px 110px minmax(0, 1fr);
 }
