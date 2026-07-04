@@ -275,6 +275,18 @@ h3 {
   margin-top: 14px;
 }
 
+.quick-entry-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+  gap: 12px;
+  align-items: end;
+  margin-top: 14px;
+}
+
+.quick-entry-form .button {
+  justify-self: start;
+}
+
 .contact-history-editor {
   display: grid;
   gap: 12px;
@@ -546,6 +558,7 @@ th {
   .dashboard-grid,
   .toolbar,
   .prospect-filters,
+  .quick-entry-form,
   .contact-history-inputs,
   .contact-history-item,
   .form-grid {

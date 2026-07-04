@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,650;9..144,760&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v9" />
+    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v10" />
   </head>
   <body>
     <div class="app-shell">
@@ -252,18 +252,127 @@
         </section>
 
         <section class="section-view" id="collections-section" hidden>
-          <section class="placeholder-panel">
-            <p class="eyebrow">Collections</p>
-            <h3>Invoice and payment tracking will live here.</h3>
-            <p>Good first fields: invoice number, restaurant, due date, amount, paid date, and balance.</p>
+          <section class="card table-card">
+            <div class="card-heading">
+              <div>
+                <h3>Collections</h3>
+                <p class="helper">Invoice and payment follow-up for sold accounts.</p>
+              </div>
+            </div>
+            <form class="quick-entry-form" id="collection-form">
+              <label>
+                Restaurant
+                <select id="collection-restaurant"></select>
+              </label>
+              <label>
+                Invoice #
+                <input id="collection-invoice" placeholder="INV-001" />
+              </label>
+              <label>
+                Due Date
+                <input id="collection-due-date" type="date" />
+              </label>
+              <label>
+                Amount
+                <input id="collection-amount" inputmode="decimal" placeholder="199" />
+              </label>
+              <label>
+                Status
+                <select id="collection-status">
+                  <option value="not-sent">Not Sent</option>
+                  <option value="sent">Sent</option>
+                  <option value="paid">Paid</option>
+                  <option value="past-due">Past Due</option>
+                </select>
+              </label>
+              <label>
+                Paid Date
+                <input id="collection-paid-date" type="date" />
+              </label>
+              <label class="form-span">
+                Notes
+                <input id="collection-notes" placeholder="Payment reminder, promise to pay, invoice detail..." />
+              </label>
+              <button class="button button-primary" type="submit">Add Collection</button>
+            </form>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Restaurant</th>
+                    <th>Invoice #</th>
+                    <th>Due Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Paid Date</th>
+                    <th>Notes</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="collections-list"></tbody>
+              </table>
+            </div>
           </section>
         </section>
 
         <section class="section-view" id="expenses-section" hidden>
-          <section class="placeholder-panel">
-            <p class="eyebrow">Expenses</p>
-            <h3>Track business expenses without becoming full accounting software.</h3>
-            <p>Good first fields: date, vendor, category, amount, payment method, and notes.</p>
+          <section class="card table-card">
+            <div class="card-heading">
+              <div>
+                <h3>Expenses</h3>
+                <p class="helper">Simple business expense tracking.</p>
+              </div>
+            </div>
+            <form class="quick-entry-form" id="expense-form">
+              <label>
+                Date
+                <input id="expense-date" type="date" />
+              </label>
+              <label>
+                Vendor
+                <input id="expense-vendor" placeholder="Vercel, Canva, mileage..." />
+              </label>
+              <label>
+                Category
+                <select id="expense-category">
+                  <option value="software">Software</option>
+                  <option value="marketing">Marketing</option>
+                  <option value="meals">Meals</option>
+                  <option value="travel">Travel</option>
+                  <option value="printing">Printing</option>
+                  <option value="other">Other</option>
+                </select>
+              </label>
+              <label>
+                Amount
+                <input id="expense-amount" inputmode="decimal" placeholder="29" />
+              </label>
+              <label>
+                Payment Method
+                <input id="expense-payment-method" placeholder="Card, cash, check..." />
+              </label>
+              <label class="form-span">
+                Notes
+                <input id="expense-notes" placeholder="What this was for..." />
+              </label>
+              <button class="button button-primary" type="submit">Add Expense</button>
+            </form>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Vendor</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Payment</th>
+                    <th>Notes</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="expenses-list"></tbody>
+              </table>
+            </div>
           </section>
         </section>
 
@@ -481,6 +590,6 @@
     </dialog>
 
     <input id="import-file" type="file" accept="application/json" hidden />
-    <script src="/backoffice/app.js?v=backoffice-v9" defer></script>
+    <script src="/backoffice/app.js?v=backoffice-v10" defer></script>
   </body>
 </html>

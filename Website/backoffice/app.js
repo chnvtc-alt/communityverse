@@ -1,5 +1,7 @@
 (() => {
   const STORAGE_KEY = "communityverseBackofficeRestaurants";
+  const COLLECTIONS_KEY = "communityverseBackofficeCollections";
+  const EXPENSES_KEY = "communityverseBackofficeExpenses";
   const DEFAULT_OWNER = "Tim";
   const SECTION_LABELS = {
     dashboard: "Dashboard",
@@ -63,6 +65,22 @@
     W: "Website",
   };
 
+  const collectionStatusLabels = {
+    "not-sent": "Not Sent",
+    sent: "Sent",
+    paid: "Paid",
+    "past-due": "Past Due",
+  };
+
+  const expenseCategoryLabels = {
+    software: "Software",
+    marketing: "Marketing",
+    meals: "Meals",
+    travel: "Travel",
+    printing: "Printing",
+    other: "Other",
+  };
+
   const elements = {
     sectionTitle: document.querySelector("#section-title"),
     navItems: [...document.querySelectorAll(".nav-item")],
@@ -81,6 +99,23 @@
     prospectScoreMin: document.querySelector("#prospect-score-min"),
     prospectScoreMax: document.querySelector("#prospect-score-max"),
     salesList: document.querySelector("#sales-list"),
+    collectionForm: document.querySelector("#collection-form"),
+    collectionRestaurant: document.querySelector("#collection-restaurant"),
+    collectionInvoice: document.querySelector("#collection-invoice"),
+    collectionDueDate: document.querySelector("#collection-due-date"),
+    collectionAmount: document.querySelector("#collection-amount"),
+    collectionStatus: document.querySelector("#collection-status"),
+    collectionPaidDate: document.querySelector("#collection-paid-date"),
+    collectionNotes: document.querySelector("#collection-notes"),
+    collectionsList: document.querySelector("#collections-list"),
+    expenseForm: document.querySelector("#expense-form"),
+    expenseDate: document.querySelector("#expense-date"),
+    expenseVendor: document.querySelector("#expense-vendor"),
+    expenseCategory: document.querySelector("#expense-category"),
+    expenseAmount: document.querySelector("#expense-amount"),
+    expensePaymentMethod: document.querySelector("#expense-payment-method"),
+    expenseNotes: document.querySelector("#expense-notes"),
+    expensesList: document.querySelector("#expenses-list"),
     metricTotal: document.querySelector("#metric-total"),
     metricCustomers: document.querySelector("#metric-customers"),
     metricProspects: document.querySelector("#metric-prospects"),
@@ -130,6 +165,8 @@
   const state = {
     section: "dashboard",
     restaurants: loadRestaurants(),
+    collections: loadRecords(COLLECTIONS_KEY, normalizeCollection),
+    expenses: loadRecords(EXPENSES_KEY, normalizeExpense),
     editingContactHistory: [],
   };
 
@@ -139,6 +176,14 @@
 
   function makeId() {
     return `restaurant-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  function makeCollectionId() {
+    return `collection-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  function makeExpenseId() {
+    return `expense-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   }
 
   function escapeHtml(value) {
@@ -211,6 +256,43 @@
     return `contact-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   }
 
+  function normalizeCollection(record = {}) {
+    return {
+      id: String(record.id || "").trim() || makeCollectionId(),
+      restaurantId: String(record.restaurantId || "").trim(),
+      restaurantName: String(record.restaurantName || "").trim(),
+      invoiceNumber: String(record.invoiceNumber || "").trim(),
+      dueDate: String(record.dueDate || "").trim(),
+      amount: String(record.amount || "").trim(),
+      status: collectionStatusLabels[record.status] ? record.status : "not-sent",
+      paidDate: String(record.paidDate || "").trim(),
+      notes: String(record.notes || "").trim(),
+      createdAt: String(record.createdAt || new Date().toISOString()).trim(),
+    };
+  }
+
+  function normalizeExpense(record = {}) {
+    return {
+      id: String(record.id || "").trim() || makeExpenseId(),
+      date: String(record.date || today()).trim(),
+      vendor: String(record.vendor || "").trim(),
+      category: expenseCategoryLabels[record.category] ? record.category : "other",
+      amount: String(record.amount || "").trim(),
+      paymentMethod: String(record.paymentMethod || "").trim(),
+      notes: String(record.notes || "").trim(),
+      createdAt: String(record.createdAt || new Date().toISOString()).trim(),
+    };
+  }
+
+  function loadRecords(key, normalize) {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(key) || "[]");
+      return Array.isArray(parsed) ? parsed.map(normalize) : [];
+    } catch {
+      return [];
+    }
+  }
+
   function loadRestaurants() {
     try {
       const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
@@ -222,6 +304,14 @@
 
   function saveRestaurants() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.restaurants, null, 2));
+  }
+
+  function saveCollections() {
+    localStorage.setItem(COLLECTIONS_KEY, JSON.stringify(state.collections, null, 2));
+  }
+
+  function saveExpenses() {
+    localStorage.setItem(EXPENSES_KEY, JSON.stringify(state.expenses, null, 2));
   }
 
   function setSection(section) {
@@ -461,7 +551,6 @@
           <tr>
             <td>
               <strong>${escapeHtml(restaurant.name)}</strong>
-              <div class="helper">${escapeHtml(contactName(restaurant) || "No contact yet")}</div>
             </td>
             <td>${escapeHtml(restaurant.saleDate || "")}</td>
             <td>${escapeHtml(restaurant.packageName || "")}</td>
@@ -474,12 +563,64 @@
       : '<tr><td colspan="7"><div class="empty-state">No sales yet. Change a restaurant status to Customer or use New Sale.</div></td></tr>';
   }
 
+  function renderCollectionRestaurantOptions() {
+    const customers = state.restaurants
+      .filter((restaurant) => restaurant.status === "customer")
+      .sort((left, right) => left.name.localeCompare(right.name));
+    elements.collectionRestaurant.innerHTML = [
+      '<option value="">Choose restaurant</option>',
+      ...customers.map((restaurant) => `<option value="${escapeHtml(restaurant.id)}">${escapeHtml(restaurant.name)}</option>`),
+    ].join("");
+  }
+
+  function renderCollections() {
+    renderCollectionRestaurantOptions();
+    const records = [...state.collections].sort((left, right) => {
+      const leftDate = left.dueDate || "9999-12-31";
+      const rightDate = right.dueDate || "9999-12-31";
+      return leftDate.localeCompare(rightDate);
+    });
+    elements.collectionsList.innerHTML = records.length
+      ? records.map((record) => `
+          <tr>
+            <td><strong>${escapeHtml(record.restaurantName || "No restaurant")}</strong></td>
+            <td>${escapeHtml(record.invoiceNumber)}</td>
+            <td>${escapeHtml(shortDate(record.dueDate))}</td>
+            <td>${escapeHtml(moneyValue(record.amount))}</td>
+            <td>${escapeHtml(labelFor(collectionStatusLabels, record.status, "Not Sent"))}</td>
+            <td>${escapeHtml(shortDate(record.paidDate))}</td>
+            <td>${escapeHtml(record.notes)}</td>
+            <td><button class="text-button" type="button" data-delete-collection-id="${escapeHtml(record.id)}">Remove</button></td>
+          </tr>
+        `).join("")
+      : '<tr><td colspan="8"><div class="empty-state">No collection records yet.</div></td></tr>';
+  }
+
+  function renderExpenses() {
+    const records = [...state.expenses].sort((left, right) => String(right.date || "").localeCompare(String(left.date || "")));
+    elements.expensesList.innerHTML = records.length
+      ? records.map((record) => `
+          <tr>
+            <td>${escapeHtml(shortDate(record.date))}</td>
+            <td><strong>${escapeHtml(record.vendor || "No vendor")}</strong></td>
+            <td>${escapeHtml(labelFor(expenseCategoryLabels, record.category, "Other"))}</td>
+            <td>${escapeHtml(moneyValue(record.amount))}</td>
+            <td>${escapeHtml(record.paymentMethod)}</td>
+            <td>${escapeHtml(record.notes)}</td>
+            <td><button class="text-button" type="button" data-delete-expense-id="${escapeHtml(record.id)}">Remove</button></td>
+          </tr>
+        `).join("")
+      : '<tr><td colspan="7"><div class="empty-state">No expense records yet.</div></td></tr>';
+  }
+
   function render() {
     renderMetrics();
     renderDashboardLists();
     renderRestaurantTable();
     renderProspects();
     renderSales();
+    renderCollections();
+    renderExpenses();
   }
 
   function fillRestaurantForm(restaurant = null, defaultStatus = "prospect") {
@@ -615,6 +756,64 @@
     renderContactHistoryEditor();
   }
 
+  function addCollection(event) {
+    event.preventDefault();
+    const restaurant = state.restaurants.find((record) => record.id === elements.collectionRestaurant.value);
+    const record = normalizeCollection({
+      id: makeCollectionId(),
+      restaurantId: restaurant?.id || "",
+      restaurantName: restaurant?.name || "",
+      invoiceNumber: elements.collectionInvoice.value,
+      dueDate: elements.collectionDueDate.value,
+      amount: elements.collectionAmount.value,
+      status: elements.collectionStatus.value,
+      paidDate: elements.collectionPaidDate.value,
+      notes: elements.collectionNotes.value,
+    });
+    if (!record.restaurantName && !record.invoiceNumber && !record.amount) {
+      return;
+    }
+    state.collections.unshift(record);
+    saveCollections();
+    elements.collectionForm.reset();
+    elements.collectionStatus.value = "not-sent";
+    renderCollections();
+  }
+
+  function deleteCollection(id) {
+    state.collections = state.collections.filter((record) => record.id !== id);
+    saveCollections();
+    renderCollections();
+  }
+
+  function addExpense(event) {
+    event.preventDefault();
+    const record = normalizeExpense({
+      id: makeExpenseId(),
+      date: elements.expenseDate.value || today(),
+      vendor: elements.expenseVendor.value,
+      category: elements.expenseCategory.value,
+      amount: elements.expenseAmount.value,
+      paymentMethod: elements.expensePaymentMethod.value,
+      notes: elements.expenseNotes.value,
+    });
+    if (!record.vendor && !record.amount && !record.notes) {
+      return;
+    }
+    state.expenses.unshift(record);
+    saveExpenses();
+    elements.expenseForm.reset();
+    elements.expenseDate.value = today();
+    elements.expenseCategory.value = "software";
+    renderExpenses();
+  }
+
+  function deleteExpense(id) {
+    state.expenses = state.expenses.filter((record) => record.id !== id);
+    saveExpenses();
+    renderExpenses();
+  }
+
   function saveRestaurant(event) {
     event.preventDefault();
     const record = restaurantFromForm();
@@ -649,6 +848,8 @@
     const backup = {
       exportedAt: new Date().toISOString(),
       restaurants: state.restaurants,
+      collections: state.collections,
+      expenses: state.expenses,
     };
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
     const link = document.createElement("a");
@@ -668,9 +869,13 @@
         const parsed = JSON.parse(String(reader.result || "{}"));
         const records = Array.isArray(parsed.restaurants) ? parsed.restaurants : Array.isArray(parsed) ? parsed : [];
         state.restaurants = records.map(normalizeRestaurant).filter((record) => record.name);
+        state.collections = Array.isArray(parsed.collections) ? parsed.collections.map(normalizeCollection) : [];
+        state.expenses = Array.isArray(parsed.expenses) ? parsed.expenses.map(normalizeExpense) : [];
         saveRestaurants();
+        saveCollections();
+        saveExpenses();
         render();
-        window.alert(`Imported ${state.restaurants.length} restaurant records.`);
+        window.alert(`Imported ${state.restaurants.length} restaurants, ${state.collections.length} collections, and ${state.expenses.length} expenses.`);
       } catch {
         window.alert("That backup file could not be imported.");
       }
@@ -696,6 +901,8 @@
   elements.deleteRestaurantButton.addEventListener("click", deleteCurrentRestaurant);
   elements.addContactHistoryButton.addEventListener("click", addContactHistory);
   elements.form.addEventListener("submit", saveRestaurant);
+  elements.collectionForm.addEventListener("submit", addCollection);
+  elements.expenseForm.addEventListener("submit", addExpense);
   elements.search.addEventListener("input", renderRestaurantTable);
   elements.statusFilter.addEventListener("change", renderRestaurantTable);
   elements.prospectScoreMin.addEventListener("change", renderProspects);
@@ -716,7 +923,16 @@
     if (removeContactButton) {
       removeContactHistory(removeContactButton.dataset.removeContactId);
     }
+    const deleteCollectionButton = event.target.closest("[data-delete-collection-id]");
+    if (deleteCollectionButton) {
+      deleteCollection(deleteCollectionButton.dataset.deleteCollectionId);
+    }
+    const deleteExpenseButton = event.target.closest("[data-delete-expense-id]");
+    if (deleteExpenseButton) {
+      deleteExpense(deleteExpenseButton.dataset.deleteExpenseId);
+    }
   });
 
+  elements.expenseDate.value = today();
   setSection("dashboard");
 })();
