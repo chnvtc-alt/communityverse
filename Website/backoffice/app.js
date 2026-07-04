@@ -53,6 +53,15 @@
     live: "Live",
   };
 
+  const contactTypeLabels = {
+    E: "Email",
+    T: "Text",
+    C: "Call",
+    LM: "Left Message",
+    FB: "Facebook",
+    W: "Website",
+  };
+
   const elements = {
     sectionTitle: document.querySelector("#section-title"),
     navItems: [...document.querySelectorAll(".nav-item")],
@@ -102,6 +111,12 @@
     leadSource: document.querySelector("#lead-source"),
     assignedTo: document.querySelector("#assigned-to"),
     prospectNotes: document.querySelector("#prospect-notes"),
+    contactHistoryType: document.querySelector("#contact-history-type"),
+    contactHistoryDate: document.querySelector("#contact-history-date"),
+    contactHistoryResponse: document.querySelector("#contact-history-response"),
+    contactHistoryNote: document.querySelector("#contact-history-note"),
+    addContactHistoryButton: document.querySelector("#add-contact-history-button"),
+    contactHistoryList: document.querySelector("#contact-history-list"),
     saleDate: document.querySelector("#sale-date"),
     packageName: document.querySelector("#package-name"),
     monthlyAmount: document.querySelector("#monthly-amount"),
@@ -116,6 +131,7 @@
   const state = {
     section: "dashboard",
     restaurants: loadRestaurants(),
+    editingContactHistory: [],
   };
 
   function today() {
@@ -166,6 +182,7 @@
       leadSource: String(record.leadSource || "").trim(),
       assignedTo: String(record.assignedTo || "").trim(),
       prospectNotes: String(record.prospectNotes || "").trim(),
+      contactHistory: normalizeContactHistory(record.contactHistory),
       saleDate: String(record.saleDate || "").trim(),
       packageName: String(record.packageName || "").trim(),
       monthlyAmount: String(record.monthlyAmount || "").trim(),
@@ -177,6 +194,22 @@
       salesNotes: String(record.salesNotes || "").trim(),
       updatedAt: String(record.updatedAt || new Date().toISOString()).trim(),
     };
+  }
+
+  function normalizeContactHistory(records = []) {
+    return Array.isArray(records)
+      ? records.map((record = {}) => ({
+          id: String(record.id || "").trim() || makeContactId(),
+          type: contactTypeLabels[record.type] ? record.type : "E",
+          date: String(record.date || "").trim(),
+          response: Boolean(record.response),
+          note: String(record.note || "").trim(),
+        })).filter((record) => record.date || record.note)
+      : [];
+  }
+
+  function makeContactId() {
+    return `contact-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   }
 
   function loadRestaurants() {
@@ -223,6 +256,7 @@
           contactName(restaurant),
           restaurant.contactEmail,
           restaurant.contactCell,
+          latestContactSummary(restaurant),
           restaurant.prospectStage,
           restaurant.prospectScore,
           restaurant.leadSource,
@@ -281,6 +315,22 @@
   function shortDate(value) {
     const match = String(value || "").match(/^(\d{2})(\d{2})-(\d{2})-(\d{2})$/);
     return match ? `${match[3]}-${match[4]}-${match[2]}` : String(value || "");
+  }
+
+  function latestContact(restaurant) {
+    return [...(restaurant.contactHistory || [])]
+      .filter((record) => record.date || record.note)
+      .sort((left, right) => String(right.date || "").localeCompare(String(left.date || "")))[0] || null;
+  }
+
+  function latestContactSummary(restaurant) {
+    const record = latestContact(restaurant);
+    if (!record) {
+      return restaurant.lastContacted ? shortDate(restaurant.lastContacted) : "";
+    }
+    const date = record.date ? shortDate(record.date) : "";
+    const response = record.response ? " R" : "";
+    return [record.type, date].filter(Boolean).join(" ") + response;
   }
 
   function contactName(restaurant) {
@@ -395,7 +445,7 @@
             <td>${escapeHtml(restaurant.contactCell || restaurant.phone || "")}</td>
             <td>${escapeHtml(labelFor(prospectStageLabels, restaurant.prospectStage, "Not set"))}</td>
             <td>${escapeHtml(labelFor(prospectScoreLabels, restaurant.prospectScore, "Not set"))}</td>
-            <td>${escapeHtml(shortDate(restaurant.lastContacted))}</td>
+            <td>${escapeHtml(latestContactSummary(restaurant))}</td>
             <td>${escapeHtml(shortDate(restaurant.nextFollowUp))}</td>
           </tr>
         `).join("")
@@ -454,6 +504,12 @@
     elements.leadSource.value = restaurant ? record.leadSource : "";
     elements.assignedTo.value = restaurant ? record.assignedTo : "";
     elements.prospectNotes.value = restaurant ? record.prospectNotes : "";
+    state.editingContactHistory = restaurant ? [...record.contactHistory] : [];
+    elements.contactHistoryType.value = "E";
+    elements.contactHistoryDate.value = today();
+    elements.contactHistoryResponse.checked = false;
+    elements.contactHistoryNote.value = "";
+    renderContactHistoryEditor();
     elements.saleDate.value = restaurant ? record.saleDate : "";
     elements.packageName.value = restaurant ? record.packageName : "";
     elements.monthlyAmount.value = restaurant ? record.monthlyAmount : "";
@@ -490,6 +546,7 @@
       leadSource: elements.leadSource.value,
       assignedTo: elements.assignedTo.value,
       prospectNotes: elements.prospectNotes.value,
+      contactHistory: state.editingContactHistory,
       saleDate: elements.saleDate.value,
       packageName: elements.packageName.value,
       monthlyAmount: elements.monthlyAmount.value,
@@ -511,6 +568,52 @@
 
   function closeRestaurantEditor() {
     elements.dialog.close();
+  }
+
+  function contactHistoryItem(record) {
+    const response = record.response ? "Response" : "No response";
+    return `
+      <div class="contact-history-item">
+        <strong>${escapeHtml(record.type)} ${escapeHtml(shortDate(record.date))}</strong>
+        <span>${escapeHtml(response)}</span>
+        ${record.note ? `<p>${escapeHtml(record.note)}</p>` : ""}
+        <button class="text-button" type="button" data-remove-contact-id="${escapeHtml(record.id)}">Remove</button>
+      </div>
+    `;
+  }
+
+  function renderContactHistoryEditor() {
+    const records = [...state.editingContactHistory]
+      .sort((left, right) => String(right.date || "").localeCompare(String(left.date || "")));
+    elements.contactHistoryList.innerHTML = records.length
+      ? records.map(contactHistoryItem).join("")
+      : '<div class="empty-state">No contacts logged yet.</div>';
+  }
+
+  function addContactHistory() {
+    const record = normalizeContactHistory([{
+      id: makeContactId(),
+      type: elements.contactHistoryType.value,
+      date: elements.contactHistoryDate.value || today(),
+      response: elements.contactHistoryResponse.checked,
+      note: elements.contactHistoryNote.value,
+    }])[0];
+    if (!record) {
+      return;
+    }
+    state.editingContactHistory.unshift(record);
+    if (!elements.lastContacted.value || record.date > elements.lastContacted.value) {
+      elements.lastContacted.value = record.date;
+    }
+    elements.contactHistoryDate.value = today();
+    elements.contactHistoryResponse.checked = false;
+    elements.contactHistoryNote.value = "";
+    renderContactHistoryEditor();
+  }
+
+  function removeContactHistory(id) {
+    state.editingContactHistory = state.editingContactHistory.filter((record) => record.id !== id);
+    renderContactHistoryEditor();
   }
 
   function saveRestaurant(event) {
@@ -592,6 +695,7 @@
   elements.closeEditorButton.addEventListener("click", closeRestaurantEditor);
   elements.cancelEditorButton.addEventListener("click", closeRestaurantEditor);
   elements.deleteRestaurantButton.addEventListener("click", deleteCurrentRestaurant);
+  elements.addContactHistoryButton.addEventListener("click", addContactHistory);
   elements.form.addEventListener("submit", saveRestaurant);
   elements.search.addEventListener("input", renderRestaurantTable);
   elements.statusFilter.addEventListener("change", renderRestaurantTable);
@@ -608,6 +712,10 @@
     const editButton = event.target.closest("[data-edit-id]");
     if (editButton) {
       openRestaurantEditor(editButton.dataset.editId);
+    }
+    const removeContactButton = event.target.closest("[data-remove-contact-id]");
+    if (removeContactButton) {
+      removeContactHistory(removeContactButton.dataset.removeContactId);
     }
   });
 

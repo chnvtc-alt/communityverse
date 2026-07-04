@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,650;9..144,760&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v7" />
+    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v8" />
   </head>
   <body>
     <div class="app-shell">
@@ -213,7 +213,7 @@
                     <th>Phone</th>
                     <th>Stage</th>
                     <th>Score</th>
-                    <th>Last Contact</th>
+                    <th>Last Touch</th>
                     <th>Follow Up</th>
                   </tr>
                 </thead>
@@ -398,6 +398,37 @@
             <textarea id="prospect-notes" rows="3" placeholder="What they said, objection, best time to call, next step..."></textarea>
           </label>
 
+          <div class="form-section-title form-span">Contact History</div>
+          <div class="contact-history-editor form-span">
+            <div class="contact-history-inputs">
+              <label>
+                Type
+                <select id="contact-history-type">
+                  <option value="E">E - Email</option>
+                  <option value="T">T - Text</option>
+                  <option value="C">C - Call</option>
+                  <option value="LM">LM - Left Message</option>
+                  <option value="FB">FB - Facebook</option>
+                  <option value="W">W - Website</option>
+                </select>
+              </label>
+              <label>
+                Date
+                <input id="contact-history-date" type="date" />
+              </label>
+              <label class="checkbox-label">
+                Response
+                <input id="contact-history-response" type="checkbox" />
+              </label>
+              <label class="contact-note-field">
+                Notes
+                <input id="contact-history-note" placeholder="What happened, if anything..." />
+              </label>
+              <button class="button button-muted" id="add-contact-history-button" type="button">Add Contact</button>
+            </div>
+            <div class="contact-history-list" id="contact-history-list"></div>
+          </div>
+
           <div class="form-section-title form-span">Sale Details</div>
           <label>
             Sale Date
@@ -459,6 +490,6 @@
     </dialog>
 
     <input id="import-file" type="file" accept="application/json" hidden />
-    <script src="/backoffice/app.js?v=backoffice-v7" defer></script>
+    <script src="/backoffice/app.js?v=backoffice-v8" defer></script>
   </body>
 </html>
