@@ -244,6 +244,11 @@ h3 {
   text-align: left;
 }
 
+.strong-link {
+  color: var(--ink);
+  font-weight: 800;
+}
+
 .sort-button {
   border: 0;
   padding: 0;

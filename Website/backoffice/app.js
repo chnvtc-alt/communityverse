@@ -795,17 +795,16 @@
       ? customers.map((restaurant) => `
           <tr>
             <td>
-              <strong>${escapeHtml(restaurant.name)}</strong>
+              <button class="link-button strong-link" type="button" data-edit-id="${escapeHtml(restaurant.id)}">${escapeHtml(restaurant.name)}</button>
             </td>
             <td>${escapeHtml(restaurant.saleDate || "")}</td>
             <td>${escapeHtml(restaurant.packageName || "")}</td>
             <td>${escapeHtml(moneyValue(restaurant.monthlyAmount))}</td>
             <td>${escapeHtml(labelFor(paymentStatusLabels, restaurant.paymentStatus, "Not set"))}</td>
             <td>${escapeHtml(labelFor(setupStatusLabels, restaurant.setupStatus, "Not set"))}</td>
-            <td><button class="text-button" type="button" data-edit-id="${escapeHtml(restaurant.id)}">Edit</button></td>
           </tr>
         `).join("")
-      : '<tr><td colspan="7"><div class="empty-state">No sales yet. Change a restaurant status to Customer or use New Sale.</div></td></tr>';
+      : '<tr><td colspan="6"><div class="empty-state">No sales yet. Change a restaurant status to Customer or use New Sale.</div></td></tr>';
   }
 
   function renderCollectionRestaurantOptions() {
