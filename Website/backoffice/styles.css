@@ -443,6 +443,14 @@ td {
   vertical-align: top;
 }
 
+.table-actions {
+  white-space: nowrap;
+}
+
+.table-actions .text-button + .text-button {
+  margin-left: 10px;
+}
+
 th {
   color: var(--muted);
   font-size: 0.78rem;

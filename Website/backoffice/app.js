@@ -197,6 +197,7 @@
     expenses: [],
     editingContactHistory: [],
     editingContactId: "",
+    editingExpenseId: "",
     loading: false,
     restaurantSortKey: "followup",
     restaurantSortDirection: "asc",
@@ -841,20 +842,53 @@
       : '<tr><td colspan="8"><div class="empty-state">No collection records yet.</div></td></tr>';
   }
 
+  function expenseCategoryOptions(selectedCategory = "") {
+    return Object.entries(expenseCategoryLabels).map(([value, label]) => `
+      <option value="${escapeHtml(value)}"${value === selectedCategory ? " selected" : ""}>${escapeHtml(label)}</option>
+    `).join("");
+  }
+
+  function expenseRow(record) {
+    if (state.editingExpenseId === record.id) {
+      return `
+        <tr data-expense-editor-id="${escapeHtml(record.id)}">
+          <td><input data-edit-expense-date type="date" value="${escapeHtml(record.date)}" /></td>
+          <td><input data-edit-expense-vendor value="${escapeHtml(record.vendor)}" /></td>
+          <td>
+            <select data-edit-expense-category>
+              ${expenseCategoryOptions(record.category)}
+            </select>
+          </td>
+          <td><input data-edit-expense-amount inputmode="decimal" value="${escapeHtml(record.amount)}" /></td>
+          <td><input data-edit-expense-payment value="${escapeHtml(record.paymentMethod)}" /></td>
+          <td><input data-edit-expense-notes value="${escapeHtml(record.notes)}" /></td>
+          <td class="table-actions">
+            <button class="text-button" type="button" data-save-expense-id="${escapeHtml(record.id)}">Save</button>
+            <button class="text-button" type="button" data-cancel-expense-edit>Cancel</button>
+          </td>
+        </tr>
+      `;
+    }
+    return `
+      <tr>
+        <td>${escapeHtml(shortDate(record.date))}</td>
+        <td><strong>${escapeHtml(record.vendor || "No vendor")}</strong></td>
+        <td>${escapeHtml(labelFor(expenseCategoryLabels, record.category, "Other"))}</td>
+        <td>${escapeHtml(moneyValue(record.amount))}</td>
+        <td>${escapeHtml(record.paymentMethod)}</td>
+        <td>${escapeHtml(record.notes)}</td>
+        <td class="table-actions">
+          <button class="text-button" type="button" data-edit-expense-id="${escapeHtml(record.id)}">Edit</button>
+          <button class="text-button" type="button" data-delete-expense-id="${escapeHtml(record.id)}">Remove</button>
+        </td>
+      </tr>
+    `;
+  }
+
   function renderExpenses() {
     const records = [...state.expenses].sort((left, right) => String(right.date || "").localeCompare(String(left.date || "")));
     elements.expensesList.innerHTML = records.length
-      ? records.map((record) => `
-          <tr>
-            <td>${escapeHtml(shortDate(record.date))}</td>
-            <td><strong>${escapeHtml(record.vendor || "No vendor")}</strong></td>
-            <td>${escapeHtml(labelFor(expenseCategoryLabels, record.category, "Other"))}</td>
-            <td>${escapeHtml(moneyValue(record.amount))}</td>
-            <td>${escapeHtml(record.paymentMethod)}</td>
-            <td>${escapeHtml(record.notes)}</td>
-            <td><button class="text-button" type="button" data-delete-expense-id="${escapeHtml(record.id)}">Remove</button></td>
-          </tr>
-        `).join("")
+      ? records.map(expenseRow).join("")
       : '<tr><td colspan="7"><div class="empty-state">No expense records yet.</div></td></tr>';
   }
 
@@ -1229,12 +1263,51 @@
     renderExpenses();
   }
 
+  function editExpense(id) {
+    state.editingExpenseId = id;
+    renderExpenses();
+  }
+
+  function cancelExpenseEdit() {
+    state.editingExpenseId = "";
+    renderExpenses();
+  }
+
+  async function saveExpenseEdit(id) {
+    const editor = elements.expensesList.querySelector(`[data-expense-editor-id="${id}"]`);
+    const existing = state.expenses.find((record) => record.id === id);
+    if (!editor || !existing) {
+      return;
+    }
+    const record = normalizeExpense({
+      ...existing,
+      date: editor.querySelector("[data-edit-expense-date]")?.value,
+      vendor: editor.querySelector("[data-edit-expense-vendor]")?.value,
+      category: editor.querySelector("[data-edit-expense-category]")?.value,
+      amount: editor.querySelector("[data-edit-expense-amount]")?.value,
+      paymentMethod: editor.querySelector("[data-edit-expense-payment]")?.value,
+      notes: editor.querySelector("[data-edit-expense-notes]")?.value,
+    });
+    const data = await saveAction("saveExpense", { expense: record });
+    if (!data?.expense) {
+      return;
+    }
+    const savedRecord = normalizeExpense(data.expense);
+    state.expenses = state.expenses.map((expense) => expense.id === savedRecord.id ? savedRecord : expense);
+    state.editingExpenseId = "";
+    cacheBackofficeData();
+    renderExpenses();
+  }
+
   async function deleteExpense(id) {
     const data = await saveAction("deleteExpense", { id }, "Removed from Supabase");
     if (!data) {
       return;
     }
     state.expenses = state.expenses.filter((record) => record.id !== id);
+    if (state.editingExpenseId === id) {
+      state.editingExpenseId = "";
+    }
     cacheBackofficeData();
     renderExpenses();
   }
@@ -1410,6 +1483,18 @@
     const deleteExpenseButton = event.target.closest("[data-delete-expense-id]");
     if (deleteExpenseButton) {
       deleteExpense(deleteExpenseButton.dataset.deleteExpenseId);
+    }
+    const editExpenseButton = event.target.closest("[data-edit-expense-id]");
+    if (editExpenseButton) {
+      editExpense(editExpenseButton.dataset.editExpenseId);
+    }
+    const saveExpenseButton = event.target.closest("[data-save-expense-id]");
+    if (saveExpenseButton) {
+      saveExpenseEdit(saveExpenseButton.dataset.saveExpenseId);
+    }
+    const cancelExpenseEditButton = event.target.closest("[data-cancel-expense-edit]");
+    if (cancelExpenseEditButton) {
+      cancelExpenseEdit();
     }
   });
 
