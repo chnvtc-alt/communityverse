@@ -179,6 +179,7 @@
     quickContactDate: document.querySelector("#quick-contact-date"),
     quickContactResponse: document.querySelector("#quick-contact-response"),
     quickContactNextFollowUp: document.querySelector("#quick-contact-next-follow-up"),
+    quickContactScore: document.querySelector("#quick-contact-score"),
     quickContactNote: document.querySelector("#quick-contact-note"),
     quickContactHistoryList: document.querySelector("#quick-contact-history-list"),
     quickContactFullCardButton: document.querySelector("#quick-contact-full-card-button"),
@@ -928,6 +929,7 @@
     elements.quickContactDate.value = today();
     elements.quickContactResponse.checked = false;
     elements.quickContactNextFollowUp.value = restaurant.nextFollowUp || "";
+    elements.quickContactScore.value = restaurant.prospectScore || defaultProspectScore;
     elements.quickContactNote.value = "";
     renderQuickContactHistory(restaurant);
     elements.quickContactDialog.showModal();
@@ -1093,6 +1095,7 @@
           ? newContact.date
           : restaurant.lastContacted,
       nextFollowUp: elements.quickContactNextFollowUp.value,
+      prospectScore: elements.quickContactScore.value,
       prospectStage: ["", "new-lead"].includes(restaurant.prospectStage) ? "contacted" : restaurant.prospectStage,
       updatedAt: new Date().toISOString(),
     });

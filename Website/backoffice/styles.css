@@ -537,12 +537,12 @@ th {
 }
 
 .quick-contact-dialog {
-  width: min(680px, calc(100vw - 28px));
+  width: min(820px, calc(100vw - 28px));
 }
 
 .quick-contact-grid {
   display: grid;
-  grid-template-columns: 150px 170px 110px minmax(160px, 1fr);
+  grid-template-columns: 150px 170px 110px minmax(160px, 1fr) 110px;
   gap: 12px;
   align-items: end;
 }
