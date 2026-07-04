@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,650;9..144,760&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v8" />
+    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v9" />
   </head>
   <body>
     <div class="app-shell">
@@ -242,7 +242,6 @@
                     <th>Monthly</th>
                     <th>Payment</th>
                     <th>Setup</th>
-                    <th>Salesperson</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -389,10 +388,6 @@
             Lead Source
             <input id="lead-source" placeholder="Walk-in, referral, Facebook..." />
           </label>
-          <label>
-            Assigned To
-            <input id="assigned-to" placeholder="Salesperson or owner" />
-          </label>
           <label class="form-span">
             Prospect Notes
             <textarea id="prospect-notes" rows="3" placeholder="What they said, objection, best time to call, next step..."></textarea>
@@ -461,10 +456,6 @@
             <input id="first-invoice-date" type="date" />
           </label>
           <label>
-            Salesperson
-            <input id="salesperson" />
-          </label>
-          <label>
             Setup Status
             <select id="setup-status">
               <option value="">Not set</option>
@@ -490,6 +481,6 @@
     </dialog>
 
     <input id="import-file" type="file" accept="application/json" hidden />
-    <script src="/backoffice/app.js?v=backoffice-v8" defer></script>
+    <script src="/backoffice/app.js?v=backoffice-v9" defer></script>
   </body>
 </html>

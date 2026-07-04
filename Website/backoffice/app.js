@@ -1,5 +1,6 @@
 (() => {
   const STORAGE_KEY = "communityverseBackofficeRestaurants";
+  const DEFAULT_OWNER = "Tim";
   const SECTION_LABELS = {
     dashboard: "Dashboard",
     restaurants: "Restaurant List",
@@ -109,7 +110,6 @@
     prospectStage: document.querySelector("#prospect-stage"),
     prospectScore: document.querySelector("#prospect-score"),
     leadSource: document.querySelector("#lead-source"),
-    assignedTo: document.querySelector("#assigned-to"),
     prospectNotes: document.querySelector("#prospect-notes"),
     contactHistoryType: document.querySelector("#contact-history-type"),
     contactHistoryDate: document.querySelector("#contact-history-date"),
@@ -123,7 +123,6 @@
     setupFee: document.querySelector("#setup-fee"),
     paymentStatus: document.querySelector("#payment-status"),
     firstInvoiceDate: document.querySelector("#first-invoice-date"),
-    salesperson: document.querySelector("#salesperson"),
     setupStatus: document.querySelector("#setup-status"),
     salesNotes: document.querySelector("#sales-notes"),
   };
@@ -180,7 +179,7 @@
       prospectStage: prospectStageLabels[record.prospectStage] ? record.prospectStage : "",
       prospectScore: prospectScoreLabels[score] ? score : "",
       leadSource: String(record.leadSource || "").trim(),
-      assignedTo: String(record.assignedTo || "").trim(),
+      assignedTo: String(record.assignedTo || record.salesperson || DEFAULT_OWNER).trim(),
       prospectNotes: String(record.prospectNotes || "").trim(),
       contactHistory: normalizeContactHistory(record.contactHistory),
       saleDate: String(record.saleDate || "").trim(),
@@ -189,7 +188,7 @@
       setupFee: String(record.setupFee || "").trim(),
       paymentStatus: paymentStatusLabels[record.paymentStatus] ? record.paymentStatus : "",
       firstInvoiceDate: String(record.firstInvoiceDate || "").trim(),
-      salesperson: String(record.salesperson || "").trim(),
+      salesperson: String(record.salesperson || record.assignedTo || DEFAULT_OWNER).trim(),
       setupStatus: setupStatusLabels[record.setupStatus] ? record.setupStatus : "",
       salesNotes: String(record.salesNotes || "").trim(),
       updatedAt: String(record.updatedAt || new Date().toISOString()).trim(),
@@ -260,7 +259,6 @@
           restaurant.prospectStage,
           restaurant.prospectScore,
           restaurant.leadSource,
-          restaurant.assignedTo,
           restaurant.prospectNotes,
           restaurant.saleDate,
           restaurant.packageName,
@@ -268,7 +266,6 @@
           restaurant.setupFee,
           restaurant.paymentStatus,
           restaurant.firstInvoiceDate,
-          restaurant.salesperson,
           restaurant.setupStatus,
           restaurant.salesNotes,
           restaurant.notes,
@@ -335,6 +332,11 @@
 
   function contactName(restaurant) {
     return [restaurant.contactFirstName, restaurant.contactLastName].filter(Boolean).join(" ");
+  }
+
+  function restaurantOwner(id = "") {
+    const existing = state.restaurants.find((restaurant) => restaurant.id === id);
+    return existing?.salesperson || existing?.assignedTo || DEFAULT_OWNER;
   }
 
   function formattedAddress(restaurant) {
@@ -466,11 +468,10 @@
             <td>${escapeHtml(moneyValue(restaurant.monthlyAmount))}</td>
             <td>${escapeHtml(labelFor(paymentStatusLabels, restaurant.paymentStatus, "Not set"))}</td>
             <td>${escapeHtml(labelFor(setupStatusLabels, restaurant.setupStatus, "Not set"))}</td>
-            <td>${escapeHtml(restaurant.salesperson || restaurant.assignedTo || "")}</td>
             <td><button class="text-button" type="button" data-edit-id="${escapeHtml(restaurant.id)}">Edit</button></td>
           </tr>
         `).join("")
-      : '<tr><td colspan="8"><div class="empty-state">No sales yet. Change a restaurant status to Customer or use New Sale.</div></td></tr>';
+      : '<tr><td colspan="7"><div class="empty-state">No sales yet. Change a restaurant status to Customer or use New Sale.</div></td></tr>';
   }
 
   function render() {
@@ -502,7 +503,6 @@
     elements.prospectStage.value = restaurant ? record.prospectStage : "";
     elements.prospectScore.value = record.prospectScore || "";
     elements.leadSource.value = restaurant ? record.leadSource : "";
-    elements.assignedTo.value = restaurant ? record.assignedTo : "";
     elements.prospectNotes.value = restaurant ? record.prospectNotes : "";
     state.editingContactHistory = restaurant ? [...record.contactHistory] : [];
     elements.contactHistoryType.value = "E";
@@ -516,7 +516,6 @@
     elements.setupFee.value = restaurant ? record.setupFee : "";
     elements.paymentStatus.value = restaurant ? record.paymentStatus : "";
     elements.firstInvoiceDate.value = restaurant ? record.firstInvoiceDate : "";
-    elements.salesperson.value = restaurant ? record.salesperson : "";
     elements.setupStatus.value = restaurant ? record.setupStatus : "";
     elements.salesNotes.value = restaurant ? record.salesNotes : "";
     elements.deleteRestaurantButton.hidden = !restaurant;
@@ -544,7 +543,7 @@
       prospectStage: elements.prospectStage.value,
       prospectScore: elements.prospectScore.value,
       leadSource: elements.leadSource.value,
-      assignedTo: elements.assignedTo.value,
+      assignedTo: restaurantOwner(elements.id.value),
       prospectNotes: elements.prospectNotes.value,
       contactHistory: state.editingContactHistory,
       saleDate: elements.saleDate.value,
@@ -553,7 +552,7 @@
       setupFee: elements.setupFee.value,
       paymentStatus: elements.paymentStatus.value,
       firstInvoiceDate: elements.firstInvoiceDate.value,
-      salesperson: elements.salesperson.value,
+      salesperson: restaurantOwner(elements.id.value),
       setupStatus: elements.setupStatus.value,
       salesNotes: elements.salesNotes.value,
       updatedAt: new Date().toISOString(),
