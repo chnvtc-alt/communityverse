@@ -588,8 +588,18 @@ th {
   gap: 14px;
 }
 
+.nested-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
 .form-span {
   grid-column: 1 / -1;
+}
+
+.sale-details-section[hidden] {
+  display: none;
 }
 
 .form-section-title {
@@ -654,6 +664,7 @@ th {
   .quick-contact-grid,
   .contact-history-inputs,
   .contact-history-item,
+  .nested-form-grid,
   .form-grid {
     grid-template-columns: 1fr;
   }

@@ -548,51 +548,55 @@
             <div class="contact-history-list" id="contact-history-list"></div>
           </div>
 
-          <div class="form-section-title form-span">Sale Details</div>
-          <label>
-            Sale Date
-            <input id="sale-date" type="date" />
-          </label>
-          <label>
-            Package / Plan
-            <input id="package-name" placeholder="Starter, monthly, custom..." />
-          </label>
-          <label>
-            Monthly Amount
-            <input id="monthly-amount" inputmode="decimal" placeholder="199" />
-          </label>
-          <label>
-            Setup Fee
-            <input id="setup-fee" inputmode="decimal" placeholder="0" />
-          </label>
-          <label>
-            Payment Status
-            <select id="payment-status">
-              <option value="">Not set</option>
-              <option value="not-invoiced">Not Invoiced</option>
-              <option value="invoice-sent">Invoice Sent</option>
-              <option value="paid">Paid</option>
-              <option value="past-due">Past Due</option>
-            </select>
-          </label>
-          <label>
-            First Invoice Date
-            <input id="first-invoice-date" type="date" />
-          </label>
-          <label>
-            Setup Status
-            <select id="setup-status">
-              <option value="">Not set</option>
-              <option value="not-started">Not Started</option>
-              <option value="info-needed">Info Needed</option>
-              <option value="in-progress">In Progress</option>
-              <option value="live">Live</option>
-            </select>
-          </label>
-          <label class="form-span">
-            Sale Notes
-            <textarea id="sales-notes" rows="3" placeholder="Price agreement, launch notes, commission notes, payment details..."></textarea>
-          </label>
+          <div class="sale-details-section form-span" id="sale-details-section">
+            <div class="form-section-title">Sale Details</div>
+            <div class="nested-form-grid">
+              <label>
+                Sale Date
+                <input id="sale-date" type="date" />
+              </label>
+              <label>
+                Package / Plan
+                <input id="package-name" placeholder="Starter, monthly, custom..." />
+              </label>
+              <label>
+                Monthly Amount
+                <input id="monthly-amount" inputmode="decimal" placeholder="199" />
+              </label>
+              <label>
+                Setup Fee
+                <input id="setup-fee" inputmode="decimal" placeholder="0" />
+              </label>
+              <label>
+                Payment Status
+                <select id="payment-status">
+                  <option value="">Not set</option>
+                  <option value="not-invoiced">Not Invoiced</option>
+                  <option value="invoice-sent">Invoice Sent</option>
+                  <option value="paid">Paid</option>
+                  <option value="past-due">Past Due</option>
+                </select>
+              </label>
+              <label>
+                First Invoice Date
+                <input id="first-invoice-date" type="date" />
+              </label>
+              <label>
+                Setup Status
+                <select id="setup-status">
+                  <option value="">Not set</option>
+                  <option value="not-started">Not Started</option>
+                  <option value="info-needed">Info Needed</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="live">Live</option>
+                </select>
+              </label>
+              <label class="form-span">
+                Sale Notes
+                <textarea id="sales-notes" rows="3" placeholder="Price agreement, launch notes, commission notes, payment details..."></textarea>
+              </label>
+            </div>
+          </div>
         </div>
 
         <div class="dialog-actions">

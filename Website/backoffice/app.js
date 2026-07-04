@@ -162,6 +162,7 @@
     addContactHistoryButton: document.querySelector("#add-contact-history-button"),
     contactHistoryList: document.querySelector("#contact-history-list"),
     saleDate: document.querySelector("#sale-date"),
+    saleDetailsSection: document.querySelector("#sale-details-section"),
     packageName: document.querySelector("#package-name"),
     monthlyAmount: document.querySelector("#monthly-amount"),
     setupFee: document.querySelector("#setup-fee"),
@@ -855,8 +856,13 @@
     elements.firstInvoiceDate.value = restaurant ? record.firstInvoiceDate : "";
     elements.setupStatus.value = restaurant ? record.setupStatus : "";
     elements.salesNotes.value = restaurant ? record.salesNotes : "";
+    updateSaleDetailsVisibility();
     elements.deleteRestaurantButton.hidden = !restaurant;
     elements.editorTitle.textContent = restaurant ? "Edit Restaurant" : "New Restaurant";
+  }
+
+  function updateSaleDetailsVisibility() {
+    elements.saleDetailsSection.hidden = elements.status.value !== "customer";
   }
 
   function restaurantFromForm() {
@@ -1298,6 +1304,7 @@
   elements.deleteRestaurantButton.addEventListener("click", deleteCurrentRestaurant);
   elements.addContactHistoryButton.addEventListener("click", addContactHistory);
   elements.form.addEventListener("submit", saveRestaurant);
+  elements.status.addEventListener("change", updateSaleDetailsVisibility);
   elements.quickContactForm.addEventListener("submit", saveQuickContact);
   elements.collectionForm.addEventListener("submit", addCollection);
   elements.expenseForm.addEventListener("submit", addExpense);
