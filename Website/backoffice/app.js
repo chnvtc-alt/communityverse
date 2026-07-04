@@ -191,6 +191,7 @@
     collections: [],
     expenses: [],
     editingContactHistory: [],
+    editingContactId: "",
     loading: false,
     restaurantSortKey: "followup",
     restaurantSortDirection: "asc",
@@ -840,6 +841,7 @@
     elements.leadSource.value = restaurant ? record.leadSource : "";
     elements.prospectNotes.value = restaurant ? record.prospectNotes : "";
     state.editingContactHistory = restaurant ? [...record.contactHistory] : [];
+    state.editingContactId = "";
     elements.contactHistoryType.value = "E";
     elements.contactHistoryDate.value = today();
     elements.contactHistoryResponse.checked = false;
@@ -951,13 +953,46 @@
   }
 
   function contactHistoryItem(record) {
+    if (state.editingContactId === record.id) {
+      return `
+        <div class="contact-history-item contact-history-edit-item" data-contact-editor-id="${escapeHtml(record.id)}">
+          <label>
+            Type
+            <select data-edit-contact-type>
+              ${Object.entries(contactTypeLabels).map(([value, label]) => `
+                <option value="${escapeHtml(value)}"${record.type === value ? " selected" : ""}>${escapeHtml(value)} - ${escapeHtml(label)}</option>
+              `).join("")}
+            </select>
+          </label>
+          <label>
+            Date
+            <input data-edit-contact-date type="date" value="${escapeHtml(record.date)}" />
+          </label>
+          <label class="checkbox-label">
+            Response
+            <input data-edit-contact-response type="checkbox"${record.response ? " checked" : ""} />
+          </label>
+          <label>
+            Notes
+            <input data-edit-contact-note value="${escapeHtml(record.note)}" />
+          </label>
+          <div class="contact-history-actions">
+            <button class="text-button" type="button" data-save-contact-id="${escapeHtml(record.id)}">Save</button>
+            <button class="text-button" type="button" data-cancel-contact-edit>Cancel</button>
+          </div>
+        </div>
+      `;
+    }
     const response = record.response ? "Response" : "No response";
     return `
       <div class="contact-history-item">
         <strong>${escapeHtml(record.type)} ${escapeHtml(shortDate(record.date))}</strong>
         <span>${escapeHtml(response)}</span>
         ${record.note ? `<p>${escapeHtml(record.note)}</p>` : ""}
-        <button class="text-button" type="button" data-remove-contact-id="${escapeHtml(record.id)}">Remove</button>
+        <div class="contact-history-actions">
+          <button class="text-button" type="button" data-edit-contact-id="${escapeHtml(record.id)}">Edit</button>
+          <button class="text-button" type="button" data-remove-contact-id="${escapeHtml(record.id)}">Remove</button>
+        </div>
       </div>
     `;
   }
@@ -982,6 +1017,7 @@
       return;
     }
     state.editingContactHistory.unshift(record);
+    state.editingContactId = "";
     if (!elements.lastContacted.value || record.date > elements.lastContacted.value) {
       elements.lastContacted.value = record.date;
     }
@@ -993,6 +1029,37 @@
 
   function removeContactHistory(id) {
     state.editingContactHistory = state.editingContactHistory.filter((record) => record.id !== id);
+    if (state.editingContactId === id) {
+      state.editingContactId = "";
+    }
+    renderContactHistoryEditor();
+  }
+
+  function editContactHistory(id) {
+    state.editingContactId = id;
+    renderContactHistoryEditor();
+  }
+
+  function cancelContactHistoryEdit() {
+    state.editingContactId = "";
+    renderContactHistoryEditor();
+  }
+
+  function saveContactHistoryEdit(id) {
+    const editor = elements.contactHistoryList.querySelector(`[data-contact-editor-id="${id}"]`);
+    const type = editor?.querySelector("[data-edit-contact-type]")?.value || "E";
+    const date = editor?.querySelector("[data-edit-contact-date]")?.value || "";
+    const response = editor?.querySelector("[data-edit-contact-response]")?.checked === true;
+    const note = editor?.querySelector("[data-edit-contact-note]")?.value || "";
+    const updated = normalizeContactHistory([{ id, type, date, response, note }])[0];
+    if (!updated) {
+      removeContactHistory(id);
+      return;
+    }
+    state.editingContactHistory = state.editingContactHistory.map((record) =>
+      record.id === id ? updated : record
+    );
+    state.editingContactId = "";
     renderContactHistoryEditor();
   }
 
@@ -1257,6 +1324,18 @@
     const removeContactButton = event.target.closest("[data-remove-contact-id]");
     if (removeContactButton) {
       removeContactHistory(removeContactButton.dataset.removeContactId);
+    }
+    const editContactButton = event.target.closest("[data-edit-contact-id]");
+    if (editContactButton) {
+      editContactHistory(editContactButton.dataset.editContactId);
+    }
+    const saveContactButton = event.target.closest("[data-save-contact-id]");
+    if (saveContactButton) {
+      saveContactHistoryEdit(saveContactButton.dataset.saveContactId);
+    }
+    const cancelContactEditButton = event.target.closest("[data-cancel-contact-edit]");
+    if (cancelContactEditButton) {
+      cancelContactHistoryEdit();
     }
     const deleteCollectionButton = event.target.closest("[data-delete-collection-id]");
     if (deleteCollectionButton) {

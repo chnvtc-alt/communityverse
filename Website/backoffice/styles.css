@@ -525,6 +525,17 @@ th {
   line-height: 1.35;
 }
 
+.contact-history-edit-item {
+  grid-template-columns: 130px 150px 100px minmax(180px, 1fr) auto;
+  align-items: end;
+}
+
+.contact-history-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .quick-contact-dialog {
   width: min(680px, calc(100vw - 28px));
 }
