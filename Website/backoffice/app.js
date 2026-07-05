@@ -14,6 +14,7 @@
     phone: "404-428-6302",
   };
   const PAYMENT_LINK = "https://www.paypal.com/ncp/payment/HSHM25X6JZFZ4";
+  const DEFAULT_DOCUMENT_TITLE = document.title;
   const SECTION_LABELS = {
     dashboard: "Dashboard",
     restaurants: "Restaurant List",
@@ -219,6 +220,7 @@
     editingContactId: "",
     editingCollectionId: "",
     editingExpenseId: "",
+    invoicePrintTitle: "",
     loading: false,
     restaurantSortKey: "followup",
     restaurantSortDirection: "asc",
@@ -1567,6 +1569,17 @@
     return [restaurant.street, cityStateZip].filter(Boolean);
   }
 
+  function fileSafeName(value) {
+    return String(value || "")
+      .replace(/[\\/:*?"<>|]+/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function invoicePrintTitle(record, customerName) {
+    return fileSafeName(`${customerName} Invoice ${record.invoiceNumber || ""}`) || "CommunityVerse Invoice";
+  }
+
   function openInvoicePreview(id) {
     const record = state.collections.find((collection) => collection.id === id);
     if (!record) {
@@ -1577,6 +1590,7 @@
     const contact = restaurant ? contactName(restaurant) : "";
     const addressLines = invoiceCustomerAddressLines(restaurant);
     const description = record.notes || "Restaurant Challenge monthly subscription.";
+    state.invoicePrintTitle = invoicePrintTitle(record, customerName);
     elements.invoicePreviewContent.innerHTML = `
       <article class="invoice-document">
         <header class="invoice-header">
@@ -1635,7 +1649,17 @@
   }
 
   function closeInvoicePreview() {
+    state.invoicePrintTitle = "";
     elements.invoicePreviewDialog.close();
+  }
+
+  function printInvoice() {
+    const previousTitle = document.title;
+    document.title = state.invoicePrintTitle || "CommunityVerse Invoice";
+    window.print();
+    window.setTimeout(() => {
+      document.title = previousTitle || DEFAULT_DOCUMENT_TITLE;
+    }, 500);
   }
 
   function openInvoiceEmail(id) {
@@ -1885,7 +1909,7 @@
   elements.invoiceTemplateType.addEventListener("change", updateInvoiceTemplateAmount);
   elements.fillMonthlyInvoiceButton.addEventListener("click", fillMonthlyInvoiceTemplate);
   elements.closeInvoicePreviewButton.addEventListener("click", closeInvoicePreview);
-  elements.printInvoiceButton.addEventListener("click", () => window.print());
+  elements.printInvoiceButton.addEventListener("click", printInvoice);
   elements.expenseForm.addEventListener("submit", addExpense);
   elements.search.addEventListener("input", renderRestaurantTable);
   elements.statusFilter.addEventListener("change", renderRestaurantTable);
