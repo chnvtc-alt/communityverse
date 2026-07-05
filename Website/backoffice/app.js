@@ -146,6 +146,7 @@
     manualLeadForm: document.querySelector("#manual-lead-form"),
     manualLeadName: document.querySelector("#manual-lead-name"),
     manualLeadCity: document.querySelector("#manual-lead-city"),
+    manualLeadStreet: document.querySelector("#manual-lead-street"),
     manualLeadState: document.querySelector("#manual-lead-state"),
     manualLeadPhone: document.querySelector("#manual-lead-phone"),
     manualLeadTrivia: document.querySelector("#manual-lead-trivia"),
@@ -1100,6 +1101,7 @@
     return normalizeRestaurant({
       name,
       status: "prospect",
+      street: elements.manualLeadStreet.value,
       city: elements.manualLeadCity.value.trim() || market.city,
       state: elements.manualLeadState.value.trim() || market.stateText,
       phone: elements.manualLeadPhone.value,
@@ -1222,6 +1224,13 @@
     return { city: market.city, state: market.stateText };
   }
 
+  function streetFromPastedLead(text = "") {
+    return firstMatch(
+      text,
+      /\b\d{1,6}\s+(?:[NSEW]\s+)?[A-Z][A-Za-z0-9'.-]*(?:\s+[A-Z][A-Za-z0-9'.-]*){0,5}\s+(?:St|Street|Ave|Avenue|Rd|Road|Dr|Drive|Blvd|Boulevard|Ln|Lane|Pkwy|Parkway|Hwy|Highway|Cir|Circle|Ct|Court|Way|Pl|Place|Ter|Terrace)\b/i
+    );
+  }
+
   function pastedLeadFromChunk(chunk = "") {
     const market = leadBuilderMarket();
     const lines = String(chunk || "").split(/\n+/).map((line) => line.trim()).filter(Boolean);
@@ -1241,6 +1250,7 @@
     return normalizeRestaurant({
       name,
       status: "prospect",
+      street: streetFromPastedLead(chunk),
       city: cityState.city,
       state: cityState.state,
       phone,
