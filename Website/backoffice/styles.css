@@ -635,6 +635,20 @@ th {
   font-size: 1rem;
 }
 
+.invoice-payment {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffdf7;
+}
+
+.invoice-payment a {
+  color: var(--green);
+  font-weight: 800;
+}
+
 .quick-contact-grid {
   display: grid;
   grid-template-columns: 150px 170px 110px minmax(160px, 1fr) 110px;

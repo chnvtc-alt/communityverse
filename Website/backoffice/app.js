@@ -12,6 +12,7 @@
     cityStateZip: "Villa Rica, GA 30180",
     phone: "404-428-6302",
   };
+  const PAYMENT_LINK = "https://www.paypal.com/ncp/payment/HSHM25X6JZFZ4";
   const SECTION_LABELS = {
     dashboard: "Dashboard",
     restaurants: "Restaurant List",
@@ -1608,6 +1609,10 @@
             </tr>
           </tfoot>
         </table>
+        <section class="invoice-payment">
+          <p class="invoice-label">Pay Online</p>
+          <a href="${escapeHtml(PAYMENT_LINK)}" target="_blank" rel="noopener">Pay this invoice with PayPal</a>
+        </section>
         <p class="invoice-status">Status: ${escapeHtml(labelFor(collectionStatusLabels, record.status, "Not Sent"))}</p>
       </article>
     `;
@@ -1655,6 +1660,9 @@
       "",
       `Amount: ${amount}`,
       `Total Due: ${amount}`,
+      "",
+      "Pay online:",
+      PAYMENT_LINK,
       "",
       "Thank you,",
       `${INVOICE_SENDER.name}`,
