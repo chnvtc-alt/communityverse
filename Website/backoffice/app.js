@@ -1263,14 +1263,6 @@
       website,
       facebookPage,
       contactEmail: email,
-      notes: [
-        "Pasted into Lead Builder:",
-        chunk,
-      ].join("\n"),
-      prospectNotes: [
-        "Pasted into Lead Builder:",
-        chunk,
-      ].join("\n"),
       prospectStage: "new-lead",
       prospectScore: pastedTriviaValue(chunk) === "yes" ? "7" : "5",
       leadSource: "Lead Builder paste",
