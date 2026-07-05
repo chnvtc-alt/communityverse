@@ -365,7 +365,7 @@
       state: String(record.state || "").trim(),
       zip: String(record.zip || "").trim(),
       phone: String(record.phone || "").trim(),
-      currentlyDoesTrivia: ["yes", "no"].includes(record.currentlyDoesTrivia) ? record.currentlyDoesTrivia : "",
+      currentlyDoesTrivia: ["yes", "no", "possible"].includes(record.currentlyDoesTrivia) ? record.currentlyDoesTrivia : "",
       website: String(record.website || "").trim(),
       facebookPage: String(record.facebookPage || "").trim(),
       contactFirstName: String(record.contactFirstName || legacyNameParts[0] || "").trim(),
@@ -2150,15 +2150,8 @@
     const text = normalizedImportKey(value);
     if (["yes", "y", "true", "currently yes"].includes(text)) return "yes";
     if (["no", "n", "false", "none"].includes(text)) return "no";
+    if (["possible", "maybe", "unknown maybe"].includes(text)) return "possible";
     return "";
-  }
-
-  function importTriviaNote(value = "") {
-    const text = String(value || "").trim();
-    if (!text || importTriviaValue(text)) {
-      return "";
-    }
-    return `Trivia marked "${text}" in import.`;
   }
 
   function appendUniqueNote(existing = "", addition = "") {
@@ -2192,8 +2185,6 @@
     const triviaText = columnValue(row, ["trivia", "trivia?", "currentlydoestrivia", "doestrivia"]);
     const notes = [
       columnValue(row, ["notes", "note", "details"]),
-      importTriviaNote(triviaText),
-      `Imported from ${fileName || "prospect spreadsheet"} on ${today()}.`,
     ].filter(Boolean).join("\n");
 
     return normalizeRestaurant({
@@ -2270,7 +2261,7 @@
         <td><span class="import-tag import-tag-${actionClass}">${escapeHtml(item.action)}</span></td>
         <td><strong>${escapeHtml(item.imported.name)}</strong>${item.existing ? `<div class="helper">Matches ${escapeHtml(item.existing.name)}</div>` : ""}</td>
         <td>${escapeHtml(item.imported.city)}</td>
-        <td>${escapeHtml(labelFor({ yes: "Yes", no: "No" }, item.imported.currentlyDoesTrivia, "Unknown"))}</td>
+        <td>${escapeHtml(labelFor({ yes: "Yes", no: "No", possible: "Possible" }, item.imported.currentlyDoesTrivia, "Unknown"))}</td>
         <td>${escapeHtml(item.imported.notes)}</td>
         <td>${escapeHtml(item.changes.join(", ") || "No new information")}</td>
       </tr>

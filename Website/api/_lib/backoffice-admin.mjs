@@ -24,16 +24,19 @@ function safeInteger(value) {
   return Number.isInteger(number) ? number : null;
 }
 
-function safeTriviaBoolean(value) {
+function safeTriviaValue(value) {
   const text = safeString(value).toLowerCase();
-  if (text === "yes" || text === "true" || text === "1") return true;
-  if (text === "no" || text === "false" || text === "0") return false;
+  if (text === "yes" || text === "true" || text === "1") return "yes";
+  if (text === "no" || text === "false" || text === "0") return "no";
+  if (text === "possible" || text === "maybe") return "possible";
   return null;
 }
 
 function triviaValueFromRecord(value) {
   if (value === true) return "yes";
   if (value === false) return "no";
+  const text = safeString(value).toLowerCase();
+  if (["yes", "no", "possible"].includes(text)) return text;
   return "";
 }
 
@@ -149,7 +152,7 @@ export function restaurantToRecord(restaurant = {}, idMap = new Map(), options =
     phone: safeString(restaurant.phone),
     ...(includeResearchFields
       ? {
-          currently_does_trivia: safeTriviaBoolean(restaurant.currentlyDoesTrivia),
+          currently_does_trivia: safeTriviaValue(restaurant.currentlyDoesTrivia),
           website: safeString(restaurant.website),
           facebook_page: safeString(restaurant.facebookPage),
         }
@@ -261,9 +264,9 @@ export async function saveBackofficeRestaurant(restaurant = {}) {
   } catch (error) {
     const message = String(error?.message || "");
     const missingGameName = message.includes("game_name");
-    const missingResearchFields = ["currently_does_trivia", "website", "facebook_page"].some((column) =>
-      message.includes(column)
-    );
+    const missingResearchFields =
+      ["currently_does_trivia", "website", "facebook_page"].some((column) => message.includes(column)) ||
+      (message.includes("boolean") && message.includes("possible"));
     if (!missingGameName && !missingResearchFields) {
       throw error;
     }
