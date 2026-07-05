@@ -1146,7 +1146,9 @@
   }
 
   function pastedLeadChunks(text = "") {
-    return String(text || "")
+    const prepared = String(text || "")
+      .replace(/([a-z0-9.])(?=[A-Z][A-Za-z0-9 '&.]{2,80}:\s)/g, "$1\n\n");
+    return prepared
       .split(/\n{2,}|(?=\n(?:\d+\.|\*|-)\s+)/)
       .map((chunk) => chunk.replace(/^\s*(?:\d+\.|\*|-)\s*/, "").trim())
       .filter(Boolean);
@@ -1155,6 +1157,7 @@
   function cleanPastedLeadName(line = "") {
     return String(line || "")
       .replace(/^https?:\/\/\S+/i, "")
+      .replace(/:\s+.*$/, "")
       .replace(/\s*[-|•].*$/, "")
       .replace(/\s+\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}.*$/, "")
       .replace(/\s*(?:facebook|website|menu|reviews?|directions|open now).*$/i, "")
