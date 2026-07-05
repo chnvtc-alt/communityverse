@@ -967,10 +967,11 @@
             <td>${restaurant.contactEmail ? `<a href="mailto:${escapeHtml(restaurant.contactEmail)}">${escapeHtml(restaurant.contactEmail)}</a>` : ""}</td>
             <td>${escapeHtml(restaurant.phone || restaurant.contactCell || "")}</td>
             <td>${escapeHtml(restaurant.nextFollowUp || "")}</td>
+            <td><button class="text-button" type="button" data-research-restaurant-id="${escapeHtml(restaurant.id)}">Research</button></td>
             <td><button class="text-button" type="button" data-edit-id="${escapeHtml(restaurant.id)}">Edit</button></td>
           </tr>
         `).join("")
-      : '<tr><td colspan="7"><div class="empty-state">No restaurants match this view.</div></td></tr>';
+      : '<tr><td colspan="8"><div class="empty-state">No restaurants match this view.</div></td></tr>';
   }
 
   function renderProspects() {
@@ -997,9 +998,10 @@
             <td>${escapeHtml(labelFor(prospectScoreLabels, restaurant.prospectScore, "Not set"))}</td>
             <td>${escapeHtml(latestContactSummary(restaurant))}</td>
             <td>${escapeHtml(shortDate(restaurant.nextFollowUp))}</td>
+            <td><button class="text-button" type="button" data-research-restaurant-id="${escapeHtml(restaurant.id)}">Research</button></td>
           </tr>
         `).join("")
-      : '<tr><td colspan="8"><div class="empty-state">No prospects match this score range.</div></td></tr>';
+      : '<tr><td colspan="9"><div class="empty-state">No prospects match this score range.</div></td></tr>';
   }
 
   function leadBuilderCategories() {
@@ -2868,7 +2870,19 @@
     if (!item) {
       return;
     }
-    const queries = restaurantResearchQueries(item.imported);
+    openResearchQueries(item.imported);
+  }
+
+  function openSavedRestaurantResearch(id = "") {
+    const restaurant = state.restaurants.find((record) => record.id === id);
+    if (!restaurant) {
+      return;
+    }
+    openResearchQueries(restaurant);
+  }
+
+  function openResearchQueries(record = {}) {
+    const queries = restaurantResearchQueries(record);
     let openedCount = 0;
     queries.forEach(([, query]) => {
       const opened = window.open(googleSearchUrl(query), "_blank");
@@ -2877,7 +2891,7 @@
         openedCount += 1;
       }
     });
-    setSyncStatus(openedCount ? `Opened research searches for ${item.imported.name}` : "Research search was blocked by the browser");
+    setSyncStatus(openedCount ? `Opened research searches for ${record.name}` : "Research search was blocked by the browser");
     if (!openedCount) {
       window.alert("The browser blocked the research tabs. Allow popups for this site, then click Research again.");
     }
@@ -3099,6 +3113,10 @@
     const contactButton = event.target.closest("[data-contact-id]");
     if (contactButton) {
       openQuickContact(contactButton.dataset.contactId);
+    }
+    const researchRestaurantButton = event.target.closest("[data-research-restaurant-id]");
+    if (researchRestaurantButton) {
+      openSavedRestaurantResearch(researchRestaurantButton.dataset.researchRestaurantId);
     }
     const removeContactButton = event.target.closest("[data-remove-contact-id]");
     if (removeContactButton) {
