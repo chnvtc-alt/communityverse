@@ -21,6 +21,7 @@
     dashboard: "Dashboard",
     restaurants: "Restaurant List",
     prospects: "Prospects",
+    "lead-builder": "Lead Builder",
     sales: "Sales",
     collections: "Invoices",
     expenses: "Expenses",
@@ -129,6 +130,18 @@
     prospectList: document.querySelector("#prospect-list"),
     prospectScoreMin: document.querySelector("#prospect-score-min"),
     prospectScoreMax: document.querySelector("#prospect-score-max"),
+    leadBuilderForm: document.querySelector("#lead-builder-form"),
+    leadBuilderState: document.querySelector("#lead-builder-state"),
+    leadBuilderCounty: document.querySelector("#lead-builder-county"),
+    leadBuilderMaxResults: document.querySelector("#lead-builder-max-results"),
+    leadBuilderMiles: document.querySelector("#lead-builder-miles"),
+    leadBuilderCity: document.querySelector("#lead-builder-city"),
+    leadBuilderSummary: document.querySelector("#lead-builder-summary"),
+    leadBuilderProgress: document.querySelector("#lead-builder-progress"),
+    leadBuilderProgressBar: document.querySelector("#lead-builder-progress-bar"),
+    leadBuilderSearches: document.querySelector("#lead-builder-searches"),
+    findLeadsButton: document.querySelector("#find-leads-button"),
+    copyLeadSearchesButton: document.querySelector("#copy-lead-searches-button"),
     salesList: document.querySelector("#sales-list"),
     collectionForm: document.querySelector("#collection-form"),
     collectionRestaurant: document.querySelector("#collection-restaurant"),
@@ -493,6 +506,8 @@
       elements.addContactHistoryButton,
       elements.quickContactFullCardButton,
       elements.applyProspectImportButton,
+      elements.findLeadsButton,
+      elements.copyLeadSearchesButton,
     ].forEach((element) => {
       if (element) element.disabled = loading;
     });
@@ -966,6 +981,84 @@
           </tr>
         `).join("")
       : '<tr><td colspan="8"><div class="empty-state">No prospects match this score range.</div></td></tr>';
+  }
+
+  function leadBuilderCategories() {
+    const checked = [...document.querySelectorAll('[name="lead-builder-category"]:checked')]
+      .map((input) => input.value)
+      .filter(Boolean);
+    return checked.length ? checked : ["restaurants with trivia"];
+  }
+
+  function leadBuilderMarket() {
+    const stateText = elements.leadBuilderState?.value || "GA";
+    const county = String(elements.leadBuilderCounty?.value || "").trim() || "Paulding";
+    const city = String(elements.leadBuilderCity?.value || "").trim() || "Villa Rica";
+    const miles = String(elements.leadBuilderMiles?.value || "").trim() || "30";
+    const radiusMode = document.querySelector('[name="lead-builder-radius"]:checked')?.value || "miles";
+    const maxResults = Math.max(1, Math.min(200, Number(elements.leadBuilderMaxResults?.value || 50) || 50));
+    return { stateText, county, city, miles, radiusMode, maxResults };
+  }
+
+  function buildLeadSearches() {
+    const market = leadBuilderMarket();
+    const location = market.radiusMode === "county"
+      ? `${market.county} County ${market.stateText}`
+      : `${market.city} ${market.stateText}`;
+    const countyLocation = `${market.county} County ${market.stateText}`;
+    const categories = leadBuilderCategories();
+    const searches = categories.flatMap((category) => [
+      `${category} ${location}`,
+      `${category} near ${countyLocation}`,
+      `${category} Facebook events ${location}`,
+    ]);
+    if (categories.includes("restaurants with trivia")) {
+      searches.push(`trivia night restaurant ${location}`);
+      searches.push(`weekly trivia ${countyLocation}`);
+      searches.push(`bar trivia ${market.city} ${market.stateText}`);
+    }
+    return [...new Set(searches)].slice(0, 12);
+  }
+
+  function renderLeadBuilderSearches(searches = []) {
+    elements.leadBuilderSearches.innerHTML = searches.length
+      ? searches.map((search) => `
+          <div class="lead-search-row">
+            <span>${escapeHtml(search)}</span>
+            <a class="text-button" href="https://www.google.com/search?q=${encodeURIComponent(search)}" target="_blank" rel="noopener">Open</a>
+          </div>
+        `).join("")
+      : '<div class="empty-state">No search phrases yet.</div>';
+  }
+
+  async function runLeadBuilder(event) {
+    event.preventDefault();
+    const market = leadBuilderMarket();
+    const searches = buildLeadSearches();
+    elements.leadBuilderProgress.hidden = false;
+    elements.leadBuilderProgressBar.style.width = "32%";
+    elements.leadBuilderSummary.textContent = "Building search phrases...";
+    setSyncStatus("Preparing Lead Builder");
+
+    await new Promise((resolve) => window.setTimeout(resolve, 250));
+    elements.leadBuilderProgressBar.style.width = "70%";
+    await new Promise((resolve) => window.setTimeout(resolve, 250));
+    elements.leadBuilderProgressBar.style.width = "100%";
+
+    renderLeadBuilderSearches(searches);
+    elements.leadBuilderSummary.textContent = `${searches.length} starter searches for ${market.county} County, ${market.stateText}. Target maximum: ${market.maxResults} prospects.`;
+    setSyncStatus("Lead Builder search plan ready");
+  }
+
+  async function copyLeadSearches() {
+    const searches = buildLeadSearches();
+    const text = searches.join("\n");
+    try {
+      await navigator.clipboard.writeText(text);
+      setSyncStatus("Lead Builder searches copied");
+    } catch {
+      window.prompt("Copy these searches:", text);
+    }
   }
 
   function renderSales() {
@@ -2510,6 +2603,8 @@
   elements.statusFilter.addEventListener("change", renderRestaurantTable);
   elements.prospectScoreMin.addEventListener("change", renderProspects);
   elements.prospectScoreMax.addEventListener("change", renderProspects);
+  elements.leadBuilderForm.addEventListener("submit", runLeadBuilder);
+  elements.copyLeadSearchesButton.addEventListener("click", copyLeadSearches);
   elements.exportButton.addEventListener("click", exportBackup);
   elements.importButton.addEventListener("click", () => elements.importFile.click());
   elements.importFile.addEventListener("change", (event) => {

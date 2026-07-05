@@ -345,6 +345,133 @@ h3 {
   margin-top: 14px;
 }
 
+.lead-builder-form {
+  display: grid;
+  grid-template-columns: minmax(140px, 180px) minmax(180px, 1fr) minmax(130px, 170px);
+  gap: 14px;
+  align-items: end;
+  margin-top: 16px;
+}
+
+.lead-builder-options,
+.lead-builder-radius {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  background: rgba(240, 234, 220, 0.45);
+}
+
+.lead-builder-options {
+  grid-template-columns: repeat(3, minmax(150px, 1fr));
+}
+
+.lead-builder-options legend,
+.lead-builder-radius legend {
+  padding: 0 6px;
+  color: var(--green);
+  font-family: "DM Mono", monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lead-builder-options label,
+.lead-builder-radius label {
+  color: var(--ink);
+  font-family: Arial, sans-serif;
+  font-size: 0.96rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.radio-label,
+.lead-builder-options .checkbox-label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.radio-label input,
+.lead-builder-options .checkbox-label input {
+  width: auto;
+}
+
+.lead-builder-mile-row {
+  flex-wrap: wrap;
+}
+
+.lead-builder-mile-row input {
+  width: 120px;
+}
+
+.lead-builder-mile-row #lead-builder-city {
+  width: min(240px, 100%);
+}
+
+.lead-builder-actions {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  gap: 10px;
+}
+
+.lead-builder-status-card {
+  min-height: 240px;
+}
+
+.lead-builder-progress {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.progress-bar {
+  overflow: hidden;
+  height: 12px;
+  border-radius: 999px;
+  background: #e7decd;
+}
+
+.progress-bar span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--green);
+  transition: width 0.24s ease;
+}
+
+.lead-builder-searches {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.lead-search-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #fff;
+}
+
+.lead-search-row span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
+}
+
 .quick-entry-form {
   display: grid;
   grid-template-columns: repeat(4, minmax(140px, 1fr));
@@ -929,6 +1056,8 @@ th {
   .dashboard-grid,
   .toolbar,
   .prospect-filters,
+  .lead-builder-form,
+  .lead-builder-options,
   .invoice-template-panel,
   .quick-entry-form,
   .quick-contact-grid,

@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,650;9..144,760&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v58" />
+    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v59" />
   </head>
   <body>
     <section class="login-panel" id="login-panel">
@@ -40,6 +40,7 @@
           <button class="nav-item" type="button" data-section="dashboard">Dashboard</button>
           <button class="nav-item" type="button" data-section="restaurants">Restaurant List</button>
           <button class="nav-item is-active" type="button" data-section="prospects">Prospects</button>
+          <button class="nav-item" type="button" data-section="lead-builder">Lead Builder</button>
           <button class="nav-item" type="button" data-section="sales">Sales</button>
           <button class="nav-item" type="button" data-section="collections">Invoices</button>
           <button class="nav-item" type="button" data-section="expenses">Expenses</button>
@@ -231,6 +232,101 @@
                 <tbody id="prospect-list"></tbody>
               </table>
             </div>
+          </section>
+        </section>
+
+        <section class="section-view" id="lead-builder-section" hidden>
+          <section class="card lead-builder-card">
+            <div class="card-heading">
+              <div>
+                <h3>Lead Builder</h3>
+                <p class="helper">Start a prospect search plan here. Spreadsheet import stays available while live search is connected.</p>
+              </div>
+            </div>
+
+            <form class="lead-builder-form" id="lead-builder-form">
+              <label>
+                State
+                <select id="lead-builder-state">
+                  <option value="GA" selected>Georgia</option>
+                  <option value="AL">Alabama</option>
+                  <option value="FL">Florida</option>
+                  <option value="NC">North Carolina</option>
+                  <option value="SC">South Carolina</option>
+                  <option value="TN">Tennessee</option>
+                </select>
+              </label>
+              <label>
+                County
+                <input id="lead-builder-county" value="Paulding" placeholder="Paulding" />
+              </label>
+              <label>
+                Maximum Results
+                <input id="lead-builder-max-results" inputmode="numeric" value="50" />
+              </label>
+
+              <fieldset class="lead-builder-options">
+                <legend>Search For</legend>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="lead-builder-category" value="restaurants with trivia" checked />
+                  Restaurants with Trivia
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="lead-builder-category" value="sports bars" />
+                  Sports Bars
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="lead-builder-category" value="breweries" />
+                  Breweries
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="lead-builder-category" value="pizza restaurants" />
+                  Pizza
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="lead-builder-category" value="bbq restaurants" />
+                  BBQ
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="lead-builder-category" value="mexican restaurants" />
+                  Mexican
+                </label>
+              </fieldset>
+
+              <fieldset class="lead-builder-radius">
+                <legend>Radius</legend>
+                <label class="radio-label">
+                  <input type="radio" name="lead-builder-radius" value="county" />
+                  Entire County
+                </label>
+                <label class="radio-label lead-builder-mile-row">
+                  <input type="radio" name="lead-builder-radius" value="miles" checked />
+                  Within
+                  <input id="lead-builder-miles" inputmode="numeric" value="30" />
+                  miles of
+                  <input id="lead-builder-city" value="Villa Rica" placeholder="Villa Rica" />
+                </label>
+              </fieldset>
+
+              <div class="lead-builder-actions">
+                <button class="button button-primary" id="find-leads-button" type="submit">Find Prospects</button>
+                <button class="button button-muted" id="copy-lead-searches-button" type="button">Copy Searches</button>
+              </div>
+            </form>
+          </section>
+
+          <section class="card lead-builder-status-card">
+            <div class="card-heading">
+              <div>
+                <h3>Search Plan</h3>
+                <p class="helper" id="lead-builder-summary">Choose a market and click Find Prospects.</p>
+              </div>
+            </div>
+            <div class="lead-builder-progress" id="lead-builder-progress" hidden>
+              <span>Preparing search plan...</span>
+              <div class="progress-bar"><span id="lead-builder-progress-bar"></span></div>
+            </div>
+            <div class="lead-builder-searches" id="lead-builder-searches"></div>
           </section>
         </section>
 
@@ -774,6 +870,6 @@
 
     <input id="import-file" type="file" accept="application/json" hidden />
     <input id="prospect-import-file" type="file" accept=".csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" hidden />
-    <script src="/backoffice/app.js?v=backoffice-v58" defer></script>
+    <script src="/backoffice/app.js?v=backoffice-v59" defer></script>
   </body>
 </html>
