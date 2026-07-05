@@ -1141,7 +1141,6 @@
         <td>${escapeHtml(invoiceTableNote(record.notes))}</td>
         <td class="table-actions">
           <button class="text-button" type="button" data-edit-collection-id="${escapeHtml(record.id)}">Edit</button>
-          <button class="text-button" type="button" data-test-email-collection-id="${escapeHtml(record.id)}">Send Test</button>
           <button class="text-button" type="button" data-send-collection-id="${escapeHtml(record.id)}">Send Invoice</button>
           <button class="text-button" type="button" data-email-collection-id="${escapeHtml(record.id)}">Email Invoice</button>
           <button class="text-button" type="button" data-print-collection-id="${escapeHtml(record.id)}">View / Save PDF</button>
@@ -2202,10 +2201,6 @@
     const emailCollectionButton = event.target.closest("[data-email-collection-id]");
     if (emailCollectionButton) {
       openInvoiceEmail(emailCollectionButton.dataset.emailCollectionId);
-    }
-    const testEmailCollectionButton = event.target.closest("[data-test-email-collection-id]");
-    if (testEmailCollectionButton) {
-      sendInvoiceEmail(testEmailCollectionButton.dataset.testEmailCollectionId, { test: true });
     }
     const sendCollectionButton = event.target.closest("[data-send-collection-id]");
     if (sendCollectionButton) {
