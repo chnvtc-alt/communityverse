@@ -1,7 +1,7 @@
 import { saveBackofficeCollection } from "./backoffice-admin.mjs";
 
 const PAYMENT_LINK = "https://www.paypal.com/ncp/payment/HSHM25X6JZFZ4";
-const LOGO_URL = "https://communityversegames.com/assets/communityverse-games-logo.png";
+const LOGO_URL = "https://communityversegames.com/assets/communityverse-games-logo-transparent.png";
 const DEFAULT_TEST_EMAIL = "communityversegames@gmail.com";
 const INVOICE_SENDER = {
   business: "CommunityVerse Games",
