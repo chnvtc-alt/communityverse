@@ -34,6 +34,10 @@ function contactName(restaurant = {}) {
   return [restaurant.contactFirstName, restaurant.contactLastName].filter(Boolean).join(" ");
 }
 
+function contactGreeting(restaurant = {}, customerName = "there") {
+  return safeString(restaurant.contactFirstName) || contactName(restaurant) || customerName;
+}
+
 function addressLines(restaurant = {}) {
   const cityStateZip = [
     restaurant.city,
@@ -87,6 +91,7 @@ function invoiceDetails(collection = {}, restaurant = {}) {
   return {
     customerName,
     contact: contactName(restaurant),
+    greetingName: contactGreeting(restaurant, customerName),
     addressLines: addressLines(restaurant),
     description: collection.notes || "Restaurant Challenge monthly subscription.",
     amount: moneyValue(collection.amount),
@@ -193,7 +198,7 @@ function invoiceHtml(collection = {}, restaurant = {}, isTest = false) {
         <a href="${PAYMENT_LINK}" style="display:inline-block;background:#1f6b4a;color:#fff;text-decoration:none;padding:12px 34px;border-radius:6px;font-weight:800;">Pay Now</a>
       </div>
       ${testNote}
-      <p>Hi ${htmlEscape(details.customerName)},</p>
+      <p>Hi ${htmlEscape(details.greetingName)},</p>
       <p>Here is invoice ${htmlEscape(collection.invoiceNumber)} for ${htmlEscape(details.amount)}.</p>
       <p>${htmlEscape(details.description)}</p>
       <p>You can pay online using the button above. The PDF invoice is attached for your records.</p>
@@ -208,7 +213,7 @@ function invoiceText(collection = {}, restaurant = {}, isTest = false) {
   const details = invoiceDetails(collection, restaurant);
   return [
     isTest ? "TEST SEND ONLY - This was not sent to the customer." : "",
-    `Hi ${details.customerName},`,
+    `Hi ${details.greetingName},`,
     "",
     `Here is invoice ${collection.invoiceNumber || ""} for ${details.amount}.`,
     "",

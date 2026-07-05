@@ -185,6 +185,7 @@
     serviceStartDate: document.querySelector("#service-start-date"),
     serviceEndDate: document.querySelector("#service-end-date"),
     packageName: document.querySelector("#package-name"),
+    gameName: document.querySelector("#game-name"),
     monthlyAmount: document.querySelector("#monthly-amount"),
     setupFee: document.querySelector("#setup-fee"),
     paymentStatus: document.querySelector("#payment-status"),
@@ -349,6 +350,7 @@
       serviceStartDate: String(record.serviceStartDate || record.saleDate || "").trim(),
       serviceEndDate: String(record.serviceEndDate || "").trim(),
       packageName: String(record.packageName || "").trim(),
+      gameName: String(record.gameName || "").trim(),
       monthlyAmount: String(record.monthlyAmount || "").trim(),
       setupFee: String(record.setupFee || "").trim(),
       paymentStatus: paymentStatusLabels[record.paymentStatus] ? record.paymentStatus : "",
@@ -1015,6 +1017,10 @@
     return `${monthValue}-01`;
   }
 
+  function gameNameForInvoice(restaurant, fallbackName = "Restaurant Challenge") {
+    return String(restaurant?.gameName || "").trim() || `${fallbackName} Game`;
+  }
+
   function invoiceServicePeriod(restaurant, monthValue, billingType, isProrated) {
     const range = monthDateRange(monthValue);
     if (!(billingType === "half" || isProrated)) {
@@ -1032,6 +1038,7 @@
     const restaurant = state.restaurants.find((record) => record.id === elements.collectionRestaurant.value);
     const monthValue = elements.invoiceTemplateMonth.value || currentMonth();
     const restaurantName = restaurant?.name || "Restaurant Challenge";
+    const gameName = gameNameForInvoice(restaurant, restaurantName);
     const billingType = elements.invoiceTemplateType.value;
     const monthlyAmount = numberFromMoney(restaurant?.monthlyAmount, 19);
     const calculatedAmount = billingType === "half"
@@ -1041,8 +1048,8 @@
         : monthlyAmount;
     const isProrated = calculatedAmount !== monthlyAmount;
     const defaultDescription = billingType === "half" || isProrated
-      ? `${restaurantName} Game Partial Month Subscription`
-      : `${restaurantName} Game Monthly Subscription`;
+      ? `${gameName} Partial Month Subscription`
+      : `${gameName} Monthly Subscription`;
     const description = elements.invoiceTemplateDescription.value.trim() || defaultDescription;
     const enteredAmount = elements.invoiceTemplateAmount.value.trim();
     const defaultAmountText = String(calculatedAmount.toFixed(2)).replace(/\.00$/, "");
@@ -1216,6 +1223,7 @@
     elements.serviceStartDate.value = restaurant ? record.serviceStartDate : "";
     elements.serviceEndDate.value = restaurant ? record.serviceEndDate : "";
     elements.packageName.value = restaurant ? record.packageName : "";
+    elements.gameName.value = restaurant ? record.gameName : "";
     elements.monthlyAmount.value = restaurant ? record.monthlyAmount : "";
     elements.setupFee.value = restaurant ? record.setupFee : "";
     elements.paymentStatus.value = restaurant ? record.paymentStatus : "";
@@ -1259,6 +1267,7 @@
       serviceStartDate: elements.serviceStartDate.value,
       serviceEndDate: elements.serviceEndDate.value,
       packageName: elements.packageName.value,
+      gameName: elements.gameName.value,
       monthlyAmount: elements.monthlyAmount.value,
       setupFee: elements.setupFee.value,
       paymentStatus: elements.paymentStatus.value,
@@ -1821,13 +1830,14 @@
       return;
     }
     const customerName = record.restaurantName || restaurant?.name || "there";
+    const greetingName = restaurant?.contactFirstName || contactName(restaurant) || customerName;
     const invoiceNumber = record.invoiceNumber || "your invoice";
     const amount = moneyValue(record.amount);
     const dueDate = shortDate(record.dueDate) || "the due date shown on the invoice";
     const description = record.notes || "Restaurant Challenge monthly subscription.";
     const subject = `Invoice ${invoiceNumber} from CommunityVerse Games`;
     const body = [
-      `Hi ${customerName},`,
+      `Hi ${greetingName},`,
       "",
       `Here is invoice ${invoiceNumber} for ${amount}.`,
       "",

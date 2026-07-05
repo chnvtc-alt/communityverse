@@ -64,6 +64,7 @@ export function restaurantFromRecord(record = {}, contactHistory = []) {
     contactHistory,
     saleDate: safeString(record.sale_date),
     packageName: safeString(record.package_name),
+    gameName: safeString(record.game_name),
     monthlyAmount: record.monthly_amount == null ? "" : String(record.monthly_amount),
     setupFee: record.setup_fee == null ? "" : String(record.setup_fee),
     paymentStatus: safeString(record.payment_status),
@@ -113,7 +114,8 @@ export function expenseFromRecord(record = {}) {
   };
 }
 
-export function restaurantToRecord(restaurant = {}, idMap = new Map()) {
+export function restaurantToRecord(restaurant = {}, idMap = new Map(), options = {}) {
+  const includeGameName = options.includeGameName !== false;
   const legacyNameParts = contactNameFromLegacy(restaurant);
   const incomingId = safeString(restaurant.id);
   const id = existingUuid(incomingId) || idMap.get(incomingId) || randomUUID();
@@ -143,6 +145,7 @@ export function restaurantToRecord(restaurant = {}, idMap = new Map()) {
     prospect_notes: safeString(restaurant.prospectNotes),
     sale_date: safeDate(restaurant.saleDate),
     package_name: safeString(restaurant.packageName),
+    ...(includeGameName ? { game_name: safeString(restaurant.gameName) } : {}),
     monthly_amount: safeNumber(restaurant.monthlyAmount),
     setup_fee: safeNumber(restaurant.setupFee),
     payment_status: safeString(restaurant.paymentStatus),
@@ -223,11 +226,25 @@ export async function fetchBackofficeData() {
 export async function saveBackofficeRestaurant(restaurant = {}) {
   const idMap = new Map();
   const record = restaurantToRecord(restaurant, idMap);
-  const rows = await supabaseRequest("backoffice_restaurants?on_conflict=id", {
-    method: "POST",
-    headers: { Prefer: "resolution=merge-duplicates,return=representation" },
-    body: JSON.stringify([record]),
-  });
+  let rows;
+  let savedRecord = record;
+  try {
+    rows = await supabaseRequest("backoffice_restaurants?on_conflict=id", {
+      method: "POST",
+      headers: { Prefer: "resolution=merge-duplicates,return=representation" },
+      body: JSON.stringify([record]),
+    });
+  } catch (error) {
+    if (!String(error?.message || "").includes("game_name")) {
+      throw error;
+    }
+    savedRecord = restaurantToRecord(restaurant, idMap, { includeGameName: false });
+    rows = await supabaseRequest("backoffice_restaurants?on_conflict=id", {
+      method: "POST",
+      headers: { Prefer: "resolution=merge-duplicates,return=representation" },
+      body: JSON.stringify([savedRecord]),
+    });
+  }
 
   await supabaseRequest(`backoffice_contact_history?restaurant_id=eq.${encodeURIComponent(record.id)}`, {
     method: "DELETE",
@@ -245,7 +262,7 @@ export async function saveBackofficeRestaurant(restaurant = {}) {
     });
   }
 
-  const saved = Array.isArray(rows) && rows.length ? rows[0] : record;
+  const saved = Array.isArray(rows) && rows.length ? rows[0] : savedRecord;
   return restaurantFromRecord(saved, contactRecords.map(contactFromRecord));
 }
 
