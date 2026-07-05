@@ -256,6 +256,17 @@
     };
   }
 
+  function longDate(dateText) {
+    if (!dateText) {
+      return "";
+    }
+    const date = new Date(`${dateText}T00:00:00`);
+    if (Number.isNaN(date.getTime())) {
+      return "";
+    }
+    return date.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
+  }
+
   function makeId() {
     return `restaurant-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   }
@@ -923,10 +934,22 @@
     return `${monthValue}-01`;
   }
 
+  function invoiceServicePeriod(restaurant, monthValue, billingType, isProrated) {
+    const range = monthDateRange(monthValue);
+    if (!(billingType === "half" || isProrated)) {
+      return { label: range.label, prefix: "Service period" };
+    }
+    const startDate = restaurant?.serviceStartDate || restaurant?.saleDate || range.start;
+    const periodStart = startDate.startsWith(monthValue) ? startDate : range.start;
+    return {
+      label: `${longDate(periodStart) || longDate(range.start)} - ${longDate(range.end)}`,
+      prefix: "Partial service period",
+    };
+  }
+
   function fillMonthlyInvoiceTemplate() {
     const restaurant = state.restaurants.find((record) => record.id === elements.collectionRestaurant.value);
     const monthValue = elements.invoiceTemplateMonth.value || currentMonth();
-    const range = monthDateRange(monthValue);
     const restaurantName = restaurant?.name || "Restaurant Challenge";
     const billingType = elements.invoiceTemplateType.value;
     const monthlyAmount = numberFromMoney(restaurant?.monthlyAmount, 19);
@@ -948,7 +971,8 @@
     elements.collectionDueDate.value = invoiceDueDateFor(restaurant, monthValue, billingType, isProrated);
     elements.collectionAmount.value = amount;
     elements.collectionStatus.value = "not-sent";
-    elements.collectionNotes.value = `${description}. Service period: ${range.label}.`;
+    const period = invoiceServicePeriod(restaurant, monthValue, billingType, isProrated);
+    elements.collectionNotes.value = `${description}. ${period.prefix}: ${period.label}.`;
   }
 
   function renderCollections() {
@@ -1451,8 +1475,15 @@
     renderCollections();
   }
 
-  function invoiceCustomerAddress(restaurant) {
-    return formattedAddress(restaurant) || "";
+  function invoiceCustomerAddressLines(restaurant) {
+    if (!restaurant) {
+      return [];
+    }
+    const cityStateZip = [
+      restaurant.city,
+      [restaurant.state, restaurant.zip].filter(Boolean).join(" "),
+    ].filter(Boolean).join(", ");
+    return [restaurant.street, cityStateZip].filter(Boolean);
   }
 
   function openInvoicePreview(id) {
@@ -1463,7 +1494,7 @@
     const restaurant = state.restaurants.find((item) => item.id === record.restaurantId);
     const customerName = record.restaurantName || restaurant?.name || "Restaurant";
     const contact = restaurant ? contactName(restaurant) : "";
-    const address = restaurant ? invoiceCustomerAddress(restaurant) : "";
+    const addressLines = invoiceCustomerAddressLines(restaurant);
     const description = record.notes || "Restaurant Challenge monthly subscription.";
     elements.invoicePreviewContent.innerHTML = `
       <article class="invoice-document">
@@ -1482,7 +1513,7 @@
             <p class="invoice-label">Bill To</p>
             <strong>${escapeHtml(customerName)}</strong>
             ${contact ? `<span>${escapeHtml(contact)}</span>` : ""}
-            ${address ? `<span>${escapeHtml(address)}</span>` : ""}
+            ${addressLines.map((line) => `<span>${escapeHtml(line)}</span>`).join("")}
           </div>
           <div>
             <p class="invoice-label">From</p>
