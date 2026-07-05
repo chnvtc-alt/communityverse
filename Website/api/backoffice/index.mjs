@@ -9,6 +9,7 @@ import {
   saveBackofficeExpense,
   saveBackofficeRestaurant,
 } from "../_lib/backoffice-admin.mjs";
+import { sendBackofficeInvoiceEmail } from "../_lib/backoffice-invoices.mjs";
 import { hasSupabaseConfig, jsonResponse, readJsonBody } from "../_lib/supabase.mjs";
 
 function preflight(request) {
@@ -55,6 +56,21 @@ export async function POST(request) {
     if (action === "deleteCollection") {
       await deleteBackofficeCollection(body.id);
       return jsonResponse({ ok: true });
+    }
+
+    if (action === "sendInvoice") {
+      const backofficeData = await fetchBackofficeData();
+      const collection = backofficeData.collections.find((record) => record.id === String(body.id || "").trim());
+      if (!collection) {
+        return jsonResponse({ ok: false, error: "Invoice was not found." }, 404);
+      }
+      const restaurant = backofficeData.restaurants.find((record) => record.id === collection.restaurantId);
+      const result = await sendBackofficeInvoiceEmail({
+        collection,
+        restaurant,
+        test: body.test === true,
+      });
+      return jsonResponse({ ok: true, ...result });
     }
 
     if (action === "saveExpense") {

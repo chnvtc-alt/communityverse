@@ -1114,6 +1114,8 @@
         <td>${escapeHtml(invoiceTableNote(record.notes))}</td>
         <td class="table-actions">
           <button class="text-button" type="button" data-edit-collection-id="${escapeHtml(record.id)}">Edit</button>
+          <button class="text-button" type="button" data-test-email-collection-id="${escapeHtml(record.id)}">Send Test</button>
+          <button class="text-button" type="button" data-send-collection-id="${escapeHtml(record.id)}">Send Invoice</button>
           <button class="text-button" type="button" data-email-collection-id="${escapeHtml(record.id)}">Email Invoice</button>
           <button class="text-button" type="button" data-print-collection-id="${escapeHtml(record.id)}">View / Save PDF</button>
           <button class="text-button" type="button" data-delete-collection-id="${escapeHtml(record.id)}">Remove</button>
@@ -1561,6 +1563,32 @@
     }
     cacheBackofficeData();
     renderCollections();
+  }
+
+  async function sendInvoiceEmail(id, { test = false } = {}) {
+    const record = state.collections.find((collection) => collection.id === id);
+    if (!record) {
+      return;
+    }
+    if (!test) {
+      const confirmed = window.confirm(`Send invoice ${record.invoiceNumber || ""} to ${record.restaurantName || "this customer"} now?`);
+      if (!confirmed) {
+        return;
+      }
+    }
+    const data = await saveAction("sendInvoice", { id, test }, test ? "Sent test invoice email" : "Sent invoice email");
+    if (!data) {
+      return;
+    }
+    if (data.collection) {
+      const savedRecord = normalizeCollection(data.collection);
+      state.collections = state.collections.map((collection) =>
+        collection.id === savedRecord.id ? savedRecord : collection
+      );
+      cacheBackofficeData();
+      renderCollections();
+    }
+    window.alert(test ? `Test invoice sent to ${data.sentTo || "the test email"}.` : `Invoice sent to ${data.sentTo || "the customer"}.`);
   }
 
   function invoiceCustomerAddressLines(restaurant) {
@@ -2090,6 +2118,14 @@
     const emailCollectionButton = event.target.closest("[data-email-collection-id]");
     if (emailCollectionButton) {
       openInvoiceEmail(emailCollectionButton.dataset.emailCollectionId);
+    }
+    const testEmailCollectionButton = event.target.closest("[data-test-email-collection-id]");
+    if (testEmailCollectionButton) {
+      sendInvoiceEmail(testEmailCollectionButton.dataset.testEmailCollectionId, { test: true });
+    }
+    const sendCollectionButton = event.target.closest("[data-send-collection-id]");
+    if (sendCollectionButton) {
+      sendInvoiceEmail(sendCollectionButton.dataset.sendCollectionId);
     }
     const deleteExpenseButton = event.target.closest("[data-delete-expense-id]");
     if (deleteExpenseButton) {
