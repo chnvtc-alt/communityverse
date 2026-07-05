@@ -1151,6 +1151,9 @@
   function pastedLeadChunks(text = "") {
     const prepared = String(text || "")
       .replace(/^\s*Here are[^:]{0,160}:/i, "")
+      .replace(/^\s*[\s\S]{0,700}?\bTop [^:]{0,180}:/i, "")
+      .replace(/([a-z0-9.])(?=Nearby Options\s*\()/g, "$1\n\n")
+      .replace(/:\s*(?=[A-Z][A-Za-z0-9 '&.]{2,80}:\s)/g, ":\n\n")
       .replace(/([a-z0-9.])(?=[A-Z][A-Za-z0-9 '&.]{2,80}\s+\([A-Z][A-Za-z ]+,\s*(?:GA|AL|FL|NC|SC|TN)\))/g, "$1\n\n")
       .replace(/([a-z0-9.])(?=[A-Z][A-Za-z0-9 '&]{2,80}When:)/g, "$1\n\n")
       .replace(/([A-Z][A-Za-z0-9 '&]{2,80})When:/g, "$1\nWhen:")
@@ -1182,7 +1185,7 @@
     if (!cleaned || cleaned.length < 3 || cleaned.length > 90) {
       return false;
     }
-    if (/^(when|details|location|phone|website|facebook|menu|reviews?|directions|open now|here are|known for|offers)\b/.test(key)) {
+    if (/^(when|details|location|phone|website|facebook|menu|reviews?|directions|open now|here are|known for|offers|nearby options)\b/.test(key)) {
       return false;
     }
     if (/^[a-z]+\.?$/i.test(cleaned) && !/\b(bar|pub|grill|tavern|restaurant|cafe|pizza|brewery|bistro|diner)\b/.test(key)) {
