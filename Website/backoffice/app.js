@@ -1273,9 +1273,45 @@
     });
   }
 
+  function nearbyRadarLeadsFromText(text = "") {
+    const match = String(text || "").match(/\binclude\s+(.+)$/i);
+    if (!match) {
+      return [];
+    }
+    const market = leadBuilderMarket();
+    const radarText = match[1].replace(/\.$/, "");
+    const records = [];
+    const groupPattern = /([A-Z][A-Za-z0-9 '&.]+(?:\s+and\s+[A-Z][A-Za-z0-9 '&.]+)*)\s+in\s+([A-Z][A-Za-z ]+?)(?=,\s+as well as|,\s+and|,|$)/g;
+    let group;
+    while ((group = groupPattern.exec(radarText))) {
+      const city = group[2].trim();
+      const names = group[1].split(/\s+and\s+/).map((name) => cleanPastedLeadName(name)).filter(isPastedLeadNameCandidate);
+      names.forEach((name) => {
+        const notes = `Nearby radar lead from Lead Builder: ${name} was mentioned as just over the line in ${city}.`;
+        records.push(normalizeRestaurant({
+          name,
+          status: "prospect",
+          city,
+          state: market.stateText,
+          currentlyDoesTrivia: "possible",
+          notes,
+          prospectNotes: notes,
+          prospectStage: "new-lead",
+          prospectScore: "4",
+          leadSource: "Lead Builder nearby mention",
+          assignedTo: DEFAULT_OWNER,
+        }));
+      });
+    }
+    return records;
+  }
+
   function pastedLeadsFromText(text = "") {
     const chunks = pastedLeadChunks(text);
-    const records = chunks.map(pastedLeadFromChunk).filter(Boolean);
+    const records = [
+      ...chunks.map(pastedLeadFromChunk).filter(Boolean),
+      ...nearbyRadarLeadsFromText(text),
+    ];
     const seen = new Set();
     return records.filter((record) => {
       const key = [normalizedImportKey(record.name), normalizedImportKey(record.city), normalizedPhone(record.phone)].join("|");
