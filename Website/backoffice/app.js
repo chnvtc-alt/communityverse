@@ -1762,6 +1762,7 @@
       <article class="invoice-document">
         <header class="invoice-header">
           <div>
+            <img class="invoice-logo" src="/assets/communityverse-games-logo.png" alt="CommunityVerse Games" />
             <p class="eyebrow">CommunityVerse Games</p>
             <h2>Invoice</h2>
           </div>

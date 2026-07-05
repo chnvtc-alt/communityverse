@@ -1,6 +1,7 @@
 import { saveBackofficeCollection } from "./backoffice-admin.mjs";
 
 const PAYMENT_LINK = "https://www.paypal.com/ncp/payment/HSHM25X6JZFZ4";
+const LOGO_URL = "https://communityversegames.com/assets/communityverse-games-logo.png";
 const DEFAULT_TEST_EMAIL = "communityversegames@gmail.com";
 const INVOICE_SENDER = {
   business: "CommunityVerse Games",
@@ -208,7 +209,9 @@ function invoiceHtml(collection = {}, restaurant = {}, isTest = false) {
   <body style="margin:0;background:#f5f1e8;font-family:Arial,sans-serif;color:#1f2924;">
     <div style="max-width:680px;margin:0 auto;padding:28px 18px;">
       <p style="margin:0 0 12px;text-align:center;color:#637069;font-size:13px;letter-spacing:.08em;text-transform:uppercase;">Invoice ${htmlEscape(collection.invoiceNumber)} Details</p>
-      <h1 style="margin:0 0 22px;text-align:center;font-size:28px;">CommunityVerse Games</h1>
+      <div style="text-align:center;margin:0 0 22px;">
+        <img src="${LOGO_URL}" alt="CommunityVerse Games" width="320" style="display:block;width:100%;max-width:320px;height:auto;margin:0 auto;" />
+      </div>
       <div style="background:#dcebec;padding:26px 18px;text-align:center;margin-bottom:24px;">
         <p style="margin:0 0 8px;font-weight:700;">DUE ${htmlEscape(details.dueDate)}</p>
         <div style="font-size:44px;font-weight:800;margin-bottom:16px;">${htmlEscape(details.amount)}</div>
