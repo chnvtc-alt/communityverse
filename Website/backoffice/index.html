@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,650;9..144,760&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v60" />
+    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v61" />
   </head>
   <body>
     <section class="login-panel" id="login-panel">
@@ -382,6 +382,26 @@
               <div class="lead-builder-actions form-span">
                 <button class="button button-primary" type="submit">Preview Prospect</button>
                 <button class="button button-muted" id="clear-manual-lead-button" type="button">Clear</button>
+              </div>
+            </form>
+          </section>
+
+          <section class="card lead-builder-paste-card">
+            <div class="card-heading">
+              <div>
+                <h3>Paste Search Results / Notes</h3>
+                <p class="helper">Paste Google snippets, Facebook event text, or website notes. Lead Builder will make preview rows for likely restaurants.</p>
+              </div>
+            </div>
+            <form class="paste-leads-form" id="paste-leads-form">
+              <label class="form-span">
+                Search Results / Notes
+                <textarea id="paste-leads-text" rows="8" placeholder="Paste search result text here. Example: Cinema Tavern Sports Bar & Grill - trivia Thursday 7 PM - Villa Rica GA - https://..."></textarea>
+              </label>
+              <div class="lead-builder-actions form-span">
+                <button class="button button-primary" type="submit">Preview Pasted Leads</button>
+                <button class="button button-muted" id="clear-pasted-leads-button" type="button">Clear</button>
+                <span class="inline-status" id="paste-leads-status" role="status"></span>
               </div>
             </form>
           </section>
@@ -927,6 +947,6 @@
 
     <input id="import-file" type="file" accept="application/json" hidden />
     <input id="prospect-import-file" type="file" accept=".csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" hidden />
-    <script src="/backoffice/app.js?v=backoffice-v60" defer></script>
+    <script src="/backoffice/app.js?v=backoffice-v61" defer></script>
   </body>
 </html>

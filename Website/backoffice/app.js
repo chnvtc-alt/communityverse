@@ -154,6 +154,10 @@
     manualLeadEmail: document.querySelector("#manual-lead-email"),
     manualLeadNotes: document.querySelector("#manual-lead-notes"),
     clearManualLeadButton: document.querySelector("#clear-manual-lead-button"),
+    pasteLeadsForm: document.querySelector("#paste-leads-form"),
+    pasteLeadsText: document.querySelector("#paste-leads-text"),
+    pasteLeadsStatus: document.querySelector("#paste-leads-status"),
+    clearPastedLeadsButton: document.querySelector("#clear-pasted-leads-button"),
     salesList: document.querySelector("#sales-list"),
     collectionForm: document.querySelector("#collection-form"),
     collectionRestaurant: document.querySelector("#collection-restaurant"),
@@ -521,6 +525,7 @@
       elements.findLeadsButton,
       elements.copyLeadSearchesButton,
       elements.clearManualLeadButton,
+      elements.clearPastedLeadsButton,
     ].forEach((element) => {
       if (element) element.disabled = loading;
     });
@@ -1138,6 +1143,124 @@
       return;
     }
     previewImportedProspects([imported], "Lead Builder prospect preview ready");
+  }
+
+  function pastedLeadChunks(text = "") {
+    return String(text || "")
+      .split(/\n{2,}|(?=\n(?:\d+\.|\*|-)\s+)/)
+      .map((chunk) => chunk.replace(/^\s*(?:\d+\.|\*|-)\s*/, "").trim())
+      .filter(Boolean);
+  }
+
+  function cleanPastedLeadName(line = "") {
+    return String(line || "")
+      .replace(/^https?:\/\/\S+/i, "")
+      .replace(/\s*[-|•].*$/, "")
+      .replace(/\s+\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}.*$/, "")
+      .replace(/\s*(?:facebook|website|menu|reviews?|directions|open now).*$/i, "")
+      .trim();
+  }
+
+  function pastedTriviaValue(text = "") {
+    const key = normalizedImportKey(text);
+    if (/\b(no trivia|does not have trivia|without trivia)\b/.test(key)) {
+      return "no";
+    }
+    if (/\b(trivia|trivia night|trivia nights|quizzo|team trivia|bar trivia)\b/.test(key)) {
+      return "yes";
+    }
+    return "possible";
+  }
+
+  function firstMatch(text = "", pattern) {
+    const match = String(text || "").match(pattern);
+    return match ? match[0].trim() : "";
+  }
+
+  function firstUrl(text = "", source = "") {
+    const urls = String(text || "").match(/https?:\/\/[^\s)]+/gi) || [];
+    if (!source) {
+      return urls[0] || "";
+    }
+    return urls.find((url) => normalizedImportKey(url).includes(source)) || "";
+  }
+
+  function cityFromPastedLead(text = "", market = leadBuilderMarket()) {
+    const cityPattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*,?\s+(GA|AL|FL|NC|SC|TN)\b/;
+    const match = String(text || "").match(cityPattern);
+    if (match) {
+      return { city: match[1], state: match[2] };
+    }
+    return { city: market.city, state: market.stateText };
+  }
+
+  function pastedLeadFromChunk(chunk = "") {
+    const market = leadBuilderMarket();
+    const lines = String(chunk || "").split(/\n+/).map((line) => line.trim()).filter(Boolean);
+    const nameLine = lines.find((line) => {
+      const cleaned = cleanPastedLeadName(line);
+      return cleaned && !/^https?:\/\//i.test(line) && !/^(location|details|trivia schedule|phone|website|facebook)\b/i.test(cleaned);
+    }) || "";
+    const name = cleanPastedLeadName(nameLine);
+    if (!name || name.length < 3 || name.length > 90) {
+      return null;
+    }
+    const cityState = cityFromPastedLead(chunk, market);
+    const website = firstUrl(chunk);
+    const facebookPage = firstUrl(chunk, "facebook");
+    const phone = firstMatch(chunk, /\(?\b\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}\b/);
+    const email = firstMatch(chunk, /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+    return normalizeRestaurant({
+      name,
+      status: "prospect",
+      city: cityState.city,
+      state: cityState.state,
+      phone,
+      currentlyDoesTrivia: pastedTriviaValue(chunk),
+      website,
+      facebookPage,
+      contactEmail: email,
+      notes: [
+        "Pasted into Lead Builder:",
+        chunk,
+      ].join("\n"),
+      prospectStage: "new-lead",
+      prospectScore: pastedTriviaValue(chunk) === "yes" ? "7" : "5",
+      leadSource: "Lead Builder paste",
+      assignedTo: DEFAULT_OWNER,
+    });
+  }
+
+  function pastedLeadsFromText(text = "") {
+    const chunks = pastedLeadChunks(text);
+    const records = chunks.map(pastedLeadFromChunk).filter(Boolean);
+    const seen = new Set();
+    return records.filter((record) => {
+      const key = [normalizedImportKey(record.name), normalizedImportKey(record.city), normalizedPhone(record.phone)].join("|");
+      if (seen.has(key)) {
+        return false;
+      }
+      seen.add(key);
+      return true;
+    });
+  }
+
+  function previewPastedLeads(event) {
+    event.preventDefault();
+    const importedRows = pastedLeadsFromText(elements.pasteLeadsText.value);
+    elements.pasteLeadsStatus.textContent = importedRows.length
+      ? `Found ${importedRows.length} possible ${importedRows.length === 1 ? "lead" : "leads"}`
+      : "No clear restaurant leads found";
+    if (!importedRows.length) {
+      window.alert("I could not find clear restaurant leads in that pasted text. Try pasting one restaurant per paragraph, with the restaurant name near the top.");
+      return;
+    }
+    previewImportedProspects(importedRows, "Pasted lead preview ready");
+  }
+
+  function clearPastedLeads() {
+    elements.pasteLeadsText.value = "";
+    elements.pasteLeadsStatus.textContent = "";
   }
 
   function renderSales() {
@@ -2670,6 +2793,8 @@
   elements.copyLeadSearchesButton.addEventListener("click", copyLeadSearches);
   elements.manualLeadForm.addEventListener("submit", previewManualLead);
   elements.clearManualLeadButton.addEventListener("click", clearManualLeadForm);
+  elements.pasteLeadsForm.addEventListener("submit", previewPastedLeads);
+  elements.clearPastedLeadsButton.addEventListener("click", clearPastedLeads);
   elements.exportButton.addEventListener("click", exportBackup);
   elements.importButton.addEventListener("click", () => elements.importFile.click());
   elements.importFile.addEventListener("change", (event) => {

@@ -433,7 +433,8 @@ h3 {
   min-height: 240px;
 }
 
-.manual-lead-form {
+.manual-lead-form,
+.paste-leads-form {
   display: grid;
   grid-template-columns: repeat(4, minmax(150px, 1fr));
   gap: 14px;
@@ -1075,6 +1076,7 @@ th {
   .lead-builder-form,
   .lead-builder-options,
   .manual-lead-form,
+  .paste-leads-form,
   .invoice-template-panel,
   .quick-entry-form,
   .quick-contact-grid,
