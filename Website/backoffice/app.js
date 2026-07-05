@@ -1327,6 +1327,47 @@
     return lines.length;
   }
 
+  function yelpRatingLine(lines = []) {
+    return lines.find((line) => /^\d+(?:\.\d+)?\s*\(\d+\s+reviews?\)$/i.test(line)) || "";
+  }
+
+  function yelpCategoryLines(lines = []) {
+    const ratingIndex = lines.findIndex((line) => line === yelpRatingLine(lines));
+    if (ratingIndex < 0) {
+      return [];
+    }
+    const categories = [];
+    for (let index = ratingIndex + 1; index < lines.length; index += 1) {
+      const line = lines[index];
+      const key = normalizedImportKey(line);
+      if (streetFromPastedLead(line) || /^["']/.test(line) || /^(start order|order food|on their website)\b/.test(key)) {
+        break;
+      }
+      categories.push(line);
+    }
+    return categories;
+  }
+
+  function yelpTriviaQuote(lines = []) {
+    const quoteLine = lines.find((line) => /^["']/.test(line) && /\btrivia\b/i.test(line));
+    return String(quoteLine || "")
+      .replace(/^["']\s*/, "")
+      .replace(/["']?\s*more\s*$/i, "")
+      .trim();
+  }
+
+  function yelpLeadNote(lines = []) {
+    const rating = yelpRatingLine(lines);
+    const categories = yelpCategoryLines(lines);
+    const quote = yelpTriviaQuote(lines);
+    return [
+      "Yelp result:",
+      rating ? `Rating: ${rating}` : "",
+      categories.length ? `Categories: ${categories.join(", ")}` : "",
+      quote ? `Trivia mention: "${quote}"` : "",
+    ].filter(Boolean).join("\n");
+  }
+
   function yelpLeadsFromText(text = "") {
     if (!isYelpPaste(text)) {
       return [];
@@ -1343,6 +1384,7 @@
       const resultLines = lines.slice(index + 2, nextStart);
       const resultText = resultLines.join("\n");
       const cityState = cityFromPastedLead(resultText, { city: "", stateText: market.stateText });
+      const notes = yelpLeadNote(resultLines);
       records.push(normalizeRestaurant({
         name,
         status: "prospect",
@@ -1350,6 +1392,8 @@
         city: cityState.city,
         state: cityState.state,
         currentlyDoesTrivia: pastedTriviaValue(resultText),
+        notes,
+        prospectNotes: notes,
         prospectStage: "new-lead",
         prospectScore: pastedTriviaValue(resultText) === "yes" ? "7" : "5",
         leadSource: "Lead Builder Yelp paste",
