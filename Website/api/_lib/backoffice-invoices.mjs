@@ -30,6 +30,13 @@ function shortDate(value) {
   return match ? `${match[2]}-${match[3]}-${match[1].slice(2)}` : safeString(value);
 }
 
+function invoiceMonth(value) {
+  const match = safeString(value).match(/^(\d{4})-(\d{2})-\d{2}$/);
+  if (!match) return "this month";
+  const date = new Date(`${match[1]}-${match[2]}-01T00:00:00`);
+  return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+}
+
 function contactName(restaurant = {}) {
   return [restaurant.contactFirstName, restaurant.contactLastName].filter(Boolean).join(" ");
 }
@@ -86,12 +93,22 @@ function wrapText(value, maxLength = 78) {
   return lines.length ? lines : [""];
 }
 
+function gameName(collection = {}, restaurant = {}, customerName = "Restaurant") {
+  const savedName = safeString(restaurant.gameName);
+  if (savedName) return savedName;
+  const description = safeString(collection.notes);
+  const match = description.match(/^(.+?)\s+(?:Partial Month|Monthly) Subscription/i);
+  return match ? match[1].trim() : `${customerName} Game`;
+}
+
 function invoiceDetails(collection = {}, restaurant = {}) {
   const customerName = collection.restaurantName || restaurant.name || "Restaurant";
   return {
     customerName,
     contact: contactName(restaurant),
     greetingName: contactGreeting(restaurant, customerName),
+    gameName: gameName(collection, restaurant, customerName),
+    invoiceMonth: invoiceMonth(collection.dueDate),
     addressLines: addressLines(restaurant),
     description: collection.notes || "Restaurant Challenge monthly subscription.",
     amount: moneyValue(collection.amount),
@@ -199,11 +216,11 @@ function invoiceHtml(collection = {}, restaurant = {}, isTest = false) {
       </div>
       ${testNote}
       <p>Hi ${htmlEscape(details.greetingName)},</p>
-      <p>Here is invoice ${htmlEscape(collection.invoiceNumber)} for ${htmlEscape(details.amount)}.</p>
-      <p>${htmlEscape(details.description)}</p>
-      <p>You can pay online using the button above. The PDF invoice is attached for your records.</p>
+      <p>Here is your invoice for ${htmlEscape(details.invoiceMonth)} for ${htmlEscape(details.gameName)}. Thank you for allowing us to promote your restaurant through your trivia game.</p>
+      <p>You can mail a check or pay online with a credit card through PayPal, using the button above.</p>
+      <p>A PDF of this invoice is attached for your records.</p>
       <hr style="border:0;border-top:1px solid #d8d0bf;margin:26px 0;" />
-      <p style="margin:0;"><strong>${INVOICE_SENDER.business}</strong><br />${INVOICE_SENDER.street}<br />${INVOICE_SENDER.cityStateZip}<br />${INVOICE_SENDER.phone}</p>
+      <p style="margin:0;">Best Wishes,<br /><strong>Tim Collins - Game Developer</strong><br />${INVOICE_SENDER.business}</p>
     </div>
   </body>
 </html>`;
@@ -215,20 +232,16 @@ function invoiceText(collection = {}, restaurant = {}, isTest = false) {
     isTest ? "TEST SEND ONLY - This was not sent to the customer." : "",
     `Hi ${details.greetingName},`,
     "",
-    `Here is invoice ${collection.invoiceNumber || ""} for ${details.amount}.`,
+    `Here is your invoice for ${details.invoiceMonth} for ${details.gameName}. Thank you for allowing us to promote your restaurant through your trivia game.`,
     "",
-    details.description,
-    "",
-    `Due Date: ${details.dueDate}`,
-    "",
-    "Pay online:",
+    "You can mail a check or pay online with a credit card through PayPal, using this PayPal link:",
     PAYMENT_LINK,
     "",
-    "The PDF invoice is attached for your records.",
+    "A PDF of this invoice is attached for your records.",
     "",
-    "Thank you,",
+    "Best Wishes,",
+    "Tim Collins - Game Developer",
     INVOICE_SENDER.business,
-    INVOICE_SENDER.phone,
   ].filter(Boolean).join("\n");
 }
 

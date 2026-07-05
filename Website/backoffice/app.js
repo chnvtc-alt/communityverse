@@ -283,6 +283,23 @@
     return date.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
   }
 
+  function invoiceMonthFromDate(dateText) {
+    const match = String(dateText || "").match(/^(\d{4})-(\d{2})-\d{2}$/);
+    if (!match) {
+      return "";
+    }
+    const date = new Date(`${match[1]}-${match[2]}-01T00:00:00`);
+    return Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  }
+
+  function invoiceGameName(record = {}, restaurant = {}, customerName = "Restaurant") {
+    if (restaurant?.gameName) {
+      return restaurant.gameName;
+    }
+    const match = String(record.notes || "").match(/^(.+?)\s+(?:Partial Month|Monthly) Subscription/i);
+    return match ? match[1].trim() : `${customerName} Game`;
+  }
+
   function monthLabel(monthValue) {
     const [yearText, monthText] = String(monthValue || "").split("-");
     const year = Number(yearText);
@@ -1832,27 +1849,22 @@
     const customerName = record.restaurantName || restaurant?.name || "there";
     const greetingName = restaurant?.contactFirstName || contactName(restaurant) || customerName;
     const invoiceNumber = record.invoiceNumber || "your invoice";
-    const amount = moneyValue(record.amount);
-    const dueDate = shortDate(record.dueDate) || "the due date shown on the invoice";
-    const description = record.notes || "Restaurant Challenge monthly subscription.";
+    const gameName = invoiceGameName(record, restaurant, customerName);
+    const month = invoiceMonthFromDate(record.dueDate) || "this month";
     const subject = `Invoice ${invoiceNumber} from CommunityVerse Games`;
     const body = [
       `Hi ${greetingName},`,
       "",
-      `Here is invoice ${invoiceNumber} for ${amount}.`,
+      `Here is your invoice for ${month} for ${gameName}. Thank you for allowing us to promote your restaurant through your trivia game.`,
       "",
-      description,
-      "",
-      `Due Date: ${dueDate}`,
-      "",
-      "You can pay online here:",
+      "You can mail a check or pay online with a credit card through PayPal, using this PayPal link:",
       PAYMENT_LINK,
       "",
-      "I am also attaching the PDF invoice for your records.",
+      "A PDF of this invoice is attached for your records.",
       "",
-      "Thank you,",
+      "Best Wishes,",
+      "Tim Collins - Game Developer",
       INVOICE_SENDER.business,
-      INVOICE_SENDER.phone,
     ].join("\n");
     window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   }
