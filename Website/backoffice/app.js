@@ -1108,6 +1108,7 @@
       facebookPage: elements.manualLeadFacebook.value,
       contactEmail: elements.manualLeadEmail.value,
       notes,
+      prospectNotes: notes,
       prospectStage: "new-lead",
       prospectScore: elements.manualLeadTrivia.value === "yes" ? "7" : "5",
       leadSource: "Lead Builder",
@@ -1224,6 +1225,10 @@
       facebookPage,
       contactEmail: email,
       notes: [
+        "Pasted into Lead Builder:",
+        chunk,
+      ].join("\n"),
+      prospectNotes: [
         "Pasted into Lead Builder:",
         chunk,
       ].join("\n"),
@@ -2430,6 +2435,20 @@
     return normalizedImportKey(value).replace(/\b(the|restaurant|bar|grill|and)\b/g, "").replace(/\s+/g, " ").trim();
   }
 
+  function compactNameMatches(left = "", right = "") {
+    const leftCompact = compactImportName(left);
+    const rightCompact = compactImportName(right);
+    if (!leftCompact || !rightCompact) {
+      return false;
+    }
+    if (leftCompact === rightCompact) {
+      return true;
+    }
+    const shorter = leftCompact.length <= rightCompact.length ? leftCompact : rightCompact;
+    const longer = leftCompact.length > rightCompact.length ? leftCompact : rightCompact;
+    return shorter.length >= 8 && longer.startsWith(`${shorter} `);
+  }
+
   function normalizedPhone(value = "") {
     return String(value || "").replace(/\D/g, "");
   }
@@ -2461,16 +2480,11 @@
         return ["Restaurant name", "City"];
       }
     }
-    return compactImportName(leftKey) === compactImportName(rightKey) ? ["Similar restaurant name"] : [];
+    return compactNameMatches(leftKey, rightKey) ? ["Similar restaurant name"] : [];
   }
 
   function matchReasons(imported, restaurant) {
     const reasons = nameMatchReasons(imported.name, restaurant.name, imported.city);
-    if (normalizedImportKey(imported.city) && normalizedImportKey(imported.city) === normalizedImportKey(restaurant.city)) {
-      if (!reasons.includes("City")) {
-        reasons.push("City");
-      }
-    }
     const importedPhone = normalizedPhone(imported.phone || imported.contactCell);
     const existingPhone = normalizedPhone(restaurant.phone || restaurant.contactCell);
     if (importedPhone && existingPhone && importedPhone === existingPhone) {
@@ -2484,6 +2498,11 @@
     }
     if (normalizedUrl(imported.facebookPage) && normalizedUrl(imported.facebookPage) === normalizedUrl(restaurant.facebookPage)) {
       reasons.push("Facebook page");
+    }
+    if (reasons.length && normalizedImportKey(imported.city) && normalizedImportKey(imported.city) === normalizedImportKey(restaurant.city)) {
+      if (!reasons.includes("City")) {
+        reasons.push("City");
+      }
     }
     return [...new Set(reasons)];
   }
@@ -2611,6 +2630,11 @@
     if (mergedNotes !== updates.notes) {
       updates.notes = mergedNotes;
       changes.push("Add notes");
+    }
+    const mergedProspectNotes = appendUniqueNote(updates.prospectNotes, imported.prospectNotes || imported.notes);
+    if (mergedProspectNotes !== updates.prospectNotes) {
+      updates.prospectNotes = mergedProspectNotes;
+      changes.push("Add prospect notes");
     }
     return { record: normalizeRestaurant(updates), changes };
   }
