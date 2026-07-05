@@ -2848,10 +2848,46 @@
     return { record: normalizeRestaurant(updates), changes };
   }
 
+  function restaurantResearchQueries(record = {}) {
+    const name = String(record.name || "").trim();
+    const location = [record.street, record.city, record.state].filter(Boolean).join(" ");
+    const base = [name, location].filter(Boolean).join(" ");
+    return [
+      ["Website / Phone", `${base} official website phone address`],
+      ["Facebook", `${base} Facebook`],
+      ["Trivia", `${base} trivia night`],
+    ].filter(([, query]) => query.trim());
+  }
+
+  function googleSearchUrl(query = "") {
+    return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+  }
+
+  function openRestaurantResearch(index) {
+    const item = state.pendingProspectImport[index];
+    if (!item) {
+      return;
+    }
+    const queries = restaurantResearchQueries(item.imported);
+    let openedCount = 0;
+    queries.forEach(([, query]) => {
+      const opened = window.open(googleSearchUrl(query), "_blank");
+      if (opened) {
+        opened.opener = null;
+        openedCount += 1;
+      }
+    });
+    setSyncStatus(openedCount ? `Opened research searches for ${item.imported.name}` : "Research search was blocked by the browser");
+    if (!openedCount) {
+      window.alert("The browser blocked the research tabs. Allow popups for this site, then click Research again.");
+    }
+  }
+
   function prospectImportRow(item) {
     const actionClass = item.action === "New" ? "new" : item.action === "Skip" ? "skip" : "update";
     const disabled = item.action === "Skip" ? " disabled" : "";
     const checked = item.selected && item.action !== "Skip" ? " checked" : "";
+    const importIndex = state.pendingProspectImport.indexOf(item);
     const matchReasonsHtml = item.existing
       ? `
         <div class="match-reasons">
@@ -2864,13 +2900,14 @@
     return `
       <tr>
         <td>
-          <input class="import-row-check" type="checkbox" data-import-index="${state.pendingProspectImport.indexOf(item)}"${checked}${disabled} />
+          <input class="import-row-check" type="checkbox" data-import-index="${importIndex}"${checked}${disabled} />
         </td>
         <td><span class="import-tag import-tag-${actionClass}">${escapeHtml(item.action)}</span></td>
         <td><strong>${escapeHtml(item.imported.name)}</strong>${matchReasonsHtml}</td>
         <td>${escapeHtml(item.imported.city)}</td>
         <td>${escapeHtml(labelFor({ yes: "Yes", no: "No", possible: "Possible" }, item.imported.currentlyDoesTrivia, "Unknown"))}</td>
         <td>${escapeHtml(item.imported.notes)}</td>
+        <td><button class="text-button" type="button" data-research-import-index="${importIndex}">Research</button></td>
         <td>${escapeHtml(item.changes.join(", ") || "No new information")}</td>
       </tr>
     `;
@@ -2885,7 +2922,7 @@
     elements.prospectImportSummary.textContent = `${newCount} new, ${updateCount} update existing, ${skipCount} no-change duplicates. ${selectedCount} selected to import.`;
     elements.prospectImportList.innerHTML = records.length
       ? records.map(prospectImportRow).join("")
-      : '<tr><td colspan="7"><div class="empty-state">No importable restaurants were found.</div></td></tr>';
+      : '<tr><td colspan="8"><div class="empty-state">No importable restaurants were found.</div></td></tr>';
     elements.applyProspectImportButton.disabled = !records.some((record) => record.selected && record.action !== "Skip");
   }
 
@@ -3045,6 +3082,12 @@
     const checkbox = event.target.closest("[data-import-index]");
     if (checkbox) {
       toggleImportRow(Number(checkbox.dataset.importIndex), checkbox.checked);
+    }
+  });
+  elements.prospectImportList.addEventListener("click", (event) => {
+    const researchButton = event.target.closest("[data-research-import-index]");
+    if (researchButton) {
+      openRestaurantResearch(Number(researchButton.dataset.researchImportIndex));
     }
   });
 
