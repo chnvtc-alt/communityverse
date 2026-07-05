@@ -2128,6 +2128,31 @@
       .trim();
   }
 
+  function compactImportName(value = "") {
+    return normalizedImportKey(value).replace(/\b(the|restaurant|bar|grill|and)\b/g, "").replace(/\s+/g, " ").trim();
+  }
+
+  function importNamesMatch(left = "", right = "", city = "") {
+    const leftKey = normalizedImportKey(left);
+    const rightKey = normalizedImportKey(right);
+    if (!leftKey || !rightKey) {
+      return false;
+    }
+    if (leftKey === rightKey) {
+      return true;
+    }
+    const cityKey = normalizedImportKey(city);
+    if (cityKey) {
+      if (rightKey === `${leftKey} ${cityKey}` || leftKey === `${rightKey} ${cityKey}`) {
+        return true;
+      }
+      if ((rightKey.startsWith(`${leftKey} `) || leftKey.startsWith(`${rightKey} `)) && rightKey.includes(cityKey)) {
+        return true;
+      }
+    }
+    return compactImportName(leftKey) === compactImportName(rightKey);
+  }
+
   function fieldIsBlank(value = "") {
     return !String(value || "").trim();
   }
@@ -2211,9 +2236,8 @@
   }
 
   function matchingRestaurant(imported) {
-    const nameKey = normalizedImportKey(imported.name);
     const cityKey = normalizedImportKey(imported.city);
-    const matches = state.restaurants.filter((restaurant) => normalizedImportKey(restaurant.name) === nameKey);
+    const matches = state.restaurants.filter((restaurant) => importNamesMatch(imported.name, restaurant.name, imported.city));
     if (matches.length <= 1 || !cityKey) {
       return matches[0] || null;
     }
@@ -2256,8 +2280,13 @@
 
   function prospectImportRow(item) {
     const actionClass = item.action === "New" ? "new" : item.action === "Skip" ? "skip" : "update";
+    const disabled = item.action === "Skip" ? " disabled" : "";
+    const checked = item.selected && item.action !== "Skip" ? " checked" : "";
     return `
       <tr>
+        <td>
+          <input class="import-row-check" type="checkbox" data-import-index="${state.pendingProspectImport.indexOf(item)}"${checked}${disabled} />
+        </td>
         <td><span class="import-tag import-tag-${actionClass}">${escapeHtml(item.action)}</span></td>
         <td><strong>${escapeHtml(item.imported.name)}</strong>${item.existing ? `<div class="helper">Matches ${escapeHtml(item.existing.name)}</div>` : ""}</td>
         <td>${escapeHtml(item.imported.city)}</td>
@@ -2273,11 +2302,21 @@
     const newCount = records.filter((record) => record.action === "New").length;
     const updateCount = records.filter((record) => record.action === "Update").length;
     const skipCount = records.filter((record) => record.action === "Skip").length;
-    elements.prospectImportSummary.textContent = `${newCount} new, ${updateCount} update existing, ${skipCount} no-change duplicates.`;
+    const selectedCount = records.filter((record) => record.selected && record.action !== "Skip").length;
+    elements.prospectImportSummary.textContent = `${newCount} new, ${updateCount} update existing, ${skipCount} no-change duplicates. ${selectedCount} selected to import.`;
     elements.prospectImportList.innerHTML = records.length
       ? records.map(prospectImportRow).join("")
-      : '<tr><td colspan="6"><div class="empty-state">No importable restaurants were found.</div></td></tr>';
-    elements.applyProspectImportButton.disabled = !records.some((record) => record.action !== "Skip");
+      : '<tr><td colspan="7"><div class="empty-state">No importable restaurants were found.</div></td></tr>';
+    elements.applyProspectImportButton.disabled = !records.some((record) => record.selected && record.action !== "Skip");
+  }
+
+  function toggleImportRow(index, selected) {
+    const item = state.pendingProspectImport[index];
+    if (!item || item.action === "Skip") {
+      return;
+    }
+    item.selected = selected;
+    renderProspectImportPreview();
   }
 
   function closeProspectImport() {
@@ -2319,6 +2358,7 @@
           record: merged.record,
           changes: merged.changes,
           action: existing ? (merged.changes.length ? "Update" : "Skip") : "New",
+          selected: !existing || merged.changes.length > 0,
         };
       });
       renderProspectImportPreview();
@@ -2333,7 +2373,7 @@
   }
 
   async function applyProspectImport() {
-    const records = state.pendingProspectImport.filter((record) => record.action !== "Skip");
+    const records = state.pendingProspectImport.filter((record) => record.selected && record.action !== "Skip");
     if (!records.length) {
       closeProspectImport();
       return;
@@ -2429,6 +2469,12 @@
   elements.prospectImportFile.addEventListener("change", (event) => {
     importProspectFile(event.target.files?.[0]);
     event.target.value = "";
+  });
+  elements.prospectImportList.addEventListener("change", (event) => {
+    const checkbox = event.target.closest("[data-import-index]");
+    if (checkbox) {
+      toggleImportRow(Number(checkbox.dataset.importIndex), checkbox.checked);
+    }
   });
 
   document.addEventListener("click", (event) => {

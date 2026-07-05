@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,650;9..144,760&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v55" />
+    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v57" />
   </head>
   <body>
     <section class="login-panel" id="login-panel">
@@ -747,12 +747,13 @@
         </div>
         <div class="import-rules">
           <strong>Safe import rules</strong>
-          <span>Duplicates are matched by restaurant name and city. Existing filled-in fields are kept. New notes are appended.</span>
+          <span>Uncheck anything you do not want to import. Duplicates are matched by restaurant name and city. Existing filled-in fields are kept.</span>
         </div>
         <div class="table-wrap">
           <table class="import-preview-table">
             <thead>
               <tr>
+                <th>Import?</th>
                 <th>Action</th>
                 <th>Restaurant</th>
                 <th>City</th>
@@ -773,6 +774,6 @@
 
     <input id="import-file" type="file" accept="application/json" hidden />
     <input id="prospect-import-file" type="file" accept=".csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" hidden />
-    <script src="/backoffice/app.js?v=backoffice-v55" defer></script>
+    <script src="/backoffice/app.js?v=backoffice-v57" defer></script>
   </body>
 </html>
