@@ -580,8 +580,9 @@ th {
   width: min(760px, calc(100vw - 28px));
 }
 
-.prospect-import-dialog {
-  width: min(1240px, calc(100vw - 28px));
+.editor-dialog.prospect-import-dialog {
+  width: min(1280px, calc(100vw - 24px));
+  max-width: none;
 }
 
 .invoice-preview-shell {
@@ -615,38 +616,38 @@ th {
 }
 
 .import-preview-table {
-  min-width: 1120px;
+  min-width: 100%;
   table-layout: fixed;
 }
 
 .import-preview-table th:nth-child(1),
 .import-preview-table td:nth-child(1) {
-  width: 80px;
+  width: 10%;
 }
 
 .import-preview-table th:nth-child(2),
 .import-preview-table td:nth-child(2) {
-  width: 240px;
+  width: 27%;
 }
 
 .import-preview-table th:nth-child(3),
 .import-preview-table td:nth-child(3) {
-  width: 90px;
+  width: 9%;
 }
 
 .import-preview-table th:nth-child(4),
 .import-preview-table td:nth-child(4) {
-  width: 82px;
+  width: 10%;
 }
 
 .import-preview-table th:nth-child(5),
 .import-preview-table td:nth-child(5) {
-  width: 270px;
+  width: 25%;
 }
 
 .import-preview-table th:nth-child(6),
 .import-preview-table td:nth-child(6) {
-  width: 260px;
+  width: 19%;
 }
 
 .import-preview-table td {
