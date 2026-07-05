@@ -3,6 +3,7 @@
   const COLLECTIONS_KEY = "communityverseBackofficeCollections";
   const EXPENSES_KEY = "communityverseBackofficeExpenses";
   const KEY_STORAGE = "communityverseBackofficeAdminKey";
+  const SECTION_STORAGE = "communityverseBackofficeSection";
   const API_URL = "/api/backoffice";
   const DEFAULT_OWNER = "Tim";
   const INVOICE_SENDER = {
@@ -210,7 +211,7 @@
   };
 
   const state = {
-    section: "prospects",
+    section: savedSection(),
     restaurants: [],
     collections: [],
     expenses: [],
@@ -242,6 +243,15 @@
 
   function currentYear() {
     return today().slice(0, 4);
+  }
+
+  function savedSection() {
+    try {
+      const section = localStorage.getItem(SECTION_STORAGE);
+      return SECTION_LABELS[section] ? section : "prospects";
+    } catch {
+      return "prospects";
+    }
   }
 
   function monthDateRange(monthValue = currentMonth()) {
@@ -551,6 +561,11 @@
 
   function setSection(section) {
     state.section = SECTION_LABELS[section] ? section : "dashboard";
+    try {
+      localStorage.setItem(SECTION_STORAGE, state.section);
+    } catch {
+      // The Back Office can still work if this browser refuses saved page state.
+    }
     elements.sectionTitle.textContent = SECTION_LABELS[state.section];
     elements.navItems.forEach((item) => {
       item.classList.toggle("is-active", item.dataset.section === state.section);
