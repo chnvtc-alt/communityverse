@@ -51,7 +51,8 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 22px clamp(20px, 4vw, 64px);
+  gap: 18px;
+  padding: 22px clamp(20px, 3vw, 52px);
   border-bottom: 1px solid rgba(30, 41, 37, 0.15);
   background: rgba(245, 240, 229, 0.88);
   backdrop-filter: blur(16px);
@@ -59,14 +60,14 @@ button {
 
 .control-room-brand {
   display: flex;
-  gap: 18px;
+  gap: 16px;
   align-items: center;
   min-width: 0;
 }
 
 .control-room-logo {
   display: block;
-  width: clamp(130px, 14vw, 210px);
+  width: clamp(120px, 12vw, 180px);
   height: auto;
   flex: 0 0 auto;
 }
@@ -109,7 +110,7 @@ h3 {
 }
 
 h1 {
-  font-size: clamp(2rem, 4vw, 3.7rem);
+  font-size: clamp(2rem, 3.2vw, 3.15rem);
 }
 
 h2 {

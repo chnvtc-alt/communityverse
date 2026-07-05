@@ -583,7 +583,7 @@ function filterParams() {
 }
 
 function setConnected(connected) {
-  elements.connectionStatus.textContent = connected ? "Connected to Supabase" : "Not connected";
+  elements.connectionStatus.textContent = connected ? "Connected" : "Not connected";
   elements.connectionStatus.classList.toggle("connected", connected);
 }
 
