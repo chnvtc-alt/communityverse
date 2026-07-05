@@ -1300,7 +1300,12 @@
   }
 
   function cityFromPastedLead(text = "", market = leadBuilderMarket()) {
-    const cityPattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*,?\s+(GA|AL|FL|NC|SC|TN|Georgia|Alabama|Florida|North Carolina|South Carolina|Tennessee)\b/i;
+    const statePattern = "(GA|AL|FL|NC|SC|TN|Georgia|Alabama|Florida|North Carolina|South Carolina|Tennessee)";
+    const nearMatch = String(text || "").match(new RegExp(`\\b(?:near|in|for)\\s+([A-Z][a-z]+(?:\\s+[A-Z][a-z]+){0,2})\\s*,?\\s+${statePattern}\\b`, "i"));
+    if (nearMatch) {
+      return { city: cleanCityName(nearMatch[1]), state: stateCodeFromText(nearMatch[2], market.stateText) };
+    }
+    const cityPattern = new RegExp(`\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+){0,2})\\s*,\\s*${statePattern}\\b`, "i");
     const match = String(text || "").match(cityPattern);
     if (match) {
       return { city: cleanCityName(match[1]), state: stateCodeFromText(match[2], market.stateText) };
@@ -1348,7 +1353,6 @@
   }
 
   function pastedLeadFromChunk(chunk = "") {
-    const market = leadBuilderMarket();
     const lines = String(chunk || "").split(/\n+/).map((line) => line.trim()).filter(Boolean);
     const nameLine = lines.find((line) => {
       const cleaned = cleanPastedLeadName(line);
@@ -1358,7 +1362,7 @@
     if (!isPastedLeadNameCandidate(name)) {
       return null;
     }
-    const cityState = cityFromPastedLead(chunk, market);
+    const cityState = cityFromPastedLead(chunk, { city: "", stateText: "" });
     const website = firstUrl(chunk);
     const facebookPage = firstUrl(chunk, "facebook");
     const phone = firstMatch(chunk, /\(?\b\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}\b/);
