@@ -57,15 +57,14 @@ button:disabled {
 
 .brand-block {
   display: grid;
-  grid-template-columns: 76px minmax(0, 1fr);
-  gap: 12px;
-  align-items: center;
-  min-height: 58px;
+  gap: 8px;
+  align-items: start;
+  min-height: 96px;
 }
 
 .brand-logo {
   display: block;
-  width: 76px;
+  width: min(190px, 100%);
   height: auto;
 }
 
