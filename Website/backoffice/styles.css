@@ -581,7 +581,7 @@ th {
 }
 
 .prospect-import-dialog {
-  width: min(1120px, calc(100vw - 28px));
+  width: min(1240px, calc(100vw - 28px));
 }
 
 .invoice-preview-shell {
@@ -593,8 +593,8 @@ th {
 
 .prospect-import-shell {
   display: grid;
-  gap: 16px;
-  padding: 22px;
+  gap: 18px;
+  padding: 24px;
   background: var(--panel);
 }
 
@@ -615,17 +615,49 @@ th {
 }
 
 .import-preview-table {
-  min-width: 980px;
+  min-width: 1120px;
+  table-layout: fixed;
+}
+
+.import-preview-table th:nth-child(1),
+.import-preview-table td:nth-child(1) {
+  width: 80px;
+}
+
+.import-preview-table th:nth-child(2),
+.import-preview-table td:nth-child(2) {
+  width: 240px;
+}
+
+.import-preview-table th:nth-child(3),
+.import-preview-table td:nth-child(3) {
+  width: 90px;
+}
+
+.import-preview-table th:nth-child(4),
+.import-preview-table td:nth-child(4) {
+  width: 82px;
+}
+
+.import-preview-table th:nth-child(5),
+.import-preview-table td:nth-child(5) {
+  width: 270px;
+}
+
+.import-preview-table th:nth-child(6),
+.import-preview-table td:nth-child(6) {
+  width: 260px;
 }
 
 .import-preview-table td {
   font-size: 0.92rem;
   line-height: 1.3;
+  overflow-wrap: anywhere;
 }
 
-.import-preview-table td:nth-child(5),
-.import-preview-table td:nth-child(6) {
-  max-width: 280px;
+.import-preview-table th,
+.import-preview-table td {
+  padding: 14px 12px;
 }
 
 .import-tag {
