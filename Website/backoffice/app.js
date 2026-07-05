@@ -111,8 +111,8 @@
     statusFilter: document.querySelector("#restaurant-status-filter"),
     restaurantCount: document.querySelector("#restaurant-count"),
     restaurantTableBody: document.querySelector("#restaurant-table-body"),
-    recentRestaurants: document.querySelector("#recent-restaurants"),
-    followupList: document.querySelector("#followup-list"),
+    monthlySalesList: document.querySelector("#monthly-sales-list"),
+    topProspectList: document.querySelector("#top-prospect-list"),
     prospectList: document.querySelector("#prospect-list"),
     prospectScoreMin: document.querySelector("#prospect-score-min"),
     prospectScoreMax: document.querySelector("#prospect-score-max"),
@@ -239,6 +239,10 @@
     return today().slice(0, 7);
   }
 
+  function currentYear() {
+    return today().slice(0, 4);
+  }
+
   function monthDateRange(monthValue = currentMonth()) {
     const [yearText, monthText] = String(monthValue || currentMonth()).split("-");
     const year = Number(yearText);
@@ -265,6 +269,16 @@
       return "";
     }
     return date.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
+  }
+
+  function monthLabel(monthValue) {
+    const [yearText, monthText] = String(monthValue || "").split("-");
+    const year = Number(yearText);
+    const monthIndex = Number(monthText) - 1;
+    if (!year || monthIndex < 0) {
+      return monthValue || "";
+    }
+    return new Date(year, monthIndex, 1).toLocaleDateString(undefined, { month: "short", year: "numeric" });
   }
 
   function makeId() {
@@ -742,14 +756,15 @@
   }
 
   function renderMetrics() {
-    const total = state.restaurants.length;
-    const customers = state.restaurants.filter((restaurant) => restaurant.status === "customer").length;
-    const prospects = state.restaurants.filter(isVisibleProspect).length;
-    const due = state.restaurants.filter(isFollowUpDue).length;
-    elements.metricTotal.textContent = total;
-    elements.metricCustomers.textContent = customers;
-    elements.metricProspects.textContent = prospects;
-    elements.metricFollowups.textContent = due;
+    const customers = state.restaurants.filter((restaurant) => restaurant.status === "customer");
+    const thisMonthSales = sumMonthlySales(customers.filter((restaurant) => saleMonth(restaurant) === currentMonth()));
+    const recurringMonthly = sumMonthlySales(customers.filter(isRecurringSale));
+    const yearSales = sumMonthlySales(customers.filter((restaurant) => saleYear(restaurant) === currentYear()));
+    const topProspects = state.restaurants.filter(isTopProspect).length;
+    elements.metricTotal.textContent = moneyMetric(thisMonthSales);
+    elements.metricCustomers.textContent = moneyMetric(recurringMonthly);
+    elements.metricProspects.textContent = moneyMetric(yearSales);
+    elements.metricFollowups.textContent = topProspects;
   }
 
   function isVisibleProspect(restaurant) {
@@ -761,36 +776,86 @@
     return Number.isFinite(score) ? score : 0;
   }
 
-  function dashboardRow(restaurant, dateLabel = "No follow-up") {
+  function saleDateFor(restaurant) {
+    return restaurant.saleDate || restaurant.serviceStartDate || "";
+  }
+
+  function saleMonth(restaurant) {
+    return saleDateFor(restaurant).slice(0, 7);
+  }
+
+  function saleYear(restaurant) {
+    return saleDateFor(restaurant).slice(0, 4);
+  }
+
+  function sumMonthlySales(restaurants) {
+    return restaurants.reduce((total, restaurant) => total + numberFromMoney(restaurant.monthlyAmount, 0), 0);
+  }
+
+  function moneyMetric(value) {
+    return moneyValue(String(value));
+  }
+
+  function isRecurringSale(restaurant) {
+    return restaurant.status === "customer" && (!restaurant.serviceEndDate || restaurant.serviceEndDate >= today());
+  }
+
+  function isTopProspect(restaurant) {
+    return isVisibleProspect(restaurant) && prospectScoreNumber(restaurant) >= 7;
+  }
+
+  function monthlySalesRows() {
+    const months = state.restaurants
+      .filter((restaurant) => restaurant.status === "customer" && saleMonth(restaurant))
+      .reduce((records, restaurant) => {
+        const month = saleMonth(restaurant);
+        if (!records.has(month)) {
+          records.set(month, { month, count: 0, amount: 0 });
+        }
+        const record = records.get(month);
+        record.count += 1;
+        record.amount += numberFromMoney(restaurant.monthlyAmount, 0);
+        return records;
+      }, new Map());
+    return [...months.values()].sort((left, right) => right.month.localeCompare(left.month));
+  }
+
+  function topProspectRow(restaurant) {
     return `
       <tr>
-        <td><strong>${escapeHtml(restaurant.name)}</strong></td>
-        <td>${statusPill(restaurant.status)}</td>
+        <td>
+          <button class="link-button strong-link" type="button" data-contact-id="${escapeHtml(restaurant.id)}">${escapeHtml(restaurant.name)}</button>
+        </td>
+        <td>${escapeHtml(String(prospectScoreNumber(restaurant)))}</td>
         <td>${escapeHtml(compactContact(restaurant))}</td>
-        <td>${escapeHtml(dateLabel)}</td>
-        <td><button class="text-button" type="button" data-edit-id="${escapeHtml(restaurant.id)}">Edit</button></td>
+        <td>${escapeHtml(shortDate(restaurant.nextFollowUp) || "No follow-up")}</td>
       </tr>
     `;
   }
 
   function renderDashboardLists() {
-    const recent = [...state.restaurants]
-      .sort((left, right) => String(right.updatedAt || "").localeCompare(String(left.updatedAt || "")))
-      .slice(0, 6);
-    elements.recentRestaurants.innerHTML = recent.length
-      ? recent.map((restaurant) => dashboardRow(
-          restaurant,
-          restaurant.nextFollowUp || "No follow-up"
-        )).join("")
-      : '<tr><td colspan="5"><div class="empty-state">No restaurant records yet.</div></td></tr>';
+    const monthlyRows = monthlySalesRows();
+    elements.monthlySalesList.innerHTML = monthlyRows.length
+      ? monthlyRows.map((record) => `
+          <tr>
+            <td><strong>${escapeHtml(monthLabel(record.month))}</strong></td>
+            <td>${record.count}</td>
+            <td>${escapeHtml(moneyMetric(record.amount))}</td>
+          </tr>
+        `).join("")
+      : '<tr><td colspan="3"><div class="empty-state">No sales yet.</div></td></tr>';
 
-    const followups = state.restaurants
-      .filter((restaurant) => restaurant.nextFollowUp)
-      .sort((left, right) => left.nextFollowUp.localeCompare(right.nextFollowUp))
+    const topProspects = state.restaurants
+      .filter(isTopProspect)
+      .sort((left, right) =>
+        prospectScoreNumber(right) - prospectScoreNumber(left) ||
+        String(left.nextFollowUp || "9999-12-31").localeCompare(String(right.nextFollowUp || "9999-12-31")) ||
+        left.name.localeCompare(right.name)
+      )
       .slice(0, 8);
-    elements.followupList.innerHTML = followups.length
-      ? followups.map((restaurant) => dashboardRow(restaurant, restaurant.nextFollowUp)).join("")
-      : '<tr><td colspan="5"><div class="empty-state">No follow-up dates yet.</div></td></tr>';
+    elements.topProspectList.innerHTML = topProspects.length
+      ? topProspects.map(topProspectRow).join("")
+      : '<tr><td colspan="4"><div class="empty-state">No prospects at 7 or higher yet.</div></td></tr>';
   }
 
   function renderRestaurantTable() {

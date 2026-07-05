@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,650;9..144,760&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v34" />
+    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v35" />
   </head>
   <body>
     <section class="login-panel" id="login-panel">
@@ -71,19 +71,19 @@
         <section class="section-view" id="dashboard-section" hidden>
           <div class="metric-grid">
             <article class="metric-card">
-              <span>Total Restaurants</span>
+              <span>This Month Sales</span>
               <strong id="metric-total">0</strong>
             </article>
             <article class="metric-card">
-              <span>Customers</span>
+              <span>Recurring Monthly</span>
               <strong id="metric-customers">0</strong>
             </article>
             <article class="metric-card">
-              <span>Prospects</span>
+              <span>Year Sales</span>
               <strong id="metric-prospects">0</strong>
             </article>
             <article class="metric-card">
-              <span>Follow Ups Due</span>
+              <span>Top Prospects</span>
               <strong id="metric-followups">0</strong>
             </article>
           </div>
@@ -91,28 +91,26 @@
           <div class="dashboard-grid">
             <section class="card">
               <div class="card-heading">
-                <h3>Recent Restaurants</h3>
-                <button class="text-button" type="button" data-jump-section="restaurants">View all</button>
+                <h3>Monthly Sales</h3>
+                <button class="text-button" type="button" data-jump-section="sales">View sales</button>
               </div>
               <div class="table-wrap dashboard-table-wrap">
                 <table class="compact-table">
                   <thead>
                     <tr>
-                      <th>Restaurant</th>
-                      <th>Status</th>
-                      <th>Contact</th>
-                      <th>Follow-Up</th>
-                      <th></th>
+                      <th>Month</th>
+                      <th>New Sales</th>
+                      <th>New Monthly</th>
                     </tr>
                   </thead>
-                  <tbody id="recent-restaurants"></tbody>
+                  <tbody id="monthly-sales-list"></tbody>
                 </table>
               </div>
             </section>
 
             <section class="card">
               <div class="card-heading">
-                <h3>Next Follow Ups</h3>
+                <h3>Top Prospects</h3>
                 <button class="text-button" type="button" data-jump-section="prospects">View prospects</button>
               </div>
               <div class="table-wrap dashboard-table-wrap">
@@ -120,13 +118,12 @@
                   <thead>
                     <tr>
                       <th>Restaurant</th>
-                      <th>Status</th>
+                      <th>Score</th>
                       <th>Contact</th>
-                      <th>Date</th>
-                      <th></th>
+                      <th>Follow-Up</th>
                     </tr>
                   </thead>
-                  <tbody id="followup-list"></tbody>
+                  <tbody id="top-prospect-list"></tbody>
                 </table>
               </div>
             </section>
@@ -719,6 +716,6 @@
     </dialog>
 
     <input id="import-file" type="file" accept="application/json" hidden />
-    <script src="/backoffice/app.js?v=backoffice-v34" defer></script>
+    <script src="/backoffice/app.js?v=backoffice-v35" defer></script>
   </body>
 </html>
