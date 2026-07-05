@@ -142,6 +142,18 @@
     leadBuilderSearches: document.querySelector("#lead-builder-searches"),
     findLeadsButton: document.querySelector("#find-leads-button"),
     copyLeadSearchesButton: document.querySelector("#copy-lead-searches-button"),
+    leadBuilderCopyStatus: document.querySelector("#lead-builder-copy-status"),
+    manualLeadForm: document.querySelector("#manual-lead-form"),
+    manualLeadName: document.querySelector("#manual-lead-name"),
+    manualLeadCity: document.querySelector("#manual-lead-city"),
+    manualLeadState: document.querySelector("#manual-lead-state"),
+    manualLeadPhone: document.querySelector("#manual-lead-phone"),
+    manualLeadTrivia: document.querySelector("#manual-lead-trivia"),
+    manualLeadWebsite: document.querySelector("#manual-lead-website"),
+    manualLeadFacebook: document.querySelector("#manual-lead-facebook"),
+    manualLeadEmail: document.querySelector("#manual-lead-email"),
+    manualLeadNotes: document.querySelector("#manual-lead-notes"),
+    clearManualLeadButton: document.querySelector("#clear-manual-lead-button"),
     salesList: document.querySelector("#sales-list"),
     collectionForm: document.querySelector("#collection-form"),
     collectionRestaurant: document.querySelector("#collection-restaurant"),
@@ -508,6 +520,7 @@
       elements.applyProspectImportButton,
       elements.findLeadsButton,
       elements.copyLeadSearchesButton,
+      elements.clearManualLeadButton,
     ].forEach((element) => {
       if (element) element.disabled = loading;
     });
@@ -1025,7 +1038,7 @@
       ? searches.map((search) => `
           <div class="lead-search-row">
             <span>${escapeHtml(search)}</span>
-            <a class="text-button" href="https://www.google.com/search?q=${encodeURIComponent(search)}" target="_blank" rel="noopener">Open</a>
+            <a class="text-button" href="https://www.google.com/search?q=${encodeURIComponent(search).replace(/%20/g, "+")}" target="_blank" rel="noopener">Open</a>
           </div>
         `).join("")
       : '<div class="empty-state">No search phrases yet.</div>';
@@ -1055,10 +1068,76 @@
     const text = searches.join("\n");
     try {
       await navigator.clipboard.writeText(text);
+      elements.leadBuilderCopyStatus.textContent = `Copied ${searches.length} searches`;
       setSyncStatus("Lead Builder searches copied");
     } catch {
       window.prompt("Copy these searches:", text);
+      elements.leadBuilderCopyStatus.textContent = `${searches.length} searches ready to copy`;
     }
+  }
+
+  function clearManualLeadForm() {
+    elements.manualLeadForm.reset();
+    elements.manualLeadState.value = leadBuilderMarket().stateText;
+    elements.manualLeadTrivia.value = "possible";
+  }
+
+  function manualLeadFromForm() {
+    const market = leadBuilderMarket();
+    const name = elements.manualLeadName.value.trim();
+    if (!name) {
+      return null;
+    }
+    const notes = [
+      elements.manualLeadNotes.value.trim(),
+      `Added from Lead Builder search for ${market.county} County, ${market.stateText}.`,
+    ].filter(Boolean).join("\n\n");
+    return normalizeRestaurant({
+      name,
+      status: "prospect",
+      city: elements.manualLeadCity.value.trim() || market.city,
+      state: elements.manualLeadState.value.trim() || market.stateText,
+      phone: elements.manualLeadPhone.value,
+      currentlyDoesTrivia: elements.manualLeadTrivia.value,
+      website: elements.manualLeadWebsite.value,
+      facebookPage: elements.manualLeadFacebook.value,
+      contactEmail: elements.manualLeadEmail.value,
+      notes,
+      prospectStage: "new-lead",
+      prospectScore: elements.manualLeadTrivia.value === "yes" ? "7" : "5",
+      leadSource: "Lead Builder",
+      assignedTo: DEFAULT_OWNER,
+    });
+  }
+
+  function previewImportedProspects(importedRows = [], readyMessage = "Prospect preview ready") {
+    state.pendingProspectImport = importedRows.filter(Boolean).map((imported) => {
+      const match = matchingRestaurant(imported);
+      const existing = match?.restaurant || null;
+      const merged = mergeImportedRestaurant(existing, imported);
+      return {
+        imported,
+        existing,
+        matchReasons: match?.reasons || [],
+        record: merged.record,
+        changes: merged.changes,
+        action: existing ? (merged.changes.length ? "Update" : "Skip") : "New",
+        selected: !existing || merged.changes.length > 0,
+      };
+    });
+    renderProspectImportPreview();
+    elements.prospectImportDialog.showModal();
+    setSyncStatus(readyMessage);
+  }
+
+  function previewManualLead(event) {
+    event.preventDefault();
+    const imported = manualLeadFromForm();
+    if (!imported) {
+      window.alert("Add a restaurant name before previewing this prospect.");
+      return;
+    }
+    previewImportedProspects([imported], "Lead Builder prospect preview ready");
   }
 
   function renderSales() {
@@ -2490,23 +2569,7 @@
       const importedRows = rowsToObjects(data.rows || [])
         .map((row) => importedRestaurantFromRow(row, file.name))
         .filter(Boolean);
-      state.pendingProspectImport = importedRows.map((imported) => {
-        const match = matchingRestaurant(imported);
-        const existing = match?.restaurant || null;
-        const merged = mergeImportedRestaurant(existing, imported);
-        return {
-          imported,
-          existing,
-          matchReasons: match?.reasons || [],
-          record: merged.record,
-          changes: merged.changes,
-          action: existing ? (merged.changes.length ? "Update" : "Skip") : "New",
-          selected: !existing || merged.changes.length > 0,
-        };
-      });
-      renderProspectImportPreview();
-      elements.prospectImportDialog.showModal();
-      setSyncStatus("Prospect file preview ready");
+      previewImportedProspects(importedRows, "Prospect file preview ready");
     } catch (error) {
       setSyncStatus("Import preview failed");
       window.alert(error instanceof Error ? error.message : "That prospect file could not be previewed.");
@@ -2605,6 +2668,8 @@
   elements.prospectScoreMax.addEventListener("change", renderProspects);
   elements.leadBuilderForm.addEventListener("submit", runLeadBuilder);
   elements.copyLeadSearchesButton.addEventListener("click", copyLeadSearches);
+  elements.manualLeadForm.addEventListener("submit", previewManualLead);
+  elements.clearManualLeadButton.addEventListener("click", clearManualLeadForm);
   elements.exportButton.addEventListener("click", exportBackup);
   elements.importButton.addEventListener("click", () => elements.importFile.click());
   elements.importFile.addEventListener("change", (event) => {

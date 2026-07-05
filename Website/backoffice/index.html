@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,650;9..144,760&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v59" />
+    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v60" />
   </head>
   <body>
     <section class="login-panel" id="login-panel">
@@ -311,6 +311,7 @@
               <div class="lead-builder-actions">
                 <button class="button button-primary" id="find-leads-button" type="submit">Find Prospects</button>
                 <button class="button button-muted" id="copy-lead-searches-button" type="button">Copy Searches</button>
+                <span class="inline-status" id="lead-builder-copy-status" role="status"></span>
               </div>
             </form>
           </section>
@@ -327,6 +328,62 @@
               <div class="progress-bar"><span id="lead-builder-progress-bar"></span></div>
             </div>
             <div class="lead-builder-searches" id="lead-builder-searches"></div>
+          </section>
+
+          <section class="card lead-builder-manual-card">
+            <div class="card-heading">
+              <div>
+                <h3>Add Prospect From Search</h3>
+                <p class="helper">After you verify a restaurant in Google, enter the useful details here and preview it before saving.</p>
+              </div>
+            </div>
+            <form class="manual-lead-form" id="manual-lead-form">
+              <label class="form-span">
+                Restaurant Name
+                <input id="manual-lead-name" required placeholder="The Box Sports Bar & Grill" />
+              </label>
+              <label>
+                City
+                <input id="manual-lead-city" placeholder="Dallas" />
+              </label>
+              <label>
+                State
+                <input id="manual-lead-state" maxlength="24" value="GA" />
+              </label>
+              <label>
+                Phone
+                <input id="manual-lead-phone" type="tel" />
+              </label>
+              <label>
+                Trivia?
+                <select id="manual-lead-trivia">
+                  <option value="">Unknown</option>
+                  <option value="yes">Yes</option>
+                  <option value="possible" selected>Possible</option>
+                  <option value="no">No</option>
+                </select>
+              </label>
+              <label>
+                Website
+                <input id="manual-lead-website" type="url" placeholder="https://..." />
+              </label>
+              <label>
+                Facebook Page
+                <input id="manual-lead-facebook" type="url" placeholder="https://facebook.com/..." />
+              </label>
+              <label>
+                Contact Email
+                <input id="manual-lead-email" type="email" />
+              </label>
+              <label class="form-span">
+                Search Results / Notes
+                <textarea id="manual-lead-notes" rows="4" placeholder="Example: Google result says trivia Thursday at 7 PM. Facebook event found."></textarea>
+              </label>
+              <div class="lead-builder-actions form-span">
+                <button class="button button-primary" type="submit">Preview Prospect</button>
+                <button class="button button-muted" id="clear-manual-lead-button" type="button">Clear</button>
+              </div>
+            </form>
           </section>
         </section>
 
@@ -870,6 +927,6 @@
 
     <input id="import-file" type="file" accept="application/json" hidden />
     <input id="prospect-import-file" type="file" accept=".csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" hidden />
-    <script src="/backoffice/app.js?v=backoffice-v59" defer></script>
+    <script src="/backoffice/app.js?v=backoffice-v60" defer></script>
   </body>
 </html>

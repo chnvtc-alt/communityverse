@@ -199,6 +199,14 @@ h3 {
   font-weight: 700;
 }
 
+.inline-status {
+  align-self: center;
+  min-height: 1.2em;
+  color: var(--green);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
 .button,
 .text-button,
 .link-button,
@@ -423,6 +431,14 @@ h3 {
 
 .lead-builder-status-card {
   min-height: 240px;
+}
+
+.manual-lead-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  gap: 14px;
+  align-items: end;
+  margin-top: 16px;
 }
 
 .lead-builder-progress {
@@ -1058,6 +1074,7 @@ th {
   .prospect-filters,
   .lead-builder-form,
   .lead-builder-options,
+  .manual-lead-form,
   .invoice-template-panel,
   .quick-entry-form,
   .quick-contact-grid,
