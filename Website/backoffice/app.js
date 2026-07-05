@@ -212,6 +212,7 @@
     expenses: [],
     editingContactHistory: [],
     editingContactId: "",
+    editingCollectionId: "",
     editingExpenseId: "",
     loading: false,
     restaurantSortKey: "followup",
@@ -887,23 +888,55 @@
       return leftDate.localeCompare(rightDate);
     });
     elements.collectionsList.innerHTML = records.length
-      ? records.map((record) => `
-          <tr>
-            <td><strong>${escapeHtml(record.restaurantName || "No restaurant")}</strong></td>
-            <td>${escapeHtml(record.invoiceNumber)}</td>
-            <td>${escapeHtml(shortDate(record.dueDate))}</td>
-            <td>${escapeHtml(moneyValue(record.amount))}</td>
-            <td>${escapeHtml(labelFor(collectionStatusLabels, record.status, "Not Sent"))}</td>
-            <td>${escapeHtml(shortDate(record.paidDate))}</td>
-            <td>${escapeHtml(record.notes)}</td>
-            <td class="table-actions">
-              <button class="text-button" type="button" data-email-collection-id="${escapeHtml(record.id)}">Email Invoice</button>
-              <button class="text-button" type="button" data-print-collection-id="${escapeHtml(record.id)}">Print / PDF</button>
-              <button class="text-button" type="button" data-delete-collection-id="${escapeHtml(record.id)}">Remove</button>
-            </td>
-          </tr>
-        `).join("")
+      ? records.map(collectionRow).join("")
       : '<tr><td colspan="8"><div class="empty-state">No collection records yet.</div></td></tr>';
+  }
+
+  function collectionStatusOptions(selectedStatus = "") {
+    return Object.entries(collectionStatusLabels).map(([value, label]) => `
+      <option value="${escapeHtml(value)}"${value === selectedStatus ? " selected" : ""}>${escapeHtml(label)}</option>
+    `).join("");
+  }
+
+  function collectionRow(record) {
+    if (state.editingCollectionId === record.id) {
+      return `
+        <tr data-collection-editor-id="${escapeHtml(record.id)}">
+          <td><strong>${escapeHtml(record.restaurantName || "No restaurant")}</strong></td>
+          <td><input data-edit-collection-invoice value="${escapeHtml(record.invoiceNumber)}" /></td>
+          <td><input data-edit-collection-due-date type="date" value="${escapeHtml(record.dueDate)}" /></td>
+          <td><input data-edit-collection-amount inputmode="decimal" value="${escapeHtml(record.amount)}" /></td>
+          <td>
+            <select data-edit-collection-status>
+              ${collectionStatusOptions(record.status)}
+            </select>
+          </td>
+          <td><input data-edit-collection-paid-date type="date" value="${escapeHtml(record.paidDate)}" /></td>
+          <td><input data-edit-collection-notes value="${escapeHtml(record.notes)}" /></td>
+          <td class="table-actions">
+            <button class="text-button" type="button" data-save-collection-id="${escapeHtml(record.id)}">Save</button>
+            <button class="text-button" type="button" data-cancel-collection-edit>Cancel</button>
+          </td>
+        </tr>
+      `;
+    }
+    return `
+      <tr>
+        <td><strong>${escapeHtml(record.restaurantName || "No restaurant")}</strong></td>
+        <td>${escapeHtml(record.invoiceNumber)}</td>
+        <td>${escapeHtml(shortDate(record.dueDate))}</td>
+        <td>${escapeHtml(moneyValue(record.amount))}</td>
+        <td>${escapeHtml(labelFor(collectionStatusLabels, record.status, "Not Sent"))}</td>
+        <td>${escapeHtml(shortDate(record.paidDate))}</td>
+        <td>${escapeHtml(record.notes)}</td>
+        <td class="table-actions">
+          <button class="text-button" type="button" data-edit-collection-id="${escapeHtml(record.id)}">Edit</button>
+          <button class="text-button" type="button" data-email-collection-id="${escapeHtml(record.id)}">Email Invoice</button>
+          <button class="text-button" type="button" data-print-collection-id="${escapeHtml(record.id)}">Print / PDF</button>
+          <button class="text-button" type="button" data-delete-collection-id="${escapeHtml(record.id)}">Remove</button>
+        </td>
+      </tr>
+    `;
   }
 
   function expenseCategoryOptions(selectedCategory = "") {
@@ -1291,12 +1324,53 @@
     renderCollections();
   }
 
+  function editCollection(id) {
+    state.editingCollectionId = id;
+    renderCollections();
+  }
+
+  function cancelCollectionEdit() {
+    state.editingCollectionId = "";
+    renderCollections();
+  }
+
+  async function saveCollectionEdit(id) {
+    const editor = elements.collectionsList.querySelector(`[data-collection-editor-id="${id}"]`);
+    const existing = state.collections.find((record) => record.id === id);
+    if (!editor || !existing) {
+      return;
+    }
+    const record = normalizeCollection({
+      ...existing,
+      invoiceNumber: editor.querySelector("[data-edit-collection-invoice]")?.value,
+      dueDate: editor.querySelector("[data-edit-collection-due-date]")?.value,
+      amount: editor.querySelector("[data-edit-collection-amount]")?.value,
+      status: editor.querySelector("[data-edit-collection-status]")?.value,
+      paidDate: editor.querySelector("[data-edit-collection-paid-date]")?.value,
+      notes: editor.querySelector("[data-edit-collection-notes]")?.value,
+    });
+    const data = await saveAction("saveCollection", { collection: record });
+    if (!data?.collection) {
+      return;
+    }
+    const savedRecord = normalizeCollection(data.collection);
+    state.collections = state.collections.map((collection) =>
+      collection.id === savedRecord.id ? savedRecord : collection
+    );
+    state.editingCollectionId = "";
+    cacheBackofficeData();
+    renderCollections();
+  }
+
   async function deleteCollection(id) {
     const data = await saveAction("deleteCollection", { id }, "Removed from Supabase");
     if (!data) {
       return;
     }
     state.collections = state.collections.filter((record) => record.id !== id);
+    if (state.editingCollectionId === id) {
+      state.editingCollectionId = "";
+    }
     cacheBackofficeData();
     renderCollections();
   }
@@ -1663,6 +1737,18 @@
     const deleteCollectionButton = event.target.closest("[data-delete-collection-id]");
     if (deleteCollectionButton) {
       deleteCollection(deleteCollectionButton.dataset.deleteCollectionId);
+    }
+    const editCollectionButton = event.target.closest("[data-edit-collection-id]");
+    if (editCollectionButton) {
+      editCollection(editCollectionButton.dataset.editCollectionId);
+    }
+    const saveCollectionButton = event.target.closest("[data-save-collection-id]");
+    if (saveCollectionButton) {
+      saveCollectionEdit(saveCollectionButton.dataset.saveCollectionId);
+    }
+    const cancelCollectionEditButton = event.target.closest("[data-cancel-collection-edit]");
+    if (cancelCollectionEditButton) {
+      cancelCollectionEdit();
     }
     const printCollectionButton = event.target.closest("[data-print-collection-id]");
     if (printCollectionButton) {
