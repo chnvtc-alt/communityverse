@@ -916,6 +916,13 @@
     return Math.round((monthlyAmount * billableDays / totalDays) * 100) / 100;
   }
 
+  function invoiceDueDateFor(restaurant, monthValue, billingType, isProrated) {
+    if (billingType === "half" || isProrated) {
+      return restaurant?.saleDate || restaurant?.serviceStartDate || today();
+    }
+    return `${monthValue}-01`;
+  }
+
   function fillMonthlyInvoiceTemplate() {
     const restaurant = state.restaurants.find((record) => record.id === elements.collectionRestaurant.value);
     const monthValue = elements.invoiceTemplateMonth.value || currentMonth();
@@ -938,7 +945,7 @@
     const amount = enteredAmount && !["19", "9.50"].includes(enteredAmount) ? enteredAmount : defaultAmountText;
     elements.invoiceTemplateMonth.value = monthValue;
     elements.collectionInvoice.value = nextInvoiceNumber();
-    elements.collectionDueDate.value = today();
+    elements.collectionDueDate.value = invoiceDueDateFor(restaurant, monthValue, billingType, isProrated);
     elements.collectionAmount.value = amount;
     elements.collectionStatus.value = "not-sent";
     elements.collectionNotes.value = `${description}. Service period: ${range.label}.`;
