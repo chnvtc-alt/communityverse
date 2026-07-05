@@ -1342,12 +1342,13 @@
       const nextStart = nextYelpBusinessStart(lines, index + 2);
       const resultLines = lines.slice(index + 2, nextStart);
       const resultText = resultLines.join("\n");
+      const cityState = cityFromPastedLead(resultText, { city: "", stateText: market.stateText });
       records.push(normalizeRestaurant({
         name,
         status: "prospect",
         street: streetFromPastedLead(resultText),
-        city: market.city,
-        state: market.stateText,
+        city: cityState.city,
+        state: cityState.state,
         currentlyDoesTrivia: pastedTriviaValue(resultText),
         prospectStage: "new-lead",
         prospectScore: pastedTriviaValue(resultText) === "yes" ? "7" : "5",
