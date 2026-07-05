@@ -1011,10 +1011,59 @@
     return checked.length ? checked : ["restaurants with trivia"];
   }
 
+  function stateCodeFromText(value = "", fallback = "") {
+    const cleaned = String(value || "").trim();
+    const key = cleaned.toLowerCase().replace(/[^a-z]/g, "");
+    const stateCodes = {
+      alabama: "AL",
+      georgia: "GA",
+      florida: "FL",
+      northcarolina: "NC",
+      southcarolina: "SC",
+      tennessee: "TN",
+    };
+    if (/^(GA|AL|FL|NC|SC|TN)$/i.test(cleaned)) {
+      return cleaned.toUpperCase();
+    }
+    return stateCodes[key] || fallback;
+  }
+
+  function cleanCityName(value = "") {
+    const city = String(value || "").trim();
+    if (!city) {
+      return "";
+    }
+    if (/[A-Z]/.test(city)) {
+      return city;
+    }
+    return city.replace(/\b[a-z]/g, (letter) => letter.toUpperCase());
+  }
+
+  function splitCityState(value = "", fallbackState = "") {
+    const text = String(value || "").trim();
+    const commaMatch = text.match(/^(.+?),\s*([A-Za-z ]{2,})$/);
+    if (commaMatch) {
+      return {
+        city: cleanCityName(commaMatch[1]),
+        state: stateCodeFromText(commaMatch[2], fallbackState),
+      };
+    }
+    const trailingStateMatch = text.match(/^(.+?)\s+(GA|AL|FL|NC|SC|TN|Georgia|Alabama|Florida|North Carolina|South Carolina|Tennessee)$/i);
+    if (trailingStateMatch) {
+      return {
+        city: cleanCityName(trailingStateMatch[1]),
+        state: stateCodeFromText(trailingStateMatch[2], fallbackState),
+      };
+    }
+    return { city: cleanCityName(text), state: fallbackState };
+  }
+
   function leadBuilderMarket() {
-    const stateText = elements.leadBuilderState?.value || "GA";
+    const selectedState = elements.leadBuilderState?.value || "GA";
     const county = String(elements.leadBuilderCounty?.value || "").trim() || "Paulding";
-    const city = String(elements.leadBuilderCity?.value || "").trim() || "Villa Rica";
+    const cityState = splitCityState(String(elements.leadBuilderCity?.value || "").trim() || "Villa Rica", selectedState);
+    const stateText = cityState.state || selectedState;
+    const city = cityState.city || "Villa Rica";
     const miles = String(elements.leadBuilderMiles?.value || "").trim() || "30";
     const radiusMode = document.querySelector('[name="lead-builder-radius"]:checked')?.value || "miles";
     const maxResults = Math.max(1, Math.min(200, Number(elements.leadBuilderMaxResults?.value || 50) || 50));
