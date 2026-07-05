@@ -10,6 +10,7 @@ import {
   saveBackofficeRestaurant,
 } from "../_lib/backoffice-admin.mjs";
 import { sendBackofficeInvoiceEmail } from "../_lib/backoffice-invoices.mjs";
+import { parseBackofficeProspectFile } from "../_lib/backoffice-spreadsheet.mjs";
 import { hasSupabaseConfig, jsonResponse, readJsonBody } from "../_lib/supabase.mjs";
 
 function preflight(request) {
@@ -84,6 +85,10 @@ export async function POST(request) {
 
     if (action === "importBackup") {
       return jsonResponse({ ok: true, ...(await importBackofficeBackup(body.backup)) });
+    }
+
+    if (action === "parseProspectFile") {
+      return jsonResponse({ ok: true, rows: parseBackofficeProspectFile(body.file) });
     }
 
     return jsonResponse({ ok: false, error: "Unknown Back Office action." }, 400);

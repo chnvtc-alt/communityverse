@@ -109,9 +109,17 @@
     restaurantSortButtons: [...document.querySelectorAll("[data-restaurant-sort]")],
     salesSortButtons: [...document.querySelectorAll("[data-sales-sort]")],
     newRestaurantButton: document.querySelector("#new-restaurant-button"),
+    importProspectsButton: document.querySelector("#import-prospects-button"),
     importButton: document.querySelector("#import-button"),
     exportButton: document.querySelector("#export-button"),
     importFile: document.querySelector("#import-file"),
+    prospectImportFile: document.querySelector("#prospect-import-file"),
+    prospectImportDialog: document.querySelector("#prospect-import-dialog"),
+    prospectImportSummary: document.querySelector("#prospect-import-summary"),
+    prospectImportList: document.querySelector("#prospect-import-list"),
+    closeProspectImportButton: document.querySelector("#close-prospect-import-button"),
+    cancelProspectImportButton: document.querySelector("#cancel-prospect-import-button"),
+    applyProspectImportButton: document.querySelector("#apply-prospect-import-button"),
     search: document.querySelector("#restaurant-search"),
     statusFilter: document.querySelector("#restaurant-status-filter"),
     restaurantCount: document.querySelector("#restaurant-count"),
@@ -227,6 +235,7 @@
     editingCollectionId: "",
     editingExpenseId: "",
     invoicePreviewId: "",
+    pendingProspectImport: [],
     loading: false,
     restaurantSortKey: "followup",
     restaurantSortDirection: "asc",
@@ -477,11 +486,13 @@
     state.loading = loading;
     [
       elements.newRestaurantButton,
+      elements.importProspectsButton,
       elements.importButton,
       elements.exportButton,
       elements.deleteRestaurantButton,
       elements.addContactHistoryButton,
       elements.quickContactFullCardButton,
+      elements.applyProspectImportButton,
     ].forEach((element) => {
       if (element) element.disabled = loading;
     });
@@ -1340,7 +1351,7 @@
     elements.quickContactDate.value = today();
     elements.quickContactResponse.checked = false;
     elements.quickContactNextFollowUp.value = "";
-    elements.quickContactScore.value = restaurant.prospectScore || defaultProspectScore;
+    elements.quickContactScore.value = restaurant.prospectScore || "5";
     elements.quickContactNote.value = "";
     renderQuickContactHistory(restaurant);
     elements.quickContactDialog.showModal();
@@ -2109,6 +2120,259 @@
     reader.readAsText(file);
   }
 
+  function normalizedImportKey(value = "") {
+    return String(value || "")
+      .toLowerCase()
+      .replace(/&/g, "and")
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
+  }
+
+  function fieldIsBlank(value = "") {
+    return !String(value || "").trim();
+  }
+
+  function columnKey(value = "") {
+    return normalizedImportKey(value).replace(/\s+/g, "");
+  }
+
+  function columnValue(row = {}, labels = []) {
+    for (const label of labels) {
+      const value = row[label];
+      if (value != null && String(value).trim()) {
+        return String(value).trim();
+      }
+    }
+    return "";
+  }
+
+  function importTriviaValue(value = "") {
+    const text = normalizedImportKey(value);
+    if (["yes", "y", "true", "currently yes"].includes(text)) return "yes";
+    if (["no", "n", "false", "none"].includes(text)) return "no";
+    return "";
+  }
+
+  function importTriviaNote(value = "") {
+    const text = String(value || "").trim();
+    if (!text || importTriviaValue(text)) {
+      return "";
+    }
+    return `Trivia marked "${text}" in import.`;
+  }
+
+  function appendUniqueNote(existing = "", addition = "") {
+    const current = String(existing || "").trim();
+    const next = String(addition || "").trim();
+    if (!next || current.toLowerCase().includes(next.toLowerCase())) {
+      return current;
+    }
+    return [current, next].filter(Boolean).join("\n\n");
+  }
+
+  function rowsToObjects(rows = []) {
+    const headerRow = rows.find((row) => row.some((value) => String(value || "").trim())) || [];
+    const headers = headerRow.map(columnKey);
+    return rows.slice(rows.indexOf(headerRow) + 1).map((row) => {
+      const record = {};
+      headers.forEach((header, index) => {
+        if (header) {
+          record[header] = String(row[index] || "").trim();
+        }
+      });
+      return record;
+    });
+  }
+
+  function importedRestaurantFromRow(row = {}, fileName = "") {
+    const name = columnValue(row, ["restaurant", "restaurantname", "business", "businessname", "name"]);
+    if (!name) {
+      return null;
+    }
+    const triviaText = columnValue(row, ["trivia", "trivia?", "currentlydoestrivia", "doestrivia"]);
+    const notes = [
+      columnValue(row, ["notes", "note", "details"]),
+      importTriviaNote(triviaText),
+      `Imported from ${fileName || "prospect spreadsheet"} on ${today()}.`,
+    ].filter(Boolean).join("\n");
+
+    return normalizeRestaurant({
+      name,
+      status: "prospect",
+      street: columnValue(row, ["street", "streetaddress", "address"]),
+      city: columnValue(row, ["city"]),
+      state: columnValue(row, ["state"]),
+      zip: columnValue(row, ["zip", "zipcode", "postalcode"]),
+      phone: columnValue(row, ["phone", "restaurantphone", "contactphone"]),
+      contactFirstName: columnValue(row, ["contactfirstname", "firstname"]),
+      contactLastName: columnValue(row, ["contactlastname", "lastname"]),
+      contactEmail: columnValue(row, ["email", "emailaddress", "contactemail"]),
+      contactCell: columnValue(row, ["cell", "contactcell", "mobile"]),
+      currentlyDoesTrivia: importTriviaValue(triviaText),
+      website: columnValue(row, ["website", "web", "url"]),
+      facebookPage: columnValue(row, ["facebook", "facebookpage", "fb", "fbpage"]),
+      notes,
+      prospectStage: "new-lead",
+      prospectScore: "4",
+      leadSource: "Prospect import",
+      assignedTo: DEFAULT_OWNER,
+    });
+  }
+
+  function matchingRestaurant(imported) {
+    const nameKey = normalizedImportKey(imported.name);
+    const cityKey = normalizedImportKey(imported.city);
+    const matches = state.restaurants.filter((restaurant) => normalizedImportKey(restaurant.name) === nameKey);
+    if (matches.length <= 1 || !cityKey) {
+      return matches[0] || null;
+    }
+    return matches.find((restaurant) => normalizedImportKey(restaurant.city) === cityKey) || matches[0] || null;
+  }
+
+  function mergeImportedRestaurant(existing, imported) {
+    if (!existing) {
+      return { record: imported, changes: ["Add new prospect"] };
+    }
+    const updates = { ...existing };
+    const changes = [];
+    [
+      ["street", "street address"],
+      ["city", "city"],
+      ["state", "state"],
+      ["zip", "ZIP"],
+      ["phone", "restaurant phone"],
+      ["contactFirstName", "contact first name"],
+      ["contactLastName", "contact last name"],
+      ["contactEmail", "contact email"],
+      ["contactCell", "contact cell"],
+      ["currentlyDoesTrivia", "trivia"],
+      ["website", "website"],
+      ["facebookPage", "Facebook page"],
+      ["leadSource", "lead source"],
+    ].forEach(([key, label]) => {
+      if (fieldIsBlank(updates[key]) && !fieldIsBlank(imported[key])) {
+        updates[key] = imported[key];
+        changes.push(`Fill ${label}`);
+      }
+    });
+    const mergedNotes = appendUniqueNote(updates.notes, imported.notes);
+    if (mergedNotes !== updates.notes) {
+      updates.notes = mergedNotes;
+      changes.push("Add notes");
+    }
+    return { record: normalizeRestaurant(updates), changes };
+  }
+
+  function prospectImportRow(item) {
+    const actionClass = item.action === "New" ? "new" : item.action === "Skip" ? "skip" : "update";
+    return `
+      <tr>
+        <td><span class="import-tag import-tag-${actionClass}">${escapeHtml(item.action)}</span></td>
+        <td><strong>${escapeHtml(item.imported.name)}</strong>${item.existing ? `<div class="helper">Matches ${escapeHtml(item.existing.name)}</div>` : ""}</td>
+        <td>${escapeHtml(item.imported.city)}</td>
+        <td>${escapeHtml(labelFor({ yes: "Yes", no: "No" }, item.imported.currentlyDoesTrivia, "Unknown"))}</td>
+        <td>${escapeHtml(item.imported.notes)}</td>
+        <td>${escapeHtml(item.changes.join(", ") || "No new information")}</td>
+      </tr>
+    `;
+  }
+
+  function renderProspectImportPreview() {
+    const records = state.pendingProspectImport;
+    const newCount = records.filter((record) => record.action === "New").length;
+    const updateCount = records.filter((record) => record.action === "Update").length;
+    const skipCount = records.filter((record) => record.action === "Skip").length;
+    elements.prospectImportSummary.textContent = `${newCount} new, ${updateCount} update existing, ${skipCount} no-change duplicates.`;
+    elements.prospectImportList.innerHTML = records.length
+      ? records.map(prospectImportRow).join("")
+      : '<tr><td colspan="6"><div class="empty-state">No importable restaurants were found.</div></td></tr>';
+    elements.applyProspectImportButton.disabled = !records.some((record) => record.action !== "Skip");
+  }
+
+  function closeProspectImport() {
+    elements.prospectImportDialog.close();
+  }
+
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.addEventListener("load", () => {
+        const result = String(reader.result || "");
+        resolve(result.includes(",") ? result.split(",").pop() : result);
+      });
+      reader.addEventListener("error", () => reject(new Error("That file could not be read.")));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function importProspectFile(file) {
+    if (!file) {
+      return;
+    }
+    setLoading(true);
+    setSyncStatus("Reading prospect file...");
+    try {
+      const contentBase64 = await fileToBase64(file);
+      const data = await apiRequest("parseProspectFile", {
+        file: { fileName: file.name, contentBase64 },
+      });
+      const importedRows = rowsToObjects(data.rows || [])
+        .map((row) => importedRestaurantFromRow(row, file.name))
+        .filter(Boolean);
+      state.pendingProspectImport = importedRows.map((imported) => {
+        const existing = matchingRestaurant(imported);
+        const merged = mergeImportedRestaurant(existing, imported);
+        return {
+          imported,
+          existing,
+          record: merged.record,
+          changes: merged.changes,
+          action: existing ? (merged.changes.length ? "Update" : "Skip") : "New",
+        };
+      });
+      renderProspectImportPreview();
+      elements.prospectImportDialog.showModal();
+      setSyncStatus("Prospect file preview ready");
+    } catch (error) {
+      setSyncStatus("Import preview failed");
+      window.alert(error instanceof Error ? error.message : "That prospect file could not be previewed.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function applyProspectImport() {
+    const records = state.pendingProspectImport.filter((record) => record.action !== "Skip");
+    if (!records.length) {
+      closeProspectImport();
+      return;
+    }
+    setLoading(true);
+    setSyncStatus("Importing prospects...");
+    try {
+      for (const item of records) {
+        const data = await apiRequest("saveRestaurant", { restaurant: item.record });
+        const savedRecord = normalizeRestaurant(data.restaurant || item.record);
+        const existingIndex = state.restaurants.findIndex((restaurant) => restaurant.id === savedRecord.id);
+        if (existingIndex >= 0) {
+          state.restaurants[existingIndex] = savedRecord;
+        } else {
+          state.restaurants.push(savedRecord);
+        }
+      }
+      cacheBackofficeData();
+      render();
+      closeProspectImport();
+      setSyncStatus("Imported prospects to Supabase");
+      window.alert(`Imported ${records.length} prospect ${records.length === 1 ? "record" : "records"}.`);
+    } catch (error) {
+      setSyncStatus("Import failed");
+      window.alert(error instanceof Error ? error.message : "Those prospects could not be imported.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   elements.navItems.forEach((item) => {
     item.addEventListener("click", () => setSection(item.dataset.section));
   });
@@ -2137,8 +2401,12 @@
   });
 
   elements.newRestaurantButton.addEventListener("click", () => openRestaurantEditor());
+  elements.importProspectsButton.addEventListener("click", () => elements.prospectImportFile.click());
   elements.closeEditorButton.addEventListener("click", closeRestaurantEditor);
   elements.cancelEditorButton.addEventListener("click", closeRestaurantEditor);
+  elements.closeProspectImportButton.addEventListener("click", closeProspectImport);
+  elements.cancelProspectImportButton.addEventListener("click", closeProspectImport);
+  elements.applyProspectImportButton.addEventListener("click", applyProspectImport);
   elements.closeQuickContactButton.addEventListener("click", closeQuickContact);
   elements.cancelQuickContactButton.addEventListener("click", closeQuickContact);
   elements.quickContactClearFollowUp.addEventListener("click", clearQuickContactFollowUp);
@@ -2165,6 +2433,10 @@
   elements.importButton.addEventListener("click", () => elements.importFile.click());
   elements.importFile.addEventListener("change", (event) => {
     importBackupFile(event.target.files?.[0]);
+    event.target.value = "";
+  });
+  elements.prospectImportFile.addEventListener("change", (event) => {
+    importProspectFile(event.target.files?.[0]);
     event.target.value = "";
   });
 

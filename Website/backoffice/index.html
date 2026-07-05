@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,650;9..144,760&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v51" />
+    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v52" />
   </head>
   <body>
     <section class="login-panel" id="login-panel">
@@ -60,6 +60,7 @@
           </div>
           <div class="topbar-actions">
             <span class="sync-status" id="sync-status">Not loaded</span>
+            <button class="button button-muted" id="import-prospects-button" type="button">Import Prospects</button>
             <button class="button button-muted" id="import-button" type="button">Import Backup</button>
             <button class="button button-muted" id="export-button" type="button">Export Backup</button>
             <button class="button button-primary" id="new-restaurant-button" type="button">New Restaurant</button>
@@ -733,7 +734,44 @@
       </div>
     </dialog>
 
+    <dialog id="prospect-import-dialog" class="editor-dialog prospect-import-dialog">
+      <div class="prospect-import-shell">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow">Prospect import preview</p>
+            <h3>Review before saving</h3>
+            <p class="helper" id="prospect-import-summary">Choose a spreadsheet to preview new prospects.</p>
+          </div>
+          <button class="icon-button" id="close-prospect-import-button" type="button" aria-label="Close">x</button>
+        </div>
+        <div class="import-rules">
+          <strong>Safe import rules</strong>
+          <span>Duplicates are matched by restaurant name and city. Existing filled-in fields are kept. New notes are appended.</span>
+        </div>
+        <div class="table-wrap">
+          <table class="import-preview-table">
+            <thead>
+              <tr>
+                <th>Action</th>
+                <th>Restaurant</th>
+                <th>City</th>
+                <th>Trivia?</th>
+                <th>Notes</th>
+                <th>What Will Change</th>
+              </tr>
+            </thead>
+            <tbody id="prospect-import-list"></tbody>
+          </table>
+        </div>
+        <div class="dialog-actions">
+          <button class="button button-muted" id="cancel-prospect-import-button" type="button">Cancel</button>
+          <button class="button button-primary" id="apply-prospect-import-button" type="button">Import These Prospects</button>
+        </div>
+      </div>
+    </dialog>
+
     <input id="import-file" type="file" accept="application/json" hidden />
-    <script src="/backoffice/app.js?v=backoffice-v51" defer></script>
+    <input id="prospect-import-file" type="file" accept=".csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" hidden />
+    <script src="/backoffice/app.js?v=backoffice-v52" defer></script>
   </body>
 </html>
