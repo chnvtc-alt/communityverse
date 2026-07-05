@@ -19,7 +19,7 @@
     restaurants: "Restaurant List",
     prospects: "Prospects",
     sales: "Sales",
-    collections: "Collections",
+    collections: "Invoices",
     expenses: "Expenses",
     commissions: "Commissions",
   };

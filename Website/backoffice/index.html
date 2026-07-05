@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,650;9..144,760&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v37" />
+    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v38" />
   </head>
   <body>
     <section class="login-panel" id="login-panel">
@@ -43,7 +43,7 @@
           <button class="nav-item" type="button" data-section="restaurants">Restaurant List</button>
           <button class="nav-item is-active" type="button" data-section="prospects">Prospects</button>
           <button class="nav-item" type="button" data-section="sales">Sales</button>
-          <button class="nav-item" type="button" data-section="collections">Collections</button>
+          <button class="nav-item" type="button" data-section="collections">Invoices</button>
           <button class="nav-item" type="button" data-section="expenses">Expenses</button>
           <button class="nav-item" type="button" data-section="commissions">Commissions</button>
         </nav>
@@ -268,7 +268,7 @@
           <section class="card table-card">
             <div class="card-heading">
               <div>
-                <h3>Collections</h3>
+                <h3>Invoices</h3>
                 <p class="helper">Invoice and payment follow-up for sold accounts.</p>
               </div>
             </div>
@@ -329,7 +329,7 @@
                 Notes
                 <input id="collection-notes" placeholder="Payment reminder, promise to pay, invoice detail..." />
               </label>
-              <button class="button button-primary" type="submit">Add Collection</button>
+              <button class="button button-primary" type="submit">Add Invoice</button>
             </form>
             <div class="table-wrap">
               <table>
@@ -716,6 +716,6 @@
     </dialog>
 
     <input id="import-file" type="file" accept="application/json" hidden />
-    <script src="/backoffice/app.js?v=backoffice-v37" defer></script>
+    <script src="/backoffice/app.js?v=backoffice-v38" defer></script>
   </body>
 </html>
