@@ -14,7 +14,6 @@
     phone: "404-428-6302",
   };
   const PAYMENT_LINK = "https://www.paypal.com/ncp/payment/HSHM25X6JZFZ4";
-  const DEFAULT_DOCUMENT_TITLE = document.title;
   const SECTION_LABELS = {
     dashboard: "Dashboard",
     restaurants: "Restaurant List",
@@ -220,7 +219,7 @@
     editingContactId: "",
     editingCollectionId: "",
     editingExpenseId: "",
-    invoicePrintTitle: "",
+    invoicePreviewId: "",
     loading: false,
     restaurantSortKey: "followup",
     restaurantSortDirection: "asc",
@@ -1076,6 +1075,12 @@
     `).join("");
   }
 
+  function invoiceTableNote(notes = "") {
+    const text = String(notes || "").trim();
+    const periodMatch = text.match(/(?:Partial service period|Service period):\s*(.+?)(?:\.\s*$|$)/i);
+    return periodMatch ? periodMatch[1].trim() : text;
+  }
+
   function collectionRow(record) {
     if (state.editingCollectionId === record.id) {
       return `
@@ -1106,11 +1111,11 @@
         <td>${escapeHtml(moneyValue(record.amount))}</td>
         <td>${escapeHtml(labelFor(collectionStatusLabels, record.status, "Not Sent"))}</td>
         <td>${escapeHtml(shortDate(record.paidDate))}</td>
-        <td>${escapeHtml(record.notes)}</td>
+        <td>${escapeHtml(invoiceTableNote(record.notes))}</td>
         <td class="table-actions">
           <button class="text-button" type="button" data-edit-collection-id="${escapeHtml(record.id)}">Edit</button>
           <button class="text-button" type="button" data-email-collection-id="${escapeHtml(record.id)}">Email Invoice</button>
-          <button class="text-button" type="button" data-print-collection-id="${escapeHtml(record.id)}">Print / PDF</button>
+          <button class="text-button" type="button" data-print-collection-id="${escapeHtml(record.id)}">View / Save PDF</button>
           <button class="text-button" type="button" data-delete-collection-id="${escapeHtml(record.id)}">Remove</button>
         </td>
       </tr>
@@ -1580,17 +1585,126 @@
     return fileSafeName(`${customerName} Invoice ${record.invoiceNumber || ""}`) || "CommunityVerse Invoice";
   }
 
+  function invoiceDetails(record) {
+    const restaurant = state.restaurants.find((item) => item.id === record.restaurantId);
+    return {
+      restaurant,
+      customerName: record.restaurantName || restaurant?.name || "Restaurant",
+      contact: restaurant ? contactName(restaurant) : "",
+      addressLines: invoiceCustomerAddressLines(restaurant),
+      description: record.notes || "Restaurant Challenge monthly subscription.",
+      amount: moneyValue(record.amount),
+      dueDate: shortDate(record.dueDate) || "Not set",
+      status: labelFor(collectionStatusLabels, record.status, "Not Sent"),
+    };
+  }
+
+  function pdfText(value) {
+    return String(value || "")
+      .replace(/[^\x09\x0A\x0D\x20-\x7E]/g, "")
+      .replace(/\\/g, "\\\\")
+      .replace(/\(/g, "\\(")
+      .replace(/\)/g, "\\)");
+  }
+
+  function wrapText(value, maxLength = 78) {
+    const words = String(value || "").split(/\s+/).filter(Boolean);
+    const lines = [];
+    let line = "";
+    words.forEach((word) => {
+      const nextLine = line ? `${line} ${word}` : word;
+      if (nextLine.length > maxLength && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = nextLine;
+      }
+    });
+    if (line) {
+      lines.push(line);
+    }
+    return lines.length ? lines : [""];
+  }
+
+  function buildInvoicePdf(record) {
+    const details = invoiceDetails(record);
+    const lines = [];
+    const addText = (text, x, y, size = 11, bold = false) => {
+      lines.push(`BT /${bold ? "F2" : "F1"} ${size} Tf ${x} ${y} Td (${pdfText(text)}) Tj ET`);
+    };
+
+    addText("COMMUNITYVERSE GAMES", 48, 742, 11, true);
+    addText("Invoice", 48, 710, 28, true);
+    addText(record.invoiceNumber || "Invoice", 510, 742, 12, true);
+    addText(`Due ${details.dueDate}`, 470, 720, 11);
+
+    addText("Bill To", 48, 672, 12, true);
+    addText(details.customerName, 48, 652, 11, true);
+    let billY = 636;
+    [details.contact, ...details.addressLines].filter(Boolean).forEach((line) => {
+      addText(line, 48, billY, 10);
+      billY -= 14;
+    });
+
+    addText("From", 330, 672, 12, true);
+    addText(`${INVOICE_SENDER.name} / ${INVOICE_SENDER.business}`, 330, 652, 10, true);
+    addText(INVOICE_SENDER.street, 330, 638, 10);
+    addText(INVOICE_SENDER.cityStateZip, 330, 624, 10);
+    addText(INVOICE_SENDER.phone, 330, 610, 10);
+
+    addText("Description", 48, 548, 11, true);
+    addText("Amount", 500, 548, 11, true);
+    lines.push("0.8 w 48 534 m 564 534 l S");
+    let descriptionY = 512;
+    wrapText(details.description, 76).forEach((line) => {
+      addText(line, 48, descriptionY, 10);
+      descriptionY -= 14;
+    });
+    addText(details.amount, 500, 512, 10);
+    lines.push(`0.8 w 48 ${descriptionY - 6} m 564 ${descriptionY - 6} l S`);
+    addText("Total Due", 48, descriptionY - 28, 12, true);
+    addText(details.amount, 500, descriptionY - 28, 12, true);
+
+    const payY = descriptionY - 76;
+    addText("Pay online", 48, payY, 11, true);
+    addText(PAYMENT_LINK, 48, payY - 16, 10);
+    addText(`Status: ${details.status}`, 48, payY - 54, 11, true);
+
+    const stream = lines.join("\n");
+    const objects = [
+      "<< /Type /Catalog /Pages 2 0 R >>",
+      "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Annots [7 0 R] /Contents 6 0 R >>`,
+      "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+      "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>",
+      `<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`,
+      `<< /Type /Annot /Subtype /Link /Rect [48 ${payY - 21} 330 ${payY - 9}] /Border [0 0 0] /A << /S /URI /URI (${pdfText(PAYMENT_LINK)}) >> >>`,
+    ];
+    let pdf = "%PDF-1.4\n";
+    const offsets = [0];
+    objects.forEach((object, index) => {
+      offsets.push(pdf.length);
+      pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
+    });
+    const xrefOffset = pdf.length;
+    pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+    offsets.slice(1).forEach((offset) => {
+      pdf += `${String(offset).padStart(10, "0")} 00000 n \n`;
+    });
+    pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+    return {
+      blob: new Blob([pdf], { type: "application/pdf" }),
+      filename: `${invoicePrintTitle(record, details.customerName)}.pdf`,
+    };
+  }
+
   function openInvoicePreview(id) {
     const record = state.collections.find((collection) => collection.id === id);
     if (!record) {
       return;
     }
-    const restaurant = state.restaurants.find((item) => item.id === record.restaurantId);
-    const customerName = record.restaurantName || restaurant?.name || "Restaurant";
-    const contact = restaurant ? contactName(restaurant) : "";
-    const addressLines = invoiceCustomerAddressLines(restaurant);
-    const description = record.notes || "Restaurant Challenge monthly subscription.";
-    state.invoicePrintTitle = invoicePrintTitle(record, customerName);
+    const details = invoiceDetails(record);
+    state.invoicePreviewId = id;
     elements.invoicePreviewContent.innerHTML = `
       <article class="invoice-document">
         <header class="invoice-header">
@@ -1606,9 +1720,9 @@
         <section class="invoice-parties">
           <div>
             <p class="invoice-label">Bill To</p>
-            <strong>${escapeHtml(customerName)}</strong>
-            ${contact ? `<span>${escapeHtml(contact)}</span>` : ""}
-            ${addressLines.map((line) => `<span>${escapeHtml(line)}</span>`).join("")}
+            <strong>${escapeHtml(details.customerName)}</strong>
+            ${details.contact ? `<span>${escapeHtml(details.contact)}</span>` : ""}
+            ${details.addressLines.map((line) => `<span>${escapeHtml(line)}</span>`).join("")}
           </div>
           <div>
             <p class="invoice-label">From</p>
@@ -1627,14 +1741,14 @@
           </thead>
           <tbody>
             <tr>
-              <td>${escapeHtml(description)}</td>
-              <td>${escapeHtml(moneyValue(record.amount))}</td>
+              <td>${escapeHtml(details.description)}</td>
+              <td>${escapeHtml(details.amount)}</td>
             </tr>
           </tbody>
           <tfoot>
             <tr>
               <th>Total Due</th>
-              <th>${escapeHtml(moneyValue(record.amount))}</th>
+              <th>${escapeHtml(details.amount)}</th>
             </tr>
           </tfoot>
         </table>
@@ -1642,24 +1756,30 @@
           <p class="invoice-label">Pay Online</p>
           <a href="${escapeHtml(PAYMENT_LINK)}" target="_blank" rel="noopener">Pay this invoice with PayPal</a>
         </section>
-        <p class="invoice-status">Status: ${escapeHtml(labelFor(collectionStatusLabels, record.status, "Not Sent"))}</p>
+        <p class="invoice-status">Status: ${escapeHtml(details.status)}</p>
       </article>
     `;
     elements.invoicePreviewDialog.showModal();
   }
 
   function closeInvoicePreview() {
-    state.invoicePrintTitle = "";
+    state.invoicePreviewId = "";
     elements.invoicePreviewDialog.close();
   }
 
-  function printInvoice() {
-    const previousTitle = document.title;
-    document.title = state.invoicePrintTitle || "CommunityVerse Invoice";
-    window.print();
-    window.setTimeout(() => {
-      document.title = previousTitle || DEFAULT_DOCUMENT_TITLE;
-    }, 500);
+  function saveInvoicePdf() {
+    const record = state.collections.find((collection) => collection.id === state.invoicePreviewId);
+    if (!record) {
+      return;
+    }
+    const pdf = buildInvoicePdf(record);
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(pdf.blob);
+    link.download = pdf.filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(link.href), 1000);
   }
 
   function openInvoiceEmail(id) {
@@ -1909,7 +2029,7 @@
   elements.invoiceTemplateType.addEventListener("change", updateInvoiceTemplateAmount);
   elements.fillMonthlyInvoiceButton.addEventListener("click", fillMonthlyInvoiceTemplate);
   elements.closeInvoicePreviewButton.addEventListener("click", closeInvoicePreview);
-  elements.printInvoiceButton.addEventListener("click", printInvoice);
+  elements.printInvoiceButton.addEventListener("click", saveInvoicePdf);
   elements.expenseForm.addEventListener("submit", addExpense);
   elements.search.addEventListener("input", renderRestaurantTable);
   elements.statusFilter.addEventListener("change", renderRestaurantTable);
