@@ -1148,7 +1148,12 @@
 
   function pastedLeadChunks(text = "") {
     const prepared = String(text || "")
-      .replace(/([a-z0-9.])(?=[A-Z][A-Za-z0-9 '&.]{2,80}:\s)/g, "$1\n\n");
+      .replace(/^\s*Here are[^:]{0,160}:/i, "")
+      .replace(/([a-z0-9.])(?=[A-Z][A-Za-z0-9 '&]{2,80}When:)/g, "$1\n\n")
+      .replace(/([A-Z][A-Za-z0-9 '&]{2,80})When:/g, "$1\nWhen:")
+      .replace(/([a-z0-9.])Details:/g, "$1\nDetails:")
+      .replace(/\bDetails:/g, "\nDetails:")
+      .replace(/([a-z0-9.])(?=(?!(?:When|Details|Location|Phone|Website|Facebook):)[A-Z][A-Za-z0-9 '&.]{2,80}:\s)/g, "$1\n\n");
     return prepared
       .split(/\n{2,}|(?=\n(?:\d+\.|\*|-)\s+)/)
       .map((chunk) => chunk.replace(/^\s*(?:\d+\.|\*|-)\s*/, "").trim())
@@ -1163,6 +1168,21 @@
       .replace(/\s+\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}.*$/, "")
       .replace(/\s*(?:facebook|website|menu|reviews?|directions|open now).*$/i, "")
       .trim();
+  }
+
+  function isPastedLeadNameCandidate(name = "") {
+    const cleaned = String(name || "").trim();
+    const key = normalizedImportKey(cleaned);
+    if (!cleaned || cleaned.length < 3 || cleaned.length > 90) {
+      return false;
+    }
+    if (/^(when|details|location|phone|website|facebook|menu|reviews?|directions|open now|here are|known for|offers)\b/.test(key)) {
+      return false;
+    }
+    if (/^[a-z]+\.?$/i.test(cleaned) && !/\b(bar|pub|grill|tavern|restaurant|cafe|pizza|brewery|bistro|diner)\b/.test(key)) {
+      return false;
+    }
+    return true;
   }
 
   function pastedTriviaValue(text = "") {
@@ -1203,10 +1223,10 @@
     const lines = String(chunk || "").split(/\n+/).map((line) => line.trim()).filter(Boolean);
     const nameLine = lines.find((line) => {
       const cleaned = cleanPastedLeadName(line);
-      return cleaned && !/^https?:\/\//i.test(line) && !/^(location|details|trivia schedule|phone|website|facebook)\b/i.test(cleaned);
+      return isPastedLeadNameCandidate(cleaned) && !/^https?:\/\//i.test(line);
     }) || "";
     const name = cleanPastedLeadName(nameLine);
-    if (!name || name.length < 3 || name.length > 90) {
+    if (!isPastedLeadNameCandidate(name)) {
       return null;
     }
     const cityState = cityFromPastedLead(chunk, market);
