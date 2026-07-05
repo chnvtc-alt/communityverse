@@ -660,6 +660,26 @@ th {
   min-height: 20px;
 }
 
+.match-reasons {
+  display: grid;
+  gap: 3px;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.25;
+}
+
+.match-reasons strong {
+  color: var(--green);
+}
+
+.match-reasons em {
+  margin-top: 2px;
+  color: var(--ink);
+  font-style: normal;
+  font-weight: 700;
+}
+
 .import-preview-table td:nth-child(6),
 .import-preview-table td:nth-child(7) {
   overflow-wrap: anywhere;

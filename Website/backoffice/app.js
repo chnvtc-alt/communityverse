@@ -2132,25 +2132,62 @@
     return normalizedImportKey(value).replace(/\b(the|restaurant|bar|grill|and)\b/g, "").replace(/\s+/g, " ").trim();
   }
 
-  function importNamesMatch(left = "", right = "", city = "") {
+  function normalizedPhone(value = "") {
+    return String(value || "").replace(/\D/g, "");
+  }
+
+  function normalizedUrl(value = "") {
+    return String(value || "")
+      .toLowerCase()
+      .replace(/^https?:\/\//, "")
+      .replace(/^www\./, "")
+      .replace(/\/+$/, "")
+      .trim();
+  }
+
+  function nameMatchReasons(left = "", right = "", city = "") {
     const leftKey = normalizedImportKey(left);
     const rightKey = normalizedImportKey(right);
     if (!leftKey || !rightKey) {
-      return false;
+      return [];
     }
     if (leftKey === rightKey) {
-      return true;
+      return ["Restaurant name"];
     }
     const cityKey = normalizedImportKey(city);
     if (cityKey) {
       if (rightKey === `${leftKey} ${cityKey}` || leftKey === `${rightKey} ${cityKey}`) {
-        return true;
+        return ["Restaurant name", "City"];
       }
       if ((rightKey.startsWith(`${leftKey} `) || leftKey.startsWith(`${rightKey} `)) && rightKey.includes(cityKey)) {
-        return true;
+        return ["Restaurant name", "City"];
       }
     }
-    return compactImportName(leftKey) === compactImportName(rightKey);
+    return compactImportName(leftKey) === compactImportName(rightKey) ? ["Similar restaurant name"] : [];
+  }
+
+  function matchReasons(imported, restaurant) {
+    const reasons = nameMatchReasons(imported.name, restaurant.name, imported.city);
+    if (normalizedImportKey(imported.city) && normalizedImportKey(imported.city) === normalizedImportKey(restaurant.city)) {
+      if (!reasons.includes("City")) {
+        reasons.push("City");
+      }
+    }
+    const importedPhone = normalizedPhone(imported.phone || imported.contactCell);
+    const existingPhone = normalizedPhone(restaurant.phone || restaurant.contactCell);
+    if (importedPhone && existingPhone && importedPhone === existingPhone) {
+      reasons.push("Phone number");
+    }
+    if (imported.contactEmail && restaurant.contactEmail && imported.contactEmail.toLowerCase() === restaurant.contactEmail.toLowerCase()) {
+      reasons.push("Email");
+    }
+    if (normalizedUrl(imported.website) && normalizedUrl(imported.website) === normalizedUrl(restaurant.website)) {
+      reasons.push("Website");
+    }
+    if (normalizedUrl(imported.facebookPage) && normalizedUrl(imported.facebookPage) === normalizedUrl(restaurant.facebookPage)) {
+      reasons.push("Facebook page");
+    }
+    return [...new Set(reasons)];
   }
 
   function fieldIsBlank(value = "") {
@@ -2237,11 +2274,13 @@
 
   function matchingRestaurant(imported) {
     const cityKey = normalizedImportKey(imported.city);
-    const matches = state.restaurants.filter((restaurant) => importNamesMatch(imported.name, restaurant.name, imported.city));
+    const matches = state.restaurants
+      .map((restaurant) => ({ restaurant, reasons: matchReasons(imported, restaurant) }))
+      .filter((match) => match.reasons.length);
     if (matches.length <= 1 || !cityKey) {
       return matches[0] || null;
     }
-    return matches.find((restaurant) => normalizedImportKey(restaurant.city) === cityKey) || matches[0] || null;
+    return matches.find((match) => normalizedImportKey(match.restaurant.city) === cityKey) || matches[0] || null;
   }
 
   function mergeImportedRestaurant(existing, imported) {
@@ -2282,13 +2321,22 @@
     const actionClass = item.action === "New" ? "new" : item.action === "Skip" ? "skip" : "update";
     const disabled = item.action === "Skip" ? " disabled" : "";
     const checked = item.selected && item.action !== "Skip" ? " checked" : "";
+    const matchReasonsHtml = item.existing
+      ? `
+        <div class="match-reasons">
+          <strong>Matched by:</strong>
+          ${item.matchReasons.map((reason) => `<span>✓ ${escapeHtml(reason)}</span>`).join("")}
+          <em>${escapeHtml(item.existing.name)}</em>
+        </div>
+      `
+      : "";
     return `
       <tr>
         <td>
           <input class="import-row-check" type="checkbox" data-import-index="${state.pendingProspectImport.indexOf(item)}"${checked}${disabled} />
         </td>
         <td><span class="import-tag import-tag-${actionClass}">${escapeHtml(item.action)}</span></td>
-        <td><strong>${escapeHtml(item.imported.name)}</strong>${item.existing ? `<div class="helper">Matches ${escapeHtml(item.existing.name)}</div>` : ""}</td>
+        <td><strong>${escapeHtml(item.imported.name)}</strong>${matchReasonsHtml}</td>
         <td>${escapeHtml(item.imported.city)}</td>
         <td>${escapeHtml(labelFor({ yes: "Yes", no: "No", possible: "Possible" }, item.imported.currentlyDoesTrivia, "Unknown"))}</td>
         <td>${escapeHtml(item.imported.notes)}</td>
@@ -2350,11 +2398,13 @@
         .map((row) => importedRestaurantFromRow(row, file.name))
         .filter(Boolean);
       state.pendingProspectImport = importedRows.map((imported) => {
-        const existing = matchingRestaurant(imported);
+        const match = matchingRestaurant(imported);
+        const existing = match?.restaurant || null;
         const merged = mergeImportedRestaurant(existing, imported);
         return {
           imported,
           existing,
+          matchReasons: match?.reasons || [],
           record: merged.record,
           changes: merged.changes,
           action: existing ? (merged.changes.length ? "Update" : "Skip") : "New",
