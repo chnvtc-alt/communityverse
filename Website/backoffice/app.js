@@ -1149,8 +1149,10 @@
   function pastedLeadChunks(text = "") {
     const prepared = String(text || "")
       .replace(/^\s*Here are[^:]{0,160}:/i, "")
+      .replace(/([a-z0-9.])(?=[A-Z][A-Za-z0-9 '&.]{2,80}\s+\([A-Z][A-Za-z ]+,\s*(?:GA|AL|FL|NC|SC|TN)\))/g, "$1\n\n")
       .replace(/([a-z0-9.])(?=[A-Z][A-Za-z0-9 '&]{2,80}When:)/g, "$1\n\n")
       .replace(/([A-Z][A-Za-z0-9 '&]{2,80})When:/g, "$1\nWhen:")
+      .replace(/([a-z0-9.])Trivia Night:/g, "$1\nTrivia Night:")
       .replace(/([a-z0-9.])Details:/g, "$1\nDetails:")
       .replace(/\bDetails:/g, "\nDetails:")
       .replace(/([a-z0-9.])(?=(?!(?:When|Details|Location|Phone|Website|Facebook):)[A-Z][A-Za-z0-9 '&.]{2,80}:\s)/g, "$1\n\n");
@@ -1163,7 +1165,9 @@
   function cleanPastedLeadName(line = "") {
     return String(line || "")
       .replace(/^https?:\/\/\S+/i, "")
+      .replace(/Trivia Night\s*$/i, "")
       .replace(/:\s+.*$/, "")
+      .replace(/\s+\([A-Z][A-Za-z ]+,\s*(?:GA|AL|FL|NC|SC|TN)\)\s*$/i, "")
       .replace(/\s*[-|•].*$/, "")
       .replace(/\s+\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}.*$/, "")
       .replace(/\s*(?:facebook|website|menu|reviews?|directions|open now).*$/i, "")
