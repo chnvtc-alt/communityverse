@@ -127,6 +127,7 @@
     collectionNotes: document.querySelector("#collection-notes"),
     collectionsList: document.querySelector("#collections-list"),
     invoiceTemplateMonth: document.querySelector("#invoice-template-month"),
+    invoiceTemplateType: document.querySelector("#invoice-template-type"),
     invoiceTemplateDescription: document.querySelector("#invoice-template-description"),
     invoiceTemplateAmount: document.querySelector("#invoice-template-amount"),
     fillMonthlyInvoiceButton: document.querySelector("#fill-monthly-invoice-button"),
@@ -461,6 +462,7 @@
     state.expenses = Array.isArray(data.expenses) ? data.expenses.map(normalizeExpense) : [];
     cacheBackofficeData();
     render();
+    fillNextInvoiceNumber();
   }
 
   function hasLocalBackupData() {
@@ -865,13 +867,32 @@
     return String(largestNumber + 1).padStart(3, "0");
   }
 
+  function fillNextInvoiceNumber() {
+    if (!elements.collectionInvoice.value.trim()) {
+      elements.collectionInvoice.value = nextInvoiceNumber();
+    }
+  }
+
+  function updateInvoiceTemplateAmount() {
+    const amount = elements.invoiceTemplateAmount.value.trim();
+    if (amount && amount !== "19" && amount !== "9.50") {
+      return;
+    }
+    elements.invoiceTemplateAmount.value = elements.invoiceTemplateType.value === "half" ? "9.50" : "19";
+  }
+
   function fillMonthlyInvoiceTemplate() {
     const restaurant = state.restaurants.find((record) => record.id === elements.collectionRestaurant.value);
     const monthValue = elements.invoiceTemplateMonth.value || currentMonth();
     const range = monthDateRange(monthValue);
     const restaurantName = restaurant?.name || "Restaurant Challenge";
-    const description = elements.invoiceTemplateDescription.value.trim() || `${restaurantName} Game Monthly Subscription`;
-    const amount = elements.invoiceTemplateAmount.value.trim() || "19";
+    const billingType = elements.invoiceTemplateType.value;
+    const defaultAmount = billingType === "half" ? "9.50" : "19";
+    const defaultDescription = billingType === "half"
+      ? `${restaurantName} Game Partial Month Subscription`
+      : `${restaurantName} Game Monthly Subscription`;
+    const description = elements.invoiceTemplateDescription.value.trim() || defaultDescription;
+    const amount = elements.invoiceTemplateAmount.value.trim() || defaultAmount;
     elements.invoiceTemplateMonth.value = monthValue;
     elements.collectionInvoice.value = nextInvoiceNumber();
     elements.collectionDueDate.value = today();
@@ -1320,6 +1341,7 @@
     state.collections.unshift(normalizeCollection(data.collection));
     cacheBackofficeData();
     elements.collectionForm.reset();
+    elements.collectionInvoice.value = nextInvoiceNumber();
     elements.collectionStatus.value = "not-sent";
     renderCollections();
   }
@@ -1694,6 +1716,8 @@
   elements.status.addEventListener("change", updateSaleDetailsVisibility);
   elements.quickContactForm.addEventListener("submit", saveQuickContact);
   elements.collectionForm.addEventListener("submit", addCollection);
+  elements.collectionRestaurant.addEventListener("change", fillNextInvoiceNumber);
+  elements.invoiceTemplateType.addEventListener("change", updateInvoiceTemplateAmount);
   elements.fillMonthlyInvoiceButton.addEventListener("click", fillMonthlyInvoiceTemplate);
   elements.closeInvoicePreviewButton.addEventListener("click", closeInvoicePreview);
   elements.printInvoiceButton.addEventListener("click", () => window.print());
@@ -1778,6 +1802,7 @@
 
   elements.expenseDate.value = today();
   elements.invoiceTemplateMonth.value = currentMonth();
+  updateInvoiceTemplateAmount();
   if (adminKey) {
     loadBackofficeData();
   } else {

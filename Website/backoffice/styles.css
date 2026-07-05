@@ -360,7 +360,7 @@ h3 {
 
 .invoice-template-panel {
   display: grid;
-  grid-template-columns: 180px minmax(240px, 1fr) 120px auto;
+  grid-template-columns: 180px 210px minmax(220px, 1fr) 120px auto;
   gap: 12px;
   align-items: end;
   margin-top: 14px;

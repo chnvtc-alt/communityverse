@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,650;9..144,760&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v29" />
+    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v30" />
   </head>
   <body>
     <section class="login-panel" id="login-panel">
@@ -277,6 +277,13 @@
               <label>
                 Billing Month
                 <input id="invoice-template-month" type="month" />
+              </label>
+              <label>
+                Billing Type
+                <select id="invoice-template-type">
+                  <option value="full">Full Month - $19</option>
+                  <option value="half">Partial / Half Month - $9.50</option>
+                </select>
               </label>
               <label>
                 Description
@@ -701,6 +708,6 @@
     </dialog>
 
     <input id="import-file" type="file" accept="application/json" hidden />
-    <script src="/backoffice/app.js?v=backoffice-v29" defer></script>
+    <script src="/backoffice/app.js?v=backoffice-v30" defer></script>
   </body>
 </html>
