@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,650;9..144,760&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v30" />
+    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v31" />
   </head>
   <body>
     <section class="login-panel" id="login-panel">
@@ -253,6 +253,8 @@
                   <tr>
                     <th><button class="sort-button" type="button" data-sales-sort="name">Restaurant</button></th>
                     <th><button class="sort-button" type="button" data-sales-sort="saleDate">Sale Date</button></th>
+                    <th>Start</th>
+                    <th>End</th>
                     <th><button class="sort-button" type="button" data-sales-sort="package">Package</button></th>
                     <th><button class="sort-button" type="button" data-sales-sort="monthly">Monthly</button></th>
                     <th><button class="sort-button" type="button" data-sales-sort="payment">Payment</button></th>
@@ -281,8 +283,9 @@
               <label>
                 Billing Type
                 <select id="invoice-template-type">
-                  <option value="full">Full Month - $19</option>
-                  <option value="half">Partial / Half Month - $9.50</option>
+                  <option value="auto">Auto from Sales terms</option>
+                  <option value="full">Full Month</option>
+                  <option value="half">Partial / Half Month</option>
                 </select>
               </label>
               <label>
@@ -576,6 +579,14 @@
                 <input id="package-name" placeholder="Starter, monthly, custom..." />
               </label>
               <label>
+                Start Date
+                <input id="service-start-date" type="date" />
+              </label>
+              <label>
+                End Date
+                <input id="service-end-date" type="date" />
+              </label>
+              <label>
                 Monthly Amount
                 <input id="monthly-amount" inputmode="decimal" placeholder="199" />
               </label>
@@ -708,6 +719,6 @@
     </dialog>
 
     <input id="import-file" type="file" accept="application/json" hidden />
-    <script src="/backoffice/app.js?v=backoffice-v30" defer></script>
+    <script src="/backoffice/app.js?v=backoffice-v31" defer></script>
   </body>
 </html>

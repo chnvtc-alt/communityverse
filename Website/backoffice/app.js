@@ -181,6 +181,8 @@
     contactHistoryList: document.querySelector("#contact-history-list"),
     saleDate: document.querySelector("#sale-date"),
     saleDetailsSection: document.querySelector("#sale-details-section"),
+    serviceStartDate: document.querySelector("#service-start-date"),
+    serviceEndDate: document.querySelector("#service-end-date"),
     packageName: document.querySelector("#package-name"),
     monthlyAmount: document.querySelector("#monthly-amount"),
     setupFee: document.querySelector("#setup-fee"),
@@ -308,6 +310,8 @@
       prospectNotes: String(record.prospectNotes || "").trim(),
       contactHistory: normalizeContactHistory(record.contactHistory),
       saleDate: String(record.saleDate || "").trim(),
+      serviceStartDate: String(record.serviceStartDate || record.saleDate || "").trim(),
+      serviceEndDate: String(record.serviceEndDate || "").trim(),
       packageName: String(record.packageName || "").trim(),
       monthlyAmount: String(record.monthlyAmount || "").trim(),
       setupFee: String(record.setupFee || "").trim(),
@@ -839,13 +843,15 @@
               <button class="link-button strong-link" type="button" data-edit-id="${escapeHtml(restaurant.id)}">${escapeHtml(restaurant.name)}</button>
             </td>
             <td>${escapeHtml(restaurant.saleDate || "")}</td>
+            <td>${escapeHtml(shortDate(restaurant.serviceStartDate))}</td>
+            <td>${escapeHtml(shortDate(restaurant.serviceEndDate) || "Open")}</td>
             <td>${escapeHtml(restaurant.packageName || "")}</td>
             <td>${escapeHtml(moneyValue(restaurant.monthlyAmount))}</td>
             <td>${escapeHtml(labelFor(paymentStatusLabels, restaurant.paymentStatus, "Not set"))}</td>
             <td>${escapeHtml(labelFor(setupStatusLabels, restaurant.setupStatus, "Not set"))}</td>
           </tr>
         `).join("")
-      : '<tr><td colspan="6"><div class="empty-state">No sales yet. Change a restaurant status to Customer or use New Sale.</div></td></tr>';
+      : '<tr><td colspan="8"><div class="empty-state">No sales yet. Change a restaurant status to Customer or use New Sale.</div></td></tr>';
   }
 
   function renderCollectionRestaurantOptions() {
@@ -878,7 +884,36 @@
     if (amount && amount !== "19" && amount !== "9.50") {
       return;
     }
-    elements.invoiceTemplateAmount.value = elements.invoiceTemplateType.value === "half" ? "9.50" : "19";
+    const restaurant = state.restaurants.find((record) => record.id === elements.collectionRestaurant.value);
+    const monthValue = elements.invoiceTemplateMonth.value || currentMonth();
+    const monthlyAmount = numberFromMoney(restaurant?.monthlyAmount, 19);
+    const billingType = elements.invoiceTemplateType.value;
+    const nextAmount = billingType === "half"
+      ? monthlyAmount / 2
+      : billingType === "auto"
+        ? proratedAmount(monthlyAmount, restaurant?.serviceStartDate, monthValue)
+        : monthlyAmount;
+    elements.invoiceTemplateAmount.value = String(nextAmount.toFixed(2)).replace(/\.00$/, "");
+  }
+
+  function numberFromMoney(value, fallback = 19) {
+    const rawValue = String(value || "");
+    const amount = Number(rawValue.replace(/[^0-9.]/g, ""));
+    return /\d/.test(rawValue) && Number.isFinite(amount) && amount >= 0 ? amount : fallback;
+  }
+
+  function proratedAmount(monthlyAmount, startDate, monthValue) {
+    const range = monthDateRange(monthValue);
+    if (!startDate || !startDate.startsWith(monthValue)) {
+      return monthlyAmount;
+    }
+    const startDay = Number(startDate.slice(8, 10));
+    const totalDays = Number(range.end.slice(8, 10));
+    if (!startDay || startDay <= 1 || !totalDays) {
+      return monthlyAmount;
+    }
+    const billableDays = totalDays - startDay + 1;
+    return Math.round((monthlyAmount * billableDays / totalDays) * 100) / 100;
   }
 
   function fillMonthlyInvoiceTemplate() {
@@ -887,12 +922,20 @@
     const range = monthDateRange(monthValue);
     const restaurantName = restaurant?.name || "Restaurant Challenge";
     const billingType = elements.invoiceTemplateType.value;
-    const defaultAmount = billingType === "half" ? "9.50" : "19";
-    const defaultDescription = billingType === "half"
+    const monthlyAmount = numberFromMoney(restaurant?.monthlyAmount, 19);
+    const calculatedAmount = billingType === "half"
+      ? monthlyAmount / 2
+      : billingType === "auto"
+        ? proratedAmount(monthlyAmount, restaurant?.serviceStartDate, monthValue)
+        : monthlyAmount;
+    const isProrated = calculatedAmount !== monthlyAmount;
+    const defaultDescription = billingType === "half" || isProrated
       ? `${restaurantName} Game Partial Month Subscription`
       : `${restaurantName} Game Monthly Subscription`;
     const description = elements.invoiceTemplateDescription.value.trim() || defaultDescription;
-    const amount = elements.invoiceTemplateAmount.value.trim() || defaultAmount;
+    const enteredAmount = elements.invoiceTemplateAmount.value.trim();
+    const defaultAmountText = String(calculatedAmount.toFixed(2)).replace(/\.00$/, "");
+    const amount = enteredAmount && !["19", "9.50"].includes(enteredAmount) ? enteredAmount : defaultAmountText;
     elements.invoiceTemplateMonth.value = monthValue;
     elements.collectionInvoice.value = nextInvoiceNumber();
     elements.collectionDueDate.value = today();
@@ -1050,6 +1093,8 @@
     elements.contactHistoryNote.value = "";
     renderContactHistoryEditor();
     elements.saleDate.value = restaurant ? record.saleDate : "";
+    elements.serviceStartDate.value = restaurant ? record.serviceStartDate : "";
+    elements.serviceEndDate.value = restaurant ? record.serviceEndDate : "";
     elements.packageName.value = restaurant ? record.packageName : "";
     elements.monthlyAmount.value = restaurant ? record.monthlyAmount : "";
     elements.setupFee.value = restaurant ? record.setupFee : "";
@@ -1091,6 +1136,8 @@
       prospectNotes: elements.prospectNotes.value,
       contactHistory: state.editingContactHistory,
       saleDate: elements.saleDate.value,
+      serviceStartDate: elements.serviceStartDate.value,
+      serviceEndDate: elements.serviceEndDate.value,
       packageName: elements.packageName.value,
       monthlyAmount: elements.monthlyAmount.value,
       setupFee: elements.setupFee.value,
@@ -1717,6 +1764,8 @@
   elements.quickContactForm.addEventListener("submit", saveQuickContact);
   elements.collectionForm.addEventListener("submit", addCollection);
   elements.collectionRestaurant.addEventListener("change", fillNextInvoiceNumber);
+  elements.collectionRestaurant.addEventListener("change", updateInvoiceTemplateAmount);
+  elements.invoiceTemplateMonth.addEventListener("change", updateInvoiceTemplateAmount);
   elements.invoiceTemplateType.addEventListener("change", updateInvoiceTemplateAmount);
   elements.fillMonthlyInvoiceButton.addEventListener("click", fillMonthlyInvoiceTemplate);
   elements.closeInvoicePreviewButton.addEventListener("click", closeInvoicePreview);
