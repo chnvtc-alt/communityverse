@@ -253,6 +253,14 @@
     quickContactFullCardButton: document.querySelector("#quick-contact-full-card-button"),
     closeQuickContactButton: document.querySelector("#close-quick-contact-button"),
     cancelQuickContactButton: document.querySelector("#cancel-quick-contact-button"),
+    researchNotesDialog: document.querySelector("#research-notes-dialog"),
+    researchNotesForm: document.querySelector("#research-notes-form"),
+    researchNotesTitle: document.querySelector("#research-notes-title"),
+    researchNotesHelper: document.querySelector("#research-notes-helper"),
+    researchNotesText: document.querySelector("#research-notes-text"),
+    openResearchSearchesButton: document.querySelector("#open-research-searches-button"),
+    closeResearchNotesButton: document.querySelector("#close-research-notes-button"),
+    cancelResearchNotesButton: document.querySelector("#cancel-research-notes-button"),
   };
 
   const state = {
@@ -266,6 +274,7 @@
     editingExpenseId: "",
     invoicePreviewId: "",
     pendingProspectImport: [],
+    researchTarget: null,
     loading: false,
     restaurantSortKey: "followup",
     restaurantSortDirection: "asc",
@@ -527,6 +536,7 @@
       elements.copyLeadSearchesButton,
       elements.clearManualLeadButton,
       elements.clearPastedLeadsButton,
+      elements.openResearchSearchesButton,
     ].forEach((element) => {
       if (element) element.disabled = loading;
     });
@@ -1169,21 +1179,23 @@
     });
   }
 
+  function prospectImportPreviewItem(imported) {
+    const match = matchingRestaurant(imported);
+    const existing = match?.restaurant || null;
+    const merged = mergeImportedRestaurant(existing, imported);
+    return {
+      imported,
+      existing,
+      matchReasons: match?.reasons || [],
+      record: merged.record,
+      changes: merged.changes,
+      action: existing ? (merged.changes.length ? "Update" : "Skip") : "New",
+      selected: !existing || merged.changes.length > 0,
+    };
+  }
+
   function previewImportedProspects(importedRows = [], readyMessage = "Prospect preview ready") {
-    state.pendingProspectImport = importedRows.filter(Boolean).map((imported) => {
-      const match = matchingRestaurant(imported);
-      const existing = match?.restaurant || null;
-      const merged = mergeImportedRestaurant(existing, imported);
-      return {
-        imported,
-        existing,
-        matchReasons: match?.reasons || [],
-        record: merged.record,
-        changes: merged.changes,
-        action: existing ? (merged.changes.length ? "Update" : "Skip") : "New",
-        selected: !existing || merged.changes.length > 0,
-      };
-    });
+    state.pendingProspectImport = importedRows.filter(Boolean).map(prospectImportPreviewItem);
     renderProspectImportPreview();
     elements.prospectImportDialog.showModal();
     setSyncStatus(readyMessage);
@@ -1258,6 +1270,17 @@
     return "possible";
   }
 
+  function researchTriviaValue(text = "") {
+    const key = normalizedImportKey(text);
+    if (/\b(no trivia|does not have trivia|without trivia)\b/.test(key)) {
+      return "no";
+    }
+    if (/\b(trivia|trivia night|trivia nights|quizzo|team trivia|bar trivia)\b/.test(key)) {
+      return "yes";
+    }
+    return "";
+  }
+
   function firstMatch(text = "", pattern) {
     const match = String(text || "").match(pattern);
     return match ? match[0].trim() : "";
@@ -1271,11 +1294,16 @@
     return urls.find((url) => normalizedImportKey(url).includes(source)) || "";
   }
 
+  function firstWebsiteUrl(text = "") {
+    const urls = String(text || "").match(/https?:\/\/[^\s)]+/gi) || [];
+    return urls.find((url) => !normalizedImportKey(url).includes("facebook")) || "";
+  }
+
   function cityFromPastedLead(text = "", market = leadBuilderMarket()) {
-    const cityPattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*,?\s+(GA|AL|FL|NC|SC|TN)\b/;
+    const cityPattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*,?\s+(GA|AL|FL|NC|SC|TN|Georgia|Alabama|Florida|North Carolina|South Carolina|Tennessee)\b/i;
     const match = String(text || "").match(cityPattern);
     if (match) {
-      return { city: match[1], state: match[2] };
+      return { city: cleanCityName(match[1]), state: stateCodeFromText(match[2], market.stateText) };
     }
     return { city: market.city, state: market.stateText };
   }
@@ -1285,6 +1313,38 @@
       text,
       /\b\d{1,6}\s+(?:[NSEW]\s+)?[A-Z][A-Za-z0-9'.-]*(?:\s+[A-Z][A-Za-z0-9'.-]*){0,5}\s+(?:St|Street|Ave|Avenue|Rd|Road|Dr|Drive|Blvd|Boulevard|Ln|Lane|Pkwy|Parkway|Hwy|Highway|Cir|Circle|Ct|Court|Way|Pl|Place|Ter|Terrace)(?:\s+(?:N|S|E|W|NE|NW|SE|SW))?\b/i
     );
+  }
+
+  function zipFromPastedLead(text = "") {
+    return firstMatch(text, /\b\d{5}(?:-\d{4})?\b/);
+  }
+
+  function researchNotesFromText(baseRecord = {}, text = "") {
+    const researchText = String(text || "").trim();
+    const triviaValue = researchTriviaValue(researchText);
+    const cityState = cityFromPastedLead(researchText, {
+      city: baseRecord.city || "",
+      stateText: baseRecord.state || leadBuilderMarket().stateText,
+    });
+    return normalizeRestaurant({
+      ...baseRecord,
+      status: baseRecord.status || "prospect",
+      street: streetFromPastedLead(researchText) || baseRecord.street,
+      city: cityState.city || baseRecord.city,
+      state: cityState.state || baseRecord.state,
+      zip: zipFromPastedLead(researchText) || baseRecord.zip,
+      phone: firstMatch(researchText, /\(?\b\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}\b/) || baseRecord.phone,
+      currentlyDoesTrivia: triviaValue || baseRecord.currentlyDoesTrivia,
+      website: firstWebsiteUrl(researchText) || baseRecord.website,
+      facebookPage: firstUrl(researchText, "facebook") || baseRecord.facebookPage,
+      contactEmail: firstMatch(researchText, /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i) || baseRecord.contactEmail,
+      notes: researchText ? appendUniqueNote(baseRecord.notes, `Research notes:\n${researchText}`) : baseRecord.notes,
+      prospectNotes: researchText ? appendUniqueNote(baseRecord.prospectNotes, `Research notes:\n${researchText}`) : baseRecord.prospectNotes,
+      prospectStage: baseRecord.prospectStage || "new-lead",
+      prospectScore: baseRecord.prospectScore || (triviaValue === "yes" ? "7" : "5"),
+      leadSource: baseRecord.leadSource || "Lead Builder research",
+      assignedTo: baseRecord.assignedTo || DEFAULT_OWNER,
+    });
   }
 
   function pastedLeadFromChunk(chunk = "") {
@@ -2919,6 +2979,7 @@
     if (!item) {
       return;
     }
+    openResearchNotesDialog({ type: "import", index, record: item.imported });
     openResearchQueries(item.imported);
   }
 
@@ -2927,7 +2988,21 @@
     if (!restaurant) {
       return;
     }
+    openResearchNotesDialog({ type: "saved", id, record: restaurant });
     openResearchQueries(restaurant);
+  }
+
+  function openResearchNotesDialog(target) {
+    state.researchTarget = target;
+    elements.researchNotesTitle.textContent = `Research ${target.record.name || "restaurant"}`;
+    elements.researchNotesHelper.textContent = "Paste useful details you found. Back Office will preview field updates before anything is saved.";
+    elements.researchNotesText.value = "";
+    elements.researchNotesDialog.showModal();
+  }
+
+  function closeResearchNotesDialog() {
+    state.researchTarget = null;
+    elements.researchNotesDialog.close();
   }
 
   function openResearchQueries(record = {}) {
@@ -2944,6 +3019,28 @@
     if (!openedCount) {
       window.alert("The browser blocked the research tabs. Allow popups for this site, then click Research again.");
     }
+  }
+
+  function previewResearchNotes(event) {
+    event.preventDefault();
+    const target = state.researchTarget;
+    const text = elements.researchNotesText.value.trim();
+    if (!target || !text) {
+      window.alert("Paste the useful research text before previewing.");
+      return;
+    }
+    const updated = researchNotesFromText(target.record, text);
+    closeResearchNotesDialog();
+    if (target.type === "import") {
+      state.pendingProspectImport[target.index] = prospectImportPreviewItem(updated);
+      renderProspectImportPreview();
+      if (!elements.prospectImportDialog.open) {
+        elements.prospectImportDialog.showModal();
+      }
+      setSyncStatus(`Research preview updated for ${updated.name}`);
+      return;
+    }
+    previewImportedProspects([updated], "Research update preview ready");
   }
 
   function prospectImportRow(item) {
@@ -3105,11 +3202,19 @@
   elements.applyProspectImportButton.addEventListener("click", applyProspectImport);
   elements.closeQuickContactButton.addEventListener("click", closeQuickContact);
   elements.cancelQuickContactButton.addEventListener("click", closeQuickContact);
+  elements.closeResearchNotesButton.addEventListener("click", closeResearchNotesDialog);
+  elements.cancelResearchNotesButton.addEventListener("click", closeResearchNotesDialog);
+  elements.openResearchSearchesButton.addEventListener("click", () => {
+    if (state.researchTarget?.record) {
+      openResearchQueries(state.researchTarget.record);
+    }
+  });
   elements.quickContactClearFollowUp.addEventListener("click", clearQuickContactFollowUp);
   elements.quickContactFullCardButton.addEventListener("click", openFullCardFromQuickContact);
   elements.deleteRestaurantButton.addEventListener("click", deleteCurrentRestaurant);
   elements.addContactHistoryButton.addEventListener("click", addContactHistory);
   elements.form.addEventListener("submit", saveRestaurant);
+  elements.researchNotesForm.addEventListener("submit", previewResearchNotes);
   elements.status.addEventListener("change", updateSaleDetailsVisibility);
   elements.quickContactForm.addEventListener("submit", saveQuickContact);
   elements.collectionForm.addEventListener("submit", addCollection);
