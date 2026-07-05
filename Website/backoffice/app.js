@@ -1232,7 +1232,7 @@
   function streetFromPastedLead(text = "") {
     return firstMatch(
       text,
-      /\b\d{1,6}\s+(?:[NSEW]\s+)?[A-Z][A-Za-z0-9'.-]*(?:\s+[A-Z][A-Za-z0-9'.-]*){0,5}\s+(?:St|Street|Ave|Avenue|Rd|Road|Dr|Drive|Blvd|Boulevard|Ln|Lane|Pkwy|Parkway|Hwy|Highway|Cir|Circle|Ct|Court|Way|Pl|Place|Ter|Terrace)\b/i
+      /\b\d{1,6}\s+(?:[NSEW]\s+)?[A-Z][A-Za-z0-9'.-]*(?:\s+[A-Z][A-Za-z0-9'.-]*){0,5}\s+(?:St|Street|Ave|Avenue|Rd|Road|Dr|Drive|Blvd|Boulevard|Ln|Lane|Pkwy|Parkway|Hwy|Highway|Cir|Circle|Ct|Court|Way|Pl|Place|Ter|Terrace)(?:\s+(?:N|S|E|W|NE|NW|SE|SW))?\b/i
     );
   }
 
@@ -1270,6 +1270,95 @@
     });
   }
 
+  function isYelpPaste(text = "") {
+    const key = normalizedImportKey(text);
+    return key.includes("sort recommended") && (key.includes("reviews") || key.includes("start order"));
+  }
+
+  function isYelpNoiseLine(line = "") {
+    const key = normalizedImportKey(line);
+    const categoryKeys = new Set([
+      "american",
+      "bars",
+      "beer bar",
+      "beer gardens",
+      "beer wine and spirits",
+      "breweries",
+      "burgers",
+      "desserts",
+      "gastropubs",
+      "karaoke",
+      "order food",
+      "pizza",
+      "sandwiches",
+      "sports bars",
+      "start order",
+      "tapas small plates",
+      "venues and event spaces",
+      "wine bars",
+    ]);
+    if (!key || categoryKeys.has(key)) {
+      return true;
+    }
+    if (/^\d+(?:\.\d+)?\s*\(\d+\s+reviews?\)$/i.test(String(line || "").trim())) {
+      return true;
+    }
+    return /^(best trivia night near|sort recommended|on their website|more|order food|start order)\b/.test(key);
+  }
+
+  function isYelpBusinessNameCandidate(line = "") {
+    const cleaned = String(line || "").trim();
+    if (!cleaned || cleaned.length < 3 || cleaned.length > 90) {
+      return false;
+    }
+    if (isYelpNoiseLine(cleaned) || streetFromPastedLead(cleaned)) {
+      return false;
+    }
+    return !/^["']/.test(cleaned);
+  }
+
+  function nextYelpBusinessStart(lines = [], startIndex = 0) {
+    for (let index = startIndex; index < lines.length - 1; index += 1) {
+      const current = lines[index];
+      if (current === lines[index + 1] && isYelpBusinessNameCandidate(current)) {
+        return index;
+      }
+    }
+    return lines.length;
+  }
+
+  function yelpLeadsFromText(text = "") {
+    if (!isYelpPaste(text)) {
+      return [];
+    }
+    const market = leadBuilderMarket();
+    const lines = String(text || "").split(/\n+/).map((line) => line.trim()).filter(Boolean);
+    const records = [];
+    for (let index = 0; index < lines.length - 1; index += 1) {
+      const name = lines[index];
+      if (name !== lines[index + 1] || !isYelpBusinessNameCandidate(name)) {
+        continue;
+      }
+      const nextStart = nextYelpBusinessStart(lines, index + 2);
+      const resultLines = lines.slice(index + 2, nextStart);
+      const resultText = resultLines.join("\n");
+      records.push(normalizeRestaurant({
+        name,
+        status: "prospect",
+        street: streetFromPastedLead(resultText),
+        city: market.city,
+        state: market.stateText,
+        currentlyDoesTrivia: pastedTriviaValue(resultText),
+        prospectStage: "new-lead",
+        prospectScore: pastedTriviaValue(resultText) === "yes" ? "7" : "5",
+        leadSource: "Lead Builder Yelp paste",
+        assignedTo: DEFAULT_OWNER,
+      }));
+      index = nextStart - 1;
+    }
+    return records;
+  }
+
   function nearbyRadarLeadsFromText(text = "") {
     const match = String(text || "").match(/\binclude\s+(.+)$/i);
     if (!match) {
@@ -1304,11 +1393,19 @@
   }
 
   function pastedLeadsFromText(text = "") {
+    const yelpRecords = yelpLeadsFromText(text);
+    if (yelpRecords.length) {
+      return uniquePastedLeads(yelpRecords);
+    }
     const chunks = pastedLeadChunks(text);
     const records = [
       ...chunks.map(pastedLeadFromChunk).filter(Boolean),
       ...nearbyRadarLeadsFromText(text),
     ];
+    return uniquePastedLeads(records);
+  }
+
+  function uniquePastedLeads(records = []) {
     const seen = new Set();
     return records.filter((record) => {
       const key = [normalizedImportKey(record.name), normalizedImportKey(record.city), normalizedPhone(record.phone)].join("|");
