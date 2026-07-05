@@ -3,7 +3,6 @@ import { saveBackofficeCollection } from "./backoffice-admin.mjs";
 const PAYMENT_LINK = "https://www.paypal.com/ncp/payment/HSHM25X6JZFZ4";
 const DEFAULT_TEST_EMAIL = "communityversegames@gmail.com";
 const INVOICE_SENDER = {
-  name: "Tim Collins",
   business: "CommunityVerse Games",
   street: "3155 Waterplace Cove",
   cityStateZip: "Villa Rica, GA 30180",
@@ -117,7 +116,7 @@ function buildInvoicePdf(collection = {}, restaurant = {}) {
   });
 
   addText("From", 330, 672, 12, true);
-  addText(`${INVOICE_SENDER.name} / ${INVOICE_SENDER.business}`, 330, 652, 10, true);
+  addText(INVOICE_SENDER.business, 330, 652, 10, true);
   addText(INVOICE_SENDER.street, 330, 638, 10);
   addText(INVOICE_SENDER.cityStateZip, 330, 624, 10);
   addText(INVOICE_SENDER.phone, 330, 610, 10);
@@ -199,7 +198,7 @@ function invoiceHtml(collection = {}, restaurant = {}, isTest = false) {
       <p>${htmlEscape(details.description)}</p>
       <p>You can pay online using the button above. The PDF invoice is attached for your records.</p>
       <hr style="border:0;border-top:1px solid #d8d0bf;margin:26px 0;" />
-      <p style="margin:0;"><strong>${INVOICE_SENDER.name} / ${INVOICE_SENDER.business}</strong><br />${INVOICE_SENDER.street}<br />${INVOICE_SENDER.cityStateZip}<br />${INVOICE_SENDER.phone}</p>
+      <p style="margin:0;"><strong>${INVOICE_SENDER.business}</strong><br />${INVOICE_SENDER.street}<br />${INVOICE_SENDER.cityStateZip}<br />${INVOICE_SENDER.phone}</p>
     </div>
   </body>
 </html>`;
@@ -223,7 +222,6 @@ function invoiceText(collection = {}, restaurant = {}, isTest = false) {
     "The PDF invoice is attached for your records.",
     "",
     "Thank you,",
-    INVOICE_SENDER.name,
     INVOICE_SENDER.business,
     INVOICE_SENDER.phone,
   ].filter(Boolean).join("\n");
