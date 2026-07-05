@@ -57,6 +57,20 @@ button {
   backdrop-filter: blur(16px);
 }
 
+.control-room-brand {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  min-width: 0;
+}
+
+.control-room-logo {
+  display: block;
+  width: clamp(130px, 14vw, 210px);
+  height: auto;
+  flex: 0 0 auto;
+}
+
 .workshop-tabs {
   display: flex;
   gap: 10px;
@@ -1068,6 +1082,15 @@ dialog::backdrop {
 @media (max-width: 600px) {
   .topbar {
     align-items: flex-start;
+  }
+
+  .control-room-brand {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .control-room-logo {
+    width: min(220px, 82vw);
   }
 
   .topbar h1 {

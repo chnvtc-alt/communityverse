@@ -1,7 +1,11 @@
+import { readFileSync } from "node:fs";
 import { saveBackofficeCollection } from "./backoffice-admin.mjs";
 
 const PAYMENT_LINK = "https://www.paypal.com/ncp/payment/HSHM25X6JZFZ4";
-const LOGO_URL = "https://communityversegames.com/assets/communityverse-games-logo-transparent.png";
+const LOGO_URL = "https://communityversegames.com/assets/communityverse-games-logo-transparent-cropped.png";
+const PDF_LOGO_URL = new URL("../../assets/communityverse-games-logo-pdf.jpg", import.meta.url);
+const PDF_LOGO_WIDTH = 230;
+const PDF_LOGO_HEIGHT = 71;
 const DEFAULT_TEST_EMAIL = "communityversegames@gmail.com";
 const INVOICE_SENDER = {
   business: "CommunityVerse Games",
@@ -94,6 +98,62 @@ function wrapText(value, maxLength = 78) {
   return lines.length ? lines : [""];
 }
 
+function pdfLogoBytes() {
+  try {
+    return readFileSync(PDF_LOGO_URL);
+  } catch {
+    return null;
+  }
+}
+
+function buildPdfDocument({ stream, payY, logoBytes = null } = {}) {
+  const streamBytes = Buffer.from(stream, "utf8");
+  const resources = logoBytes
+    ? "/Resources << /Font << /F1 4 0 R /F2 5 0 R >> /XObject << /Logo 8 0 R >> >>"
+    : "/Resources << /Font << /F1 4 0 R /F2 5 0 R >> >>";
+  const objects = [
+    Buffer.from("<< /Type /Catalog /Pages 2 0 R >>", "utf8"),
+    Buffer.from("<< /Type /Pages /Kids [3 0 R] /Count 1 >>", "utf8"),
+    Buffer.from(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] ${resources} /Annots [7 0 R] /Contents 6 0 R >>`, "utf8"),
+    Buffer.from("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>", "utf8"),
+    Buffer.from("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>", "utf8"),
+    Buffer.concat([
+      Buffer.from(`<< /Length ${streamBytes.length} >>\nstream\n`, "utf8"),
+      streamBytes,
+      Buffer.from("\nendstream", "utf8"),
+    ]),
+    Buffer.from(`<< /Type /Annot /Subtype /Link /Rect [48 ${payY - 21} 330 ${payY - 9}] /Border [0 0 0] /A << /S /URI /URI (${pdfText(PAYMENT_LINK)}) >> >>`, "utf8"),
+  ];
+  if (logoBytes) {
+    objects.push(Buffer.concat([
+      Buffer.from(`<< /Type /XObject /Subtype /Image /Width 1410 /Height 434 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${logoBytes.length} >>\nstream\n`, "utf8"),
+      logoBytes,
+      Buffer.from("\nendstream", "utf8"),
+    ]));
+  }
+
+  const chunks = [Buffer.from("%PDF-1.4\n", "utf8")];
+  const offsets = [0];
+  let byteLength = chunks[0].length;
+  objects.forEach((object, index) => {
+    offsets.push(byteLength);
+    const chunk = Buffer.concat([
+      Buffer.from(`${index + 1} 0 obj\n`, "utf8"),
+      object,
+      Buffer.from("\nendobj\n", "utf8"),
+    ]);
+    chunks.push(chunk);
+    byteLength += chunk.length;
+  });
+  const xrefOffset = byteLength;
+  chunks.push(Buffer.from(`xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`, "utf8"));
+  offsets.slice(1).forEach((offset) => {
+    chunks.push(Buffer.from(`${String(offset).padStart(10, "0")} 00000 n \n`, "utf8"));
+  });
+  chunks.push(Buffer.from(`trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`, "utf8"));
+  return Buffer.concat(chunks);
+}
+
 function gameName(collection = {}, restaurant = {}, customerName = "Restaurant") {
   const savedName = safeString(restaurant.gameName);
   if (savedName) return savedName;
@@ -124,30 +184,35 @@ function buildInvoicePdf(collection = {}, restaurant = {}) {
   const addText = (text, x, y, size = 11, bold = false) => {
     lines.push(`BT /${bold ? "F2" : "F1"} ${size} Tf ${x} ${y} Td (${pdfText(text)}) Tj ET`);
   };
+  const logoBytes = pdfLogoBytes();
+  if (logoBytes) {
+    lines.push(`q ${PDF_LOGO_WIDTH} 0 0 ${PDF_LOGO_HEIGHT} 48 706 cm /Logo Do Q`);
+  } else {
+    addText("COMMUNITYVERSE GAMES", 48, 742, 11, true);
+  }
 
-  addText("COMMUNITYVERSE GAMES", 48, 742, 11, true);
-  addText("Invoice", 48, 710, 28, true);
+  addText("Invoice", 48, 664, 28, true);
   addText(collection.invoiceNumber || "Invoice", 510, 742, 12, true);
   addText(`Due ${details.dueDate}`, 470, 720, 11);
 
-  addText("Bill To", 48, 672, 12, true);
-  addText(details.customerName, 48, 652, 11, true);
-  let billY = 636;
+  addText("Bill To", 48, 622, 12, true);
+  addText(details.customerName, 48, 602, 11, true);
+  let billY = 586;
   [details.contact, ...details.addressLines].filter(Boolean).forEach((line) => {
     addText(line, 48, billY, 10);
     billY -= 14;
   });
 
-  addText("From", 330, 672, 12, true);
-  addText(INVOICE_SENDER.business, 330, 652, 10, true);
-  addText(INVOICE_SENDER.street, 330, 638, 10);
-  addText(INVOICE_SENDER.cityStateZip, 330, 624, 10);
-  addText(INVOICE_SENDER.phone, 330, 610, 10);
+  addText("From", 330, 622, 12, true);
+  addText(INVOICE_SENDER.business, 330, 602, 10, true);
+  addText(INVOICE_SENDER.street, 330, 588, 10);
+  addText(INVOICE_SENDER.cityStateZip, 330, 574, 10);
+  addText(INVOICE_SENDER.phone, 330, 560, 10);
 
-  addText("Description", 48, 548, 11, true);
-  addText("Amount", 500, 548, 11, true);
-  lines.push("0.8 w 48 534 m 564 534 l S");
-  let descriptionY = 512;
+  addText("Description", 48, 500, 11, true);
+  addText("Amount", 500, 500, 11, true);
+  lines.push("0.8 w 48 486 m 564 486 l S");
+  let descriptionY = 464;
   wrapText(details.description, 76).forEach((line) => {
     addText(line, 48, descriptionY, 10);
     descriptionY -= 14;
@@ -163,28 +228,7 @@ function buildInvoicePdf(collection = {}, restaurant = {}) {
   addText(`Status: ${details.status}`, 48, payY - 54, 11, true);
 
   const stream = lines.join("\n");
-  const objects = [
-    "<< /Type /Catalog /Pages 2 0 R >>",
-    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-    `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Annots [7 0 R] /Contents 6 0 R >>`,
-    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
-    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>",
-    `<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`,
-    `<< /Type /Annot /Subtype /Link /Rect [48 ${payY - 21} 330 ${payY - 9}] /Border [0 0 0] /A << /S /URI /URI (${pdfText(PAYMENT_LINK)}) >> >>`,
-  ];
-  let pdf = "%PDF-1.4\n";
-  const offsets = [0];
-  objects.forEach((object, index) => {
-    offsets.push(pdf.length);
-    pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
-  });
-  const xrefOffset = pdf.length;
-  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
-  offsets.slice(1).forEach((offset) => {
-    pdf += `${String(offset).padStart(10, "0")} 00000 n \n`;
-  });
-  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
-  return Buffer.from(pdf, "utf8").toString("base64");
+  return buildPdfDocument({ stream, payY, logoBytes }).toString("base64");
 }
 
 function getResendConfig() {
