@@ -1324,9 +1324,15 @@
     return firstMatch(text, /\b\d{5}(?:-\d{4})?\b/);
   }
 
+  function triviaResearchNote(text = "") {
+    const match = String(text || "").match(/(?:^|[.!?\n])([^.!?\n]{0,140}\btrivia\b[^.!?\n]{0,180})/i);
+    return match ? `Research trivia note: ${match[1].trim()}` : "";
+  }
+
   function researchNotesFromText(baseRecord = {}, text = "") {
     const researchText = String(text || "").trim();
     const triviaValue = researchTriviaValue(researchText);
+    const note = triviaResearchNote(researchText);
     const cityState = cityFromPastedLead(researchText, {
       city: baseRecord.city || "",
       stateText: baseRecord.state || leadBuilderMarket().stateText,
@@ -1343,8 +1349,8 @@
       website: firstWebsiteUrl(researchText) || baseRecord.website,
       facebookPage: firstUrl(researchText, "facebook") || baseRecord.facebookPage,
       contactEmail: firstMatch(researchText, /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i) || baseRecord.contactEmail,
-      notes: researchText ? appendUniqueNote(baseRecord.notes, `Research notes:\n${researchText}`) : baseRecord.notes,
-      prospectNotes: researchText ? appendUniqueNote(baseRecord.prospectNotes, `Research notes:\n${researchText}`) : baseRecord.prospectNotes,
+      notes: note ? appendUniqueNote(baseRecord.notes, note) : baseRecord.notes,
+      prospectNotes: note ? appendUniqueNote(baseRecord.prospectNotes, note) : baseRecord.prospectNotes,
       prospectStage: baseRecord.prospectStage || "new-lead",
       prospectScore: baseRecord.prospectScore || (triviaValue === "yes" ? "7" : "5"),
       leadSource: baseRecord.leadSource || "Lead Builder research",
