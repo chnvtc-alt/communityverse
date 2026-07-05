@@ -24,6 +24,19 @@ function safeInteger(value) {
   return Number.isInteger(number) ? number : null;
 }
 
+function safeTriviaBoolean(value) {
+  const text = safeString(value).toLowerCase();
+  if (text === "yes" || text === "true" || text === "1") return true;
+  if (text === "no" || text === "false" || text === "0") return false;
+  return null;
+}
+
+function triviaValueFromRecord(value) {
+  if (value === true) return "yes";
+  if (value === false) return "no";
+  return "";
+}
+
 function safeUuid(value) {
   const trimmed = safeString(value);
   return UUID_PATTERN.test(trimmed) ? trimmed : randomUUID();
@@ -48,6 +61,9 @@ export function restaurantFromRecord(record = {}, contactHistory = []) {
     state: safeString(record.state),
     zip: safeString(record.zip),
     phone: safeString(record.phone),
+    currentlyDoesTrivia: triviaValueFromRecord(record.currently_does_trivia),
+    website: safeString(record.website),
+    facebookPage: safeString(record.facebook_page),
     contactFirstName: safeString(record.contact_first_name),
     contactLastName: safeString(record.contact_last_name),
     contactEmail: safeString(record.contact_email),
@@ -116,6 +132,7 @@ export function expenseFromRecord(record = {}) {
 
 export function restaurantToRecord(restaurant = {}, idMap = new Map(), options = {}) {
   const includeGameName = options.includeGameName !== false;
+  const includeResearchFields = options.includeResearchFields !== false;
   const legacyNameParts = contactNameFromLegacy(restaurant);
   const incomingId = safeString(restaurant.id);
   const id = existingUuid(incomingId) || idMap.get(incomingId) || randomUUID();
@@ -130,6 +147,13 @@ export function restaurantToRecord(restaurant = {}, idMap = new Map(), options =
     state: safeString(restaurant.state),
     zip: safeString(restaurant.zip),
     phone: safeString(restaurant.phone),
+    ...(includeResearchFields
+      ? {
+          currently_does_trivia: safeTriviaBoolean(restaurant.currentlyDoesTrivia),
+          website: safeString(restaurant.website),
+          facebook_page: safeString(restaurant.facebookPage),
+        }
+      : {}),
     contact_first_name: safeString(restaurant.contactFirstName || legacyNameParts[0]),
     contact_last_name: safeString(restaurant.contactLastName || legacyNameParts.slice(1).join(" ")),
     contact_email: safeString(restaurant.contactEmail),
@@ -235,10 +259,18 @@ export async function saveBackofficeRestaurant(restaurant = {}) {
       body: JSON.stringify([record]),
     });
   } catch (error) {
-    if (!String(error?.message || "").includes("game_name")) {
+    const message = String(error?.message || "");
+    const missingGameName = message.includes("game_name");
+    const missingResearchFields = ["currently_does_trivia", "website", "facebook_page"].some((column) =>
+      message.includes(column)
+    );
+    if (!missingGameName && !missingResearchFields) {
       throw error;
     }
-    savedRecord = restaurantToRecord(restaurant, idMap, { includeGameName: false });
+    savedRecord = restaurantToRecord(restaurant, idMap, {
+      includeGameName: !missingGameName,
+      includeResearchFields: !missingResearchFields,
+    });
     rows = await supabaseRequest("backoffice_restaurants?on_conflict=id", {
       method: "POST",
       headers: { Prefer: "resolution=merge-duplicates,return=representation" },

@@ -166,6 +166,9 @@
     state: document.querySelector("#restaurant-state"),
     zip: document.querySelector("#restaurant-zip"),
     phone: document.querySelector("#restaurant-phone"),
+    currentlyDoesTrivia: document.querySelector("#currently-does-trivia"),
+    website: document.querySelector("#restaurant-website"),
+    facebookPage: document.querySelector("#facebook-page"),
     contactFirstName: document.querySelector("#contact-first-name"),
     contactLastName: document.querySelector("#contact-last-name"),
     contactEmail: document.querySelector("#contact-email"),
@@ -353,6 +356,9 @@
       state: String(record.state || "").trim(),
       zip: String(record.zip || "").trim(),
       phone: String(record.phone || "").trim(),
+      currentlyDoesTrivia: ["yes", "no"].includes(record.currentlyDoesTrivia) ? record.currentlyDoesTrivia : "",
+      website: String(record.website || "").trim(),
+      facebookPage: String(record.facebookPage || "").trim(),
       contactFirstName: String(record.contactFirstName || legacyNameParts[0] || "").trim(),
       contactLastName: String(record.contactLastName || legacyNameParts.slice(1).join(" ") || "").trim(),
       contactEmail: String(record.contactEmail || "").trim(),
@@ -615,6 +621,9 @@
           restaurant.state,
           restaurant.zip,
           restaurant.phone,
+          restaurant.currentlyDoesTrivia,
+          restaurant.website,
+          restaurant.facebookPage,
           contactName(restaurant),
           restaurant.contactEmail,
           restaurant.contactCell,
@@ -1220,6 +1229,9 @@
     elements.state.value = restaurant ? record.state : "";
     elements.zip.value = restaurant ? record.zip : "";
     elements.phone.value = restaurant ? record.phone : "";
+    elements.currentlyDoesTrivia.value = restaurant ? record.currentlyDoesTrivia : "";
+    elements.website.value = restaurant ? record.website : "";
+    elements.facebookPage.value = restaurant ? record.facebookPage : "";
     elements.contactFirstName.value = restaurant ? record.contactFirstName : "";
     elements.contactLastName.value = restaurant ? record.contactLastName : "";
     elements.contactEmail.value = restaurant ? record.contactEmail : "";
@@ -1269,6 +1281,9 @@
       state: elements.state.value,
       zip: elements.zip.value,
       phone: elements.phone.value,
+      currentlyDoesTrivia: elements.currentlyDoesTrivia.value,
+      website: elements.website.value,
+      facebookPage: elements.facebookPage.value,
       contactFirstName: elements.contactFirstName.value,
       contactLastName: elements.contactLastName.value,
       contactEmail: elements.contactEmail.value,

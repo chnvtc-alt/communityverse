@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,650;9..144,760&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v50" />
+    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v51" />
   </head>
   <body>
     <section class="login-panel" id="login-panel">
@@ -469,6 +469,22 @@
             <input id="restaurant-phone" type="tel" />
           </label>
           <label>
+            Trivia?
+            <select id="currently-does-trivia">
+              <option value="">Unknown</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </label>
+          <label>
+            Website
+            <input id="restaurant-website" type="url" placeholder="https://..." />
+          </label>
+          <label>
+            Facebook Page
+            <input id="facebook-page" type="url" placeholder="https://facebook.com/..." />
+          </label>
+          <label>
             Contact First Name
             <input id="contact-first-name" />
           </label>
@@ -718,6 +734,6 @@
     </dialog>
 
     <input id="import-file" type="file" accept="application/json" hidden />
-    <script src="/backoffice/app.js?v=backoffice-v50" defer></script>
+    <script src="/backoffice/app.js?v=backoffice-v51" defer></script>
   </body>
 </html>
