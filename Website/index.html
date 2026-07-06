@@ -6,7 +6,7 @@
     <title>CommunityVerse Games | Browser Strategy Games</title>
     <meta
       name="description"
-      content="Play five free browser strategy games from CommunityVerse Games, led by Restaurant Challenge, plus The Zoo Game, World Tour, The Empty Suit, and City Manager: Pepperville."
+      content="Play Restaurant Challenge Trivia on any phone, tablet, or computer. Explore four additional CommunityVerse browser strategy games for desktop play: The Zoo Game, World Tour, The Empty Suit, and City Manager: Pepperville."
     />
     <link rel="canonical" href="https://communityversegames.com/" />
     <meta
@@ -15,11 +15,14 @@
     />
     <meta
       property="og:description"
-      content="Play five free browser strategy games from CommunityVerse Games, led by Restaurant Challenge, plus The Zoo Game, World Tour, The Empty Suit, and City Manager: Pepperville."
+      content="Play Restaurant Challenge Trivia on any phone, tablet, or computer. Explore four additional CommunityVerse browser strategy games for desktop play."
     />
     <meta property="og:url" content="https://communityversegames.com/" />
     <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content="https://communityversegames.com/assets/restaurant-challenge/restaurant-challenge-trivia-hero.jpg" />
+    <meta property="og:image:alt" content="Restaurant Challenge Trivia from CommunityVerse Games" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://communityversegames.com/assets/restaurant-challenge/restaurant-challenge-trivia-hero.jpg" />
     <style>
       :root {
         --bg: #f6efdf;
@@ -152,6 +155,97 @@
         box-shadow: 0 16px 34px rgba(212, 133, 34, 0.28);
       }
 
+      .restaurant-feature {
+        display: grid;
+        grid-template-columns: minmax(0, 1.25fr) minmax(240px, 0.75fr);
+        gap: 22px;
+        align-items: start;
+        margin: 0 0 30px;
+        padding: 22px;
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+      }
+
+      .restaurant-feature h1 {
+        margin: 0;
+        font-size: clamp(2rem, 4vw, 3.3rem);
+        line-height: 0.96;
+        letter-spacing: -0.04em;
+      }
+
+      .restaurant-feature p {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        font-size: 1rem;
+        line-height: 1.55;
+        color: var(--muted);
+      }
+
+      .feature-copy {
+        display: grid;
+        gap: 14px;
+      }
+
+      .feature-points {
+        display: grid;
+        gap: 10px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        font-family: Arial, sans-serif;
+        color: var(--ink);
+      }
+
+      .feature-points li {
+        position: relative;
+        padding-left: 18px;
+        line-height: 1.35;
+      }
+
+      .feature-points li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.55em;
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background: var(--gold);
+      }
+
+      .device-card {
+        display: grid;
+        gap: 10px;
+        border-radius: 18px;
+        padding: 16px;
+        background: #fffdf8;
+        border: 1px solid var(--line);
+        font-family: Arial, sans-serif;
+      }
+
+      .device-label,
+      .game-device-label {
+        display: inline-flex;
+        width: fit-content;
+        align-items: center;
+        border-radius: 999px;
+        padding: 6px 10px;
+        background: rgba(47, 111, 82, 0.12);
+        color: var(--green);
+        font-family: Arial, sans-serif;
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .game-device-label {
+        background: rgba(212, 133, 34, 0.16);
+        color: #985615;
+      }
+
       .games-section {
         margin-top: 22px;
       }
@@ -254,6 +348,10 @@
       }
 
       @media (max-width: 900px) {
+        .restaurant-feature {
+          grid-template-columns: 1fr;
+        }
+
         .games-grid {
           grid-template-columns: 1fr;
         }
@@ -314,18 +412,37 @@
             aria-label="Choose a Restaurant Challenge restaurant"
           >
             <picture>
-              <source
-                media="(max-width: 900px)"
-                srcset="assets/restaurant-challenge/restaurant-challenge-mobile-hero.jpg"
-              />
               <img
                 class="featured-hero-image"
-                src="assets/restaurant-challenge/restaurant-challenge-desktop-hero.jpg"
-                alt="Restaurant Challenge hero art"
+                src="assets/restaurant-challenge/restaurant-challenge-trivia-hero.jpg"
+                alt="Restaurant Challenge Trivia, a free 3-minute solo or live trivia game for all devices"
               />
             </picture>
           </a>
         </div>
+      </section>
+
+      <section class="restaurant-feature" aria-labelledby="restaurant-challenge-heading">
+        <div class="feature-copy">
+          <p class="section-kicker">Featured Game</p>
+          <h1 id="restaurant-challenge-heading">Restaurant Challenge Trivia</h1>
+          <p>
+            Restaurant Challenge Trivia is a free 3-minute browser trivia game for phones, tablets, and computers. Choose a restaurant, answer 10 quick questions, play solo or live with friends, unlock collectible characters, and climb the leaderboard.
+          </p>
+          <div class="game-links">
+            <a class="button button-primary" href="/restaurant/">Play Restaurant Challenge</a>
+            <a class="button" href="/restaurant/?hub=1#challenge-info-title">Learn More</a>
+          </div>
+        </div>
+        <aside class="device-card" aria-label="Restaurant Challenge device support">
+          <span class="device-label">All Devices</span>
+          <p>Restaurant Challenge works on phone, tablet, laptop, and desktop browsers.</p>
+          <ul class="feature-points">
+            <li>Solo games take about 3 minutes.</li>
+            <li>Live rooms let friends play together.</li>
+            <li>Built for restaurant promotions and repeat visits.</li>
+          </ul>
+        </aside>
       </section>
 
       <section class="games-section" id="games">
@@ -333,7 +450,7 @@
           <p class="section-kicker">More CommunityVerse Games</p>
           <h2 class="section-heading">Explore the connected worlds of CommunityVerse.</h2>
           <p class="section-copy">
-            CommunityVerse Games is a connected collection of light-hearted browser strategy games. Restaurant Challenge is the flagship, and the other worlds live below.
+            CommunityVerse Games is a connected collection of light-hearted browser strategy games. Restaurant Challenge works on all devices. The four games below are larger desktop games and are best played on a laptop or desktop computer.
           </p>
         </div>
 
@@ -345,6 +462,7 @@
               alt="The Zoo Game splash art"
             />
             <div class="game-body">
+              <span class="game-device-label">Desktop Only</span>
               <h2 class="sr-only">The Zoo Game</h2>
               <p>
                 Build themed animal collections, win premium attractions, and use smart publicity to turn your zoo into the city's favorite attraction.
@@ -363,6 +481,7 @@
               alt="World Tour splash art"
             />
             <div class="game-body">
+              <span class="game-device-label">Desktop Only</span>
               <h2 class="sr-only">World Tour</h2>
               <p>
                 <strong>The Music Game</strong> lets you manage multiple bands, rent venues, and build bigger crowds from show to show while we continue improving it.
@@ -381,6 +500,7 @@
               alt="The Empty Suit splash art"
             />
             <div class="game-body">
+              <span class="game-device-label">Desktop Only</span>
               <h2 class="sr-only">The Empty Suit</h2>
               <p>
                 Fight to win the Democratic or Republican nomination, shape your candidate, debate your rivals, and outmaneuver the rest of the field.
@@ -399,6 +519,7 @@
               alt="City Manager Pepperville logo art"
             />
             <div class="game-body">
+              <span class="game-device-label">Desktop Only</span>
               <h2 class="sr-only">City Manager: Pepperville</h2>
               <p>
                 Plan districts, grow the local economy, manage city priorities, and shape the future of Pepperville.
