@@ -52,6 +52,7 @@
     customer: "Customer",
     paused: "Paused",
     former: "Former",
+    "permanently-closed": "Permanently Closed",
   };
 
   const prospectStageLabels = {
@@ -1259,6 +1260,17 @@
   function prospectImportPreviewItem(imported) {
     const match = matchingRestaurant(imported);
     const existing = match?.restaurant || null;
+    if (existing?.status === "permanently-closed") {
+      return {
+        imported,
+        existing,
+        matchReasons: match?.reasons || [],
+        record: existing,
+        changes: ["Permanently closed - do not add"],
+        action: "Skip",
+        selected: false,
+      };
+    }
     const merged = mergeImportedRestaurant(existing, imported);
     return {
       imported,
@@ -3182,6 +3194,17 @@
   function prospectResearchPreviewItem(imported, preferredExisting = null, matchReasons = ["Research"]) {
     const match = preferredExisting ? { restaurant: preferredExisting, reasons: matchReasons } : matchingRestaurant(imported);
     const existing = match?.restaurant || null;
+    if (existing?.status === "permanently-closed") {
+      return {
+        imported,
+        existing,
+        matchReasons: match?.reasons || [],
+        record: existing,
+        changes: ["Permanently closed - do not add"],
+        action: "Skip",
+        selected: false,
+      };
+    }
     const merged = mergeResearchRestaurant(existing, imported);
     return {
       imported,

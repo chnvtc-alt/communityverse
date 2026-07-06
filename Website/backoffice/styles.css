@@ -680,6 +680,11 @@ th {
   background: #f5d6ce;
 }
 
+.status-permanently-closed {
+  color: #fff;
+  background: #6f6a60;
+}
+
 .record-list {
   display: grid;
   gap: 10px;
