@@ -969,7 +969,7 @@
       ? restaurants.map((restaurant) => `
           <tr>
             <td>
-              <strong>${escapeHtml(restaurant.name)}</strong>
+              <button class="link-button strong-link" type="button" data-edit-id="${escapeHtml(restaurant.id)}">${escapeHtml(restaurant.name)}</button>
               <div class="helper">${escapeHtml(formattedAddress(restaurant) || "No address yet")}</div>
             </td>
             <td>${statusPill(restaurant.status)}</td>
@@ -978,10 +978,9 @@
             <td>${escapeHtml(restaurant.phone || restaurant.contactCell || "")}</td>
             <td>${escapeHtml(restaurant.nextFollowUp || "")}</td>
             <td><button class="text-button" type="button" data-research-restaurant-id="${escapeHtml(restaurant.id)}">Research</button></td>
-            <td><button class="text-button" type="button" data-edit-id="${escapeHtml(restaurant.id)}">Edit</button></td>
           </tr>
         `).join("")
-      : '<tr><td colspan="8"><div class="empty-state">No restaurants match this view.</div></td></tr>';
+      : '<tr><td colspan="7"><div class="empty-state">No restaurants match this view.</div></td></tr>';
   }
 
   function renderProspects() {
