@@ -1522,12 +1522,16 @@
 
   function contactFirstNameFromEmail(email = "") {
     const prefix = String(email || "").split("@")[0] || "";
+    if (!/[._-]/.test(prefix)) {
+      return "";
+    }
     const cleaned = prefix
       .replace(/[._-]+/g, " ")
       .replace(/\d+/g, " ")
       .trim();
-    const firstWord = cleaned.split(/\s+/)[0] || "";
-    if (!firstWord || firstWord.length < 2) {
+    const words = cleaned.split(/\s+/).filter(Boolean);
+    const firstWord = words[0] || "";
+    if (words.length < 2 || !firstWord || firstWord.length < 2) {
       return "";
     }
     const genericNames = new Set([
