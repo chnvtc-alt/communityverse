@@ -741,6 +741,18 @@ th {
   width: min(820px, calc(100vw - 28px));
 }
 
+.quick-contact-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.quick-contact-links a {
+  color: var(--blue);
+  font-weight: 800;
+}
+
 .research-notes-dialog {
   width: min(760px, calc(100vw - 28px));
 }

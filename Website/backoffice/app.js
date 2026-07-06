@@ -265,6 +265,7 @@
     quickContactForm: document.querySelector("#quick-contact-form"),
     quickContactTitle: document.querySelector("#quick-contact-title"),
     quickContactDetails: document.querySelector("#quick-contact-details"),
+    quickContactLinks: document.querySelector("#quick-contact-links"),
     quickContactId: document.querySelector("#quick-contact-id"),
     quickContactType: document.querySelector("#quick-contact-type"),
     quickContactDate: document.querySelector("#quick-contact-date"),
@@ -419,6 +420,14 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#39;");
+  }
+
+  function externalUrl(value = "") {
+    const url = String(value || "").trim();
+    if (!url) {
+      return "";
+    }
+    return /^https?:\/\//i.test(url) ? url : `https://${url}`;
   }
 
   function normalizeRestaurant(record = {}) {
@@ -2051,6 +2060,15 @@
       restaurant.contactEmail,
       restaurant.contactCell || restaurant.phone,
     ].filter(Boolean).join(" / ") || "No contact details yet";
+    const quickLinks = [
+      restaurant.website
+        ? `<a href="${escapeHtml(externalUrl(restaurant.website))}" target="_blank" rel="noopener">Website</a>`
+        : "",
+      restaurant.facebookPage
+        ? `<a href="${escapeHtml(externalUrl(restaurant.facebookPage))}" target="_blank" rel="noopener">Facebook</a>`
+        : "",
+    ].filter(Boolean);
+    elements.quickContactLinks.innerHTML = quickLinks.length ? quickLinks.join("") : "";
     elements.quickContactType.value = "C";
     elements.quickContactDate.value = today();
     elements.quickContactResponse.checked = false;
