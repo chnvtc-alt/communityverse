@@ -1027,11 +1027,12 @@
       alabama: "AL",
       georgia: "GA",
       florida: "FL",
+      missouri: "MO",
       northcarolina: "NC",
       southcarolina: "SC",
       tennessee: "TN",
     };
-    if (/^(GA|AL|FL|NC|SC|TN)$/i.test(cleaned)) {
+    if (/^(GA|AL|FL|MO|NC|SC|TN)$/i.test(cleaned)) {
       return cleaned.toUpperCase();
     }
     return stateCodes[key] || fallback;
@@ -1057,7 +1058,7 @@
         state: stateCodeFromText(commaMatch[2], fallbackState),
       };
     }
-    const trailingStateMatch = text.match(/^(.+?)\s+(GA|AL|FL|NC|SC|TN|Georgia|Alabama|Florida|North Carolina|South Carolina|Tennessee)$/i);
+    const trailingStateMatch = text.match(/^(.+?)\s+(GA|AL|FL|MO|NC|SC|TN|Georgia|Alabama|Florida|Missouri|North Carolina|South Carolina|Tennessee)$/i);
     if (trailingStateMatch) {
       return {
         city: cleanCityName(trailingStateMatch[1]),
@@ -1295,11 +1296,16 @@
 
   function firstWebsiteUrl(text = "") {
     const urls = String(text || "").match(/https?:\/\/[^\s)]+/gi) || [];
-    return urls.find((url) => !normalizedImportKey(url).includes("facebook")) || "";
+    const url = urls.find((candidate) => !normalizedImportKey(candidate).includes("facebook"));
+    if (url) {
+      return url;
+    }
+    const menuDomain = String(text || "").match(/\b(?:Menu|Website|Site):\s*([A-Z0-9.-]+\.[A-Z]{2,})(?:\/[^\s)]*)?/i);
+    return menuDomain ? `https://${menuDomain[1].trim()}` : "";
   }
 
   function cityFromPastedLead(text = "", market = leadBuilderMarket()) {
-    const statePattern = "(GA|AL|FL|NC|SC|TN|Georgia|Alabama|Florida|North Carolina|South Carolina|Tennessee)";
+    const statePattern = "(GA|AL|FL|MO|NC|SC|TN|Georgia|Alabama|Florida|Missouri|North Carolina|South Carolina|Tennessee)";
     const nearMatch = String(text || "").match(new RegExp(`\\b(?:near|in|for)\\s+([A-Z][a-z]+(?:\\s+[A-Z][a-z]+){0,2})\\s*,?\\s+${statePattern}\\b`, "i"));
     if (nearMatch) {
       return { city: cleanCityName(nearMatch[1]), state: stateCodeFromText(nearMatch[2], market.stateText) };
@@ -2968,6 +2974,58 @@
     return { record: normalizeRestaurant(updates), changes };
   }
 
+  function mergeResearchRestaurant(existing, imported) {
+    if (!existing) {
+      return { record: imported, changes: ["Add new prospect"] };
+    }
+    const updates = { ...existing };
+    const changes = [];
+    [
+      ["street", "street address"],
+      ["city", "city"],
+      ["state", "state"],
+      ["zip", "ZIP"],
+      ["phone", "restaurant phone"],
+      ["currentlyDoesTrivia", "trivia"],
+      ["website", "website"],
+      ["facebookPage", "Facebook page"],
+      ["contactEmail", "contact email"],
+    ].forEach(([key, label]) => {
+      const incoming = String(imported[key] || "").trim();
+      const current = String(updates[key] || "").trim();
+      if (incoming && incoming !== current) {
+        updates[key] = incoming;
+        changes.push(`${current ? "Update" : "Fill"} ${label}`);
+      }
+    });
+    const mergedNotes = appendUniqueNote(updates.notes, imported.notes);
+    if (mergedNotes !== updates.notes) {
+      updates.notes = mergedNotes;
+      changes.push("Add notes");
+    }
+    const mergedProspectNotes = appendUniqueNote(updates.prospectNotes, imported.prospectNotes || imported.notes);
+    if (mergedProspectNotes !== updates.prospectNotes) {
+      updates.prospectNotes = mergedProspectNotes;
+      changes.push("Add prospect notes");
+    }
+    return { record: normalizeRestaurant(updates), changes };
+  }
+
+  function prospectResearchPreviewItem(imported, preferredExisting = null, matchReasons = ["Research"]) {
+    const match = preferredExisting ? { restaurant: preferredExisting, reasons: matchReasons } : matchingRestaurant(imported);
+    const existing = match?.restaurant || null;
+    const merged = mergeResearchRestaurant(existing, imported);
+    return {
+      imported,
+      existing,
+      matchReasons: match?.reasons || [],
+      record: merged.record,
+      changes: merged.changes,
+      action: existing ? (merged.changes.length ? "Update" : "Skip") : "New",
+      selected: !existing || merged.changes.length > 0,
+    };
+  }
+
   function restaurantResearchQueries(record = {}) {
     const name = String(record.name || "").trim();
     const location = [record.street, record.city, record.state].filter(Boolean).join(" ");
@@ -3041,7 +3099,12 @@
     const updated = researchNotesFromText(target.record, text);
     closeResearchNotesDialog();
     if (target.type === "import") {
-      state.pendingProspectImport[target.index] = prospectImportPreviewItem(updated);
+      const currentItem = state.pendingProspectImport[target.index] || null;
+      state.pendingProspectImport[target.index] = prospectResearchPreviewItem(
+        updated,
+        currentItem?.existing || null,
+        currentItem?.matchReasons?.length ? currentItem.matchReasons : ["Research"]
+      );
       renderProspectImportPreview();
       if (!elements.prospectImportDialog.open) {
         elements.prospectImportDialog.showModal();
@@ -3049,7 +3112,10 @@
       setSyncStatus(`Research preview updated for ${updated.name}`);
       return;
     }
-    previewImportedProspects([updated], "Research update preview ready");
+    state.pendingProspectImport = [prospectResearchPreviewItem(updated, target.record)];
+    renderProspectImportPreview();
+    elements.prospectImportDialog.showModal();
+    setSyncStatus("Research update preview ready");
   }
 
   function prospectImportRow(item) {
