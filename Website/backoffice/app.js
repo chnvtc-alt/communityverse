@@ -1578,6 +1578,27 @@
     );
   }
 
+  function triviaSiteAddressParts(line = "") {
+    const parts = String(line || "").split(",").map((part) => part.trim()).filter(Boolean);
+    if (parts.length < 3) {
+      return null;
+    }
+    const state = stateCodeFromText(parts[parts.length - 1], "");
+    if (!state) {
+      return null;
+    }
+    const city = cleanCityName(parts[parts.length - 2]);
+    let streetParts = parts.slice(0, -2);
+    if (streetParts.length > 1 && normalizedImportKey(streetParts[streetParts.length - 1]) === normalizedImportKey(city)) {
+      streetParts = streetParts.slice(0, -1);
+    }
+    const street = streetParts.join(", ").trim();
+    if (!street || !city || !/^\d|^P\.?\s*O\.?\s*Box\b/i.test(street)) {
+      return null;
+    }
+    return { street, city, state };
+  }
+
   function zipFromPastedLead(text = "") {
     return firstMatch(text, /\b\d{5}(?:-\d{4})?\b/);
   }
@@ -1708,6 +1729,106 @@
       leadSource: "Lead Builder paste",
       assignedTo: DEFAULT_OWNER,
     });
+  }
+
+  function isTriviaSiteEventLabel(line = "") {
+    const key = normalizedImportKey(line);
+    return [
+      "live trivia",
+      "singo",
+      "xtreme bar bingo",
+    ].includes(key);
+  }
+
+  function isTriviaSiteNoiseLine(line = "") {
+    const key = normalizedImportKey(line);
+    return !key ||
+      isTriviaSiteEventLabel(line) ||
+      key === "venues" ||
+      key === "trivia jockeys" ||
+      key === "players" ||
+      key === "venue owners" ||
+      key === "learn more" ||
+      key === "trivia hints" ||
+      key === "facebook" ||
+      key === "instagram" ||
+      key === "cancelled this week" ||
+      key === "interested in bringing challenge entertainment to your location find out how to turn your slowest night into your busiest" ||
+      key === "ready to run the show our trivia jockeys and hosts are some of the best players we know find out how to become part of our team" ||
+      /^copyright\b/.test(key) ||
+      /^find a local game\b/.test(key) ||
+      /^explore games\b/.test(key) ||
+      /^get league scores\b/.test(key) ||
+      /^bring game night\b/.test(key) ||
+      /^join our team\b/.test(key) ||
+      /^1888987triv$/.test(key) ||
+      /^https?:\/\//i.test(String(line || "")) ||
+      /^[›>]+$/.test(String(line || "").trim()) ||
+      /^(today|tonight|tomorrow|mon|tue|wed|thu|fri|sat|sun|mondays|tuesdays|wednesdays|thursdays|fridays|saturdays|sundays)\b/i.test(String(line || "").trim());
+  }
+
+  function triviaSiteEventType(lines = [], addressIndex = 0) {
+    for (let index = addressIndex - 1; index >= 0 && index >= addressIndex - 5; index -= 1) {
+      if (isTriviaSiteEventLabel(lines[index])) {
+        return lines[index];
+      }
+    }
+    return "Live Trivia";
+  }
+
+  function triviaSiteScheduleLines(lines = [], startIndex = 0) {
+    const schedule = [];
+    for (let index = startIndex; index < lines.length; index += 1) {
+      const line = lines[index];
+      const cleaned = line.replace(/^[^\w]+/, "").trim();
+      if (triviaSiteAddressParts(line)) {
+        break;
+      }
+      if (/^[›>]+$/.test(line) || isTriviaSiteEventLabel(line)) {
+        break;
+      }
+      if (/^(today|tonight|tomorrow|mon|tue|wed|thu|fri|sat|sun|mondays|tuesdays|wednesdays|thursdays|fridays|saturdays|sundays|cancelled this week)\b/i.test(cleaned)) {
+        schedule.push(cleaned);
+      }
+    }
+    return schedule.filter(Boolean);
+  }
+
+  function triviaSiteLeadsFromText(text = "") {
+    const lines = String(text || "").split(/\n+/).map((line) => line.trim()).filter(Boolean);
+    const records = [];
+    lines.forEach((line, index) => {
+      const address = triviaSiteAddressParts(line);
+      if (!address || index < 1) {
+        return;
+      }
+      const name = cleanPastedLeadName(lines[index - 1]);
+      if (!isPastedLeadNameCandidate(name) || isTriviaSiteNoiseLine(name)) {
+        return;
+      }
+      const eventType = triviaSiteEventType(lines, index);
+      const schedule = triviaSiteScheduleLines(lines, index + 1);
+      const notes = [
+        "Trivia site result:",
+        eventType ? `Event: ${eventType}` : "",
+        schedule.length ? `Schedule: ${schedule.join(" / ")}` : "",
+      ].filter(Boolean).join("\n");
+      records.push(normalizeRestaurant({
+        name,
+        status: "prospect",
+        street: address.street,
+        city: address.city,
+        state: address.state,
+        currentlyDoesTrivia: /trivia/i.test(eventType) ? "yes" : "possible",
+        notes,
+        prospectNotes: notes,
+        prospectStage: "new-lead",
+        prospectScore: /trivia/i.test(eventType) ? "7" : "5",
+        leadSource: "Lead Builder trivia site paste",
+        assignedTo: DEFAULT_OWNER,
+      }));
+    });
+    return records;
   }
 
   function isYelpPaste(text = "") {
@@ -1881,6 +2002,10 @@
     const yelpRecords = yelpLeadsFromText(text);
     if (yelpRecords.length) {
       return uniquePastedLeads(yelpRecords);
+    }
+    const triviaSiteRecords = triviaSiteLeadsFromText(text);
+    if (triviaSiteRecords.length) {
+      return uniquePastedLeads(triviaSiteRecords);
     }
     const chunks = pastedLeadChunks(text);
     const records = [
