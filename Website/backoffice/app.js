@@ -1165,13 +1165,20 @@
             <td>${escapeHtml(labelFor(prospectScoreLabels, restaurant.prospectScore, "Not set"))}</td>
             <td>${escapeHtml(latestContactSummary(restaurant))}</td>
             <td>
-              <input
-                class="inline-date-input"
-                data-prospect-follow-up-id="${escapeHtml(restaurant.id)}"
-                type="date"
-                value="${escapeHtml(restaurant.nextFollowUp)}"
-                aria-label="Follow-up date for ${escapeHtml(restaurant.name)}"
-              />
+              <div class="inline-follow-up">
+                <input
+                  class="inline-date-input"
+                  data-prospect-follow-up-id="${escapeHtml(restaurant.id)}"
+                  type="date"
+                  value="${escapeHtml(restaurant.nextFollowUp)}"
+                  aria-label="Follow-up date for ${escapeHtml(restaurant.name)}"
+                />
+                ${
+                  restaurant.nextFollowUp
+                    ? `<button class="text-button small-text-button" type="button" data-clear-prospect-follow-up-id="${escapeHtml(restaurant.id)}">Clear</button>`
+                    : ""
+                }
+              </div>
             </td>
             <td><button class="text-button" type="button" data-research-restaurant-id="${escapeHtml(restaurant.id)}">Research</button></td>
             <td>${
@@ -3742,6 +3749,12 @@
     const followUpInput = event.target.closest("[data-prospect-follow-up-id]");
     if (followUpInput) {
       saveProspectFollowUp(followUpInput.dataset.prospectFollowUpId, followUpInput.value);
+    }
+  });
+  elements.prospectList.addEventListener("click", (event) => {
+    const clearFollowUpButton = event.target.closest("[data-clear-prospect-follow-up-id]");
+    if (clearFollowUpButton) {
+      saveProspectFollowUp(clearFollowUpButton.dataset.clearProspectFollowUpId, "");
     }
   });
   elements.prospectImportList.addEventListener("click", (event) => {

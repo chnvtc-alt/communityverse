@@ -635,11 +635,22 @@ td {
   margin-left: 10px;
 }
 
+.inline-follow-up {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 .inline-date-input {
   width: 116px;
   min-height: 34px;
   padding: 6px 8px;
   font-size: 0.9rem;
+}
+
+.small-text-button {
+  font-size: 0.85rem;
 }
 
 th {
