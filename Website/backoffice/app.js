@@ -1423,10 +1423,44 @@
     return match ? `Research trivia note: ${match[1].trim()}` : "";
   }
 
+  function contactFirstNameFromEmail(email = "") {
+    const prefix = String(email || "").split("@")[0] || "";
+    const cleaned = prefix
+      .replace(/[._-]+/g, " ")
+      .replace(/\d+/g, " ")
+      .trim();
+    const firstWord = cleaned.split(/\s+/)[0] || "";
+    if (!firstWord || firstWord.length < 2) {
+      return "";
+    }
+    const genericNames = new Set([
+      "admin",
+      "booking",
+      "contact",
+      "events",
+      "hello",
+      "info",
+      "manager",
+      "marketing",
+      "office",
+      "owner",
+      "reservations",
+      "sales",
+      "support",
+      "team",
+    ]);
+    const key = firstWord.toLowerCase();
+    if (genericNames.has(key) || !/^[a-z]+$/i.test(firstWord)) {
+      return "";
+    }
+    return cleanCityName(key);
+  }
+
   function researchNotesFromText(baseRecord = {}, text = "") {
     const researchText = String(text || "").trim();
     const triviaValue = researchTriviaValue(researchText);
     const note = triviaResearchNote(researchText);
+    const contactEmail = firstMatch(researchText, /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i) || baseRecord.contactEmail;
     const cityState = cityFromPastedLead(researchText, {
       city: baseRecord.city || "",
       stateText: baseRecord.state || leadBuilderMarket().stateText,
@@ -1442,7 +1476,8 @@
       currentlyDoesTrivia: triviaValue || baseRecord.currentlyDoesTrivia,
       website: firstWebsiteUrl(researchText) || baseRecord.website,
       facebookPage: firstUrl(researchText, "facebook") || baseRecord.facebookPage,
-      contactEmail: firstMatch(researchText, /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i) || baseRecord.contactEmail,
+      contactFirstName: baseRecord.contactFirstName || contactFirstNameFromEmail(contactEmail),
+      contactEmail,
       notes: note ? appendUniqueNote(baseRecord.notes, note) : baseRecord.notes,
       prospectNotes: note ? appendUniqueNote(baseRecord.prospectNotes, note) : baseRecord.prospectNotes,
       prospectStage: baseRecord.prospectStage || "new-lead",
@@ -1477,6 +1512,7 @@
       currentlyDoesTrivia: pastedTriviaValue(chunk),
       website,
       facebookPage,
+      contactFirstName: contactFirstNameFromEmail(email),
       contactEmail: email,
       prospectStage: "new-lead",
       prospectScore: pastedTriviaValue(chunk) === "yes" ? "7" : "5",
@@ -3166,6 +3202,7 @@
       ["state", "state"],
       ["zip", "ZIP"],
       ["phone", "restaurant phone"],
+      ["contactFirstName", "contact first name"],
       ["currentlyDoesTrivia", "trivia"],
       ["website", "website"],
       ["facebookPage", "Facebook page"],
