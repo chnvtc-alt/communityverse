@@ -1212,23 +1212,73 @@
     return checked.length ? checked : ["restaurants with trivia"];
   }
 
+  const US_STATE_LIST = [
+    ["Alabama", "AL"],
+    ["Alaska", "AK"],
+    ["Arizona", "AZ"],
+    ["Arkansas", "AR"],
+    ["California", "CA"],
+    ["Colorado", "CO"],
+    ["Connecticut", "CT"],
+    ["Delaware", "DE"],
+    ["District of Columbia", "DC"],
+    ["Florida", "FL"],
+    ["Georgia", "GA"],
+    ["Hawaii", "HI"],
+    ["Idaho", "ID"],
+    ["Illinois", "IL"],
+    ["Indiana", "IN"],
+    ["Iowa", "IA"],
+    ["Kansas", "KS"],
+    ["Kentucky", "KY"],
+    ["Louisiana", "LA"],
+    ["Maine", "ME"],
+    ["Maryland", "MD"],
+    ["Massachusetts", "MA"],
+    ["Michigan", "MI"],
+    ["Minnesota", "MN"],
+    ["Mississippi", "MS"],
+    ["Missouri", "MO"],
+    ["Montana", "MT"],
+    ["Nebraska", "NE"],
+    ["Nevada", "NV"],
+    ["New Hampshire", "NH"],
+    ["New Jersey", "NJ"],
+    ["New Mexico", "NM"],
+    ["New York", "NY"],
+    ["North Carolina", "NC"],
+    ["North Dakota", "ND"],
+    ["Ohio", "OH"],
+    ["Oklahoma", "OK"],
+    ["Oregon", "OR"],
+    ["Pennsylvania", "PA"],
+    ["Rhode Island", "RI"],
+    ["South Carolina", "SC"],
+    ["South Dakota", "SD"],
+    ["Tennessee", "TN"],
+    ["Texas", "TX"],
+    ["Utah", "UT"],
+    ["Vermont", "VT"],
+    ["Virginia", "VA"],
+    ["Washington", "WA"],
+    ["West Virginia", "WV"],
+    ["Wisconsin", "WI"],
+    ["Wyoming", "WY"],
+  ];
+  const US_STATE_CODES = Object.fromEntries(
+    US_STATE_LIST.map(([name, code]) => [name.toLowerCase().replace(/[^a-z]/g, ""), code])
+  );
+  const US_STATE_CODE_PATTERN = US_STATE_LIST.map(([, code]) => code).join("|");
+  const US_STATE_NAME_PATTERN = US_STATE_LIST.map(([name]) => name.replace(/\s+/g, "\\s+")).join("|");
+  const US_STATE_PATTERN = `(?:${US_STATE_CODE_PATTERN}|${US_STATE_NAME_PATTERN})`;
+
   function stateCodeFromText(value = "", fallback = "") {
     const cleaned = String(value || "").trim();
     const key = cleaned.toLowerCase().replace(/[^a-z]/g, "");
-    const stateCodes = {
-      alabama: "AL",
-      georgia: "GA",
-      florida: "FL",
-      kansas: "KS",
-      missouri: "MO",
-      northcarolina: "NC",
-      southcarolina: "SC",
-      tennessee: "TN",
-    };
-    if (/^(GA|AL|FL|KS|MO|NC|SC|TN)$/i.test(cleaned)) {
+    if (new RegExp(`^(?:${US_STATE_CODE_PATTERN})$`, "i").test(cleaned)) {
       return cleaned.toUpperCase();
     }
-    return stateCodes[key] || fallback;
+    return US_STATE_CODES[key] || fallback;
   }
 
   function cleanCityName(value = "") {
@@ -1251,7 +1301,7 @@
         state: stateCodeFromText(commaMatch[2], fallbackState),
       };
     }
-    const trailingStateMatch = text.match(/^(.+?)\s+(GA|AL|FL|KS|MO|NC|SC|TN|Georgia|Alabama|Florida|Kansas|Missouri|North Carolina|South Carolina|Tennessee)$/i);
+    const trailingStateMatch = text.match(new RegExp(`^(.+?)\\s+(${US_STATE_PATTERN})$`, "i"));
     if (trailingStateMatch) {
       return {
         city: cleanCityName(trailingStateMatch[1]),
@@ -1422,8 +1472,8 @@
       .replace(/(?:^|[\n.!?]\s*)[^.\n]{0,220}\byour best bet is\s+(.{3,90}?)(?:\s+\([^)]*\))?\.?\s*Where:/i, "$1\nWhere:")
       .replace(/([a-z0-9.])(?=Nearby Options\s*\()/g, "$1\n\n")
       .replace(/:\s*(?=[A-Z][A-Za-z0-9 '&.]{2,80}:\s)/g, ":\n\n")
-      .replace(/([a-z0-9.])(?=[A-Z][A-Za-z0-9 '&.]{2,80}\s+\([A-Z][A-Za-z ]+,\s*(?:GA|AL|FL|NC|SC|TN)\))/g, "$1\n\n")
-      .replace(/\b(GA|AL|FL|NC|SC|TN)(?=When:)/g, "$1\n")
+      .replace(new RegExp(`([a-z0-9.])(?=[A-Z][A-Za-z0-9 '&.]{2,80}\\s+\\([A-Z][A-Za-z ]+,\\s*${US_STATE_PATTERN}\\))`, "g"), "$1\n\n")
+      .replace(new RegExp(`\\b(${US_STATE_CODE_PATTERN})(?=When:)`, "g"), "$1\n")
       .replace(/([a-z0-9.])(?=[A-Z][A-Za-z0-9 '&]{2,80}When:)/g, "$1\n\n")
       .replace(/([A-Z][A-Za-z0-9 '&]{2,80})When:/g, "$1\nWhen:")
       .replace(/([a-z0-9.])Trivia Night:/g, "$1\nTrivia Night:")
@@ -1441,7 +1491,7 @@
       .replace(/^https?:\/\/\S+/i, "")
       .replace(/Trivia Night\s*$/i, "")
       .replace(/:\s+.*$/, "")
-      .replace(/\s+\([A-Z][A-Za-z ]+,\s*(?:GA|AL|FL|NC|SC|TN)\)\s*$/i, "")
+      .replace(new RegExp(`\\s+\\([A-Z][A-Za-z ]+,\\s*${US_STATE_PATTERN}\\)\\s*$`, "i"), "")
       .replace(/\s*[-|•].*$/, "")
       .replace(/\s+\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}.*$/, "")
       .replace(/\s*(?:facebook|website|menu|reviews?|directions|open now).*$/i, "")
@@ -1509,12 +1559,11 @@
   }
 
   function cityFromPastedLead(text = "", market = leadBuilderMarket()) {
-    const statePattern = "(GA|AL|FL|KS|MO|NC|SC|TN|Georgia|Alabama|Florida|Kansas|Missouri|North Carolina|South Carolina|Tennessee)";
-    const nearMatch = String(text || "").match(new RegExp(`\\b(?:near|in|for)\\s+([A-Z][a-z]+(?:\\s+[A-Z][a-z]+){0,2})\\s*,?\\s+${statePattern}\\b`, "i"));
+    const nearMatch = String(text || "").match(new RegExp(`\\b(?:near|in|for)\\s+([A-Z][a-z]+(?:\\s+[A-Z][a-z]+){0,2})\\s*,?\\s+(${US_STATE_PATTERN})\\b`, "i"));
     if (nearMatch) {
       return { city: cleanCityName(nearMatch[1]), state: stateCodeFromText(nearMatch[2], market.stateText) };
     }
-    const cityPattern = new RegExp(`\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+){0,2})\\s*,\\s*${statePattern}\\b`, "i");
+    const cityPattern = new RegExp(`\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+){0,2})\\s*,\\s*(${US_STATE_PATTERN})\\b`, "i");
     const match = String(text || "").match(cityPattern);
     if (match) {
       return { city: cleanCityName(match[1]), state: stateCodeFromText(match[2], market.stateText) };
