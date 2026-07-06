@@ -631,6 +631,13 @@ td {
   margin-left: 10px;
 }
 
+.inline-date-input {
+  width: 116px;
+  min-height: 34px;
+  padding: 6px 8px;
+  font-size: 0.9rem;
+}
+
 th {
   color: var(--muted);
   font-size: 0.78rem;

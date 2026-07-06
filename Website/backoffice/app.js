@@ -1157,7 +1157,15 @@
             <td>${escapeHtml(labelFor(prospectStageLabels, restaurant.prospectStage, "Not set"))}</td>
             <td>${escapeHtml(labelFor(prospectScoreLabels, restaurant.prospectScore, "Not set"))}</td>
             <td>${escapeHtml(latestContactSummary(restaurant))}</td>
-            <td>${escapeHtml(shortDate(restaurant.nextFollowUp))}</td>
+            <td>
+              <input
+                class="inline-date-input"
+                data-prospect-follow-up-id="${escapeHtml(restaurant.id)}"
+                type="date"
+                value="${escapeHtml(restaurant.nextFollowUp)}"
+                aria-label="Follow-up date for ${escapeHtml(restaurant.name)}"
+              />
+            </td>
             <td><button class="text-button" type="button" data-research-restaurant-id="${escapeHtml(restaurant.id)}">Research</button></td>
             <td>${
               restaurant.contactEmail
@@ -2431,6 +2439,30 @@
     render();
   }
 
+  async function saveProspectFollowUp(id = "", nextFollowUp = "") {
+    const restaurant = state.restaurants.find((record) => record.id === id);
+    if (!restaurant) {
+      return;
+    }
+    const updatedRestaurant = normalizeRestaurant({
+      ...restaurant,
+      nextFollowUp,
+      updatedAt: new Date().toISOString(),
+    });
+    const data = await saveAction("saveRestaurant", { restaurant: updatedRestaurant }, "Updated follow-up");
+    if (!data?.restaurant) {
+      renderProspects();
+      return;
+    }
+    const savedRecord = normalizeRestaurant(data.restaurant);
+    const existingIndex = state.restaurants.findIndex((record) => record.id === savedRecord.id);
+    if (existingIndex >= 0) {
+      state.restaurants[existingIndex] = savedRecord;
+    }
+    cacheBackofficeData();
+    render();
+  }
+
   async function addCollection(event) {
     event.preventDefault();
     const restaurant = state.restaurants.find((record) => record.id === elements.collectionRestaurant.value);
@@ -3696,6 +3728,12 @@
     const checkbox = event.target.closest("[data-import-index]");
     if (checkbox) {
       toggleImportRow(Number(checkbox.dataset.importIndex), checkbox.checked);
+    }
+  });
+  elements.prospectList.addEventListener("change", (event) => {
+    const followUpInput = event.target.closest("[data-prospect-follow-up-id]");
+    if (followUpInput) {
+      saveProspectFollowUp(followUpInput.dataset.prospectFollowUpId, followUpInput.value);
     }
   });
   elements.prospectImportList.addEventListener("click", (event) => {
