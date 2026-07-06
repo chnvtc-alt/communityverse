@@ -4,6 +4,7 @@
   const EXPENSES_KEY = "communityverseBackofficeExpenses";
   const KEY_STORAGE = "communityverseBackofficeAdminKey";
   const SECTION_STORAGE = "communityverseBackofficeSection";
+  const SALES_EMAIL_1_STORAGE = "communityverseBackofficeSalesEmail1Template";
   const API_URL = "/api/backoffice";
   const DEFAULT_OWNER = "Tim";
   const INVOICE_SENDER = {
@@ -17,6 +18,24 @@
   const PDF_LOGO_PATH = "/assets/communityverse-games-logo-pdf.jpg";
   const PDF_LOGO_WIDTH = 230;
   const PDF_LOGO_HEIGHT = 71;
+  const DEFAULT_SALES_EMAIL_1 = {
+    subject: "A quick trivia promotion idea for {restaurant}",
+    body: [
+      "Hi {contact},",
+      "",
+      "I wanted to reach out because I am building Restaurant Challenge Trivia, a 3-minute browser trivia game that can be branded for local restaurants.",
+      "",
+      "It works on phones, tablets, laptops, and desktops, so guests can play while they are waiting, at home, or with friends in a live room.",
+      "",
+      "I thought {restaurant} might be a good fit for a simple promotion that gives guests a fun reason to visit again.",
+      "",
+      "Would you be open to a quick conversation?",
+      "",
+      "Best Wishes,",
+      "Tim Collins",
+      "CommunityVerse Games",
+    ].join("\n"),
+  };
   const SECTION_LABELS = {
     dashboard: "Dashboard",
     restaurants: "Restaurant List",
@@ -130,6 +149,11 @@
     prospectList: document.querySelector("#prospect-list"),
     prospectScoreMin: document.querySelector("#prospect-score-min"),
     prospectScoreMax: document.querySelector("#prospect-score-max"),
+    salesEmailTemplateForm: document.querySelector("#sales-email-template-form"),
+    salesEmail1Subject: document.querySelector("#sales-email-1-subject"),
+    salesEmail1Body: document.querySelector("#sales-email-1-body"),
+    resetSalesEmail1Button: document.querySelector("#reset-sales-email-1-button"),
+    salesEmailTemplateStatus: document.querySelector("#sales-email-template-status"),
     leadBuilderForm: document.querySelector("#lead-builder-form"),
     leadBuilderState: document.querySelector("#lead-builder-state"),
     leadBuilderCounty: document.querySelector("#lead-builder-county"),
@@ -253,6 +277,16 @@
     quickContactFullCardButton: document.querySelector("#quick-contact-full-card-button"),
     closeQuickContactButton: document.querySelector("#close-quick-contact-button"),
     cancelQuickContactButton: document.querySelector("#cancel-quick-contact-button"),
+    salesEmailDialog: document.querySelector("#sales-email-dialog"),
+    salesEmailForm: document.querySelector("#sales-email-form"),
+    salesEmailTitle: document.querySelector("#sales-email-title"),
+    salesEmailHelper: document.querySelector("#sales-email-helper"),
+    salesEmailRestaurantId: document.querySelector("#sales-email-restaurant-id"),
+    salesEmailTo: document.querySelector("#sales-email-to"),
+    salesEmailSubject: document.querySelector("#sales-email-subject"),
+    salesEmailBody: document.querySelector("#sales-email-body"),
+    closeSalesEmailButton: document.querySelector("#close-sales-email-button"),
+    cancelSalesEmailButton: document.querySelector("#cancel-sales-email-button"),
     researchNotesDialog: document.querySelector("#research-notes-dialog"),
     researchNotesForm: document.querySelector("#research-notes-form"),
     researchNotesTitle: document.querySelector("#research-notes-title"),
@@ -275,6 +309,7 @@
     invoicePreviewId: "",
     pendingProspectImport: [],
     researchTarget: null,
+    salesEmailTargetId: "",
     loading: false,
     restaurantSortKey: "followup",
     restaurantSortDirection: "asc",
@@ -499,6 +534,31 @@
     }
   }
 
+  function loadSalesEmail1Template() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(SALES_EMAIL_1_STORAGE) || "{}");
+      return {
+        subject: String(parsed.subject || DEFAULT_SALES_EMAIL_1.subject),
+        body: String(parsed.body || DEFAULT_SALES_EMAIL_1.body),
+      };
+    } catch {
+      return { ...DEFAULT_SALES_EMAIL_1 };
+    }
+  }
+
+  function saveSalesEmail1Template(template) {
+    localStorage.setItem(SALES_EMAIL_1_STORAGE, JSON.stringify(template, null, 2));
+  }
+
+  function fillSalesEmailTemplateForm(template = loadSalesEmail1Template()) {
+    if (elements.salesEmail1Subject) {
+      elements.salesEmail1Subject.value = template.subject;
+    }
+    if (elements.salesEmail1Body) {
+      elements.salesEmail1Body.value = template.body;
+    }
+  }
+
   function saveRestaurants() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.restaurants, null, 2));
   }
@@ -537,6 +597,7 @@
       elements.clearManualLeadButton,
       elements.clearPastedLeadsButton,
       elements.openResearchSearchesButton,
+      elements.resetSalesEmail1Button,
     ].forEach((element) => {
       if (element) element.disabled = loading;
     });
@@ -1008,9 +1069,14 @@
             <td>${escapeHtml(latestContactSummary(restaurant))}</td>
             <td>${escapeHtml(shortDate(restaurant.nextFollowUp))}</td>
             <td><button class="text-button" type="button" data-research-restaurant-id="${escapeHtml(restaurant.id)}">Research</button></td>
+            <td>${
+              restaurant.contactEmail
+                ? `<button class="text-button" type="button" data-sales-email-id="${escapeHtml(restaurant.id)}">Send Email 1</button>`
+                : '<span class="helper">No email</span>'
+            }</td>
           </tr>
         `).join("")
-      : '<tr><td colspan="9"><div class="empty-state">No prospects match this score range.</div></td></tr>';
+      : '<tr><td colspan="10"><div class="empty-state">No prospects match this score range.</div></td></tr>';
   }
 
   function leadBuilderCategories() {
@@ -2596,6 +2662,88 @@
     window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   }
 
+  function salesEmailValue(value = "", restaurant = {}) {
+    const contact = restaurant.contactFirstName || contactName(restaurant) || "there";
+    const replacements = {
+      restaurant: restaurant.name || "your restaurant",
+      contact,
+      city: restaurant.city || "",
+      website: restaurant.website || "",
+    };
+    return String(value || "").replace(/\{(restaurant|contact|city|website)\}/gi, (_, key) => replacements[key.toLowerCase()] || "");
+  }
+
+  function openSalesEmailDialog(id) {
+    const restaurant = state.restaurants.find((record) => record.id === id);
+    if (!restaurant) {
+      return;
+    }
+    if (!restaurant.contactEmail) {
+      window.alert("This prospect does not have an email address saved yet.");
+      return;
+    }
+    const template = loadSalesEmail1Template();
+    state.salesEmailTargetId = restaurant.id;
+    elements.salesEmailRestaurantId.value = restaurant.id;
+    elements.salesEmailTitle.textContent = `Send Email 1 to ${restaurant.name}`;
+    elements.salesEmailHelper.textContent = "Edit this draft if needed. When you open the email, Back Office will log Email 1 in contact history.";
+    elements.salesEmailTo.value = restaurant.contactEmail;
+    elements.salesEmailSubject.value = salesEmailValue(template.subject, restaurant);
+    elements.salesEmailBody.value = salesEmailValue(template.body, restaurant);
+    elements.salesEmailDialog.showModal();
+    elements.salesEmailBody.focus();
+  }
+
+  function closeSalesEmailDialog() {
+    state.salesEmailTargetId = "";
+    elements.salesEmailDialog.close();
+  }
+
+  async function openSalesEmailAndLog(event) {
+    event.preventDefault();
+    const id = elements.salesEmailRestaurantId.value || state.salesEmailTargetId;
+    const restaurant = state.restaurants.find((record) => record.id === id);
+    if (!restaurant) {
+      closeSalesEmailDialog();
+      return;
+    }
+    const email = elements.salesEmailTo.value.trim();
+    const subject = elements.salesEmailSubject.value.trim();
+    const body = elements.salesEmailBody.value.trim();
+    if (!email || !subject || !body) {
+      window.alert("Add an email address, subject, and message before sending.");
+      return;
+    }
+    const contact = normalizeContactHistory([{
+      id: makeContactId(),
+      type: "E",
+      date: today(),
+      response: false,
+      note: `Sales Email 1 opened to ${email}. Subject: ${subject}`,
+    }])[0];
+    const updatedRestaurant = normalizeRestaurant({
+      ...restaurant,
+      contactEmail: email,
+      contactHistory: contact ? [contact, ...(restaurant.contactHistory || [])] : restaurant.contactHistory,
+      lastContacted: today(),
+      prospectStage: ["", "new-lead"].includes(restaurant.prospectStage) ? "contacted" : restaurant.prospectStage,
+      updatedAt: new Date().toISOString(),
+    });
+    const data = await saveAction("saveRestaurant", { restaurant: updatedRestaurant }, "Logged Sales Email 1");
+    if (!data?.restaurant) {
+      return;
+    }
+    const savedRecord = normalizeRestaurant(data.restaurant);
+    const existingIndex = state.restaurants.findIndex((record) => record.id === savedRecord.id);
+    if (existingIndex >= 0) {
+      state.restaurants[existingIndex] = savedRecord;
+    }
+    cacheBackofficeData();
+    render();
+    closeSalesEmailDialog();
+    window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  }
+
   async function addExpense(event) {
     event.preventDefault();
     const record = normalizeExpense({
@@ -3279,6 +3427,8 @@
   elements.cancelQuickContactButton.addEventListener("click", closeQuickContact);
   elements.closeResearchNotesButton.addEventListener("click", closeResearchNotesDialog);
   elements.cancelResearchNotesButton.addEventListener("click", closeResearchNotesDialog);
+  elements.closeSalesEmailButton.addEventListener("click", closeSalesEmailDialog);
+  elements.cancelSalesEmailButton.addEventListener("click", closeSalesEmailDialog);
   elements.openResearchSearchesButton.addEventListener("click", () => {
     if (state.researchTarget?.record) {
       openResearchQueries(state.researchTarget.record);
@@ -3290,6 +3440,26 @@
   elements.addContactHistoryButton.addEventListener("click", addContactHistory);
   elements.form.addEventListener("submit", saveRestaurant);
   elements.researchNotesForm.addEventListener("submit", previewResearchNotes);
+  elements.salesEmailForm.addEventListener("submit", openSalesEmailAndLog);
+  elements.salesEmailTemplateForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    saveSalesEmail1Template({
+      subject: elements.salesEmail1Subject.value.trim() || DEFAULT_SALES_EMAIL_1.subject,
+      body: elements.salesEmail1Body.value.trim() || DEFAULT_SALES_EMAIL_1.body,
+    });
+    elements.salesEmailTemplateStatus.textContent = "Saved";
+    window.setTimeout(() => {
+      elements.salesEmailTemplateStatus.textContent = "";
+    }, 1800);
+  });
+  elements.resetSalesEmail1Button.addEventListener("click", () => {
+    fillSalesEmailTemplateForm(DEFAULT_SALES_EMAIL_1);
+    saveSalesEmail1Template(DEFAULT_SALES_EMAIL_1);
+    elements.salesEmailTemplateStatus.textContent = "Reset";
+    window.setTimeout(() => {
+      elements.salesEmailTemplateStatus.textContent = "";
+    }, 1800);
+  });
   elements.status.addEventListener("change", updateSaleDetailsVisibility);
   elements.quickContactForm.addEventListener("submit", saveQuickContact);
   elements.collectionForm.addEventListener("submit", addCollection);
@@ -3346,6 +3516,10 @@
     const researchRestaurantButton = event.target.closest("[data-research-restaurant-id]");
     if (researchRestaurantButton) {
       openSavedRestaurantResearch(researchRestaurantButton.dataset.researchRestaurantId);
+    }
+    const salesEmailButton = event.target.closest("[data-sales-email-id]");
+    if (salesEmailButton) {
+      openSalesEmailDialog(salesEmailButton.dataset.salesEmailId);
     }
     const removeContactButton = event.target.closest("[data-remove-contact-id]");
     if (removeContactButton) {
@@ -3411,6 +3585,7 @@
 
   elements.expenseDate.value = today();
   elements.invoiceTemplateMonth.value = currentMonth();
+  fillSalesEmailTemplateForm();
   updateInvoiceTemplateAmount();
   if (adminKey) {
     loadBackofficeData();

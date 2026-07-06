@@ -215,6 +215,24 @@
                 </select>
               </label>
             </div>
+            <details class="sales-email-template-panel">
+              <summary>Sales Email 1 Template</summary>
+              <form class="sales-email-template-form" id="sales-email-template-form">
+                <label>
+                  Subject
+                  <input id="sales-email-1-subject" />
+                </label>
+                <label class="form-span">
+                  Email
+                  <textarea id="sales-email-1-body" rows="8"></textarea>
+                </label>
+                <div class="lead-builder-actions form-span">
+                  <button class="button button-primary" type="submit">Save Template</button>
+                  <button class="button button-muted" id="reset-sales-email-1-button" type="button">Reset</button>
+                  <span class="inline-status" id="sales-email-template-status" role="status"></span>
+                </div>
+              </form>
+            </details>
             <div class="table-wrap">
               <table>
                 <thead>
@@ -228,6 +246,7 @@
                     <th>Last Touch</th>
                     <th>Follow Up</th>
                     <th>Research</th>
+                    <th>Email</th>
                   </tr>
                 </thead>
                 <tbody id="prospect-list"></tbody>
@@ -903,6 +922,36 @@
       </form>
     </dialog>
 
+    <dialog id="sales-email-dialog" class="editor-dialog sales-email-dialog">
+      <form id="sales-email-form" method="dialog">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow">Sales email</p>
+            <h3 id="sales-email-title">Send Email 1</h3>
+            <p class="helper" id="sales-email-helper">Review and edit before opening your email app.</p>
+          </div>
+          <button class="icon-button" id="close-sales-email-button" type="button" aria-label="Close">x</button>
+        </div>
+        <input id="sales-email-restaurant-id" type="hidden" />
+        <label>
+          To
+          <input id="sales-email-to" type="email" />
+        </label>
+        <label>
+          Subject
+          <input id="sales-email-subject" />
+        </label>
+        <label>
+          Email
+          <textarea id="sales-email-body" rows="12"></textarea>
+        </label>
+        <div class="dialog-actions">
+          <button class="button button-muted" id="cancel-sales-email-button" type="button">Cancel</button>
+          <button class="button button-primary" type="submit">Open Email & Log</button>
+        </div>
+      </form>
+    </dialog>
+
     <dialog id="invoice-preview-dialog" class="editor-dialog invoice-preview-dialog">
       <div class="invoice-preview-shell">
         <div id="invoice-preview-content"></div>
@@ -975,6 +1024,6 @@
 
     <input id="import-file" type="file" accept="application/json" hidden />
     <input id="prospect-import-file" type="file" accept=".csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" hidden />
-    <script src="/backoffice/app.js?v=backoffice-v67" defer></script>
+    <script src="/backoffice/app.js?v=backoffice-v68" defer></script>
   </body>
 </html>

@@ -353,6 +353,27 @@ h3 {
   margin-top: 14px;
 }
 
+.sales-email-template-panel {
+  margin-top: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  background: rgba(240, 234, 220, 0.45);
+}
+
+.sales-email-template-panel summary {
+  cursor: pointer;
+  color: var(--green);
+  font-weight: 800;
+}
+
+.sales-email-template-form {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr);
+  gap: 12px;
+  margin-top: 14px;
+}
+
 .lead-builder-form {
   display: grid;
   grid-template-columns: minmax(140px, 180px) minmax(180px, 1fr) minmax(130px, 170px);
@@ -721,6 +742,10 @@ th {
 }
 
 .research-notes-dialog {
+  width: min(760px, calc(100vw - 28px));
+}
+
+.sales-email-dialog {
   width: min(760px, calc(100vw - 28px));
 }
 
