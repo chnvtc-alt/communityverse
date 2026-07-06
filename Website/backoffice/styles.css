@@ -649,6 +649,12 @@ td {
   font-size: 0.9rem;
 }
 
+.inline-score-select {
+  min-height: 34px;
+  padding: 6px 8px;
+  width: 62px;
+}
+
 .small-text-button {
   font-size: 0.85rem;
 }

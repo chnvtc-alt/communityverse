@@ -1035,6 +1035,12 @@
     return Number.isFinite(score) ? score : 0;
   }
 
+  function prospectScoreOptions(selectedScore = "") {
+    return Object.keys(prospectScoreLabels)
+      .map((score) => `<option value="${escapeHtml(score)}"${String(selectedScore) === score ? " selected" : ""}>${escapeHtml(score)}</option>`)
+      .join("");
+  }
+
   function saleDateFor(restaurant) {
     return restaurant.saleDate || restaurant.serviceStartDate || "";
   }
@@ -1162,7 +1168,15 @@
             <td>${restaurant.contactEmail ? `<a href="mailto:${escapeHtml(restaurant.contactEmail)}">${escapeHtml(restaurant.contactEmail)}</a>` : ""}</td>
             <td>${escapeHtml(restaurant.contactCell || restaurant.phone || "")}</td>
             <td>${escapeHtml(labelFor(prospectStageLabels, restaurant.prospectStage, "Not set"))}</td>
-            <td>${escapeHtml(labelFor(prospectScoreLabels, restaurant.prospectScore, "Not set"))}</td>
+            <td>
+              <select
+                class="inline-score-select"
+                data-prospect-score-id="${escapeHtml(restaurant.id)}"
+                aria-label="Score for ${escapeHtml(restaurant.name)}"
+              >
+                ${prospectScoreOptions(restaurant.prospectScore || "5")}
+              </select>
+            </td>
             <td>${escapeHtml(latestContactSummary(restaurant))}</td>
             <td>
               <div class="inline-follow-up">
@@ -2477,6 +2491,31 @@
     render();
   }
 
+  async function saveProspectScore(id = "", prospectScore = "") {
+    const restaurant = state.restaurants.find((record) => record.id === id);
+    if (!restaurant || !prospectScoreLabels[prospectScore]) {
+      renderProspects();
+      return;
+    }
+    const updatedRestaurant = normalizeRestaurant({
+      ...restaurant,
+      prospectScore,
+      updatedAt: new Date().toISOString(),
+    });
+    const data = await saveAction("saveRestaurant", { restaurant: updatedRestaurant }, "Updated score");
+    if (!data?.restaurant) {
+      renderProspects();
+      return;
+    }
+    const savedRecord = normalizeRestaurant(data.restaurant);
+    const existingIndex = state.restaurants.findIndex((record) => record.id === savedRecord.id);
+    if (existingIndex >= 0) {
+      state.restaurants[existingIndex] = savedRecord;
+    }
+    cacheBackofficeData();
+    render();
+  }
+
   async function addCollection(event) {
     event.preventDefault();
     const restaurant = state.restaurants.find((record) => record.id === elements.collectionRestaurant.value);
@@ -3746,6 +3785,11 @@
     }
   });
   elements.prospectList.addEventListener("change", (event) => {
+    const scoreInput = event.target.closest("[data-prospect-score-id]");
+    if (scoreInput) {
+      saveProspectScore(scoreInput.dataset.prospectScoreId, scoreInput.value);
+      return;
+    }
     const followUpInput = event.target.closest("[data-prospect-follow-up-id]");
     if (followUpInput) {
       saveProspectFollowUp(followUpInput.dataset.prospectFollowUpId, followUpInput.value);
