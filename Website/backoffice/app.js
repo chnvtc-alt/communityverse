@@ -1423,6 +1423,25 @@
     return match ? `Research trivia note: ${match[1].trim()}` : "";
   }
 
+  function googleDescriptionResearchNote(text = "") {
+    const lines = String(text || "").split(/\n+/).map((line) => line.trim()).filter(Boolean);
+    const labelPattern = /^(address|categories|hours|menu|phone|price per person|reported by|service options|suggest an edit|website)\b/i;
+    const description = lines.find((line) => {
+      const cleaned = line.replace(/\s+/g, " ").trim();
+      if (!cleaned || cleaned.length < 24 || cleaned.length > 220) {
+        return false;
+      }
+      if (labelPattern.test(cleaned) || /^https?:\/\//i.test(cleaned)) {
+        return false;
+      }
+      if (streetFromPastedLead(cleaned) || /\(?\b\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}\b/.test(cleaned)) {
+        return false;
+      }
+      return /[a-z]/i.test(cleaned) && /[.!]$/.test(cleaned);
+    });
+    return description ? `Google description: ${description.replace(/\s+/g, " ").trim()}` : "";
+  }
+
   function contactFirstNameFromEmail(email = "") {
     const prefix = String(email || "").split("@")[0] || "";
     const cleaned = prefix
@@ -1460,6 +1479,8 @@
     const researchText = String(text || "").trim();
     const triviaValue = researchTriviaValue(researchText);
     const note = triviaResearchNote(researchText);
+    const descriptionNote = googleDescriptionResearchNote(researchText);
+    const combinedNote = [descriptionNote, note].filter(Boolean).join("\n");
     const contactEmail = firstMatch(researchText, /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i) || baseRecord.contactEmail;
     const cityState = cityFromPastedLead(researchText, {
       city: baseRecord.city || "",
@@ -1478,8 +1499,8 @@
       facebookPage: firstUrl(researchText, "facebook") || baseRecord.facebookPage,
       contactFirstName: baseRecord.contactFirstName || contactFirstNameFromEmail(contactEmail),
       contactEmail,
-      notes: note ? appendUniqueNote(baseRecord.notes, note) : baseRecord.notes,
-      prospectNotes: note ? appendUniqueNote(baseRecord.prospectNotes, note) : baseRecord.prospectNotes,
+      notes: combinedNote ? appendUniqueNote(baseRecord.notes, combinedNote) : baseRecord.notes,
+      prospectNotes: combinedNote ? appendUniqueNote(baseRecord.prospectNotes, combinedNote) : baseRecord.prospectNotes,
       prospectStage: baseRecord.prospectStage || "new-lead",
       prospectScore: baseRecord.prospectScore || (triviaValue === "yes" ? "7" : "5"),
       leadSource: baseRecord.leadSource || "Lead Builder research",
