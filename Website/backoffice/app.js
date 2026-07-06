@@ -95,6 +95,7 @@
     T: "Text",
     C: "Call",
     LM: "Left Message",
+    LNN: "Left Name & Number",
     FB: "Facebook",
     W: "Website",
   };
