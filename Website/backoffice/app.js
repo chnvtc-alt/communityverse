@@ -1069,6 +1069,7 @@
           <tr>
             <td>
               <button class="link-button" type="button" data-contact-id="${escapeHtml(restaurant.id)}">${escapeHtml(restaurant.name)}</button>
+              <div class="helper">${escapeHtml(formattedAddress(restaurant) || "No address yet")}</div>
             </td>
             <td>${escapeHtml(contactName(restaurant) || "")}</td>
             <td>${restaurant.contactEmail ? `<a href="mailto:${escapeHtml(restaurant.contactEmail)}">${escapeHtml(restaurant.contactEmail)}</a>` : ""}</td>
