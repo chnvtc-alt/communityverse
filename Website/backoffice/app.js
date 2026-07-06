@@ -149,6 +149,7 @@
     monthlySalesList: document.querySelector("#monthly-sales-list"),
     topProspectList: document.querySelector("#top-prospect-list"),
     prospectList: document.querySelector("#prospect-list"),
+    prospectSearch: document.querySelector("#prospect-search"),
     prospectScoreMin: document.querySelector("#prospect-score-min"),
     prospectScoreMax: document.querySelector("#prospect-score-max"),
     salesEmailTemplateForm: document.querySelector("#sales-email-template-form"),
@@ -739,44 +740,49 @@
     render();
   }
 
-  function getFilteredRestaurants({ forceStatus = "" } = {}) {
-    const query = String(elements.search?.value || "").trim().toLowerCase();
+  function restaurantMatchesSearch(restaurant, query = "") {
+    const needle = String(query || "").trim().toLowerCase();
+    if (!needle) {
+      return true;
+    }
+    return [
+      restaurant.name,
+      restaurant.street,
+      restaurant.city,
+      restaurant.state,
+      restaurant.zip,
+      formattedAddress(restaurant),
+      restaurant.phone,
+      restaurant.currentlyDoesTrivia,
+      restaurant.website,
+      restaurant.facebookPage,
+      contactName(restaurant),
+      secondContactSummary(restaurant),
+      restaurant.contactEmail,
+      restaurant.contactCell,
+      latestContactSummary(restaurant),
+      labelFor(prospectStageLabels, restaurant.prospectStage, restaurant.prospectStage),
+      restaurant.prospectScore,
+      restaurant.leadSource,
+      restaurant.prospectNotes,
+      restaurant.saleDate,
+      restaurant.packageName,
+      restaurant.monthlyAmount,
+      restaurant.setupFee,
+      restaurant.paymentStatus,
+      restaurant.firstInvoiceDate,
+      restaurant.setupStatus,
+      restaurant.salesNotes,
+      restaurant.notes,
+    ].some((value) => String(value || "").toLowerCase().includes(needle));
+  }
+
+  function getFilteredRestaurants({ forceStatus = "", query = null } = {}) {
+    const searchQuery = query === null ? String(elements.search?.value || "") : String(query || "");
     const statusFilter = forceStatus || String(elements.statusFilter?.value || "all");
     return state.restaurants
       .filter((restaurant) => statusFilter === "all" || restaurant.status === statusFilter)
-      .filter((restaurant) => {
-        if (!query) {
-          return true;
-        }
-        return [
-          restaurant.name,
-          restaurant.street,
-          restaurant.city,
-          restaurant.state,
-          restaurant.zip,
-          restaurant.phone,
-          restaurant.currentlyDoesTrivia,
-          restaurant.website,
-          restaurant.facebookPage,
-          contactName(restaurant),
-          restaurant.contactEmail,
-          restaurant.contactCell,
-          latestContactSummary(restaurant),
-          restaurant.prospectStage,
-          restaurant.prospectScore,
-          restaurant.leadSource,
-          restaurant.prospectNotes,
-          restaurant.saleDate,
-          restaurant.packageName,
-          restaurant.monthlyAmount,
-          restaurant.setupFee,
-          restaurant.paymentStatus,
-          restaurant.firstInvoiceDate,
-          restaurant.setupStatus,
-          restaurant.salesNotes,
-          restaurant.notes,
-        ].some((value) => String(value || "").toLowerCase().includes(query));
-      })
+      .filter((restaurant) => restaurantMatchesSearch(restaurant, searchQuery))
       .sort(compareRestaurants);
   }
 
@@ -1138,7 +1144,8 @@
     const scoreMax = Number(elements.prospectScoreMax?.value || 10);
     const min = Math.min(scoreMin, scoreMax);
     const max = Math.max(scoreMin, scoreMax);
-    const prospects = getFilteredRestaurants({ forceStatus: "prospect" })
+    const searchQuery = String(elements.prospectSearch?.value || "");
+    const prospects = getFilteredRestaurants({ forceStatus: "prospect", query: searchQuery })
       .filter(isVisibleProspect)
       .filter((restaurant) => {
         const score = prospectScoreNumber(restaurant);
@@ -1174,7 +1181,7 @@
             }</td>
           </tr>
         `).join("")
-      : '<tr><td colspan="10"><div class="empty-state">No prospects match this score range.</div></td></tr>';
+      : '<tr><td colspan="10"><div class="empty-state">No prospects match this search and score range.</div></td></tr>';
   }
 
   function leadBuilderCategories() {
@@ -3706,6 +3713,7 @@
   elements.expenseForm.addEventListener("submit", addExpense);
   elements.search.addEventListener("input", renderRestaurantTable);
   elements.statusFilter.addEventListener("change", renderRestaurantTable);
+  elements.prospectSearch.addEventListener("input", renderProspects);
   elements.prospectScoreMin.addEventListener("change", renderProspects);
   elements.prospectScoreMax.addEventListener("change", renderProspects);
   elements.leadBuilderForm.addEventListener("submit", runLeadBuilder);

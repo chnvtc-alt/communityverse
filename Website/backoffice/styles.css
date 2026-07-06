@@ -348,9 +348,13 @@ h3 {
 
 .prospect-filters {
   display: grid;
-  grid-template-columns: repeat(2, minmax(140px, 190px));
+  grid-template-columns: minmax(240px, 1fr) repeat(2, minmax(140px, 190px));
   gap: 12px;
   margin-top: 14px;
+}
+
+.prospect-search-label input {
+  width: 100%;
 }
 
 .sales-email-template-panel {
