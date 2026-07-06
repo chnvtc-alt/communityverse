@@ -701,6 +701,34 @@
             Contact Cell
             <input id="contact-cell" type="tel" />
           </label>
+          <div class="form-span">
+            <button class="button button-muted button-sm" id="add-second-contact-button" type="button">Add second contact</button>
+          </div>
+          <section class="second-contact-section form-span" id="second-contact-section" hidden>
+            <div class="form-section-title">Second Contact</div>
+            <div class="nested-form-grid">
+              <label>
+                Second First Name
+                <input id="second-contact-first-name" />
+              </label>
+              <label>
+                Second Last Name
+                <input id="second-contact-last-name" />
+              </label>
+              <label>
+                Second Email
+                <input id="second-contact-email" type="email" />
+              </label>
+              <label>
+                Second Cell
+                <input id="second-contact-cell" type="tel" />
+              </label>
+              <label class="form-span">
+                Role / Note
+                <input id="second-contact-role" placeholder="Owner, GM, better contact..." />
+              </label>
+            </div>
+          </section>
           <label class="form-span">
             Notes
             <textarea id="restaurant-notes" rows="4" placeholder="Sales notes, preferences, who referred them, setup details..."></textarea>

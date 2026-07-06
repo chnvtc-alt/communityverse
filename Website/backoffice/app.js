@@ -237,6 +237,13 @@
     contactLastName: document.querySelector("#contact-last-name"),
     contactEmail: document.querySelector("#contact-email"),
     contactCell: document.querySelector("#contact-cell"),
+    addSecondContactButton: document.querySelector("#add-second-contact-button"),
+    secondContactSection: document.querySelector("#second-contact-section"),
+    secondContactFirstName: document.querySelector("#second-contact-first-name"),
+    secondContactLastName: document.querySelector("#second-contact-last-name"),
+    secondContactEmail: document.querySelector("#second-contact-email"),
+    secondContactCell: document.querySelector("#second-contact-cell"),
+    secondContactRole: document.querySelector("#second-contact-role"),
     dateAdded: document.querySelector("#date-added"),
     lastContacted: document.querySelector("#last-contacted"),
     nextFollowUp: document.querySelector("#next-follow-up"),
@@ -910,6 +917,77 @@
 
   function contactName(restaurant) {
     return [restaurant.contactFirstName, restaurant.contactLastName].filter(Boolean).join(" ");
+  }
+
+  const SECOND_CONTACT_START = "[Second Contact]";
+  const SECOND_CONTACT_END = "[/Second Contact]";
+
+  function parseSecondContact(prospectNotes = "") {
+    const match = String(prospectNotes || "").match(/\[Second Contact\]([\s\S]*?)\[\/Second Contact\]/i);
+    const contact = { firstName: "", lastName: "", email: "", cell: "", role: "" };
+    if (!match) {
+      return contact;
+    }
+    match[1].split(/\n+/).forEach((line) => {
+      const [rawLabel, ...valueParts] = line.split(":");
+      const value = valueParts.join(":").trim();
+      const label = String(rawLabel || "").trim().toLowerCase();
+      if (label === "first name") contact.firstName = value;
+      if (label === "last name") contact.lastName = value;
+      if (label === "email") contact.email = value;
+      if (label === "cell") contact.cell = value;
+      if (label === "role") contact.role = value;
+    });
+    return contact;
+  }
+
+  function stripSecondContact(prospectNotes = "") {
+    return String(prospectNotes || "")
+      .replace(/\n?\[Second Contact\][\s\S]*?\[\/Second Contact\]\n?/i, "\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+  }
+
+  function secondContactHasValue(contact = {}) {
+    return Boolean(contact.firstName || contact.lastName || contact.email || contact.cell || contact.role);
+  }
+
+  function secondContactFromForm() {
+    return {
+      firstName: elements.secondContactFirstName.value.trim(),
+      lastName: elements.secondContactLastName.value.trim(),
+      email: elements.secondContactEmail.value.trim(),
+      cell: elements.secondContactCell.value.trim(),
+      role: elements.secondContactRole.value.trim(),
+    };
+  }
+
+  function prospectNotesWithSecondContact(notes = "", contact = {}) {
+    const cleanNotes = stripSecondContact(notes);
+    if (!secondContactHasValue(contact)) {
+      return cleanNotes;
+    }
+    const lines = [
+      SECOND_CONTACT_START,
+      contact.firstName ? `First Name: ${contact.firstName}` : "",
+      contact.lastName ? `Last Name: ${contact.lastName}` : "",
+      contact.email ? `Email: ${contact.email}` : "",
+      contact.cell ? `Cell: ${contact.cell}` : "",
+      contact.role ? `Role: ${contact.role}` : "",
+      SECOND_CONTACT_END,
+    ].filter(Boolean);
+    return [cleanNotes, lines.join("\n")].filter(Boolean).join("\n\n");
+  }
+
+  function secondContactSummary(restaurant = {}) {
+    const contact = parseSecondContact(restaurant.prospectNotes);
+    if (!secondContactHasValue(contact)) {
+      return "";
+    }
+    const name = [contact.firstName, contact.lastName].filter(Boolean).join(" ");
+    return [name ? `Second: ${name}` : "Second contact", contact.email, contact.cell, contact.role]
+      .filter(Boolean)
+      .join(" / ");
   }
 
   function restaurantOwner(id = "") {
@@ -2031,6 +2109,14 @@
     elements.contactLastName.value = restaurant ? record.contactLastName : "";
     elements.contactEmail.value = restaurant ? record.contactEmail : "";
     elements.contactCell.value = restaurant ? record.contactCell : "";
+    const secondContact = parseSecondContact(record.prospectNotes);
+    elements.secondContactFirstName.value = restaurant ? secondContact.firstName : "";
+    elements.secondContactLastName.value = restaurant ? secondContact.lastName : "";
+    elements.secondContactEmail.value = restaurant ? secondContact.email : "";
+    elements.secondContactCell.value = restaurant ? secondContact.cell : "";
+    elements.secondContactRole.value = restaurant ? secondContact.role : "";
+    elements.secondContactSection.hidden = !secondContactHasValue(secondContact);
+    elements.addSecondContactButton.textContent = elements.secondContactSection.hidden ? "Add second contact" : "Hide second contact";
     elements.dateAdded.value = record.dateAdded || today();
     elements.lastContacted.value = restaurant ? record.lastContacted : "";
     elements.nextFollowUp.value = restaurant ? record.nextFollowUp : "";
@@ -2038,7 +2124,7 @@
     elements.prospectStage.value = restaurant ? record.prospectStage : "";
     elements.prospectScore.value = record.prospectScore || "";
     elements.leadSource.value = restaurant ? record.leadSource : "";
-    elements.prospectNotes.value = restaurant ? record.prospectNotes : "";
+    elements.prospectNotes.value = restaurant ? stripSecondContact(record.prospectNotes) : "";
     state.editingContactHistory = restaurant ? [...record.contactHistory] : [];
     state.editingContactId = "";
     elements.contactHistoryType.value = "E";
@@ -2066,6 +2152,14 @@
     elements.saleDetailsSection.hidden = elements.status.value !== "customer";
   }
 
+  function toggleSecondContactSection() {
+    elements.secondContactSection.hidden = !elements.secondContactSection.hidden;
+    elements.addSecondContactButton.textContent = elements.secondContactSection.hidden ? "Add second contact" : "Hide second contact";
+    if (!elements.secondContactSection.hidden) {
+      elements.secondContactFirstName.focus();
+    }
+  }
+
   function restaurantFromForm() {
     return normalizeRestaurant({
       id: elements.id.value || makeId(),
@@ -2091,7 +2185,7 @@
       prospectScore: elements.prospectScore.value,
       leadSource: elements.leadSource.value,
       assignedTo: restaurantOwner(elements.id.value),
-      prospectNotes: elements.prospectNotes.value,
+      prospectNotes: prospectNotesWithSecondContact(elements.prospectNotes.value, secondContactFromForm()),
       contactHistory: state.editingContactHistory,
       saleDate: elements.saleDate.value,
       serviceStartDate: elements.serviceStartDate.value,
@@ -2130,6 +2224,7 @@
       contactName(restaurant),
       restaurant.contactEmail,
       restaurant.contactCell || restaurant.phone,
+      secondContactSummary(restaurant),
     ].filter(Boolean).join(" / ") || "No contact details yet";
     const quickLinks = [
       restaurant.website
@@ -3539,6 +3634,7 @@
   elements.quickContactFullCardButton.addEventListener("click", openFullCardFromQuickContact);
   elements.deleteRestaurantButton.addEventListener("click", deleteCurrentRestaurant);
   elements.addContactHistoryButton.addEventListener("click", addContactHistory);
+  elements.addSecondContactButton.addEventListener("click", toggleSecondContactSection);
   elements.form.addEventListener("submit", saveRestaurant);
   elements.researchNotesForm.addEventListener("submit", previewResearchNotes);
   elements.salesEmailForm.addEventListener("submit", openSalesEmailAndLog);

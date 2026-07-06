@@ -1068,6 +1068,19 @@ th {
   gap: 14px;
 }
 
+.second-contact-section {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  background: rgba(240, 234, 220, 0.45);
+}
+
+.second-contact-section[hidden] {
+  display: none;
+}
+
 .form-span {
   grid-column: 1 / -1;
 }
