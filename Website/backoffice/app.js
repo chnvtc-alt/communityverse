@@ -1219,12 +1219,13 @@
       alabama: "AL",
       georgia: "GA",
       florida: "FL",
+      kansas: "KS",
       missouri: "MO",
       northcarolina: "NC",
       southcarolina: "SC",
       tennessee: "TN",
     };
-    if (/^(GA|AL|FL|MO|NC|SC|TN)$/i.test(cleaned)) {
+    if (/^(GA|AL|FL|KS|MO|NC|SC|TN)$/i.test(cleaned)) {
       return cleaned.toUpperCase();
     }
     return stateCodes[key] || fallback;
@@ -1250,7 +1251,7 @@
         state: stateCodeFromText(commaMatch[2], fallbackState),
       };
     }
-    const trailingStateMatch = text.match(/^(.+?)\s+(GA|AL|FL|MO|NC|SC|TN|Georgia|Alabama|Florida|Missouri|North Carolina|South Carolina|Tennessee)$/i);
+    const trailingStateMatch = text.match(/^(.+?)\s+(GA|AL|FL|KS|MO|NC|SC|TN|Georgia|Alabama|Florida|Kansas|Missouri|North Carolina|South Carolina|Tennessee)$/i);
     if (trailingStateMatch) {
       return {
         city: cleanCityName(trailingStateMatch[1]),
@@ -1508,7 +1509,7 @@
   }
 
   function cityFromPastedLead(text = "", market = leadBuilderMarket()) {
-    const statePattern = "(GA|AL|FL|MO|NC|SC|TN|Georgia|Alabama|Florida|Missouri|North Carolina|South Carolina|Tennessee)";
+    const statePattern = "(GA|AL|FL|KS|MO|NC|SC|TN|Georgia|Alabama|Florida|Kansas|Missouri|North Carolina|South Carolina|Tennessee)";
     const nearMatch = String(text || "").match(new RegExp(`\\b(?:near|in|for)\\s+([A-Z][a-z]+(?:\\s+[A-Z][a-z]+){0,2})\\s*,?\\s+${statePattern}\\b`, "i"));
     if (nearMatch) {
       return { city: cleanCityName(nearMatch[1]), state: stateCodeFromText(nearMatch[2], market.stateText) };
