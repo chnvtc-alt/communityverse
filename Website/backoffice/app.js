@@ -2454,10 +2454,10 @@
     ].filter(Boolean).join(" / ") || "No contact details yet";
     const quickLinks = [
       restaurant.website
-        ? `<a href="${escapeHtml(externalUrl(restaurant.website))}" target="_blank" rel="noopener">Website</a>`
+        ? `<a href="${escapeHtml(externalUrl(restaurant.website))}" target="_blank" rel="noopener" data-quick-contact-external-link>Website</a>`
         : "",
       restaurant.facebookPage
-        ? `<a href="${escapeHtml(externalUrl(restaurant.facebookPage))}" target="_blank" rel="noopener">Facebook</a>`
+        ? `<a href="${escapeHtml(externalUrl(restaurant.facebookPage))}" target="_blank" rel="noopener" data-quick-contact-external-link>Facebook</a>`
         : "",
     ].filter(Boolean);
     elements.quickContactLinks.innerHTML = quickLinks.length ? quickLinks.join("") : "";
@@ -4115,6 +4115,17 @@
     const researchButton = event.target.closest("[data-research-import-index]");
     if (researchButton) {
       openRestaurantResearch(Number(researchButton.dataset.researchImportIndex));
+    }
+  });
+  elements.quickContactLinks.addEventListener("click", (event) => {
+    const link = event.target.closest("[data-quick-contact-external-link]");
+    if (!link) {
+      return;
+    }
+    const opened = window.open(link.href, "_blank", "noopener,noreferrer");
+    if (opened) {
+      event.preventDefault();
+      opened.opener = null;
     }
   });
 
