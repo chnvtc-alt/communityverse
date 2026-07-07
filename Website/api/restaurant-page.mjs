@@ -135,6 +135,18 @@ function replaceStructuredData(html, structuredData) {
   return html.replace("</head>", `    ${script}\n  </head>`);
 }
 
+function buildVisitTrackingScript(pagePath) {
+  const path = JSON.stringify(pagePath);
+  return `<script>(function(){try{var pagePath=${path};var d=new Date();var visitDate=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');var sentKey='cv-page-visit:'+pagePath+':'+visitDate;if(window.localStorage.getItem(sentKey)){return;}var visitorKey=window.localStorage.getItem('cv-page-visitor');if(!visitorKey){visitorKey=(window.crypto&&window.crypto.randomUUID)?window.crypto.randomUUID():(String(Date.now())+'-'+Math.random().toString(36).slice(2));window.localStorage.setItem('cv-page-visitor',visitorKey);}var payload=JSON.stringify({pagePath:pagePath,visitDate:visitDate,visitorKey:visitorKey});window.localStorage.setItem(sentKey,'1');if(window.navigator&&window.navigator.sendBeacon){window.navigator.sendBeacon('/api/page-visits',new Blob([payload],{type:'application/json'}));return;}window.fetch('/api/page-visits',{method:'POST',headers:{'Content-Type':'application/json'},body:payload,keepalive:true}).catch(function(){});}catch(error){}})();</script>`;
+}
+
+function addVisitTracking(html, slug, page) {
+  if (slug !== "restaurant" || page !== "start") {
+    return html;
+  }
+  return html.replace("</body>", `    ${buildVisitTrackingScript("/restaurant")}\n  </body>`);
+}
+
 async function getRestaurant(slug) {
   const normalizedSlug = slugifyRestaurant(slug);
   if (!normalizedSlug) {
@@ -203,6 +215,7 @@ export async function GET(request) {
     html = replaceMeta(html, "twitter:image", imageUrl);
   }
   html = replaceStructuredData(html, structuredData);
+  html = addVisitTracking(html, slug, page);
 
   return new Response(html, {
     status: 200,

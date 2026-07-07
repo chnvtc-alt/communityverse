@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { fetchPageVisitStats } from "./page-visits.mjs";
 import { supabaseRequest } from "./supabase.mjs";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -247,6 +248,14 @@ export async function fetchBackofficeData() {
       .filter((restaurant) => restaurant.name),
     collections: (Array.isArray(collectionRows) ? collectionRows : []).map(collectionFromRecord),
     expenses: (Array.isArray(expenseRows) ? expenseRows : []).map(expenseFromRecord),
+    pageStats: {
+      restaurant: await fetchPageVisitStats("/restaurant").catch(() => ({
+        today: 0,
+        sevenDays: 0,
+        thirtyDays: 0,
+        total: 0,
+      })),
+    },
   };
 }
 

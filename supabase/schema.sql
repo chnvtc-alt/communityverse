@@ -70,6 +70,17 @@ create index if not exists idx_feedback_responses_restaurant_slug on feedback_re
 create index if not exists idx_feedback_responses_profile_id on feedback_responses (profile_id);
 create index if not exists idx_feedback_responses_submitted_at on feedback_responses (submitted_at desc);
 
+create table if not exists page_visits (
+  id uuid primary key,
+  page_path text not null,
+  visitor_key text not null,
+  visit_date date not null,
+  created_at timestamptz not null default now()
+);
+
+create unique index if not exists idx_page_visits_unique_daily_visitor on page_visits (page_path, visitor_key, visit_date);
+create index if not exists idx_page_visits_path_date on page_visits (page_path, visit_date desc);
+
 create table if not exists questions (
   id text primary key,
   active boolean not null default true,

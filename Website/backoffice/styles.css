@@ -309,6 +309,10 @@ h3 {
   gap: 14px;
 }
 
+.page-stats-grid {
+  margin-top: 14px;
+}
+
 .metric-card,
 .card,
 .placeholder-panel {
