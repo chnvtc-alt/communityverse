@@ -1147,7 +1147,7 @@
             </td>
             <td>${statusPill(restaurant.status)}</td>
             <td>${escapeHtml(contactName(restaurant) || "No contact yet")}</td>
-            <td>${restaurant.contactEmail ? `<a href="mailto:${escapeHtml(restaurant.contactEmail)}">${escapeHtml(restaurant.contactEmail)}</a>` : ""}</td>
+            <td>${restaurant.contactEmail ? `<a href="mailto:${escapeHtml(restaurant.contactEmail)}" target="_blank">${escapeHtml(restaurant.contactEmail)}</a>` : ""}</td>
             <td>${escapeHtml(restaurant.phone || restaurant.contactCell || "")}</td>
             <td>${escapeHtml(restaurant.nextFollowUp || "")}</td>
             <td><button class="text-button" type="button" data-research-restaurant-id="${escapeHtml(restaurant.id)}">Research</button></td>
@@ -1176,7 +1176,7 @@
               <div class="helper">${escapeHtml(formattedAddress(restaurant) || "No address yet")}</div>
             </td>
             <td>${escapeHtml(contactName(restaurant) || "")}</td>
-            <td>${restaurant.contactEmail ? `<a href="mailto:${escapeHtml(restaurant.contactEmail)}">${escapeHtml(restaurant.contactEmail)}</a>` : ""}</td>
+            <td>${restaurant.contactEmail ? `<a href="mailto:${escapeHtml(restaurant.contactEmail)}" target="_blank">${escapeHtml(restaurant.contactEmail)}</a>` : ""}</td>
             <td>${escapeHtml(restaurant.contactCell || restaurant.phone || "")}</td>
             <td>${escapeHtml(labelFor(prospectStageLabels, restaurant.prospectStage, "Not set"))}</td>
             <td>
@@ -1208,7 +1208,7 @@
             <td><button class="text-button" type="button" data-research-restaurant-id="${escapeHtml(restaurant.id)}">Research</button></td>
             <td>${
               restaurant.contactEmail
-                ? `<a class="text-button" href="${escapeHtml(salesEmailDraftUrlForRestaurant(restaurant))}" data-direct-sales-email-id="${escapeHtml(restaurant.id)}">Send Email 1</a>`
+                ? `<a class="text-button" href="${escapeHtml(salesEmailDraftUrlForRestaurant(restaurant))}" target="_blank" data-direct-sales-email-id="${escapeHtml(restaurant.id)}">Send Email 1</a>`
                 : '<span class="helper">No email</span>'
             }</td>
           </tr>
@@ -3230,8 +3230,8 @@
     }
     const draft = salesEmailDraftForRestaurant(restaurant);
     const fullDraftUrl = mailtoUrl(draft.email, draft.subject, draft.body);
+    copyTextToClipboard(draft.body);
     if (fullDraftUrl.length > MAILTO_FULL_DRAFT_LIMIT) {
-      copyTextToClipboard(draft.body);
       window.setTimeout(() => {
         window.alert("That email was long, so Back Office copied the message text. If the email opens without the message, paste it into the email body.");
       }, 800);
