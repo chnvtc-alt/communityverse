@@ -18,6 +18,7 @@
   const PDF_LOGO_PATH = "/assets/communityverse-games-logo-pdf.jpg";
   const PDF_LOGO_WIDTH = 230;
   const PDF_LOGO_HEIGHT = 71;
+  const MAILTO_FULL_DRAFT_LIMIT = 1800;
   const DEFAULT_SALES_EMAIL_1 = {
     subject: "A quick trivia promotion idea for {restaurant}",
     body: [
@@ -298,7 +299,7 @@
     salesEmailSubject: document.querySelector("#sales-email-subject"),
     salesEmailBody: document.querySelector("#sales-email-body"),
     copySalesEmailBodyButton: document.querySelector("#copy-sales-email-body-button"),
-    openSalesEmailDraftButton: document.querySelector("#open-sales-email-draft-button"),
+    openSalesEmailDraftLink: document.querySelector("#open-sales-email-draft-link"),
     closeSalesEmailButton: document.querySelector("#close-sales-email-button"),
     cancelSalesEmailButton: document.querySelector("#cancel-sales-email-button"),
     researchNotesDialog: document.querySelector("#research-notes-dialog"),
@@ -3164,28 +3165,43 @@
     window.alert("The message is selected. Press Command-C to copy it.");
   }
 
-  function openMailDraft(email = "", subject = "", body = "") {
-    const fullDraftUrl = mailtoUrl(email, subject, body);
-    if (fullDraftUrl.length > 1800) {
-      copyTextToClipboard(body);
-      window.location.href = mailtoUrl(email, subject);
-      window.setTimeout(() => {
-        window.alert("That email was long, so Back Office copied the message text. If the email opens without the message, paste it into the email body.");
-      }, 800);
-      return;
-    }
-    window.location.href = fullDraftUrl;
-  }
-
-  function openSalesEmailDraft() {
+  function salesEmailDraftUrl() {
     const email = elements.salesEmailTo.value.trim();
     const subject = elements.salesEmailSubject.value.trim();
     const body = elements.salesEmailBody.value.trim();
     if (!email || !subject || !body) {
+      return "";
+    }
+    const fullDraftUrl = mailtoUrl(email, subject, body);
+    if (fullDraftUrl.length > MAILTO_FULL_DRAFT_LIMIT) {
+      return mailtoUrl(email, subject);
+    }
+    return fullDraftUrl;
+  }
+
+  function updateSalesEmailDraftLink() {
+    const draftUrl = salesEmailDraftUrl();
+    elements.openSalesEmailDraftLink.href = draftUrl || "mailto:";
+    elements.openSalesEmailDraftLink.setAttribute("aria-disabled", draftUrl ? "false" : "true");
+  }
+
+  function openSalesEmailDraft(event) {
+    const email = elements.salesEmailTo.value.trim();
+    const subject = elements.salesEmailSubject.value.trim();
+    const body = elements.salesEmailBody.value.trim();
+    updateSalesEmailDraftLink();
+    if (!email || !subject || !body) {
+      event.preventDefault();
       window.alert("Add an email address, subject, and message before opening the email.");
       return;
     }
-    openMailDraft(email, subject, body);
+    const fullDraftUrl = mailtoUrl(email, subject, body);
+    if (fullDraftUrl.length > MAILTO_FULL_DRAFT_LIMIT) {
+      copyTextToClipboard(body);
+      window.setTimeout(() => {
+        window.alert("That email was long, so Back Office copied the message text. If the email opens without the message, paste it into the email body.");
+      }, 800);
+    }
   }
 
   function openSalesEmailDialog(id) {
@@ -3205,6 +3221,7 @@
     elements.salesEmailTo.value = restaurant.contactEmail;
     elements.salesEmailSubject.value = salesEmailValue(template.subject, restaurant);
     elements.salesEmailBody.value = salesEmailValue(template.body, restaurant);
+    updateSalesEmailDraftLink();
     elements.salesEmailDialog.showModal();
     elements.salesEmailBody.focus();
   }
@@ -3969,7 +3986,10 @@
   elements.form.addEventListener("submit", saveRestaurant);
   elements.researchNotesForm.addEventListener("submit", previewResearchNotes);
   elements.copySalesEmailBodyButton.addEventListener("click", copyEmailBody);
-  elements.openSalesEmailDraftButton.addEventListener("click", openSalesEmailDraft);
+  elements.openSalesEmailDraftLink.addEventListener("click", openSalesEmailDraft);
+  elements.salesEmailTo.addEventListener("input", updateSalesEmailDraftLink);
+  elements.salesEmailSubject.addEventListener("input", updateSalesEmailDraftLink);
+  elements.salesEmailBody.addEventListener("input", updateSalesEmailDraftLink);
   elements.salesEmailForm.addEventListener("submit", logSalesEmailOne);
   elements.salesEmailTemplateForm.addEventListener("submit", (event) => {
     event.preventDefault();
