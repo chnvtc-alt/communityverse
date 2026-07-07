@@ -218,10 +218,6 @@
     metricCustomers: document.querySelector("#metric-customers"),
     metricProspects: document.querySelector("#metric-prospects"),
     metricFollowups: document.querySelector("#metric-followups"),
-    metricRestaurantPageToday: document.querySelector("#metric-restaurant-page-today"),
-    metricRestaurantPageSevenDays: document.querySelector("#metric-restaurant-page-seven-days"),
-    metricRestaurantPageThirtyDays: document.querySelector("#metric-restaurant-page-thirty-days"),
-    metricRestaurantPageTotal: document.querySelector("#metric-restaurant-page-total"),
     dialog: document.querySelector("#restaurant-dialog"),
     form: document.querySelector("#restaurant-form"),
     editorTitle: document.querySelector("#restaurant-editor-title"),
@@ -321,14 +317,6 @@
     restaurants: [],
     collections: [],
     expenses: [],
-    pageStats: {
-      restaurant: {
-        today: 0,
-        sevenDays: 0,
-        thirtyDays: 0,
-        total: 0,
-      },
-    },
     editingContactHistory: [],
     editingContactId: "",
     editingCollectionId: "",
@@ -687,9 +675,6 @@
       : [];
     state.collections = Array.isArray(data.collections) ? data.collections.map(normalizeCollection) : [];
     state.expenses = Array.isArray(data.expenses) ? data.expenses.map(normalizeExpense) : [];
-    state.pageStats = data.pageStats && typeof data.pageStats === "object"
-      ? data.pageStats
-      : { restaurant: { today: 0, sevenDays: 0, thirtyDays: 0, total: 0 } };
     cacheBackofficeData();
     render();
     fillNextInvoiceNumber();
@@ -1050,11 +1035,6 @@
     elements.metricCustomers.textContent = moneyMetric(recurringMonthly);
     elements.metricProspects.textContent = moneyMetric(yearSales);
     elements.metricFollowups.textContent = topProspects;
-    const restaurantPageStats = state.pageStats?.restaurant || {};
-    elements.metricRestaurantPageToday.textContent = countMetric(restaurantPageStats.today);
-    elements.metricRestaurantPageSevenDays.textContent = countMetric(restaurantPageStats.sevenDays);
-    elements.metricRestaurantPageThirtyDays.textContent = countMetric(restaurantPageStats.thirtyDays);
-    elements.metricRestaurantPageTotal.textContent = countMetric(restaurantPageStats.total);
   }
 
   function isVisibleProspect(restaurant) {
@@ -1090,11 +1070,6 @@
 
   function moneyMetric(value) {
     return moneyValue(String(value));
-  }
-
-  function countMetric(value) {
-    const number = Number(value || 0);
-    return Number.isFinite(number) ? number.toLocaleString("en-US") : "0";
   }
 
   function isRecurringSale(restaurant) {

@@ -218,6 +218,14 @@ let restaurants = [];
 let feedbackResponses = [];
 let profiles = [];
 let statsProfiles = [];
+let statsPageStats = {
+  restaurant: {
+    today: 0,
+    sevenDays: 0,
+    thirtyDays: 0,
+    total: 0,
+  },
+};
 let profileSessionHistory = new Map();
 let statsRestaurantScope = "overall";
 let filterTimer = 0;
@@ -2308,6 +2316,18 @@ function statsCard(label, value, note = "") {
   `;
 }
 
+function pageVisitStatsMarkup() {
+  const restaurantStats = statsPageStats?.restaurant || {};
+  return `
+    <section class="stats-grid">
+      ${statsCard("Restaurant page today", formatWholeNumber(restaurantStats.today || 0), "Unique browser visits to /restaurant today")}
+      ${statsCard("Restaurant page 7 days", formatWholeNumber(restaurantStats.sevenDays || 0), "Unique browser visits in the last 7 days")}
+      ${statsCard("Restaurant page 30 days", formatWholeNumber(restaurantStats.thirtyDays || 0), "Unique browser visits in the last 30 days")}
+      ${statsCard("Restaurant page total", formatWholeNumber(restaurantStats.total || 0), "Unique browser-day visits recorded")}
+    </section>
+  `;
+}
+
 function statsList(title, rows, emptyText, rowTemplate) {
   return `
     <section class="stats-section">
@@ -2348,6 +2368,8 @@ function renderStats() {
   const returningPlayers = getReturningPlayerRows(normalProfiles);
 
   elements.statsDashboard.innerHTML = `
+    ${pageVisitStatsMarkup()}
+
     <section class="stats-grid">
       ${statsCard("Saved restaurants", formatWholeNumber(summary.savedCount), `${formatPercent(summary.savedCount, summary.totalProfiles)} of normal profiles`)}
       ${statsCard("Still guest-only", formatWholeNumber(summary.guestCount), `${formatPercent(summary.guestCount, summary.totalProfiles)} of normal profiles`)}
@@ -2422,6 +2444,14 @@ async function loadStats({ quiet = false } = {}) {
       profileSessionHistory = new Map();
     }
     statsProfiles = data.profiles || [];
+    statsPageStats = data.pageStats || {
+      restaurant: {
+        today: 0,
+        sevenDays: 0,
+        thirtyDays: 0,
+        total: 0,
+      },
+    };
     renderStats();
     showStatsMessage("");
     if (elements.login.open) elements.login.close();

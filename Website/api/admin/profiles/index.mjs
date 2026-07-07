@@ -1,4 +1,5 @@
 import { requireQuestionsAdmin } from "../../_lib/admin-auth.mjs";
+import { fetchPageVisitStats } from "../../_lib/page-visits.mjs";
 import { profileFromRecord } from "../../_lib/restaurant-data.mjs";
 import { sanitizeProfile } from "../../_lib/profile-security.mjs";
 import { hasSupabaseConfig, jsonResponse, supabaseRequest } from "../../_lib/supabase.mjs";
@@ -64,7 +65,15 @@ export async function GET(request) {
       Array.isArray(rows) ? rows.map(profileFromRecord).filter(Boolean) : [],
       url.searchParams
     );
-    return jsonResponse({ ok: true, profiles, count: profiles.length });
+    const pageStats = {
+      restaurant: await fetchPageVisitStats("/restaurant").catch(() => ({
+        today: 0,
+        sevenDays: 0,
+        thirtyDays: 0,
+        total: 0,
+      })),
+    };
+    return jsonResponse({ ok: true, profiles, count: profiles.length, pageStats });
   } catch (error) {
     return jsonResponse({ ok: false, error: error instanceof Error ? error.message : String(error) }, 500);
   }
