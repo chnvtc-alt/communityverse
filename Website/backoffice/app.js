@@ -3768,9 +3768,7 @@
     const location = [record.street, record.city, record.state].filter(Boolean).join(" ");
     const base = [name, location].filter(Boolean).join(" ");
     return [
-      ["Website / Phone", `${base} official website phone address`],
-      ["Facebook", `${base} Facebook`],
-      ["Trivia", `${base} trivia night`],
+      ["Google", `${base} official website phone address trivia night`],
     ].filter(([, query]) => query.trim());
   }
 
@@ -3819,9 +3817,9 @@
         openedCount += 1;
       }
     });
-    setSyncStatus(openedCount ? `Opened research searches for ${record.name}` : "Research search was blocked by the browser");
+    setSyncStatus(openedCount ? `Opened Google search for ${record.name}` : "Research search was blocked by the browser");
     if (!openedCount) {
-      window.alert("The browser blocked the research tabs. Allow popups for this site, then click Research again.");
+      window.alert("The browser blocked the research search. Allow popups for this site, then click Research again.");
     }
   }
 
