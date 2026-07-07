@@ -3153,11 +3153,7 @@
 
   function salesEmailDraftUrlForRestaurant(restaurant = {}) {
     const draft = salesEmailDraftForRestaurant(restaurant);
-    const fullDraftUrl = mailtoUrl(draft.email, draft.subject, draft.body);
-    if (fullDraftUrl.length > MAILTO_FULL_DRAFT_LIMIT) {
-      return mailtoUrl(draft.email, draft.subject);
-    }
-    return fullDraftUrl;
+    return mailtoUrl(draft.email, draft.subject, draft.body);
   }
 
   function copyTextToClipboard(text = "") {
