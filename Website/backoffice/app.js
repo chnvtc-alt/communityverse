@@ -3133,6 +3133,15 @@
     return String(value || "").replace(/\{(restaurant|contact|city|website)\}/gi, (_, key) => replacements[key.toLowerCase()] || "");
   }
 
+  function openMailDraft(email = "", subject = "", body = "") {
+    const link = document.createElement("a");
+    link.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    link.style.display = "none";
+    document.body.append(link);
+    link.click();
+    link.remove();
+  }
+
   function openSalesEmailDialog(id) {
     const restaurant = state.restaurants.find((record) => record.id === id);
     if (!restaurant) {
@@ -3174,6 +3183,7 @@
       window.alert("Add an email address, subject, and message before sending.");
       return;
     }
+    openMailDraft(email, subject, body);
     const contact = normalizeContactHistory([{
       id: makeContactId(),
       type: "E",
@@ -3201,7 +3211,6 @@
     cacheBackofficeData();
     render();
     closeSalesEmailDialog();
-    window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   }
 
   async function addExpense(event) {
