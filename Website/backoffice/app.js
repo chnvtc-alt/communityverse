@@ -3133,13 +3133,31 @@
     return String(value || "").replace(/\{(restaurant|contact|city|website)\}/gi, (_, key) => replacements[key.toLowerCase()] || "");
   }
 
+  function mailtoUrl(email = "", subject = "", body = "") {
+    const bodyPart = body ? `&body=${encodeURIComponent(body)}` : "";
+    return `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}${bodyPart}`;
+  }
+
+  function copyEmailBody(body = "") {
+    if (!navigator.clipboard || !body) {
+      return;
+    }
+    navigator.clipboard.writeText(body).catch(() => {
+      // The email will still open; copying is only a backup for long drafts.
+    });
+  }
+
   function openMailDraft(email = "", subject = "", body = "") {
-    const link = document.createElement("a");
-    link.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    link.style.display = "none";
-    document.body.append(link);
-    link.click();
-    link.remove();
+    const fullDraftUrl = mailtoUrl(email, subject, body);
+    if (fullDraftUrl.length > 1800) {
+      copyEmailBody(body);
+      window.location.href = mailtoUrl(email, subject);
+      window.setTimeout(() => {
+        window.alert("That email was long, so Back Office copied the message text. If the email opens without the message, paste it into the email body.");
+      }, 800);
+      return;
+    }
+    window.location.href = fullDraftUrl;
   }
 
   function openSalesEmailDialog(id) {
