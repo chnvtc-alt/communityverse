@@ -297,6 +297,8 @@
     salesEmailTo: document.querySelector("#sales-email-to"),
     salesEmailSubject: document.querySelector("#sales-email-subject"),
     salesEmailBody: document.querySelector("#sales-email-body"),
+    copySalesEmailBodyButton: document.querySelector("#copy-sales-email-body-button"),
+    openSalesEmailDraftButton: document.querySelector("#open-sales-email-draft-button"),
     closeSalesEmailButton: document.querySelector("#close-sales-email-button"),
     cancelSalesEmailButton: document.querySelector("#cancel-sales-email-button"),
     researchNotesDialog: document.querySelector("#research-notes-dialog"),
@@ -3134,23 +3136,38 @@
   }
 
   function mailtoUrl(email = "", subject = "", body = "") {
+    const cleanEmail = String(email || "").trim().replace(/\s+/g, "");
     const bodyPart = body ? `&body=${encodeURIComponent(body)}` : "";
-    return `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}${bodyPart}`;
+    return `mailto:${cleanEmail}?subject=${encodeURIComponent(subject)}${bodyPart}`;
   }
 
-  function copyEmailBody(body = "") {
-    if (!navigator.clipboard || !body) {
+  function copyTextToClipboard(text = "") {
+    if (!navigator.clipboard || !text) {
+      return false;
+    }
+    navigator.clipboard.writeText(text).catch(() => {});
+    return true;
+  }
+
+  function copyEmailBody() {
+    const body = elements.salesEmailBody.value.trim();
+    if (!body) {
+      window.alert("There is no email message to copy yet.");
       return;
     }
-    navigator.clipboard.writeText(body).catch(() => {
-      // The email will still open; copying is only a backup for long drafts.
-    });
+    if (copyTextToClipboard(body)) {
+      window.alert("Copied the email message. You can paste it into Mail if needed.");
+      return;
+    }
+    elements.salesEmailBody.focus();
+    elements.salesEmailBody.select();
+    window.alert("The message is selected. Press Command-C to copy it.");
   }
 
   function openMailDraft(email = "", subject = "", body = "") {
     const fullDraftUrl = mailtoUrl(email, subject, body);
     if (fullDraftUrl.length > 1800) {
-      copyEmailBody(body);
+      copyTextToClipboard(body);
       window.location.href = mailtoUrl(email, subject);
       window.setTimeout(() => {
         window.alert("That email was long, so Back Office copied the message text. If the email opens without the message, paste it into the email body.");
@@ -3158,6 +3175,17 @@
       return;
     }
     window.location.href = fullDraftUrl;
+  }
+
+  function openSalesEmailDraft() {
+    const email = elements.salesEmailTo.value.trim();
+    const subject = elements.salesEmailSubject.value.trim();
+    const body = elements.salesEmailBody.value.trim();
+    if (!email || !subject || !body) {
+      window.alert("Add an email address, subject, and message before opening the email.");
+      return;
+    }
+    openMailDraft(email, subject, body);
   }
 
   function openSalesEmailDialog(id) {
@@ -3173,7 +3201,7 @@
     state.salesEmailTargetId = restaurant.id;
     elements.salesEmailRestaurantId.value = restaurant.id;
     elements.salesEmailTitle.textContent = `Send Email 1 to ${restaurant.name}`;
-    elements.salesEmailHelper.textContent = "Edit this draft if needed. When you open the email, Back Office will log Email 1 in contact history.";
+    elements.salesEmailHelper.textContent = "Edit this draft if needed. Open the email first, then press Log Email 1 after the draft opens.";
     elements.salesEmailTo.value = restaurant.contactEmail;
     elements.salesEmailSubject.value = salesEmailValue(template.subject, restaurant);
     elements.salesEmailBody.value = salesEmailValue(template.body, restaurant);
@@ -3186,7 +3214,7 @@
     elements.salesEmailDialog.close();
   }
 
-  async function openSalesEmailAndLog(event) {
+  async function logSalesEmailOne(event) {
     event.preventDefault();
     const id = elements.salesEmailRestaurantId.value || state.salesEmailTargetId;
     const restaurant = state.restaurants.find((record) => record.id === id);
@@ -3201,13 +3229,12 @@
       window.alert("Add an email address, subject, and message before sending.");
       return;
     }
-    openMailDraft(email, subject, body);
     const contact = normalizeContactHistory([{
       id: makeContactId(),
       type: "E",
       date: today(),
       response: false,
-      note: `Sales Email 1 opened to ${email}. Subject: ${subject}`,
+      note: `Sales Email 1 logged for ${email}. Subject: ${subject}`,
     }])[0];
     const updatedRestaurant = normalizeRestaurant({
       ...restaurant,
@@ -3941,7 +3968,9 @@
   elements.addSecondContactButton.addEventListener("click", toggleSecondContactSection);
   elements.form.addEventListener("submit", saveRestaurant);
   elements.researchNotesForm.addEventListener("submit", previewResearchNotes);
-  elements.salesEmailForm.addEventListener("submit", openSalesEmailAndLog);
+  elements.copySalesEmailBodyButton.addEventListener("click", copyEmailBody);
+  elements.openSalesEmailDraftButton.addEventListener("click", openSalesEmailDraft);
+  elements.salesEmailForm.addEventListener("submit", logSalesEmailOne);
   elements.salesEmailTemplateForm.addEventListener("submit", (event) => {
     event.preventDefault();
     saveSalesEmail1Template({
