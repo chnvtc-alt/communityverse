@@ -335,8 +335,15 @@
     expenses: loadRecords(EXPENSES_KEY, normalizeExpense),
   };
 
+  function dateInputValue(date = new Date()) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
   function today() {
-    return new Date().toISOString().slice(0, 10);
+    return dateInputValue();
   }
 
   function currentMonth() {
@@ -366,8 +373,8 @@
     const start = new Date(year, monthIndex, 1);
     const end = new Date(year, monthIndex + 1, 0);
     return {
-      start: start.toISOString().slice(0, 10),
-      end: end.toISOString().slice(0, 10),
+      start: dateInputValue(start),
+      end: dateInputValue(end),
       label: `${start.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })} - ${end.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}`,
       invoiceMonth: `${yearText}${monthText}`,
     };
