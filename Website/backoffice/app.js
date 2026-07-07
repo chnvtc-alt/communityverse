@@ -1208,7 +1208,7 @@
             <td><button class="text-button" type="button" data-research-restaurant-id="${escapeHtml(restaurant.id)}">Research</button></td>
             <td>${
               restaurant.contactEmail
-                ? `<button class="text-button" type="button" data-sales-email-id="${escapeHtml(restaurant.id)}">Send Email 1</button>`
+                ? `<a class="text-button" href="${escapeHtml(salesEmailDraftUrlForRestaurant(restaurant))}" data-direct-sales-email-id="${escapeHtml(restaurant.id)}">Send Email 1</a>`
                 : '<span class="helper">No email</span>'
             }</td>
           </tr>
@@ -3142,6 +3142,24 @@
     return `mailto:${cleanEmail}?subject=${encodeURIComponent(subject)}${bodyPart}`;
   }
 
+  function salesEmailDraftForRestaurant(restaurant = {}) {
+    const template = loadSalesEmail1Template();
+    return {
+      email: restaurant.contactEmail || "",
+      subject: salesEmailValue(template.subject, restaurant),
+      body: salesEmailValue(template.body, restaurant),
+    };
+  }
+
+  function salesEmailDraftUrlForRestaurant(restaurant = {}) {
+    const draft = salesEmailDraftForRestaurant(restaurant);
+    const fullDraftUrl = mailtoUrl(draft.email, draft.subject, draft.body);
+    if (fullDraftUrl.length > MAILTO_FULL_DRAFT_LIMIT) {
+      return mailtoUrl(draft.email, draft.subject);
+    }
+    return fullDraftUrl;
+  }
+
   function copyTextToClipboard(text = "") {
     if (!navigator.clipboard || !text) {
       return false;
@@ -3198,6 +3216,22 @@
     const fullDraftUrl = mailtoUrl(email, subject, body);
     if (fullDraftUrl.length > MAILTO_FULL_DRAFT_LIMIT) {
       copyTextToClipboard(body);
+      window.setTimeout(() => {
+        window.alert("That email was long, so Back Office copied the message text. If the email opens without the message, paste it into the email body.");
+      }, 800);
+    }
+  }
+
+  function prepareDirectSalesEmail(event, id) {
+    const restaurant = state.restaurants.find((record) => record.id === id);
+    if (!restaurant) {
+      event.preventDefault();
+      return;
+    }
+    const draft = salesEmailDraftForRestaurant(restaurant);
+    const fullDraftUrl = mailtoUrl(draft.email, draft.subject, draft.body);
+    if (fullDraftUrl.length > MAILTO_FULL_DRAFT_LIMIT) {
+      copyTextToClipboard(draft.body);
       window.setTimeout(() => {
         window.alert("That email was long, so Back Office copied the message text. If the email opens without the message, paste it into the email body.");
       }, 800);
@@ -3997,6 +4031,7 @@
       subject: elements.salesEmail1Subject.value.trim() || DEFAULT_SALES_EMAIL_1.subject,
       body: elements.salesEmail1Body.value.trim() || DEFAULT_SALES_EMAIL_1.body,
     });
+    renderProspects();
     elements.salesEmailTemplateStatus.textContent = "Saved";
     window.setTimeout(() => {
       elements.salesEmailTemplateStatus.textContent = "";
@@ -4005,6 +4040,7 @@
   elements.resetSalesEmail1Button.addEventListener("click", () => {
     fillSalesEmailTemplateForm(DEFAULT_SALES_EMAIL_1);
     saveSalesEmail1Template(DEFAULT_SALES_EMAIL_1);
+    renderProspects();
     elements.salesEmailTemplateStatus.textContent = "Reset";
     window.setTimeout(() => {
       elements.salesEmailTemplateStatus.textContent = "";
@@ -4088,6 +4124,10 @@
     const salesEmailButton = event.target.closest("[data-sales-email-id]");
     if (salesEmailButton) {
       openSalesEmailDialog(salesEmailButton.dataset.salesEmailId);
+    }
+    const directSalesEmailLink = event.target.closest("[data-direct-sales-email-id]");
+    if (directSalesEmailLink) {
+      prepareDirectSalesEmail(event, directSalesEmailLink.dataset.directSalesEmailId);
     }
     const removeContactButton = event.target.closest("[data-remove-contact-id]");
     if (removeContactButton) {
