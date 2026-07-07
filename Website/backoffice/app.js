@@ -1147,7 +1147,7 @@
             </td>
             <td>${statusPill(restaurant.status)}</td>
             <td>${escapeHtml(contactName(restaurant) || "No contact yet")}</td>
-            <td>${restaurant.contactEmail ? `<a href="mailto:${escapeHtml(restaurant.contactEmail)}" target="_blank">${escapeHtml(restaurant.contactEmail)}</a>` : ""}</td>
+            <td>${restaurant.contactEmail ? `<a href="mailto:${escapeHtml(restaurant.contactEmail)}">${escapeHtml(restaurant.contactEmail)}</a>` : ""}</td>
             <td>${escapeHtml(restaurant.phone || restaurant.contactCell || "")}</td>
             <td>${escapeHtml(restaurant.nextFollowUp || "")}</td>
             <td><button class="text-button" type="button" data-research-restaurant-id="${escapeHtml(restaurant.id)}">Research</button></td>
@@ -1176,7 +1176,7 @@
               <div class="helper">${escapeHtml(formattedAddress(restaurant) || "No address yet")}</div>
             </td>
             <td>${escapeHtml(contactName(restaurant) || "")}</td>
-            <td>${restaurant.contactEmail ? `<a href="mailto:${escapeHtml(restaurant.contactEmail)}" target="_blank">${escapeHtml(restaurant.contactEmail)}</a>` : ""}</td>
+            <td>${restaurant.contactEmail ? `<a href="mailto:${escapeHtml(restaurant.contactEmail)}">${escapeHtml(restaurant.contactEmail)}</a>` : ""}</td>
             <td>${escapeHtml(restaurant.contactCell || restaurant.phone || "")}</td>
             <td>${escapeHtml(labelFor(prospectStageLabels, restaurant.prospectStage, "Not set"))}</td>
             <td>
@@ -1208,7 +1208,7 @@
             <td><button class="text-button" type="button" data-research-restaurant-id="${escapeHtml(restaurant.id)}">Research</button></td>
             <td>${
               restaurant.contactEmail
-                ? `<a class="text-button" href="${escapeHtml(salesEmailDraftUrlForRestaurant(restaurant))}" target="_blank" data-direct-sales-email-id="${escapeHtml(restaurant.id)}">Send Email 1</a>`
+                ? `<a class="text-button" href="${escapeHtml(salesEmailDraftUrlForRestaurant(restaurant))}">Send Email 1</a>`
                 : '<span class="helper">No email</span>'
             }</td>
           </tr>
@@ -3222,22 +3222,6 @@
     }
   }
 
-  function prepareDirectSalesEmail(event, id) {
-    const restaurant = state.restaurants.find((record) => record.id === id);
-    if (!restaurant) {
-      event.preventDefault();
-      return;
-    }
-    const draft = salesEmailDraftForRestaurant(restaurant);
-    const fullDraftUrl = mailtoUrl(draft.email, draft.subject, draft.body);
-    copyTextToClipboard(draft.body);
-    if (fullDraftUrl.length > MAILTO_FULL_DRAFT_LIMIT) {
-      window.setTimeout(() => {
-        window.alert("That email was long, so Back Office copied the message text. If the email opens without the message, paste it into the email body.");
-      }, 800);
-    }
-  }
-
   function openSalesEmailDialog(id) {
     const restaurant = state.restaurants.find((record) => record.id === id);
     if (!restaurant) {
@@ -4124,10 +4108,6 @@
     const salesEmailButton = event.target.closest("[data-sales-email-id]");
     if (salesEmailButton) {
       openSalesEmailDialog(salesEmailButton.dataset.salesEmailId);
-    }
-    const directSalesEmailLink = event.target.closest("[data-direct-sales-email-id]");
-    if (directSalesEmailLink) {
-      prepareDirectSalesEmail(event, directSalesEmailLink.dataset.directSalesEmailId);
     }
     const removeContactButton = event.target.closest("[data-remove-contact-id]");
     if (removeContactButton) {
