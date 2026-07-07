@@ -801,7 +801,10 @@
               </label>
               <label>
                 Follow Up
-                <input id="next-follow-up" type="date" />
+                <span class="input-with-action">
+                  <input id="next-follow-up" type="date" />
+                  <button class="mini-button" id="clear-next-follow-up" type="button">None</button>
+                </span>
               </label>
               <label class="contact-note-field">
                 Notes
@@ -1061,6 +1064,6 @@
 
     <input id="import-file" type="file" accept="application/json" hidden />
     <input id="prospect-import-file" type="file" accept=".csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" hidden />
-    <script src="/backoffice/app.js?v=backoffice-v77" defer></script>
+    <script src="/backoffice/app.js?v=backoffice-v78" defer></script>
   </body>
 </html>
