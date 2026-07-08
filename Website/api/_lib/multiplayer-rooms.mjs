@@ -571,6 +571,13 @@ export async function updateRoomPlayerProgress(code, body = {}) {
   if (!player) {
     throw new Error("Room player not found.");
   }
+  if (player.status === "completed" && body.status !== "completed") {
+    return {
+      room: state.room,
+      player,
+      players: state.players,
+    };
+  }
   const updatedPlayer = {
     ...player,
     profileId: body.profileId || player.profileId,

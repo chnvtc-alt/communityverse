@@ -998,6 +998,15 @@
     );
   }
 
+  function roomPlayersCompletedCurrentGame() {
+    const players = Array.isArray(state.multiplayerPlayers) ? state.multiplayerPlayers : [];
+    const activePlayers = players.filter((player) => player.status !== "did_not_finish");
+    if (!activePlayers.length) {
+      return false;
+    }
+    return activePlayers.every((player) => player.status === "completed");
+  }
+
   async function startLiveRound() {
     const roomCode = String(state.multiplayerRoom?.roomCode || "").toUpperCase();
     if (!roomCode) return;
@@ -1749,7 +1758,7 @@
       const seriesRoom = isSeriesRoom();
       const finalSeriesGame = seriesRoom && currentSeriesGame() >= seriesTotalGames();
       const seriesGameCompleted = seriesRoom && room?.liveStatus === "completed";
-      const canPrepareNextSeriesGame = seriesGameCompleted && !finalSeriesGame && isHost;
+      const canPrepareNextSeriesGame = seriesRoom && (seriesGameCompleted || roomPlayersCompletedCurrentGame()) && !finalSeriesGame && isHost;
       const liveWaitingHostInstructions = liveWaiting && isHost
         ? `
           <div class="multiplayer-host-steps" aria-label="How to start the live round">
