@@ -2431,7 +2431,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 }
 
 .multiplayer-player-name {
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .multiplayer-player-status {
@@ -2439,6 +2439,23 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   color: var(--muted);
   font-size: 0.95rem;
   text-align: right;
+}
+
+@media (max-width: 560px) {
+  .multiplayer-leaderboard-row {
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 4px 10px;
+    align-items: start;
+    min-height: 0;
+  }
+
+  .multiplayer-player-status {
+    grid-column: 2;
+    justify-self: start;
+    text-align: left;
+    font-size: 0.9rem;
+    line-height: 1.35;
+  }
 }
 
 .leaderboard-head {
