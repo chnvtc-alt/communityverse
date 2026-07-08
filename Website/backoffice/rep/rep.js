@@ -49,6 +49,8 @@
     lockButton: document.querySelector("#lock-button"),
     prospectCount: document.querySelector("#prospect-count"),
     prospectSearch: document.querySelector("#prospect-search"),
+    prospectScoreMin: document.querySelector("#prospect-score-min"),
+    prospectScoreMax: document.querySelector("#prospect-score-max"),
     prospectList: document.querySelector("#prospect-list"),
     dialog: document.querySelector("#prospect-dialog"),
     form: document.querySelector("#prospect-form"),
@@ -130,6 +132,31 @@
     return [type, latest.date, latest.note].filter(Boolean).join(" - ");
   }
 
+  function shortDate(value = "") {
+    const parts = String(value || "").split("-");
+    if (parts.length !== 3) return value;
+    return `${parts[1]}-${parts[2]}-${parts[0].slice(-2)}`;
+  }
+
+  function latestContactShort(restaurant = {}) {
+    const latest = Array.isArray(restaurant.contactHistory) ? restaurant.contactHistory[0] : null;
+    if (!latest) return "";
+    return [latest.type, shortDate(latest.date)].filter(Boolean).join(" ");
+  }
+
+  function prospectScoreNumber(restaurant = {}) {
+    const score = Number(restaurant.prospectScore);
+    return Number.isFinite(score) ? Math.min(10, Math.max(1, score)) : 5;
+  }
+
+  function prospectScoreOptions(selectedValue = "5") {
+    const selected = String(selectedValue || "5");
+    return Array.from({ length: 10 }, (_, index) => {
+      const value = String(index + 1);
+      return `<option value="${value}"${value === selected ? " selected" : ""}>${value}</option>`;
+    }).join("");
+  }
+
   function normalizeRestaurant(record = {}) {
     return {
       id: String(record.id || "").trim(),
@@ -197,6 +224,10 @@
 
   function filteredRestaurants() {
     const query = String(elements.prospectSearch.value || "").toLowerCase().trim();
+    const scoreMin = Number(elements.prospectScoreMin?.value || 1);
+    const scoreMax = Number(elements.prospectScoreMax?.value || 10);
+    const min = Math.min(scoreMin, scoreMax);
+    const max = Math.max(scoreMin, scoreMax);
     return state.restaurants
       .filter((restaurant) => {
         if (!query) return true;
@@ -210,6 +241,10 @@
           labelFor(stageLabels, restaurant.prospectStage),
           restaurant.prospectNotes,
         ].some((value) => String(value || "").toLowerCase().includes(query));
+      })
+      .filter((restaurant) => {
+        const score = prospectScoreNumber(restaurant);
+        return score >= min && score <= max;
       })
       .sort((left, right) => String(left.nextFollowUp || "9999-12-31").localeCompare(String(right.nextFollowUp || "9999-12-31")));
   }
@@ -262,22 +297,46 @@
                 <div class="helper">${escapeHtml(latestContactSummary(restaurant))}</div>
               </td>
               <td>
-                <strong>${escapeHtml(contactName(restaurant) || "No contact yet")}</strong>
-                <div class="helper">${restaurant.contactEmail ? `<a href="mailto:${escapeHtml(restaurant.contactEmail)}">${escapeHtml(restaurant.contactEmail)}</a>` : "No email"}</div>
-                <div class="helper">${escapeHtml(restaurant.contactCell || restaurant.phone || "")}</div>
+                ${escapeHtml(contactName(restaurant) || "")}
               </td>
+              <td>${restaurant.contactEmail ? `<a href="mailto:${escapeHtml(restaurant.contactEmail)}">${escapeHtml(restaurant.contactEmail)}</a>` : ""}</td>
+              <td>${escapeHtml(restaurant.contactCell || restaurant.phone || "")}</td>
               <td>${escapeHtml(labelFor(stageLabels, restaurant.prospectStage, "New Lead"))}</td>
-              <td><strong>${escapeHtml(restaurant.prospectScore || "5")}</strong></td>
-              <td>${escapeHtml(restaurant.nextFollowUp || "")}</td>
               <td>
-                <a class="text-button" href="${escapeHtml(researchUrl(restaurant))}" target="_blank" rel="noopener">Google</a>
+                <select
+                  class="inline-score-select"
+                  data-prospect-score-id="${escapeHtml(restaurant.id)}"
+                  aria-label="Score for ${escapeHtml(restaurant.name)}"
+                >
+                  ${prospectScoreOptions(restaurant.prospectScore || "5")}
+                </select>
+              </td>
+              <td>${escapeHtml(latestContactShort(restaurant))}</td>
+              <td>
+                <div class="inline-follow-up">
+                  <input
+                    class="inline-date-input"
+                    data-prospect-follow-up-id="${escapeHtml(restaurant.id)}"
+                    type="date"
+                    value="${escapeHtml(restaurant.nextFollowUp)}"
+                    aria-label="Follow-up date for ${escapeHtml(restaurant.name)}"
+                  />
+                  ${
+                    restaurant.nextFollowUp
+                      ? `<button class="text-button small-text-button" type="button" data-clear-prospect-follow-up-id="${escapeHtml(restaurant.id)}">Clear</button>`
+                      : ""
+                  }
+                </div>
+              </td>
+              <td>
+                <a class="text-button" href="${escapeHtml(researchUrl(restaurant))}" target="_blank" rel="noopener">Research</a>
               </td>
               <td>
                 ${restaurant.contactEmail ? `<a class="text-button" href="${escapeHtml(emailDraftUrl(restaurant))}">Doyce Email</a>` : '<span class="helper">No email</span>'}
               </td>
             </tr>
           `).join("")
-      : '<tr><td colspan="7"><div class="empty-state">No Doyce prospects match this search.</div></td></tr>';
+      : '<tr><td colspan="10"><div class="empty-state">No Doyce prospects match this search and score range.</div></td></tr>';
   }
 
   function renderDialogLinks(restaurant = null) {
@@ -290,7 +349,6 @@
     elements.dialogCardLinks.innerHTML = [
       website ? `<a href="${escapeHtml(website)}" target="_blank" rel="noopener">Website</a>` : "",
       facebook ? `<a href="${escapeHtml(facebook)}" target="_blank" rel="noopener">Facebook</a>` : "",
-      `<a href="${escapeHtml(researchUrl(restaurant))}" target="_blank" rel="noopener">Google</a>`,
     ].filter(Boolean).join(" ");
   }
 
@@ -346,6 +404,25 @@
     elements.dialog.close();
   }
 
+  function updateRestaurantInState(saved) {
+    const record = normalizeRestaurant(saved);
+    const existingIndex = state.restaurants.findIndex((restaurant) => restaurant.id === record.id);
+    if (existingIndex >= 0) {
+      state.restaurants[existingIndex] = record;
+    } else {
+      state.restaurants.unshift(record);
+    }
+    return record;
+  }
+
+  async function saveRestaurantUpdate(restaurant, updates = {}) {
+    const data = await apiRequest("POST", {
+      action: "saveRestaurant",
+      restaurant: normalizeRestaurant({ ...restaurant, ...updates }),
+    });
+    return updateRestaurantInState(data.restaurant);
+  }
+
   function formRestaurant() {
     const existing = state.restaurants.find((restaurant) => restaurant.id === elements.id.value);
     const contactType = elements.contactHistoryType.value;
@@ -396,13 +473,7 @@
         action: "saveRestaurant",
         restaurant: formRestaurant(),
       });
-      const saved = normalizeRestaurant(data.restaurant);
-      const existingIndex = state.restaurants.findIndex((restaurant) => restaurant.id === saved.id);
-      if (existingIndex >= 0) {
-        state.restaurants[existingIndex] = saved;
-      } else {
-        state.restaurants.unshift(saved);
-      }
+      updateRestaurantInState(data.restaurant);
       closeDialog();
       renderList();
       setStatus("Saved");
@@ -439,11 +510,51 @@
   elements.newProspectButton.addEventListener("click", () => openDialog());
   elements.lockButton.addEventListener("click", lock);
   elements.prospectSearch.addEventListener("input", renderList);
+  elements.prospectScoreMin.addEventListener("change", renderList);
+  elements.prospectScoreMax.addEventListener("change", renderList);
+  elements.prospectList.addEventListener("change", (event) => {
+    const scoreSelect = event.target.closest("[data-prospect-score-id]");
+    if (!scoreSelect) return;
+    const restaurant = state.restaurants.find((record) => record.id === scoreSelect.dataset.prospectScoreId);
+    if (!restaurant) return;
+    saveRestaurantUpdate(restaurant, { prospectScore: scoreSelect.value }).then(() => {
+      renderList();
+      setStatus("Score saved");
+    }).catch((error) => {
+      setStatus(error instanceof Error ? error.message : "Score was not saved");
+      renderList();
+    });
+  });
   elements.prospectList.addEventListener("click", (event) => {
+    const clearFollowUpButton = event.target.closest("[data-clear-prospect-follow-up-id]");
+    if (clearFollowUpButton) {
+      const restaurant = state.restaurants.find((record) => record.id === clearFollowUpButton.dataset.clearProspectFollowUpId);
+      if (!restaurant) return;
+      saveRestaurantUpdate(restaurant, { nextFollowUp: "" }).then(() => {
+        renderList();
+        setStatus("Follow-up cleared");
+      }).catch((error) => {
+        setStatus(error instanceof Error ? error.message : "Follow-up was not cleared");
+      });
+      return;
+    }
     const editButton = event.target.closest("[data-edit-id]");
     if (editButton) {
       openDialog(editButton.dataset.editId);
     }
+  });
+  elements.prospectList.addEventListener("change", (event) => {
+    const followUpInput = event.target.closest("[data-prospect-follow-up-id]");
+    if (!followUpInput) return;
+    const restaurant = state.restaurants.find((record) => record.id === followUpInput.dataset.prospectFollowUpId);
+    if (!restaurant) return;
+    saveRestaurantUpdate(restaurant, { nextFollowUp: followUpInput.value }).then(() => {
+      renderList();
+      setStatus("Follow-up saved");
+    }).catch((error) => {
+      setStatus(error instanceof Error ? error.message : "Follow-up was not saved");
+      renderList();
+    });
   });
   elements.closeDialogButton.addEventListener("click", closeDialog);
   elements.cancelDialogButton.addEventListener("click", closeDialog);

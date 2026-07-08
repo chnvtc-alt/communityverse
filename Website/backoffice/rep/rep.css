@@ -69,6 +69,17 @@
   min-width: 100%;
 }
 
+.rep-prospect-heading {
+  align-items: end;
+}
+
+.rep-prospect-tools {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) 140px 140px;
+  gap: 12px;
+  width: min(760px, 100%);
+}
+
 .rep-card-links {
   display: flex;
   flex-wrap: wrap;
@@ -100,5 +111,9 @@
 
   .rep-actions {
     justify-content: flex-start;
+  }
+
+  .rep-prospect-tools {
+    grid-template-columns: 1fr;
   }
 }

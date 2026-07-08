@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>CommunityVerse Sales Rep</title>
     <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v89" />
-    <link rel="stylesheet" href="/backoffice/dp/dp.css?v=dp-v3" />
+    <link rel="stylesheet" href="/backoffice/dp/dp.css?v=dp-v4" />
   </head>
   <body>
     <main class="rep-shell">
@@ -45,15 +45,47 @@
         </header>
 
         <section class="card table-card">
-          <div class="card-heading">
+          <div class="card-heading rep-prospect-heading">
             <div>
               <h3>My Prospects</h3>
               <p class="helper" id="prospect-count">0 records</p>
             </div>
-            <label class="rep-search">
-              Search
-              <input id="prospect-search" type="search" placeholder="Restaurant, city, contact, email..." />
-            </label>
+            <div class="rep-prospect-tools">
+              <label class="rep-search">
+                Search
+                <input id="prospect-search" type="search" placeholder="Restaurant, city, contact, email..." />
+              </label>
+              <label>
+                Score From
+                <select id="prospect-score-min">
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3" selected>3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                  <option value="9">9</option>
+                  <option value="10">10</option>
+                </select>
+              </label>
+              <label>
+                Score To
+                <select id="prospect-score-max">
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                  <option value="9">9</option>
+                  <option value="10" selected>10</option>
+                </select>
+              </label>
+            </div>
           </div>
           <div class="table-wrap">
             <table>
@@ -61,8 +93,11 @@
                 <tr>
                   <th>Restaurant</th>
                   <th>Contact</th>
+                  <th>Email</th>
+                  <th>Phone</th>
                   <th>Stage</th>
                   <th>Score</th>
+                  <th>Last Touch</th>
                   <th>Follow Up</th>
                   <th>Research</th>
                   <th>Email</th>
@@ -208,6 +243,6 @@
       </form>
     </dialog>
 
-    <script src="/backoffice/dp/dp.js?v=dp-v5" defer></script>
+    <script src="/backoffice/dp/dp.js?v=dp-v6" defer></script>
   </body>
 </html>
