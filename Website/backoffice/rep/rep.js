@@ -239,6 +239,16 @@
     return `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   }
 
+  function researchUrl(restaurant = {}) {
+    const query = [
+      restaurant.name,
+      restaurant.city,
+      restaurant.state,
+      "official website phone address",
+    ].filter(Boolean).join(" ");
+    return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+  }
+
   function renderList() {
     const restaurants = filteredRestaurants();
     elements.prospectCount.textContent = `${restaurants.length} ${restaurants.length === 1 ? "record" : "records"}`;
@@ -265,12 +275,15 @@
                 ${facebook ? `<a class="text-button" href="${escapeHtml(facebook)}" target="_blank" rel="noopener">Facebook</a>` : ""}
               </td>
               <td>
+                <a class="text-button" href="${escapeHtml(researchUrl(restaurant))}" target="_blank" rel="noopener">Google</a>
+              </td>
+              <td>
                 ${restaurant.contactEmail ? `<a class="text-button" href="${escapeHtml(emailDraftUrl(restaurant))}">Doyce Email</a>` : '<span class="helper">No email</span>'}
               </td>
             </tr>
           `;
         }).join("")
-      : '<tr><td colspan="6"><div class="empty-state">No Doyce prospects match this search.</div></td></tr>';
+      : '<tr><td colspan="7"><div class="empty-state">No Doyce prospects match this search.</div></td></tr>';
   }
 
   function renderContactHistory() {
