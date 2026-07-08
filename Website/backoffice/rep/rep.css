@@ -75,9 +75,9 @@
 
 .rep-prospect-tools {
   display: grid;
-  grid-template-columns: minmax(280px, 1fr) 140px 140px;
+  grid-template-columns: minmax(260px, 1fr) 130px 130px 150px;
   gap: 12px;
-  width: min(760px, 100%);
+  width: min(880px, 100%);
 }
 
 .rep-card-links {

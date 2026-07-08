@@ -170,6 +170,7 @@
     prospectSearch: document.querySelector("#prospect-search"),
     prospectScoreMin: document.querySelector("#prospect-score-min"),
     prospectScoreMax: document.querySelector("#prospect-score-max"),
+    prospectSort: document.querySelector("#prospect-sort"),
     salesEmailTemplateForm: document.querySelector("#sales-email-template-form"),
     salesEmail1Subject: document.querySelector("#sales-email-1-subject"),
     salesEmail1Body: document.querySelector("#sales-email-1-body"),
@@ -1138,6 +1139,96 @@
       .join("");
   }
 
+  function stateCode(value = "") {
+    const stateNames = {
+      alabama: "AL",
+      alaska: "AK",
+      arizona: "AZ",
+      arkansas: "AR",
+      california: "CA",
+      colorado: "CO",
+      connecticut: "CT",
+      delaware: "DE",
+      florida: "FL",
+      georgia: "GA",
+      hawaii: "HI",
+      idaho: "ID",
+      illinois: "IL",
+      indiana: "IN",
+      iowa: "IA",
+      kansas: "KS",
+      kentucky: "KY",
+      louisiana: "LA",
+      maine: "ME",
+      maryland: "MD",
+      massachusetts: "MA",
+      michigan: "MI",
+      minnesota: "MN",
+      mississippi: "MS",
+      missouri: "MO",
+      montana: "MT",
+      nebraska: "NE",
+      nevada: "NV",
+      "new hampshire": "NH",
+      "new jersey": "NJ",
+      "new mexico": "NM",
+      "new york": "NY",
+      "north carolina": "NC",
+      "north dakota": "ND",
+      ohio: "OH",
+      oklahoma: "OK",
+      oregon: "OR",
+      pennsylvania: "PA",
+      "rhode island": "RI",
+      "south carolina": "SC",
+      "south dakota": "SD",
+      tennessee: "TN",
+      texas: "TX",
+      utah: "UT",
+      vermont: "VT",
+      virginia: "VA",
+      washington: "WA",
+      "west virginia": "WV",
+      wisconsin: "WI",
+      wyoming: "WY",
+    };
+    const raw = String(value || "").trim();
+    if (raw.length === 2) return raw.toUpperCase();
+    return stateNames[raw.toLowerCase()] || raw.toUpperCase();
+  }
+
+  function stateTimeZoneRank(value = "") {
+    const zones = {
+      ET: ["CT", "DE", "FL", "GA", "IN", "KY", "MA", "MD", "ME", "MI", "NC", "NH", "NJ", "NY", "OH", "PA", "RI", "SC", "TN", "VA", "VT", "WV"],
+      CT: ["AL", "AR", "IA", "IL", "KS", "LA", "MN", "MO", "MS", "ND", "NE", "OK", "SD", "TX", "WI"],
+      MT: ["AZ", "CO", "ID", "MT", "NM", "UT", "WY"],
+      PT: ["CA", "NV", "OR", "WA"],
+      AK: ["AK"],
+      HI: ["HI"],
+    };
+    const code = stateCode(value);
+    const zoneOrder = ["ET", "CT", "MT", "PT", "AK", "HI"];
+    const index = zoneOrder.findIndex((zone) => zones[zone].includes(code));
+    return index >= 0 ? index : 99;
+  }
+
+  function compareProspects(left, right) {
+    const sort = elements.prospectSort?.value || "follow-up";
+    if (sort === "state") {
+      const stateCompare = stateCode(left.state).localeCompare(stateCode(right.state));
+      if (stateCompare) return stateCompare;
+    }
+    if (sort === "time-zone") {
+      const zoneCompare = stateTimeZoneRank(left.state) - stateTimeZoneRank(right.state);
+      if (zoneCompare) return zoneCompare;
+      const stateCompare = stateCode(left.state).localeCompare(stateCode(right.state));
+      if (stateCompare) return stateCompare;
+    }
+    const followUpCompare = String(left.nextFollowUp || "9999-12-31").localeCompare(String(right.nextFollowUp || "9999-12-31"));
+    if (followUpCompare) return followUpCompare;
+    return String(left.name || "").localeCompare(String(right.name || ""));
+  }
+
   function saleDateFor(restaurant) {
     return restaurant.saleDate || restaurant.serviceStartDate || "";
   }
@@ -1255,7 +1346,8 @@
       .filter((restaurant) => {
         const score = prospectScoreNumber(restaurant);
         return score >= min && score <= max;
-      });
+      })
+      .sort(compareProspects);
     elements.prospectList.innerHTML = prospects.length
       ? prospects.map((restaurant) => `
           <tr>
@@ -4201,6 +4293,7 @@
   elements.prospectSearch.addEventListener("input", renderProspects);
   elements.prospectScoreMin.addEventListener("change", renderProspects);
   elements.prospectScoreMax.addEventListener("change", renderProspects);
+  elements.prospectSort.addEventListener("change", renderProspects);
   elements.leadBuilderForm.addEventListener("submit", runLeadBuilder);
   elements.copyLeadSearchesButton.addEventListener("click", copyLeadSearches);
   elements.manualLeadForm.addEventListener("submit", previewManualLead);
