@@ -7,6 +7,14 @@ function safeString(value) {
   return String(value || "").trim();
 }
 
+function comparableText(value) {
+  return safeString(value).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function comparablePhone(value) {
+  return safeString(value).replace(/\D/g, "");
+}
+
 function safeDate(value) {
   const trimmed = safeString(value);
   return /^\d{4}-\d{2}-\d{2}$/.test(trimmed) ? trimmed : null;
@@ -299,6 +307,124 @@ export async function saveBackofficeRestaurant(restaurant = {}) {
 
   const saved = Array.isArray(rows) && rows.length ? rows[0] : savedRecord;
   return restaurantFromRecord(saved, contactRecords.map(contactFromRecord));
+}
+
+function repOwnsRestaurant(restaurant = {}, repName = "") {
+  const rep = safeString(repName);
+  return safeString(restaurant.assignedTo || restaurant.salesperson) === rep;
+}
+
+function restaurantLooksLikeDuplicate(candidate = {}, restaurants = []) {
+  const candidateName = comparableText(candidate.name);
+  if (!candidateName) return false;
+  const candidateCity = comparableText(candidate.city);
+  const candidateState = comparableText(candidate.state);
+  const candidateEmail = comparableText(candidate.contactEmail);
+  const candidatePhone = comparablePhone(candidate.phone || candidate.contactCell);
+
+  return restaurants.some((restaurant) => {
+    const sameName = comparableText(restaurant.name) === candidateName;
+    if (!sameName) return false;
+    const samePlace =
+      candidateCity &&
+      comparableText(restaurant.city) === candidateCity &&
+      (!candidateState || comparableText(restaurant.state) === candidateState);
+    const sameEmail = candidateEmail && comparableText(restaurant.contactEmail) === candidateEmail;
+    const restaurantPhone = comparablePhone(restaurant.phone || restaurant.contactCell);
+    const samePhone = candidatePhone && restaurantPhone && candidatePhone === restaurantPhone;
+    return Boolean(samePlace || sameEmail || samePhone);
+  });
+}
+
+function repRestaurantForSave(restaurant = {}, repName = "", existing = null) {
+  return {
+    ...(existing || {}),
+    id: existing?.id || safeString(restaurant.id),
+    name: safeString(restaurant.name),
+    status: "prospect",
+    street: safeString(restaurant.street),
+    city: safeString(restaurant.city),
+    state: safeString(restaurant.state),
+    zip: safeString(restaurant.zip),
+    phone: safeString(restaurant.phone),
+    currentlyDoesTrivia: safeString(restaurant.currentlyDoesTrivia),
+    website: safeString(restaurant.website),
+    facebookPage: safeString(restaurant.facebookPage),
+    contactFirstName: safeString(restaurant.contactFirstName),
+    contactLastName: safeString(restaurant.contactLastName),
+    contactEmail: safeString(restaurant.contactEmail),
+    contactCell: safeString(restaurant.contactCell),
+    dateAdded: existing?.dateAdded || safeString(restaurant.dateAdded),
+    lastContacted: safeString(restaurant.lastContacted),
+    nextFollowUp: safeString(restaurant.nextFollowUp),
+    notes: existing?.notes || "",
+    prospectStage: safeString(restaurant.prospectStage) || "new-lead",
+    prospectScore: safeString(restaurant.prospectScore) || "5",
+    leadSource: safeString(restaurant.leadSource) || `Added by ${repName}`,
+    assignedTo: repName,
+    prospectNotes: safeString(restaurant.prospectNotes),
+    contactHistory: Array.isArray(restaurant.contactHistory) ? restaurant.contactHistory : existing?.contactHistory || [],
+    salesperson: repName,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+function repRestaurantPublic(restaurant = {}, repName = "") {
+  return {
+    id: restaurant.id,
+    name: restaurant.name,
+    status: restaurant.status,
+    street: restaurant.street,
+    city: restaurant.city,
+    state: restaurant.state,
+    zip: restaurant.zip,
+    phone: restaurant.phone,
+    currentlyDoesTrivia: restaurant.currentlyDoesTrivia,
+    website: restaurant.website,
+    facebookPage: restaurant.facebookPage,
+    contactFirstName: restaurant.contactFirstName,
+    contactLastName: restaurant.contactLastName,
+    contactEmail: restaurant.contactEmail,
+    contactCell: restaurant.contactCell,
+    dateAdded: restaurant.dateAdded,
+    lastContacted: restaurant.lastContacted,
+    nextFollowUp: restaurant.nextFollowUp,
+    prospectStage: restaurant.prospectStage,
+    prospectScore: restaurant.prospectScore,
+    leadSource: restaurant.leadSource,
+    assignedTo: repName,
+    prospectNotes: restaurant.prospectNotes,
+    contactHistory: restaurant.contactHistory,
+  };
+}
+
+export async function fetchBackofficeRepData(repName = "") {
+  const rep = safeString(repName);
+  const data = await fetchBackofficeData();
+  return {
+    restaurants: data.restaurants
+      .filter((restaurant) => restaurant.status === "prospect" && repOwnsRestaurant(restaurant, rep))
+      .map((restaurant) => repRestaurantPublic(restaurant, rep)),
+  };
+}
+
+export async function saveBackofficeRepRestaurant(repName = "", restaurant = {}) {
+  const rep = safeString(repName);
+  const data = await fetchBackofficeData();
+  const incomingId = safeString(restaurant.id);
+  const existing = incomingId
+    ? data.restaurants.find((record) => record.id === incomingId)
+    : null;
+
+  if (existing && !repOwnsRestaurant(existing, rep)) {
+    throw new Error("This restaurant is not assigned to this sales rep.");
+  }
+  if (!existing && restaurantLooksLikeDuplicate(restaurant, data.restaurants)) {
+    throw new Error("This restaurant may already be in the system. Please ask Tim before adding it.");
+  }
+
+  const saved = await saveBackofficeRestaurant(repRestaurantForSave(restaurant, rep, existing));
+  return repRestaurantPublic(saved, rep);
 }
 
 export async function deleteBackofficeRestaurant(id = "") {

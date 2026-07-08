@@ -28,3 +28,25 @@ export function requireQuestionsAdmin(request) {
 
   return null;
 }
+
+export function requireBackofficeRep(request, repName = "") {
+  const normalizedRep = String(repName || "").trim().toUpperCase().replace(/[^A-Z0-9]+/g, "_");
+  const configuredKey = String(process.env[`BACKOFFICE_REP_${normalizedRep}_KEY`] || "").trim();
+  if (!configuredKey) {
+    return jsonResponse(
+      { ok: false, error: `${repName || "Rep"} access is not configured yet.` },
+      503
+    );
+  }
+
+  const authorization = String(request.headers.get("authorization") || "");
+  const suppliedKey = authorization.startsWith("Bearer ")
+    ? authorization.slice("Bearer ".length).trim()
+    : "";
+
+  if (!suppliedKey || !safeEqual(suppliedKey, configuredKey)) {
+    return jsonResponse({ ok: false, error: "Sales rep access denied." }, 401);
+  }
+
+  return null;
+}

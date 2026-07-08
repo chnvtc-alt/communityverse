@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CommunityVerse Sales Rep</title>
+    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v89" />
+    <link rel="stylesheet" href="/backoffice/rep/rep.css?v=rep-v1" />
+  </head>
+  <body>
+    <main class="rep-shell">
+      <section class="rep-login card" id="login-panel">
+        <div class="brand-row">
+          <img src="/assets/communityverse-games-logo-transparent-cropped.png" alt="CommunityVerse Games" />
+          <div>
+            <p class="eyebrow">CommunityVerse Sales</p>
+            <h1>Doyce Prospect List</h1>
+          </div>
+        </div>
+        <form id="login-form" class="rep-form">
+          <label>
+            Access Code
+            <input id="rep-key" type="password" autocomplete="current-password" />
+          </label>
+          <button class="button button-primary" type="submit">Open List</button>
+          <p class="error" id="login-error" role="alert"></p>
+        </form>
+      </section>
+
+      <section class="rep-app" id="rep-app" hidden>
+        <header class="rep-header">
+          <div class="brand-row">
+            <img src="/assets/communityverse-games-logo-transparent-cropped.png" alt="CommunityVerse Games" />
+            <div>
+              <p class="eyebrow">CommunityVerse Sales</p>
+              <h1>Doyce Prospect List</h1>
+              <p class="helper" id="sync-status">Loading...</p>
+            </div>
+          </div>
+          <div class="rep-actions">
+            <button class="button button-muted" id="refresh-button" type="button">Refresh</button>
+            <button class="button button-primary" id="new-prospect-button" type="button">Add Prospect</button>
+            <button class="button button-muted" id="lock-button" type="button">Lock</button>
+          </div>
+        </header>
+
+        <section class="card table-card">
+          <div class="card-heading">
+            <div>
+              <h3>My Prospects</h3>
+              <p class="helper" id="prospect-count">0 records</p>
+            </div>
+            <label class="rep-search">
+              Search
+              <input id="prospect-search" type="search" placeholder="Restaurant, city, contact, email..." />
+            </label>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Restaurant</th>
+                  <th>Contact</th>
+                  <th>Stage</th>
+                  <th>Follow Up</th>
+                  <th>Links</th>
+                  <th>Email</th>
+                </tr>
+              </thead>
+              <tbody id="prospect-list"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <dialog id="prospect-dialog" class="editor-dialog">
+      <form id="prospect-form" method="dialog">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow">Doyce prospect</p>
+            <h3 id="dialog-title">Add Prospect</h3>
+          </div>
+          <button class="icon-button" id="close-dialog-button" type="button" aria-label="Close">x</button>
+        </div>
+        <input id="restaurant-id" type="hidden" />
+        <div class="form-grid">
+          <label class="form-span">
+            Restaurant Name
+            <input id="restaurant-name" required />
+          </label>
+          <label>
+            Street Address
+            <input id="restaurant-street" />
+          </label>
+          <label>
+            City
+            <input id="restaurant-city" />
+          </label>
+          <label>
+            State
+            <input id="restaurant-state" />
+          </label>
+          <label>
+            ZIP
+            <input id="restaurant-zip" />
+          </label>
+          <label>
+            Restaurant Phone
+            <input id="restaurant-phone" type="tel" />
+          </label>
+          <label>
+            Trivia?
+            <select id="currently-does-trivia">
+              <option value="">Unknown</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+              <option value="possible">Possible</option>
+            </select>
+          </label>
+          <label>
+            Website
+            <input id="restaurant-website" type="url" placeholder="https://..." />
+          </label>
+          <label>
+            Facebook Page
+            <input id="facebook-page" type="url" placeholder="https://facebook.com/..." />
+          </label>
+          <label>
+            Contact First Name
+            <input id="contact-first-name" />
+          </label>
+          <label>
+            Contact Last Name
+            <input id="contact-last-name" />
+          </label>
+          <label>
+            Contact Email
+            <input id="contact-email" type="email" />
+          </label>
+          <label>
+            Contact Cell
+            <input id="contact-cell" type="tel" />
+          </label>
+          <label>
+            Stage
+            <select id="prospect-stage">
+              <option value="new-lead">New Lead</option>
+              <option value="contacted">Contacted</option>
+              <option value="demo-needed">Demo Needed</option>
+              <option value="proposal-sent">Proposal</option>
+              <option value="follow-up">Follow-Up</option>
+              <option value="not-interested">Not Interested</option>
+            </select>
+          </label>
+          <label>
+            Score
+            <select id="prospect-score">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5" selected>5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+          </label>
+          <label>
+            Next Follow-Up
+            <input id="next-follow-up" type="date" />
+          </label>
+          <label class="form-span">
+            Notes
+            <textarea id="prospect-notes" rows="3" placeholder="What happened, best time to call, next step..."></textarea>
+          </label>
+          <label>
+            Add Contact Type
+            <select id="contact-history-type">
+              <option value="">No new contact</option>
+              <option value="E">Email</option>
+              <option value="T">Text</option>
+              <option value="C">Call</option>
+              <option value="LM">Left Message</option>
+              <option value="FB">Facebook</option>
+              <option value="W">Website</option>
+            </select>
+          </label>
+          <label>
+            Contact Date
+            <input id="contact-history-date" type="date" />
+          </label>
+          <label class="form-span">
+            Contact Note
+            <input id="contact-history-note" placeholder="Sent email, called, left message..." />
+          </label>
+          <div class="contact-history-list form-span" id="contact-history-list"></div>
+        </div>
+        <p class="error" id="form-error" role="alert"></p>
+        <div class="dialog-actions">
+          <button class="button button-muted" id="cancel-dialog-button" type="button">Cancel</button>
+          <button class="button button-primary" type="submit">Save Prospect</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="/backoffice/rep/rep.js?v=rep-v1" defer></script>
+  </body>
+</html>
