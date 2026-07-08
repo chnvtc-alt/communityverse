@@ -362,6 +362,23 @@ h3 {
   width: 100%;
 }
 
+.rep-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 24px;
+  margin-left: 8px;
+  border: 1px solid rgba(190, 95, 25, 0.35);
+  border-radius: 999px;
+  background: #fff3df;
+  color: #a34d13;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  vertical-align: middle;
+}
+
 .sales-email-template-panel {
   margin-top: 14px;
   border: 1px solid var(--line);

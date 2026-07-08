@@ -1029,6 +1029,32 @@
     return rep && rep !== DEFAULT_OWNER ? `Rep: ${rep}` : "";
   }
 
+  function repInitials(restaurant = {}) {
+    const rep = cleanSalesRep(restaurant.assignedTo || restaurant.salesperson || DEFAULT_OWNER);
+    if (!rep || rep === DEFAULT_OWNER) {
+      return "";
+    }
+    if (rep === "Doyce") {
+      return "DP";
+    }
+    return rep
+      .split(/\s+/)
+      .map((part) => part[0])
+      .join("")
+      .slice(0, 3)
+      .toUpperCase();
+  }
+
+  function repBadge(restaurant = {}) {
+    const initials = repInitials(restaurant);
+    const label = repHelper(restaurant);
+    return initials ? `<span class="rep-badge" title="${escapeHtml(label)}">${escapeHtml(initials)}</span>` : "";
+  }
+
+  function isDefaultOwner(restaurant = {}) {
+    return cleanSalesRep(restaurant.assignedTo || restaurant.salesperson || DEFAULT_OWNER) === DEFAULT_OWNER;
+  }
+
   function formattedAddress(restaurant) {
     const cityStateZip = [
       restaurant.city,
@@ -1055,7 +1081,7 @@
   }
 
   function isVisibleProspect(restaurant) {
-    return restaurant.status === "prospect" && restaurant.prospectScore !== "1";
+    return restaurant.status === "prospect" && restaurant.prospectScore !== "1" && isDefaultOwner(restaurant);
   }
 
   function prospectScoreNumber(restaurant) {
@@ -1160,6 +1186,7 @@
           <tr>
             <td>
               <button class="link-button strong-link" type="button" data-edit-id="${escapeHtml(restaurant.id)}">${escapeHtml(restaurant.name)}</button>
+              ${repBadge(restaurant)}
               <div class="helper">${escapeHtml(formattedAddress(restaurant) || "No address yet")}</div>
               ${repHelper(restaurant) ? `<div class="helper">${escapeHtml(repHelper(restaurant))}</div>` : ""}
             </td>
