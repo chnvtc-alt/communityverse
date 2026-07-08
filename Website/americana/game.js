@@ -813,6 +813,9 @@
 
   function multiplayerShareText(roomCode) {
     const safeRoomCode = String(roomCode || "").toUpperCase();
+    if (isSeriesRoom()) {
+      return `You have been invited to play a 3-game Restaurant Challenge trivia series.\nRoom code: ${safeRoomCode}\nPress the link above to join.`;
+    }
     return `You have been invited to play a multiplayer Restaurant Challenge trivia game.\nRoom code: ${safeRoomCode}\nPress the link above to join.`;
   }
 
@@ -832,6 +835,7 @@
     state.multiplayerPlayer = state.multiplayerPlayers.find((player) => player.id === storedPlayerId) || state.multiplayerPlayer;
     if (state.multiplayerPlayer) {
       startMultiplayerRefresh();
+      ensureCurrentRoomSession();
       syncLiveRoomToSession();
     }
     return data;
@@ -913,6 +917,29 @@
     return state.multiplayerRoom?.mode === "live";
   }
 
+  function isSeriesRoom() {
+    return state.multiplayerRoom?.seriesMode === "three-game";
+  }
+
+  function currentSeriesGame() {
+    return Math.max(1, Number(state.multiplayerRoom?.currentSeriesGame) || 1);
+  }
+
+  function seriesTotalGames() {
+    return Math.max(1, Number(state.multiplayerRoom?.seriesTotalGames) || (isSeriesRoom() ? 3 : 1));
+  }
+
+  function sessionMatchesCurrentRoom(session = getSession()) {
+    if (!session || !state.multiplayerRoom) {
+      return false;
+    }
+    return (
+      String(session.multiplayerRoomCode || "").toUpperCase() === String(state.multiplayerRoom.roomCode || "").toUpperCase() &&
+      String(session.multiplayerPlayerId || "") === String(state.multiplayerPlayer?.id || "") &&
+      Math.max(1, Number(session.multiplayerSeriesGame) || 1) === currentSeriesGame()
+    );
+  }
+
   function isMultiplayerSetupMode() {
     return !replayCustomer && (query.get("multiplayer") === "1" || multiplayerRoomCodeParam || multiplayerJoinMode);
   }
@@ -992,6 +1019,43 @@
     } catch (error) {
       state.multiplayerLoading = false;
       state.multiplayerError = error instanceof Error ? error.message : "Unable to start the live round.";
+      renderAll();
+    }
+  }
+
+  async function prepareNextSeriesGame() {
+    const roomCode = String(state.multiplayerRoom?.roomCode || "").toUpperCase();
+    if (!roomCode || !isSeriesRoom()) return;
+    state.multiplayerLoading = true;
+    state.multiplayerMessage = `Preparing Game ${Math.min(currentSeriesGame() + 1, seriesTotalGames())}...`;
+    renderAll();
+    try {
+      const session = core.startNewSession(restaurantSlug, {
+        multiplayerRoomCode: roomCode,
+        multiplayerPlayerId: state.multiplayerPlayer?.id || "",
+        multiplayerSeriesGame: Math.min(currentSeriesGame() + 1, seriesTotalGames()),
+      });
+      if (!session) {
+        throw new Error(`No available characters are ready for ${restaurant?.name || "this restaurant"} right now.`);
+      }
+      const data = await requestApiJson(`/multiplayer/rooms/${encodeURIComponent(roomCode)}`, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "prepare-series-game",
+          customerId: session.customer?.id || "",
+          questionIds: (session.questions || []).map((question) => question.id).filter(Boolean),
+        }),
+      });
+      state.multiplayerRoom = data.room || state.multiplayerRoom;
+      state.multiplayerPlayers = Array.isArray(data.players) ? data.players : state.multiplayerPlayers;
+      startCurrentRoomSession();
+      state.multiplayerLoading = false;
+      state.multiplayerMessage = `Game ${currentSeriesGame()} is ready. Start when everyone is ready.`;
+      state.showGame = false;
+      renderAll();
+    } catch (error) {
+      state.multiplayerLoading = false;
+      state.multiplayerError = error instanceof Error ? error.message : "Unable to prepare the next series game.";
       renderAll();
     }
   }
@@ -1081,8 +1145,48 @@
     }
   }
 
+  function startCurrentRoomSession() {
+    if (!state.multiplayerRoom || !state.multiplayerPlayer) {
+      return null;
+    }
+    const session = core.startNewSession(restaurantSlug, {
+      customerId: state.multiplayerRoom.customerId,
+      questionIds: state.multiplayerRoom.questionIds,
+      multiplayerRoomCode: state.multiplayerRoom.roomCode,
+      multiplayerPlayerId: state.multiplayerPlayer.id || "",
+      multiplayerSeriesGame: currentSeriesGame(),
+    });
+    if (session) {
+      clearResultVisibleSessionId();
+      state.feedback = null;
+      state.isLocked = false;
+      state.showGame = false;
+    }
+    return session;
+  }
+
+  function ensureCurrentRoomSession() {
+    if (!state.multiplayerRoom || !state.multiplayerPlayer) {
+      return null;
+    }
+    const session = getSession();
+    if (sessionMatchesCurrentRoom(session)) {
+      return session;
+    }
+    return startCurrentRoomSession();
+  }
+
   function getSortedRoomPlayers() {
     const players = Array.isArray(state.multiplayerPlayers) ? state.multiplayerPlayers : [];
+    if (isSeriesRoom()) {
+      return players.slice().sort((left, right) => {
+        const totalDelta = (Number(right.seriesTotalScore) || 0) - (Number(left.seriesTotalScore) || 0);
+        if (totalDelta) return totalDelta;
+        const scoreDelta = (Number(right.score) || 0) - (Number(left.score) || 0);
+        if (scoreDelta) return scoreDelta;
+        return String(left.displayName || "").localeCompare(String(right.displayName || ""));
+      });
+    }
     return players.slice().sort((left, right) => {
       const leftCompleted = left.status === "completed";
       const rightCompleted = right.status === "completed";
@@ -1099,6 +1203,28 @@
   function roomWinnerMarkup(showGroupResults = false) {
     const players = getSortedRoomPlayers();
     const completedPlayers = players.filter((player) => player.status === "completed");
+    if (isSeriesRoom()) {
+      const seriesPlayers = players.filter((player) => player.status !== "did_not_finish" || Number(player.seriesTotalScore) > 0);
+      const hasSeriesScore = seriesPlayers.some((player) =>
+        (Number(player.seriesCompletedGames) || 0) > 0 || (Number(player.seriesTotalScore) || 0) > 0
+      );
+      if (!seriesPlayers.length || !hasSeriesScore) {
+        return showGroupResults
+          ? `<p class="copy multiplayer-results-note">No series scores yet. This will update after Game 1.</p>`
+          : "";
+      }
+      const finalSeries = currentSeriesGame() >= seriesTotalGames() && state.multiplayerRoom?.liveStatus === "completed";
+      const topTotal = Math.max(...seriesPlayers.map((player) => Number(player.seriesTotalScore) || 0));
+      const leaders = seriesPlayers.filter((player) => (Number(player.seriesTotalScore) || 0) === topTotal);
+      const leaderNames = leaders.map((player) => player.displayName || "Player").join(", ");
+      return `
+        <div class="multiplayer-winner-panel">
+          <p class="kicker">${finalSeries ? "Series Results" : `Series Standings After Game ${Math.max(1, currentSeriesGame() - (state.multiplayerRoom?.liveStatus === "waiting" ? 1 : 0))}`}</p>
+          <h3 class="section-title">${finalSeries ? (leaders.length > 1 ? "Series Winners" : "Series Winner") : (leaders.length > 1 ? "Series Leaders" : "Series Leader")}: ${escapeHtml(leaderNames)}</h3>
+          <p class="copy">Top total: ${topTotal}/${seriesTotalGames() * 10} correct</p>
+        </div>
+      `;
+    }
     if (!completedPlayers.length) {
       return showGroupResults
         ? `<p class="copy multiplayer-results-note">No one has finished yet. This will update as players complete their games.</p>`
@@ -1142,10 +1268,13 @@
         ${players
           .map((player, index) => {
             const scoreText = `${Number(player.score) || 0}/${Number(player.totalQuestions) || 10}`;
+            const seriesText = isSeriesRoom()
+              ? `Series ${Number(player.seriesTotalScore) || 0}/${seriesTotalGames() * 10}`
+              : "";
             const status = player.status === "completed"
-              ? scoreText
+              ? (seriesText ? `${scoreText} · ${seriesText}` : scoreText)
               : isLiveRoundRoom() && player.status !== "did_not_finish"
-                ? `${scoreText} · In Progress`
+                ? `${scoreText} · ${seriesText ? `${seriesText} · ` : ""}In Progress`
                 : player.status === "did_not_finish"
                   ? "Did Not Finish"
                   : "In Progress";
@@ -1617,6 +1746,10 @@
 
     if (room && state.multiplayerPlayer) {
       const roomFinished = showGroupResults;
+      const seriesRoom = isSeriesRoom();
+      const finalSeriesGame = seriesRoom && currentSeriesGame() >= seriesTotalGames();
+      const seriesGameCompleted = seriesRoom && room?.liveStatus === "completed";
+      const canPrepareNextSeriesGame = seriesGameCompleted && !finalSeriesGame && isHost;
       const liveWaitingHostInstructions = liveWaiting && isHost
         ? `
           <div class="multiplayer-host-steps" aria-label="How to start the live round">
@@ -1629,18 +1762,26 @@
               <span>Players will show in the list below. You can start with any number of players.</span>
             </div>
             <div class="multiplayer-host-step">
-              <strong>3. Start the live round</strong>
-              <span>Press Start Live Round when your group is ready. Everyone will get the same questions at the same time.</span>
+              <strong>3. Start ${seriesRoom ? `Game ${currentSeriesGame()}` : "the live round"}</strong>
+              <span>Press Start ${seriesRoom ? `Game ${currentSeriesGame()}` : "Live Round"} when your group is ready. Everyone will get the same questions at the same time.</span>
             </div>
           </div>
         `
         : "";
-      const multiplayerActionsMarkup = roomFinished
+      const multiplayerActionsMarkup = canPrepareNextSeriesGame
         ? `
-          <p class="helper" style="margin: 0 0 12px;">This room is finished. You can go back to the game screen or start a fresh multiplayer room.</p>
+          <p class="helper" style="margin: 0 0 12px;">Game ${currentSeriesGame()} is complete. Prepare Game ${currentSeriesGame() + 1} with a new character and new questions.</p>
+          <div class="button-row">
+            <button class="button button-hot" id="prepare-next-series-game-button" type="button" ${state.multiplayerLoading ? "disabled" : ""}>Prepare Game ${currentSeriesGame() + 1}</button>
+            <a class="button button-muted" href="${restaurantBasePath()}">Back to Game</a>
+          </div>
+        `
+        : roomFinished
+        ? `
+          <p class="helper" style="margin: 0 0 12px;">${seriesRoom && finalSeriesGame ? "This 3-game series is complete." : "This room is finished. You can go back to the game screen or start a fresh multiplayer room."}</p>
           <div class="button-row">
             <a class="button button-muted" href="${restaurantBasePath()}">Back to Game</a>
-            <a class="button button-hot" href="${restaurantPlayPath()}?multiplayer=1">Create New Multiplayer Game</a>
+            <a class="button button-hot" href="${restaurantPlayPath()}?multiplayer=1">${seriesRoom ? "Create New Series" : "Create New Multiplayer Game"}</a>
           </div>
         `
         : `
@@ -1653,7 +1794,7 @@
           <div class="button-row">
             <button class="button button-hot" id="share-multiplayer-room-button" type="button">Share Invite</button>
             <button class="button button-muted" id="copy-multiplayer-room-button" type="button">Copy Invite</button>
-            ${liveWaiting && isHost ? `<button class="button button-hot" id="start-live-round-button" type="button" ${state.multiplayerLoading ? "disabled" : ""}>Start Live Round</button>` : ""}
+            ${liveWaiting && isHost ? `<button class="button button-hot" id="start-live-round-button" type="button" ${state.multiplayerLoading ? "disabled" : ""}>Start ${seriesRoom ? `Game ${currentSeriesGame()}` : "Live Round"}</button>` : ""}
           </div>
         `;
       return `
@@ -1661,8 +1802,8 @@
           <div class="multiplayer-room-heading">
             <div>
               <p class="kicker">Play With Friends</p>
-              <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${liveWaiting && isHost ? "Your live room is ready." : `Room ${escapeHtml(roomCode)}`}</h3>
-              <p class="copy" style="margin: 0 0 12px;">${roomFinished ? "Group results are ready." : `${escapeHtml(roomStatus)}. Share this room with friends, then start when everyone is ready.`}</p>
+              <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${seriesRoom ? `3 Game Series - Game ${currentSeriesGame()} of ${seriesTotalGames()}` : liveWaiting && isHost ? "Your live room is ready." : `Room ${escapeHtml(roomCode)}`}</h3>
+              <p class="copy" style="margin: 0 0 12px;">${roomFinished ? (seriesRoom ? "Series standings are ready." : "Group results are ready.") : `${escapeHtml(roomStatus)}. Share this room with friends, then start when everyone is ready.`}</p>
             </div>
             <div class="multiplayer-room-code-box" aria-label="Room code">
               <span>Room Code</span>
@@ -1690,6 +1831,7 @@
         ${messageMarkup}
         <div class="button-row">
           <button class="button button-hot" id="create-live-room-button" type="button" ${state.multiplayerLoading ? "disabled" : ""}>Create Live Round</button>
+          <button class="button button-muted" id="create-series-room-button" type="button" ${state.multiplayerLoading ? "disabled" : ""}>Create 3 Game Series</button>
           <a class="button button-muted" href="${restaurantPlayPath()}?multiplayer=1&join=1">Join Friends' Game</a>
         </div>
       </div>
@@ -1701,6 +1843,13 @@
     if (createLiveButton) {
       createLiveButton.addEventListener("click", () => {
         void createMultiplayerRoom("live");
+      });
+    }
+
+    const createSeriesButton = document.getElementById("create-series-room-button");
+    if (createSeriesButton) {
+      createSeriesButton.addEventListener("click", () => {
+        void createMultiplayerRoom("live", { seriesMode: "three-game" });
       });
     }
 
@@ -1738,6 +1887,13 @@
     if (startLiveButton) {
       startLiveButton.addEventListener("click", () => {
         void startLiveRound();
+      });
+    }
+
+    const prepareNextSeriesGameButton = document.getElementById("prepare-next-series-game-button");
+    if (prepareNextSeriesGameButton) {
+      prepareNextSeriesGameButton.addEventListener("click", () => {
+        void prepareNextSeriesGame();
       });
     }
   }
@@ -2220,7 +2376,7 @@
     });
   }
 
-  async function createMultiplayerRoom(mode = "casual") {
+  async function createMultiplayerRoom(mode = "casual", options = {}) {
     state.multiplayerLoading = true;
     state.multiplayerError = "";
     state.multiplayerMessage = "Creating room...";
@@ -2246,6 +2402,7 @@
           profileId: session.profileId || "",
           sessionId: session.id || "",
           mode,
+          seriesMode: options.seriesMode || "",
         }),
       });
 
@@ -2255,8 +2412,11 @@
       if (state.multiplayerRoom?.roomCode && state.multiplayerPlayer?.id) {
         storeMultiplayerPlayer(state.multiplayerRoom.roomCode, state.multiplayerPlayer.id);
       }
+      startCurrentRoomSession();
       startMultiplayerRefresh();
-      state.multiplayerMessage = mode === "live"
+      state.multiplayerMessage = state.multiplayerRoom?.seriesMode === "three-game"
+        ? `3 Game Series ${state.multiplayerRoom?.roomCode || ""} is ready. Share the link, then start Game 1 when everyone has joined.`
+        : mode === "live"
         ? `Live Round ${state.multiplayerRoom?.roomCode || ""} is ready. Share the link, then start when everyone has joined.`
         : `Room ${state.multiplayerRoom?.roomCode || ""} is ready. Share the link with friends.`;
       state.multiplayerLoading = false;
@@ -2330,12 +2490,7 @@
       }
       startMultiplayerRefresh();
 
-      const session = core.startNewSession(restaurantSlug, {
-        customerId: state.multiplayerRoom.customerId,
-        questionIds: state.multiplayerRoom.questionIds,
-        multiplayerRoomCode: state.multiplayerRoom.roomCode,
-        multiplayerPlayerId: state.multiplayerPlayer?.id || "",
-      });
+      const session = startCurrentRoomSession();
       if (!session) {
         throw new Error("Unable to start this room game on this device.");
       }

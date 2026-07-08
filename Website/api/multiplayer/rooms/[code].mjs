@@ -3,6 +3,7 @@ import {
   finishRoomPlayer,
   getRoomState,
   joinRoom,
+  prepareNextSeriesGame,
   startLiveRoom,
   updateRoomPlayerProgress,
 } from "../../_lib/multiplayer-rooms.mjs";
@@ -55,6 +56,9 @@ export async function POST(request) {
     }
     if (body.action === "advance-live") {
       return jsonResponse({ ok: true, ...(await advanceLiveRoom(code, body)) });
+    }
+    if (body.action === "prepare-series-game") {
+      return jsonResponse({ ok: true, ...(await prepareNextSeriesGame(code, body)) });
     }
     if (body.action === "join") {
       return jsonResponse({ ok: true, ...(await joinRoom(code, body)) }, 201);

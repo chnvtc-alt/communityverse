@@ -1,6 +1,8 @@
 import { supabaseRequest } from "./supabase.mjs";
 
 const ROOM_DURATION_MINUTES = 15;
+const SERIES_ROOM_DURATION_MINUTES = 60;
+const SERIES_TOTAL_GAMES = 3;
 const LIVE_QUESTION_SECONDS = 25;
 const LIVE_REVIEW_SECONDS = 4;
 const ROOM_CODE_WORDS = [
@@ -79,6 +81,22 @@ function normalizeQuestionIds(value) {
     .slice(0, 10);
 }
 
+function normalizeSeriesGameNumber(value) {
+  const number = Math.max(1, Number(value) || 1);
+  return Math.min(SERIES_TOTAL_GAMES, Math.floor(number));
+}
+
+function normalizeSeriesScores(value) {
+  const rawScores = Array.isArray(value) ? value : [];
+  return Array.from({ length: SERIES_TOTAL_GAMES }, (_, index) =>
+    Math.max(0, Number(rawScores[index]) || 0)
+  );
+}
+
+function playerSeriesTotal(player) {
+  return normalizeSeriesScores(player?.seriesScores).reduce((total, score) => total + score, 0);
+}
+
 function normalizeCode(value) {
   return String(value || "")
     .trim()
@@ -130,6 +148,9 @@ function playerFromRecord(record, room = null) {
     answeredQuestionIndex: Number(payload.answeredQuestionIndex ?? -1),
     lastAnswerCorrect: Boolean(payload.lastAnswerCorrect),
     lastSelectedIndex: Number(payload.lastSelectedIndex ?? -1),
+    seriesScores: normalizeSeriesScores(payload.seriesScores),
+    seriesTotalScore: Math.max(0, Number(payload.seriesTotalScore) || playerSeriesTotal(payload)),
+    seriesCompletedGames: Math.max(0, Number(payload.seriesCompletedGames) || 0),
   };
 }
 
@@ -199,7 +220,10 @@ function playerToRecord(player) {
     answeredQuestionIndex: Number.isFinite(Number(player.answeredQuestionIndex)) ? Number(player.answeredQuestionIndex) : -1,
     lastAnswerCorrect: Boolean(player.lastAnswerCorrect),
     lastSelectedIndex: Number.isFinite(Number(player.lastSelectedIndex)) ? Number(player.lastSelectedIndex) : -1,
+    seriesScores: normalizeSeriesScores(player.seriesScores),
+    seriesCompletedGames: Math.max(0, Number(player.seriesCompletedGames) || 0),
   };
+  payload.seriesTotalScore = playerSeriesTotal(payload);
   return {
     id: payload.id,
     room_id: payload.roomId,
@@ -257,6 +281,7 @@ export async function createRoom(body = {}) {
   }
 
   const createdAt = nowIso();
+  const seriesMode = body.seriesMode === "three-game" ? "three-game" : "";
   const room = {
     id: randomString("room"),
     roomCode: await createUniqueRoomCode(),
@@ -265,6 +290,9 @@ export async function createRoom(body = {}) {
     questionIds,
     status: "open",
     mode: body.mode === "live" ? "live" : "casual",
+    seriesMode,
+    seriesTotalGames: seriesMode ? SERIES_TOTAL_GAMES : 1,
+    currentSeriesGame: 1,
     liveStatus: body.mode === "live" ? "waiting" : "",
     currentQuestionIndex: body.mode === "live" ? 0 : null,
     questionDurationSeconds: body.mode === "live" ? LIVE_QUESTION_SECONDS : null,
@@ -273,7 +301,7 @@ export async function createRoom(body = {}) {
     reviewStartedAt: "",
     reviewEndsAt: "",
     createdAt,
-    expiresAt: addMinutes(new Date(createdAt), ROOM_DURATION_MINUTES),
+    expiresAt: addMinutes(new Date(createdAt), seriesMode ? SERIES_ROOM_DURATION_MINUTES : ROOM_DURATION_MINUTES),
   };
 
   const savedRoom = await saveRoom(room);
@@ -326,6 +354,9 @@ export async function joinRoom(code, body = {}) {
     joinedAt: nowIso(),
     completedAt: "",
     host: Boolean(body.host),
+    seriesScores: normalizeSeriesScores([]),
+    seriesTotalScore: 0,
+    seriesCompletedGames: 0,
   };
 
   const rows = await supabaseRequest("multiplayer_room_players?on_conflict=id", {
@@ -341,6 +372,21 @@ export async function joinRoom(code, body = {}) {
     player: Array.isArray(rows) && rows.length ? playerFromRecord(rows[0], state.room) : player,
     players: [...state.players, player],
   };
+}
+
+async function savePlayers(players = []) {
+  const records = (Array.isArray(players) ? players : []).map(playerToRecord);
+  if (!records.length) {
+    return [];
+  }
+  const rows = await supabaseRequest("multiplayer_room_players?on_conflict=id", {
+    method: "POST",
+    headers: {
+      Prefer: "resolution=merge-duplicates,return=representation",
+    },
+    body: JSON.stringify(records),
+  });
+  return Array.isArray(rows) ? rows : [];
 }
 
 export async function startLiveRoom(code) {
@@ -456,6 +502,62 @@ export async function advanceLiveRoom(code, options = {}) {
   };
 }
 
+export async function prepareNextSeriesGame(code, body = {}) {
+  const state = await getRoomState(code);
+  if (!state?.room) {
+    throw new Error("Room not found.");
+  }
+  if (state.room.status !== "open") {
+    throw new Error("This room is closed.");
+  }
+  if (state.room.mode !== "live" || state.room.seriesMode !== "three-game") {
+    throw new Error("This is not a 3-game series room.");
+  }
+  const currentSeriesGame = normalizeSeriesGameNumber(state.room.currentSeriesGame);
+  if (currentSeriesGame >= SERIES_TOTAL_GAMES) {
+    throw new Error("This series is already on the final game.");
+  }
+  const customerId = String(body.customerId || "").trim();
+  const questionIds = normalizeQuestionIds(body.questionIds);
+  if (!customerId || questionIds.length < 10) {
+    throw new Error("The next series game needs a character and 10 questions.");
+  }
+
+  const nextSeriesGame = currentSeriesGame + 1;
+  const room = await saveRoom({
+    ...state.room,
+    customerId,
+    questionIds,
+    currentSeriesGame: nextSeriesGame,
+    liveStatus: "waiting",
+    currentQuestionIndex: 0,
+    questionStartedAt: "",
+    questionEndsAt: "",
+    reviewStartedAt: "",
+    reviewEndsAt: "",
+  });
+  const resetPlayers = state.players.map((player) => ({
+    ...player,
+    sessionId: "",
+    score: 0,
+    totalQuestions: questionIds.length || 10,
+    result: "",
+    status: "in_progress",
+    completedAt: "",
+    answeredQuestionIndex: -1,
+    lastAnswerCorrect: false,
+    lastSelectedIndex: -1,
+  }));
+  await savePlayers(resetPlayers);
+  return {
+    room: {
+      ...room,
+      status: roomStatus(room),
+    },
+    players: await fetchPlayersForRoom(room.id, room),
+  };
+}
+
 export async function updateRoomPlayerProgress(code, body = {}) {
   const state = await getRoomState(code);
   if (!state?.room) {
@@ -532,6 +634,16 @@ export async function finishRoomPlayer(code, body = {}) {
       ? Number(body.lastSelectedIndex)
       : Number(player.lastSelectedIndex ?? -1),
   };
+  if (state.room.seriesMode === "three-game") {
+    const seriesScores = normalizeSeriesScores(player.seriesScores);
+    const roundIndex = normalizeSeriesGameNumber(state.room.currentSeriesGame) - 1;
+    seriesScores[roundIndex] = finishedPlayer.score;
+    finishedPlayer.seriesScores = seriesScores;
+    finishedPlayer.seriesTotalScore = playerSeriesTotal(finishedPlayer);
+    finishedPlayer.seriesCompletedGames = seriesScores.filter((score, index) =>
+      index <= roundIndex && Number.isFinite(Number(score))
+    ).length;
+  }
 
   const rows = await supabaseRequest("multiplayer_room_players?on_conflict=id", {
     method: "POST",

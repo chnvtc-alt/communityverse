@@ -4692,6 +4692,9 @@
       result: "",
       outcomeText: "",
       favoriteProgress: null,
+      multiplayerRoomCode: String(options.multiplayerRoomCode || "").trim(),
+      multiplayerPlayerId: String(options.multiplayerPlayerId || "").trim(),
+      multiplayerSeriesGame: Math.max(1, Number(options.multiplayerSeriesGame) || 1),
     };
 
     if (featuredGuests.length && !preferredCustomer) {
