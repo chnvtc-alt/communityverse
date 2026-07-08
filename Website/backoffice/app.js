@@ -3635,7 +3635,13 @@
   }
 
   function matchReasons(imported, restaurant) {
-    const reasons = nameMatchReasons(imported.name, restaurant.name, imported.city);
+    const importedCityKey = normalizedImportKey(imported.city);
+    const existingCityKey = normalizedImportKey(restaurant.city);
+    const citiesConflict = importedCityKey && existingCityKey && importedCityKey !== existingCityKey;
+    let reasons = nameMatchReasons(imported.name, restaurant.name, imported.city);
+    if (citiesConflict) {
+      reasons = reasons.filter((reason) => !["Restaurant name", "Similar restaurant name", "City"].includes(reason));
+    }
     const importedPhone = normalizedPhone(imported.phone || imported.contactCell);
     const existingPhone = normalizedPhone(restaurant.phone || restaurant.contactCell);
     if (importedPhone && existingPhone && importedPhone === existingPhone) {
@@ -3650,7 +3656,7 @@
     if (normalizedUrl(imported.facebookPage) && normalizedUrl(imported.facebookPage) === normalizedUrl(restaurant.facebookPage)) {
       reasons.push("Facebook page");
     }
-    if (reasons.length && normalizedImportKey(imported.city) && normalizedImportKey(imported.city) === normalizedImportKey(restaurant.city)) {
+    if (reasons.length && importedCityKey && importedCityKey === existingCityKey) {
       if (!reasons.includes("City")) {
         reasons.push("City");
       }
