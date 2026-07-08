@@ -1,0 +1,76 @@
+.rep-shell {
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.rep-login {
+  max-width: 520px;
+  margin: 10vh auto 0;
+}
+
+.rep-form {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.rep-app {
+  display: grid;
+  gap: 18px;
+}
+
+.rep-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-row img {
+  width: 112px;
+  height: auto;
+}
+
+.brand-row h1 {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 0.95;
+}
+
+.rep-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.rep-search {
+  min-width: min(320px, 100%);
+}
+
+.rep-search input {
+  min-width: 100%;
+}
+
+@media (max-width: 760px) {
+  .rep-shell {
+    padding: 14px;
+  }
+
+  .rep-header,
+  .brand-row {
+    display: grid;
+  }
+
+  .rep-actions {
+    justify-content: flex-start;
+  }
+}
