@@ -782,6 +782,7 @@
       regularValue: 250,
       occasionalValue: 75,
       focusTag: "historical",
+      tags: ["sea", "seafood", "pirate"],
       image: "../assets/restaurant-challenge/customers/blackbeard-the-pirate.jpg",
       questionPlace: "the high seas",
       questionFact: "becoming one of history's most feared pirates",
@@ -1276,6 +1277,12 @@
     safeRestaurant.description = String(safeRestaurant.description || "").trim();
     safeRestaurant.location = String(safeRestaurant.location || "").trim();
     safeRestaurant.areaSlug = slugify(safeRestaurant.areaSlug || "");
+    safeRestaurant.themeTags = Array.isArray(safeRestaurant.themeTags)
+      ? safeRestaurant.themeTags.map((tag) => slugify(tag)).filter(Boolean)
+      : String(safeRestaurant.themeTags || safeRestaurant.theme_tags || "")
+        .split(",")
+        .map((tag) => slugify(tag))
+        .filter(Boolean);
     safeRestaurant.primaryColor = String(safeRestaurant.primaryColor || "").trim();
     safeRestaurant.secondaryColor = String(safeRestaurant.secondaryColor || "").trim();
     safeRestaurant.accentColor = String(safeRestaurant.accentColor || "").trim();
@@ -4509,6 +4516,21 @@
     return pickOne(weighted);
   }
 
+  function customerMatchesRestaurantTheme(customer, restaurant) {
+    const restaurantTags = new Set(
+      (Array.isArray(restaurant?.themeTags) ? restaurant.themeTags : [])
+        .map((tag) => slugify(tag))
+        .filter(Boolean)
+    );
+    if (!restaurantTags.size) {
+      return false;
+    }
+
+    return (Array.isArray(customer?.tags) ? customer.tags : [])
+      .map((tag) => slugify(tag))
+      .some((tag) => restaurantTags.has(tag));
+  }
+
   function pickCustomerForRestaurant(restaurant, profile, candidateCustomerIds = []) {
     const recentCustomerIds = (profile.recentSessions || [])
       .slice(0, 3)
@@ -4536,6 +4558,17 @@
 
     if (restaurantSpecific.length) {
       return pickFrom(restaurantSpecific);
+    }
+
+    const themeSpecific = allCustomers.filter(
+      (customer) =>
+        customer.restaurant === "shared" &&
+        unownedRecentSafe(customer) &&
+        customerMatchesRestaurantTheme(customer, restaurant)
+    );
+
+    if (themeSpecific.length) {
+      return pickFrom(themeSpecific);
     }
 
     const areaSpecific = allCustomers.filter(

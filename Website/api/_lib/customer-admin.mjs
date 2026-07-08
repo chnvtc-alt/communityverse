@@ -74,6 +74,13 @@ function normalizeAreaSlugs(value) {
   );
 }
 
+function normalizeTags(value) {
+  const rawValues = Array.isArray(value)
+    ? value
+    : String(value || "").split(",");
+  return uniqueStrings(rawValues.map(slugText).filter(Boolean));
+}
+
 export function normalizeCustomer(customer) {
   const safeCustomer = typeof customer === "object" && customer ? structuredClone(customer) : {};
   safeCustomer.id = String(safeCustomer.id || "").trim();
@@ -93,6 +100,7 @@ export function normalizeCustomer(customer) {
   safeCustomer.image = String(safeCustomer.image || "").trim();
   safeCustomer.bio = String(safeCustomer.bio || "").trim();
   safeCustomer.areaSlugs = normalizeAreaSlugs(safeCustomer.areaSlugs || safeCustomer.area_slugs || "");
+  safeCustomer.tags = normalizeTags(safeCustomer.tags || safeCustomer.theme_tags || "");
   safeCustomer.questionPlace = String(safeCustomer.questionPlace || "").trim();
   safeCustomer.questionFact = String(safeCustomer.questionFact || "").trim();
   safeCustomer.active = safeCustomer.active !== false;
@@ -236,6 +244,7 @@ export function filterAdminCustomers(customers, searchParams) {
       customer.restaurant,
       customer.focusTag,
       ...(Array.isArray(customer.areaSlugs) ? customer.areaSlugs : []),
+      ...(Array.isArray(customer.tags) ? customer.tags : []),
       customer.bio,
       customer.questionPlace,
       customer.questionFact,

@@ -587,6 +587,7 @@
           <div class="field-guide-grid">
             <p><strong>Character name:</strong> The name players will see after unlocking this character.</p>
             <p><strong>Group name:</strong> Mostly an organizing label, like exclusive, historical, storybook, communityverse, or staff. It does not decide where the character appears by itself.</p>
+            <p><strong>Theme tags:</strong> Use tags like seafood, sea, pirate, sports, music, or brunch to help the game feature matching shared characters earlier at matching restaurants.</p>
             <p><strong>Rarity / difficulty:</strong> Common appears most often and is easiest to unlock. Uncommon is in the middle. Rare appears less often and needs a better score.</p>
             <p><strong>Regular value:</strong> Common $75-$125, Uncommon $125-$200, Rare $200-$350.</p>
             <p><strong>Occasional value:</strong> Usually 30% of Regular value, rounded to the nearest $5. This auto-fills, but you can still change it.</p>
@@ -615,6 +616,11 @@
             Group name
             <input id="customer-group" list="customer-group-options" placeholder="exclusive" />
             <span class="optional">This is mainly a category label. It does not control location by itself.</span>
+          </label>
+          <label>
+            Theme tags
+            <input id="customer-tags" list="tag-options" placeholder="seafood, pirate, sea" />
+            <span class="optional">Shared characters with matching restaurant theme tags can appear earlier.</span>
           </label>
           <label>
             Rarity / difficulty
@@ -727,6 +733,11 @@
           <label>
             Area tag
             <input id="restaurant-area-slug" list="area-options" placeholder="pepperville" required />
+          </label>
+          <label class="form-span">
+            Theme tags
+            <input id="restaurant-theme-tags" list="tag-options" placeholder="seafood, sea, pirate" />
+            <span class="optional">These gently boost shared characters with matching theme tags early in this restaurant's game.</span>
           </label>
           <label class="checkbox-label form-span">
             <input id="restaurant-include-area-questions" type="checkbox" checked />
@@ -863,6 +874,6 @@
         </div>
       </form>
     </dialog>
-    <script type="module" src="/admin/questions/admin.js?v=page-visits-v1"></script>
+    <script type="module" src="/admin/questions/admin.js?v=theme-tags-v1"></script>
   </body>
 </html>

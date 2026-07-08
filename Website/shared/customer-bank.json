@@ -444,6 +444,7 @@
     "regularValue": 250,
     "occasionalValue": 75,
     "focusTag": "historical",
+    "tags": ["sea", "seafood", "pirate"],
     "image": "../assets/restaurant-challenge/customers/blackbeard-the-pirate.jpg",
     "questionPlace": "the high seas",
     "questionFact": "becoming one of history's most feared pirates"

@@ -90,6 +90,7 @@ const elements = {
   customerIdDisplay: document.querySelector("#customer-id-display"),
   customerName: document.querySelector("#customer-name"),
   customerGroup: document.querySelector("#customer-group"),
+  customerTags: document.querySelector("#customer-tags"),
   customerRarity: document.querySelector("#customer-rarity"),
   customerRegularValue: document.querySelector("#customer-regular-value"),
   customerOccasionalValue: document.querySelector("#customer-occasional-value"),
@@ -126,6 +127,7 @@ const elements = {
   restaurantPublicGameName: document.querySelector("#restaurant-public-game-name"),
   restaurantLocation: document.querySelector("#restaurant-location"),
   restaurantAreaSlug: document.querySelector("#restaurant-area-slug"),
+  restaurantThemeTags: document.querySelector("#restaurant-theme-tags"),
   restaurantIncludeAreaQuestions: document.querySelector("#restaurant-include-area-questions"),
   restaurantSalesDemoMode: document.querySelector("#restaurant-sales-demo-mode"),
   restaurantQuestionMixEnabled: document.querySelector("#restaurant-question-mix-enabled"),
@@ -897,6 +899,12 @@ function normalizeCustomer(customer) {
       .split(",")
       .map((slug) => slugify(slug))
       .filter(Boolean);
+  safeCustomer.tags = Array.isArray(safeCustomer.tags)
+    ? safeCustomer.tags.map((tag) => slugify(tag)).filter(Boolean)
+    : String(safeCustomer.tags || "")
+      .split(",")
+      .map((tag) => slugify(tag))
+      .filter(Boolean);
   safeCustomer.questionPlace = String(safeCustomer.questionPlace || "").trim();
   safeCustomer.questionFact = String(safeCustomer.questionFact || "").trim();
   safeCustomer.active = safeCustomer.active !== false;
@@ -915,6 +923,12 @@ function normalizeRestaurantRecord(restaurant) {
   safeRestaurant.publicGameName = String(safeRestaurant.publicGameName || "").trim();
   safeRestaurant.location = String(safeRestaurant.location || "").trim();
   safeRestaurant.areaSlug = slugify(safeRestaurant.areaSlug || "");
+  safeRestaurant.themeTags = Array.isArray(safeRestaurant.themeTags)
+    ? safeRestaurant.themeTags.map((tag) => slugify(tag)).filter(Boolean)
+    : String(safeRestaurant.themeTags || safeRestaurant.theme_tags || "")
+      .split(",")
+      .map((tag) => slugify(tag))
+      .filter(Boolean);
   safeRestaurant.description = String(safeRestaurant.description || "").trim();
   safeRestaurant.openingCopy = String(safeRestaurant.openingCopy || "").trim();
   safeRestaurant.feedbackEnabled = safeRestaurant.feedbackEnabled === true;
@@ -961,7 +975,11 @@ function updateSuggestions() {
     ...customers.flatMap((customer) => customer.areaSlugs || []),
   ]);
   populateDatalist("customer-options", questions.flatMap((question) => question.customerIds || []));
-  populateDatalist("tag-options", questions.flatMap((question) => question.tags || []));
+  populateDatalist("tag-options", [
+    ...questions.flatMap((question) => question.tags || []),
+    ...customers.flatMap((customer) => customer.tags || []),
+    ...restaurants.flatMap((restaurant) => restaurant.themeTags || []),
+  ]);
 }
 
 function getCustomerRestaurantChoices(extraValue = "") {
@@ -1213,6 +1231,7 @@ function renderCustomers() {
         formatCharacterTypeLabel(customer.characterType),
         customer.rarity,
         ...(Array.isArray(customer.areaSlugs) ? customer.areaSlugs : []),
+        ...(Array.isArray(customer.tags) ? customer.tags.map((tag) => `#${tag}`) : []),
         customer.feedbackRewardOnly ? "feedback reward only" : "",
         customer.active ? "" : "inactive",
       ].filter(Boolean);
@@ -1314,6 +1333,7 @@ function renderRestaurants() {
         status,
         restaurant.slug,
         restaurant.areaSlug,
+        ...(Array.isArray(restaurant.themeTags) ? restaurant.themeTags.map((tag) => `#${tag}`) : []),
         restaurant.location,
       ].filter(Boolean);
       const startLink = `/${restaurant.slug}/`;
@@ -2710,6 +2730,7 @@ function resetRestaurantEditor(restaurant = null) {
   elements.restaurantPublicGameName.value = restaurant?.publicGameName || "";
   elements.restaurantLocation.value = restaurant?.location || "";
   elements.restaurantAreaSlug.value = restaurant?.areaSlug || "";
+  elements.restaurantThemeTags.value = (restaurant?.themeTags || []).join(", ");
   elements.restaurantIncludeAreaQuestions.checked = restaurant?.includeAreaQuestions !== false;
   elements.restaurantSalesDemoMode.checked = restaurant?.salesDemoMode === true;
   renderQuestionMix(restaurant?.questionMix);
@@ -2744,6 +2765,7 @@ function restaurantFromForm() {
     publicGameName: elements.restaurantPublicGameName.value.trim(),
     location: elements.restaurantLocation.value.trim(),
     areaSlug: elements.restaurantAreaSlug.value.trim(),
+    themeTags: splitCommaList(elements.restaurantThemeTags.value).map((tag) => slugify(tag)).filter(Boolean),
     includeAreaQuestions: elements.restaurantIncludeAreaQuestions.checked,
     salesDemoMode: elements.restaurantSalesDemoMode.checked,
     questionMix: questionMixFromForm(),
@@ -2906,6 +2928,7 @@ function resetCustomerEditor(customer = null) {
   elements.customerIdDisplay.value = customer?.id || "Will be created when you save.";
   elements.customerName.value = customer?.name || "";
   elements.customerGroup.value = customer?.characterType || customer?.group || "";
+  elements.customerTags.value = (customer?.tags || []).join(", ");
   elements.customerRarity.value = customer?.rarity || "Common";
   elements.customerRegularValue.value = customer?.regularValue || 0;
   elements.customerOccasionalValue.value = customer
@@ -2948,6 +2971,7 @@ function customerFromForm() {
     name: elements.customerName.value.trim(),
     characterType: elements.customerGroup.value.trim(),
     group: elements.customerGroup.value.trim(),
+    tags: splitCommaList(elements.customerTags.value).map((tag) => slugify(tag)).filter(Boolean),
     rarity: elements.customerRarity.value.trim(),
     regularValue: Number(elements.customerRegularValue.value) || 0,
     occasionalValue: Number(elements.customerOccasionalValue.value) || 0,

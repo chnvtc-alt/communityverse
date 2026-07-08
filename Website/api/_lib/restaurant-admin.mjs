@@ -83,6 +83,13 @@ function normalizeQuestionMix(questionMix) {
   };
 }
 
+function normalizeThemeTags(value) {
+  const rawValues = Array.isArray(value)
+    ? value
+    : String(value || "").split(",");
+  return [...new Set(rawValues.map(slugifyRestaurant).filter(Boolean))];
+}
+
 export function normalizeRestaurant(restaurant) {
   const safeRestaurant = typeof restaurant === "object" && restaurant ? structuredClone(restaurant) : {};
   const slug = slugifyRestaurant(safeRestaurant.slug || safeRestaurant.name);
@@ -95,6 +102,7 @@ export function normalizeRestaurant(restaurant) {
   ).trim();
   safeRestaurant.location = String(safeRestaurant.location || "").trim();
   safeRestaurant.areaSlug = slugifyRestaurant(safeRestaurant.areaSlug || safeRestaurant.area_slug || "");
+  safeRestaurant.themeTags = normalizeThemeTags(safeRestaurant.themeTags || safeRestaurant.theme_tags || "");
   safeRestaurant.description = String(safeRestaurant.description || "").trim();
   safeRestaurant.heroImage = String(safeRestaurant.heroImage || safeRestaurant.hero_image || "").trim();
   safeRestaurant.logoSquare = String(safeRestaurant.logoSquare || safeRestaurant.logo_square || "").trim();
@@ -266,6 +274,7 @@ export function filterAdminRestaurants(restaurants, searchParams) {
       restaurant.publicGameName,
       restaurant.location,
       restaurant.areaSlug,
+      ...(Array.isArray(restaurant.themeTags) ? restaurant.themeTags : []),
       restaurant.description,
     ]
       .join(" ")
