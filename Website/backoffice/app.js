@@ -7,6 +7,7 @@
   const SALES_EMAIL_1_STORAGE = "communityverseBackofficeSalesEmail1Template";
   const API_URL = "/api/backoffice";
   const DEFAULT_OWNER = "Tim";
+  const SALES_REPS = ["Tim", "Doyce"];
   const INVOICE_SENDER = {
     business: "CommunityVerse Games",
     street: "3155 Waterplace Cove",
@@ -254,6 +255,7 @@
     prospectStage: document.querySelector("#prospect-stage"),
     prospectScore: document.querySelector("#prospect-score"),
     leadSource: document.querySelector("#lead-source"),
+    assignedTo: document.querySelector("#assigned-to"),
     prospectNotes: document.querySelector("#prospect-notes"),
     contactHistoryType: document.querySelector("#contact-history-type"),
     contactHistoryDate: document.querySelector("#contact-history-date"),
@@ -774,6 +776,8 @@
       latestContactSummary(restaurant),
       labelFor(prospectStageLabels, restaurant.prospectStage, restaurant.prospectStage),
       restaurant.prospectScore,
+      restaurant.assignedTo,
+      restaurant.salesperson,
       restaurant.leadSource,
       restaurant.prospectNotes,
       restaurant.saleDate,
@@ -1007,9 +1011,22 @@
       .join(" / ");
   }
 
-  function restaurantOwner(id = "") {
-    const existing = state.restaurants.find((restaurant) => restaurant.id === id);
-    return existing?.salesperson || existing?.assignedTo || DEFAULT_OWNER;
+  function cleanSalesRep(value = "") {
+    const rep = String(value || "").trim();
+    return rep || DEFAULT_OWNER;
+  }
+
+  function salesRepOptions(selectedValue = DEFAULT_OWNER) {
+    const selected = cleanSalesRep(selectedValue);
+    const reps = SALES_REPS.includes(selected) ? SALES_REPS : [selected, ...SALES_REPS];
+    return reps.map((rep) => `
+      <option value="${escapeHtml(rep)}"${rep === selected ? " selected" : ""}>${escapeHtml(rep)}</option>
+    `).join("");
+  }
+
+  function repHelper(restaurant = {}) {
+    const rep = cleanSalesRep(restaurant.assignedTo || restaurant.salesperson || DEFAULT_OWNER);
+    return rep && rep !== DEFAULT_OWNER ? `Rep: ${rep}` : "";
   }
 
   function formattedAddress(restaurant) {
@@ -1144,6 +1161,7 @@
             <td>
               <button class="link-button strong-link" type="button" data-edit-id="${escapeHtml(restaurant.id)}">${escapeHtml(restaurant.name)}</button>
               <div class="helper">${escapeHtml(formattedAddress(restaurant) || "No address yet")}</div>
+              ${repHelper(restaurant) ? `<div class="helper">${escapeHtml(repHelper(restaurant))}</div>` : ""}
             </td>
             <td>${statusPill(restaurant.status)}</td>
             <td>${escapeHtml(contactName(restaurant) || "No contact yet")}</td>
@@ -1174,6 +1192,7 @@
             <td>
               <button class="link-button" type="button" data-contact-id="${escapeHtml(restaurant.id)}">${escapeHtml(restaurant.name)}</button>
               <div class="helper">${escapeHtml(formattedAddress(restaurant) || "No address yet")}</div>
+              ${repHelper(restaurant) ? `<div class="helper">${escapeHtml(repHelper(restaurant))}</div>` : ""}
             </td>
             <td>${escapeHtml(contactName(restaurant) || "")}</td>
             <td>${restaurant.contactEmail ? `<a href="mailto:${escapeHtml(restaurant.contactEmail)}">${escapeHtml(restaurant.contactEmail)}</a>` : ""}</td>
@@ -2349,6 +2368,8 @@
     elements.notes.value = restaurant ? record.notes : "";
     elements.prospectStage.value = restaurant ? record.prospectStage : "";
     elements.prospectScore.value = record.prospectScore || "";
+    elements.assignedTo.innerHTML = salesRepOptions(record.assignedTo || record.salesperson || DEFAULT_OWNER);
+    elements.assignedTo.value = cleanSalesRep(record.assignedTo || record.salesperson || DEFAULT_OWNER);
     elements.leadSource.value = restaurant ? record.leadSource : "";
     elements.prospectNotes.value = restaurant ? stripSecondContact(record.prospectNotes) : "";
     state.editingContactHistory = restaurant ? [...record.contactHistory] : [];
@@ -2410,7 +2431,7 @@
       prospectStage: elements.prospectStage.value,
       prospectScore: elements.prospectScore.value,
       leadSource: elements.leadSource.value,
-      assignedTo: restaurantOwner(elements.id.value),
+      assignedTo: cleanSalesRep(elements.assignedTo.value),
       prospectNotes: prospectNotesWithSecondContact(elements.prospectNotes.value, secondContactFromForm()),
       contactHistory: state.editingContactHistory,
       saleDate: elements.saleDate.value,
@@ -2422,7 +2443,7 @@
       setupFee: elements.setupFee.value,
       paymentStatus: elements.paymentStatus.value,
       firstInvoiceDate: elements.firstInvoiceDate.value,
-      salesperson: restaurantOwner(elements.id.value),
+      salesperson: cleanSalesRep(elements.assignedTo.value),
       setupStatus: elements.setupStatus.value,
       salesNotes: elements.salesNotes.value,
       updatedAt: new Date().toISOString(),
