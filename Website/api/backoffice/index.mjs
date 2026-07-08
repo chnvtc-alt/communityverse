@@ -4,8 +4,10 @@ import {
   deleteBackofficeExpense,
   deleteBackofficeRestaurant,
   fetchBackofficeData,
+  fetchDoyceEmailTemplate,
   importBackofficeBackup,
   saveBackofficeCollection,
+  saveDoyceEmailTemplate,
   saveBackofficeExpense,
   saveBackofficeRestaurant,
 } from "../_lib/backoffice-admin.mjs";
@@ -27,7 +29,11 @@ export async function GET(request) {
   if (blocked) return blocked;
 
   try {
-    return jsonResponse({ ok: true, ...(await fetchBackofficeData()) });
+    return jsonResponse({
+      ok: true,
+      ...(await fetchBackofficeData()),
+      doyceEmailTemplate: await fetchDoyceEmailTemplate(),
+    });
   } catch (error) {
     return jsonResponse({ ok: false, error: error instanceof Error ? error.message : String(error) }, 500);
   }
@@ -43,6 +49,10 @@ export async function POST(request) {
 
     if (action === "saveRestaurant") {
       return jsonResponse({ ok: true, restaurant: await saveBackofficeRestaurant(body.restaurant) });
+    }
+
+    if (action === "saveDoyceEmailTemplate") {
+      return jsonResponse({ ok: true, doyceEmailTemplate: await saveDoyceEmailTemplate(body.template) });
     }
 
     if (action === "deleteRestaurant") {

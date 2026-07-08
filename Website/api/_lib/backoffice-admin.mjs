@@ -2,6 +2,24 @@ import { randomUUID } from "node:crypto";
 import { supabaseRequest } from "./supabase.mjs";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const DOYCE_EMAIL_TEMPLATE_ID = "00000000-0000-4000-8000-00000000d0ce";
+const DOYCE_EMAIL_TEMPLATE_NAME = "__CommunityVerse Doyce Email Template";
+const DEFAULT_DOYCE_EMAIL_TEMPLATE = {
+  subject: "A quick trivia promotion idea for {restaurant}",
+  body: [
+    "Hi {contact},",
+    "",
+    "I wanted to reach out because CommunityVerse Games builds short Restaurant Challenge Trivia games for local restaurants.",
+    "",
+    "It gives guests a fun reason to play, share, and come back.",
+    "",
+    "Would you be open to a quick conversation?",
+    "",
+    "Best Wishes,",
+    "Doyce",
+    "CommunityVerse Games",
+  ].join("\n"),
+};
 
 function safeString(value) {
   return String(value || "").trim();
@@ -60,6 +78,10 @@ function existingUuid(value) {
 
 function contactNameFromLegacy(record = {}) {
   return safeString(record.contactPerson).split(/\s+/).filter(Boolean);
+}
+
+function isBackofficeSettingRecord(record = {}) {
+  return safeString(record.id) === DOYCE_EMAIL_TEMPLATE_ID || safeString(record.name) === DOYCE_EMAIL_TEMPLATE_NAME;
 }
 
 export function restaurantFromRecord(record = {}, contactHistory = []) {
@@ -251,10 +273,47 @@ export async function fetchBackofficeData() {
 
   return {
     restaurants: (Array.isArray(restaurantRows) ? restaurantRows : [])
+      .filter((row) => !isBackofficeSettingRecord(row))
       .map((row) => restaurantFromRecord(row, contactsByRestaurant.get(safeString(row.id)) || []))
       .filter((restaurant) => restaurant.name),
     collections: (Array.isArray(collectionRows) ? collectionRows : []).map(collectionFromRecord),
     expenses: (Array.isArray(expenseRows) ? expenseRows : []).map(expenseFromRecord),
+  };
+}
+
+export async function fetchDoyceEmailTemplate() {
+  const rows = await supabaseRequest(
+    `backoffice_restaurants?select=id,name,notes,prospect_notes&id=eq.${encodeURIComponent(DOYCE_EMAIL_TEMPLATE_ID)}`
+  );
+  const row = Array.isArray(rows) && rows.length ? rows[0] : null;
+  return {
+    subject: safeString(row?.notes) || DEFAULT_DOYCE_EMAIL_TEMPLATE.subject,
+    body: safeString(row?.prospect_notes) || DEFAULT_DOYCE_EMAIL_TEMPLATE.body,
+  };
+}
+
+export async function saveDoyceEmailTemplate(template = {}) {
+  const subject = safeString(template.subject) || DEFAULT_DOYCE_EMAIL_TEMPLATE.subject;
+  const body = safeString(template.body) || DEFAULT_DOYCE_EMAIL_TEMPLATE.body;
+  const record = {
+    id: DOYCE_EMAIL_TEMPLATE_ID,
+    name: DOYCE_EMAIL_TEMPLATE_NAME,
+    status: "paused",
+    notes: subject,
+    prospect_notes: body,
+    assigned_to: "Tim",
+    salesperson: "Tim",
+    updated_at: new Date().toISOString(),
+  };
+  const rows = await supabaseRequest("backoffice_restaurants?on_conflict=id", {
+    method: "POST",
+    headers: { Prefer: "resolution=merge-duplicates,return=representation" },
+    body: JSON.stringify([record]),
+  });
+  const saved = Array.isArray(rows) && rows.length ? rows[0] : record;
+  return {
+    subject: safeString(saved.notes) || subject,
+    body: safeString(saved.prospect_notes) || body,
   };
 }
 

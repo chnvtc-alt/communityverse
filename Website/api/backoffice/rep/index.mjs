@@ -1,5 +1,6 @@
 import { requireBackofficeRep } from "../../_lib/admin-auth.mjs";
 import {
+  fetchDoyceEmailTemplate,
   fetchBackofficeRepData,
   saveBackofficeRepRestaurant,
 } from "../../_lib/backoffice-admin.mjs";
@@ -21,7 +22,12 @@ export async function GET(request) {
   if (blocked) return blocked;
 
   try {
-    return jsonResponse({ ok: true, rep: REP_NAME, ...(await fetchBackofficeRepData(REP_NAME)) });
+    return jsonResponse({
+      ok: true,
+      rep: REP_NAME,
+      ...(await fetchBackofficeRepData(REP_NAME)),
+      emailTemplate: await fetchDoyceEmailTemplate(),
+    });
   } catch (error) {
     return jsonResponse({ ok: false, error: error instanceof Error ? error.message : String(error) }, 500);
   }

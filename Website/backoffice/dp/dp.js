@@ -2,6 +2,22 @@
   const API_URL = "/api/backoffice/rep";
   const KEY_STORAGE = "communityverseBackofficeRepDoyceKey";
   const REP_NAME = "Doyce";
+  const DEFAULT_EMAIL_TEMPLATE = {
+    subject: "A quick trivia promotion idea for {restaurant}",
+    body: [
+      "Hi {contact},",
+      "",
+      "I wanted to reach out because CommunityVerse Games builds short Restaurant Challenge Trivia games for local restaurants.",
+      "",
+      "It gives guests a fun reason to play, share, and come back.",
+      "",
+      "Would you be open to a quick conversation?",
+      "",
+      "Best Wishes,",
+      "Doyce",
+      "CommunityVerse Games",
+    ].join("\n"),
+  };
 
   const stageLabels = {
     "new-lead": "New Lead",
@@ -67,6 +83,7 @@
   const state = {
     key: localStorage.getItem(KEY_STORAGE) || "",
     restaurants: [],
+    emailTemplate: { ...DEFAULT_EMAIL_TEMPLATE },
     editingContactHistory: [],
   };
 
@@ -172,6 +189,7 @@
     state.restaurants = Array.isArray(data.restaurants)
       ? data.restaurants.map(normalizeRestaurant).filter((restaurant) => restaurant.name)
       : [];
+    state.emailTemplate = normalizeEmailTemplate(data.emailTemplate);
     setStatus("List updated");
     renderList();
   }
@@ -195,23 +213,29 @@
       .sort((left, right) => String(left.nextFollowUp || "9999-12-31").localeCompare(String(right.nextFollowUp || "9999-12-31")));
   }
 
+  function normalizeEmailTemplate(template = {}) {
+    return {
+      subject: String(template.subject || DEFAULT_EMAIL_TEMPLATE.subject),
+      body: String(template.body || DEFAULT_EMAIL_TEMPLATE.body),
+    };
+  }
+
+  function emailTemplateValue(value = "", restaurant = {}) {
+    const contact = contactName(restaurant) || "there";
+    const replacements = {
+      restaurant: restaurant.name || "your restaurant",
+      contact,
+      city: restaurant.city || "",
+      website: restaurant.website || "",
+    };
+    return String(value || "").replace(/\{(restaurant|contact|city|website)\}/gi, (_, key) => replacements[key.toLowerCase()] || "");
+  }
+
   function emailDraftUrl(restaurant = {}) {
     const to = String(restaurant.contactEmail || "").trim();
-    const subject = `A quick trivia promotion idea for ${restaurant.name || "your restaurant"}`;
-    const contact = contactName(restaurant) || "there";
-    const body = [
-      `Hi ${contact},`,
-      "",
-      "I wanted to reach out because CommunityVerse Games builds short Restaurant Challenge Trivia games for local restaurants.",
-      "",
-      "It gives guests a fun reason to play, share, and come back.",
-      "",
-      "Would you be open to a quick conversation?",
-      "",
-      "Best Wishes,",
-      "Doyce",
-      "CommunityVerse Games",
-    ].join("\n");
+    const template = normalizeEmailTemplate(state.emailTemplate);
+    const subject = emailTemplateValue(template.subject, restaurant);
+    const body = emailTemplateValue(template.body, restaurant);
     return `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   }
 

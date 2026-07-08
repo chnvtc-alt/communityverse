@@ -8,6 +8,22 @@
   const API_URL = "/api/backoffice";
   const DEFAULT_OWNER = "Tim";
   const SALES_REPS = ["Tim", "Doyce"];
+  const DEFAULT_DOYCE_EMAIL_TEMPLATE = {
+    subject: "A quick trivia promotion idea for {restaurant}",
+    body: [
+      "Hi {contact},",
+      "",
+      "I wanted to reach out because CommunityVerse Games builds short Restaurant Challenge Trivia games for local restaurants.",
+      "",
+      "It gives guests a fun reason to play, share, and come back.",
+      "",
+      "Would you be open to a quick conversation?",
+      "",
+      "Best Wishes,",
+      "Doyce",
+      "CommunityVerse Games",
+    ].join("\n"),
+  };
   const INVOICE_SENDER = {
     business: "CommunityVerse Games",
     street: "3155 Waterplace Cove",
@@ -159,6 +175,11 @@
     salesEmail1Body: document.querySelector("#sales-email-1-body"),
     resetSalesEmail1Button: document.querySelector("#reset-sales-email-1-button"),
     salesEmailTemplateStatus: document.querySelector("#sales-email-template-status"),
+    doyceEmailTemplateForm: document.querySelector("#doyce-email-template-form"),
+    doyceEmailSubject: document.querySelector("#doyce-email-subject"),
+    doyceEmailBody: document.querySelector("#doyce-email-body"),
+    resetDoyceEmailButton: document.querySelector("#reset-doyce-email-button"),
+    doyceEmailTemplateStatus: document.querySelector("#doyce-email-template-status"),
     leadBuilderForm: document.querySelector("#lead-builder-form"),
     leadBuilderState: document.querySelector("#lead-builder-state"),
     leadBuilderCounty: document.querySelector("#lead-builder-county"),
@@ -327,6 +348,7 @@
     pendingProspectImport: [],
     researchTarget: null,
     salesEmailTargetId: "",
+    doyceEmailTemplate: { ...DEFAULT_DOYCE_EMAIL_TEMPLATE },
     loading: false,
     restaurantSortKey: "followup",
     restaurantSortDirection: "asc",
@@ -591,6 +613,24 @@
     }
   }
 
+  function normalizeEmailTemplate(template = {}, fallback = DEFAULT_DOYCE_EMAIL_TEMPLATE) {
+    return {
+      subject: String(template.subject || fallback.subject),
+      body: String(template.body || fallback.body),
+    };
+  }
+
+  function fillDoyceEmailTemplateForm(template = state.doyceEmailTemplate) {
+    const normalized = normalizeEmailTemplate(template, DEFAULT_DOYCE_EMAIL_TEMPLATE);
+    state.doyceEmailTemplate = normalized;
+    if (elements.doyceEmailSubject) {
+      elements.doyceEmailSubject.value = normalized.subject;
+    }
+    if (elements.doyceEmailBody) {
+      elements.doyceEmailBody.value = normalized.body;
+    }
+  }
+
   function saveRestaurants() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.restaurants, null, 2));
   }
@@ -630,6 +670,7 @@
       elements.clearPastedLeadsButton,
       elements.openResearchSearchesButton,
       elements.resetSalesEmail1Button,
+      elements.resetDoyceEmailButton,
     ].forEach((element) => {
       if (element) element.disabled = loading;
     });
@@ -677,8 +718,10 @@
       : [];
     state.collections = Array.isArray(data.collections) ? data.collections.map(normalizeCollection) : [];
     state.expenses = Array.isArray(data.expenses) ? data.expenses.map(normalizeExpense) : [];
+    state.doyceEmailTemplate = normalizeEmailTemplate(data.doyceEmailTemplate, DEFAULT_DOYCE_EMAIL_TEMPLATE);
     cacheBackofficeData();
     render();
+    fillDoyceEmailTemplateForm();
     fillNextInvoiceNumber();
   }
 
@@ -4103,6 +4146,38 @@
     window.setTimeout(() => {
       elements.salesEmailTemplateStatus.textContent = "";
     }, 1800);
+  });
+  elements.doyceEmailTemplateForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const template = normalizeEmailTemplate({
+      subject: elements.doyceEmailSubject.value.trim(),
+      body: elements.doyceEmailBody.value.trim(),
+    }, DEFAULT_DOYCE_EMAIL_TEMPLATE);
+    try {
+      const data = await saveAction("saveDoyceEmailTemplate", { template }, "Saved Doyce email template");
+      state.doyceEmailTemplate = normalizeEmailTemplate(data?.doyceEmailTemplate, template);
+      fillDoyceEmailTemplateForm();
+      elements.doyceEmailTemplateStatus.textContent = "Saved";
+    } catch (error) {
+      elements.doyceEmailTemplateStatus.textContent = error instanceof Error ? error.message : "Could not save";
+    }
+    window.setTimeout(() => {
+      elements.doyceEmailTemplateStatus.textContent = "";
+    }, 2200);
+  });
+  elements.resetDoyceEmailButton.addEventListener("click", async () => {
+    fillDoyceEmailTemplateForm(DEFAULT_DOYCE_EMAIL_TEMPLATE);
+    try {
+      const data = await saveAction("saveDoyceEmailTemplate", { template: DEFAULT_DOYCE_EMAIL_TEMPLATE }, "Reset Doyce email template");
+      state.doyceEmailTemplate = normalizeEmailTemplate(data?.doyceEmailTemplate, DEFAULT_DOYCE_EMAIL_TEMPLATE);
+      fillDoyceEmailTemplateForm();
+      elements.doyceEmailTemplateStatus.textContent = "Reset";
+    } catch (error) {
+      elements.doyceEmailTemplateStatus.textContent = error instanceof Error ? error.message : "Could not reset";
+    }
+    window.setTimeout(() => {
+      elements.doyceEmailTemplateStatus.textContent = "";
+    }, 2200);
   });
   elements.status.addEventListener("change", updateSaleDetailsVisibility);
   elements.quickContactForm.addEventListener("submit", saveQuickContact);

@@ -238,6 +238,24 @@
                 </div>
               </form>
             </details>
+            <details class="sales-email-template-panel">
+              <summary>Doyce Email Template</summary>
+              <form class="sales-email-template-form" id="doyce-email-template-form">
+                <label>
+                  Subject
+                  <input id="doyce-email-subject" />
+                </label>
+                <label class="form-span">
+                  Email
+                  <textarea id="doyce-email-body" rows="8"></textarea>
+                </label>
+                <div class="lead-builder-actions form-span">
+                  <button class="button button-primary" type="submit">Save Doyce Template</button>
+                  <button class="button button-muted" id="reset-doyce-email-button" type="button">Reset</button>
+                  <span class="inline-status" id="doyce-email-template-status" role="status"></span>
+                </div>
+              </form>
+            </details>
             <div class="table-wrap">
               <table>
                 <thead>
@@ -1073,6 +1091,6 @@
 
     <input id="import-file" type="file" accept="application/json" hidden />
     <input id="prospect-import-file" type="file" accept=".csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" hidden />
-    <script src="/backoffice/app.js?v=backoffice-v90" defer></script>
+    <script src="/backoffice/app.js?v=backoffice-v91" defer></script>
   </body>
 </html>
