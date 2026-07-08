@@ -294,7 +294,6 @@
               <td>
                 <button class="link-button strong-link" type="button" data-edit-id="${escapeHtml(restaurant.id)}">${escapeHtml(restaurant.name)}</button>
                 <div class="helper">${escapeHtml(formattedAddress(restaurant) || "No address yet")}</div>
-                <div class="helper">${escapeHtml(latestContactSummary(restaurant))}</div>
               </td>
               <td>
                 ${escapeHtml(contactName(restaurant) || "")}
