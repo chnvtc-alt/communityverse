@@ -83,7 +83,11 @@ function cleanSentence(value) {
     .replace(/\.+$/g, "");
 }
 
-function buildPageDescription(restaurant, title, page) {
+function buildPageDescription(restaurant, title, page, options = {}) {
+  if (page === "play" && options.multiplayerInvite) {
+    return `You have been invited to play a multiplayer Restaurant Challenge trivia game for ${title}. Press the link to join the room.`;
+  }
+
   const restaurantName = cleanSentence(restaurant.name);
   const location = cleanSentence(restaurant.location);
   const restaurantDescription = cleanSentence(restaurant.description);
@@ -189,7 +193,9 @@ export async function GET(request) {
   const path = page === "play" ? `/${restaurant.slug}/play` : `/${restaurant.slug}`;
   const canonicalUrl = absoluteUrl(origin, path);
   const title = restaurant.publicGameName || `${restaurant.name} Game`;
-  const description = buildPageDescription(restaurant, title, page);
+  const description = buildPageDescription(restaurant, title, page, {
+    multiplayerInvite: Boolean(url.searchParams.get("room")),
+  });
   const imageUrl = absoluteUrl(origin, restaurant.heroImage || restaurant.logoSquare || "");
   const structuredData = buildStructuredData({
     restaurant,

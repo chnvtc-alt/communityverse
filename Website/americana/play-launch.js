@@ -812,7 +812,12 @@
   }
 
   function multiplayerShareText(roomCode) {
-    return `Join my Restaurant Challenge room ${String(roomCode || "").toUpperCase()}.`;
+    const safeRoomCode = String(roomCode || "").toUpperCase();
+    return `You have been invited to play a multiplayer Restaurant Challenge trivia game.\nRoom code: ${safeRoomCode}\nPress the link above to join.`;
+  }
+
+  function multiplayerShareMessage(roomCode, shareUrl) {
+    return `${shareUrl}\n\n${multiplayerShareText(roomCode)}`;
   }
 
   async function loadMultiplayerRoom(roomCode) {
@@ -1647,7 +1652,7 @@
           </div>
           <div class="button-row">
             <button class="button button-hot" id="share-multiplayer-room-button" type="button">Share Invite</button>
-            <button class="button button-muted" id="copy-multiplayer-room-button" type="button">Copy Link</button>
+            <button class="button button-muted" id="copy-multiplayer-room-button" type="button">Copy Invite</button>
             ${liveWaiting && isHost ? `<button class="button button-hot" id="start-live-round-button" type="button" ${state.multiplayerLoading ? "disabled" : ""}>Start Live Round</button>` : ""}
           </div>
         `;
@@ -1768,8 +1773,8 @@
       if (!navigator.clipboard?.writeText) {
         throw new Error("Clipboard is unavailable.");
       }
-      await navigator.clipboard.writeText(shareUrl);
-      state.multiplayerMessage = "Invite link copied.";
+      await navigator.clipboard.writeText(multiplayerShareMessage(roomCode, shareUrl));
+      state.multiplayerMessage = "Invite message copied.";
     } catch (error) {
       state.multiplayerMessage = "Copy the invite link from the box above.";
     }
@@ -1784,8 +1789,7 @@
     }
     const shareData = {
       title: "Restaurant Challenge room",
-      text: multiplayerShareText(roomCode),
-      url: shareUrl,
+      text: multiplayerShareMessage(roomCode, shareUrl),
     };
     if (navigator.share) {
       try {
