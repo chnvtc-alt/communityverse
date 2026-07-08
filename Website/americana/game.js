@@ -1222,15 +1222,20 @@
           ? `<p class="copy multiplayer-results-note">No series scores yet. This will update after Game 1.</p>`
           : "";
       }
-      const finalSeries = currentSeriesGame() >= seriesTotalGames() && state.multiplayerRoom?.liveStatus === "completed";
+      const finalSeries = currentSeriesGame() >= seriesTotalGames()
+        && (state.multiplayerRoom?.liveStatus === "completed" || roomPlayersCompletedCurrentGame());
       const topTotal = Math.max(...seriesPlayers.map((player) => Number(player.seriesTotalScore) || 0));
       const leaders = seriesPlayers.filter((player) => (Number(player.seriesTotalScore) || 0) === topTotal);
       const leaderNames = leaders.map((player) => player.displayName || "Player").join(", ");
+      const resultHeading = finalSeries
+        ? leaders.length > 1 ? "Series Tie" : "Series Winner"
+        : leaders.length > 1 ? "Series Leaders" : "Series Leader";
+      const totalLabel = finalSeries && leaders.length > 1 ? "Tie total" : "Top total";
       return `
         <div class="multiplayer-winner-panel">
-          <p class="kicker">${finalSeries ? "Series Results" : `Series Standings After Game ${Math.max(1, currentSeriesGame() - (state.multiplayerRoom?.liveStatus === "waiting" ? 1 : 0))}`}</p>
-          <h3 class="section-title">${finalSeries ? (leaders.length > 1 ? "Series Winners" : "Series Winner") : (leaders.length > 1 ? "Series Leaders" : "Series Leader")}: ${escapeHtml(leaderNames)}</h3>
-          <p class="copy">Top total: ${topTotal}/${seriesTotalGames() * 10} correct</p>
+          <p class="kicker">${finalSeries ? "Final Series Results" : `Series Standings After Game ${Math.max(1, currentSeriesGame() - (state.multiplayerRoom?.liveStatus === "waiting" ? 1 : 0))}`}</p>
+          <h3 class="section-title">${resultHeading}: ${escapeHtml(leaderNames)}</h3>
+          <p class="copy">${totalLabel}: ${topTotal}/${seriesTotalGames() * 10} correct</p>
         </div>
       `;
     }
@@ -1704,9 +1709,14 @@
     const isHost = Boolean(state.multiplayerPlayer?.host);
     const liveWaiting = isLiveRoom && room?.liveStatus === "waiting";
     const liveActive = isLiveRoom && room?.liveStatus === "active";
+    const seriesRoom = isSeriesRoom();
+    const finalSeriesGame = seriesRoom && currentSeriesGame() >= seriesTotalGames();
+    const finalSeriesComplete = finalSeriesGame && roomPlayersCompletedCurrentGame();
     const includeWinnerInRoomCard = !(showGroupResults && activeSession?.completed);
     const liveStatusMarkup = isLiveRoom
-      ? liveWaiting
+      ? finalSeriesComplete
+        ? `<p class="helper" style="margin: 0 0 12px;">Final series results are ready.</p>`
+        : liveWaiting
         ? `<p class="helper" style="margin: 0 0 12px;">Live Round is waiting for the host to start. Everyone will get each question together.</p>`
         : liveActive
           ? `<p class="helper" style="margin: 0 0 12px;">Live question ${Math.min((Number(room.currentQuestionIndex) || 0) + 1, (room.questionIds || []).length || 10)} is running. About ${liveRoomTimeLeftSeconds()} seconds left.</p>`
@@ -1755,8 +1765,6 @@
 
     if (room && state.multiplayerPlayer) {
       const roomFinished = showGroupResults;
-      const seriesRoom = isSeriesRoom();
-      const finalSeriesGame = seriesRoom && currentSeriesGame() >= seriesTotalGames();
       const seriesGameCompleted = seriesRoom && room?.liveStatus === "completed";
       const canPrepareNextSeriesGame = seriesRoom && (seriesGameCompleted || roomPlayersCompletedCurrentGame()) && !finalSeriesGame && isHost;
       const liveWaitingHostInstructions = liveWaiting && isHost
