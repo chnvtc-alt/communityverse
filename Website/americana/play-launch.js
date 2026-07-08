@@ -2776,6 +2776,8 @@
     const isGuest = Boolean(profile && profile.isGuest);
     const salesDemoMode = isSalesDemoMode();
     const demoCharacterUnlocked = salesDemoMode && ["favorite", "regular", "occasional"].includes(session.result);
+    const unlockedThisRound = ["favorite", "regular", "occasional"].includes(session.result);
+    const hadUnlockedBefore = ["favorite", "regular", "occasional"].includes(session.previousCustomerStatus);
     const isFourthGame = Number(overallSummary?.stats?.gamesPlayed) === 4;
     const resultLayoutMode = isGuest
       ? (state.showProfileForm ? "register-form" : "guest-prompt")
@@ -2796,6 +2798,8 @@
         ? "Favorite earned"
         : favoriteProgress?.wasEligible && favoriteProgress.successful
           ? "Bonus progress"
+        : favoriteProgress?.wasEligible || (hadUnlockedBefore && session.result === "lost")
+          ? "Still in your collection"
           : session.result === "regular" || session.result === "occasional"
         ? "Congratulations"
           : "Better luck next time";
@@ -2810,10 +2814,18 @@
           ? "Favorite Progress +1"
         : favoriteProgress?.wasEligible
           ? "Favorite Progress Missed"
+        : hadUnlockedBefore && session.result === "lost"
+          ? "Already Collected"
             : session.result === "regular" || session.result === "occasional"
               ? "Character Unlocked"
               : "Character Not Unlocked";
     const customerValue = Math.max(0, Number(session.customerValue) || 0);
+    const resultCollectionButtonText = unlockedThisRound || hadUnlockedBefore
+      ? "View My Collection"
+      : "View My Restaurant";
+    const resultAwardSummary = customerValue > 0
+      ? `Score ${session.score}/${session.questions.length} • Reward ${core.formatCurrency(customerValue)}`
+      : `Score ${session.score}/${session.questions.length}`;
     const resultAwardMarkup = salesDemoMode
       ? `
           <div class="result-banner result-award-card result-banner-demo">
@@ -2838,10 +2850,10 @@
               <img class="result-customer-image" src="${session.customer.image}" alt="${escapeHtml(session.customer.name)}" />
               <div class="result-customer-copy">
                 <p class="customer-bio">${escapeHtml(customerBioPreview.text)}</p>
-                <span class="button button-muted result-collection-button">View My Collection</span>
+                <span class="button button-muted result-collection-button">${escapeHtml(resultCollectionButtonText)}</span>
               </div>
             </div>
-            <p class="result-award-summary">Score ${session.score}/${session.questions.length} • Reward ${core.formatCurrency(customerValue)}</p>
+            <p class="result-award-summary">${escapeHtml(resultAwardSummary)}</p>
           </a>
         `;
     const triviaLeaderboardMilestoneMarkup =
@@ -2881,7 +2893,7 @@
             ? `
               <div class="hero-card result-followup-card result-followup-card-guest" style="margin-top: 0; padding: 16px;">
                 <p class="kicker" style="margin: 0 0 6px;">${isFourthGame ? "Trivia % Leaderboard" : salesDemoMode ? "Save Demo Progress" : "Save Your Character Collection"}</p>
-                <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${isFourthGame ? "Congratulations! You completed your 4th game." : salesDemoMode ? "Keep your demo score." : `You just unlocked ${escapeHtml(session.customer.name)}.`}</h3>
+                <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${isFourthGame ? "Congratulations! You completed your 4th game." : salesDemoMode ? "Keep your demo score." : unlockedThisRound ? `You just unlocked ${escapeHtml(session.customer.name)}.` : hadUnlockedBefore ? `${escapeHtml(session.customer.name)} is still in your collection.` : `You did not unlock ${escapeHtml(session.customer.name)} this time.`}</h3>
                 <p class="copy" style="margin: 0 0 12px;">${isFourthGame ? "Save your restaurant to view and keep your Trivia % leaderboard progress so far. No email required." : salesDemoMode ? "Save your demo progress if you want to see how profiles and leaderboards can work." : "Save your collection to keep and view your existing characters, track your trivia progress, and compete on the leaderboards. No email address is required."}</p>
                 <div class="button-row">
                   <button class="button button-hot result-save-progress-button" id="register-now-button" type="button">

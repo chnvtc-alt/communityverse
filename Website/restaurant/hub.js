@@ -2223,7 +2223,9 @@
       return;
     }
 
-    const collectionSource = Array.isArray(profile.customerCollection) ? profile.customerCollection : [];
+    const collectionSource = Array.isArray(profile.customerCollection)
+      ? profile.customerCollection.filter((entry) => ["favorite", "regular", "occasional"].includes(entry?.status))
+      : [];
     const collection = [...collectionSource].sort((left, right) =>
       String(right.dateWon).localeCompare(String(left.dateWon))
     );
