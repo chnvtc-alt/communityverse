@@ -53,6 +53,7 @@
     dialog: document.querySelector("#prospect-dialog"),
     form: document.querySelector("#prospect-form"),
     dialogTitle: document.querySelector("#dialog-title"),
+    dialogCardLinks: document.querySelector("#dialog-card-links"),
     closeDialogButton: document.querySelector("#close-dialog-button"),
     cancelDialogButton: document.querySelector("#cancel-dialog-button"),
     formError: document.querySelector("#form-error"),
@@ -253,10 +254,7 @@
     const restaurants = filteredRestaurants();
     elements.prospectCount.textContent = `${restaurants.length} ${restaurants.length === 1 ? "record" : "records"}`;
     elements.prospectList.innerHTML = restaurants.length
-      ? restaurants.map((restaurant) => {
-          const website = externalUrl(restaurant.website);
-          const facebook = externalUrl(restaurant.facebookPage);
-          return `
+      ? restaurants.map((restaurant) => `
             <tr>
               <td>
                 <button class="link-button strong-link" type="button" data-edit-id="${escapeHtml(restaurant.id)}">${escapeHtml(restaurant.name)}</button>
@@ -268,12 +266,9 @@
                 <div class="helper">${restaurant.contactEmail ? `<a href="mailto:${escapeHtml(restaurant.contactEmail)}">${escapeHtml(restaurant.contactEmail)}</a>` : "No email"}</div>
                 <div class="helper">${escapeHtml(restaurant.contactCell || restaurant.phone || "")}</div>
               </td>
-              <td>${escapeHtml(labelFor(stageLabels, restaurant.prospectStage, "New Lead"))}<div class="helper">Score ${escapeHtml(restaurant.prospectScore || "5")}</div></td>
+              <td>${escapeHtml(labelFor(stageLabels, restaurant.prospectStage, "New Lead"))}</td>
+              <td><strong>${escapeHtml(restaurant.prospectScore || "5")}</strong></td>
               <td>${escapeHtml(restaurant.nextFollowUp || "")}</td>
-              <td>
-                ${website ? `<a class="text-button" href="${escapeHtml(website)}" target="_blank" rel="noopener">Website</a>` : ""}
-                ${facebook ? `<a class="text-button" href="${escapeHtml(facebook)}" target="_blank" rel="noopener">Facebook</a>` : ""}
-              </td>
               <td>
                 <a class="text-button" href="${escapeHtml(researchUrl(restaurant))}" target="_blank" rel="noopener">Google</a>
               </td>
@@ -281,9 +276,22 @@
                 ${restaurant.contactEmail ? `<a class="text-button" href="${escapeHtml(emailDraftUrl(restaurant))}">Doyce Email</a>` : '<span class="helper">No email</span>'}
               </td>
             </tr>
-          `;
-        }).join("")
+          `).join("")
       : '<tr><td colspan="7"><div class="empty-state">No Doyce prospects match this search.</div></td></tr>';
+  }
+
+  function renderDialogLinks(restaurant = null) {
+    if (!restaurant) {
+      elements.dialogCardLinks.innerHTML = "";
+      return;
+    }
+    const website = externalUrl(restaurant.website);
+    const facebook = externalUrl(restaurant.facebookPage);
+    elements.dialogCardLinks.innerHTML = [
+      website ? `<a href="${escapeHtml(website)}" target="_blank" rel="noopener">Website</a>` : "",
+      facebook ? `<a href="${escapeHtml(facebook)}" target="_blank" rel="noopener">Facebook</a>` : "",
+      `<a href="${escapeHtml(researchUrl(restaurant))}" target="_blank" rel="noopener">Google</a>`,
+    ].filter(Boolean).join(" ");
   }
 
   function renderContactHistory() {
@@ -301,6 +309,7 @@
   function fillForm(restaurant = null) {
     const record = normalizeRestaurant(restaurant || {});
     elements.dialogTitle.textContent = restaurant ? "Edit Prospect" : "Add Prospect";
+    renderDialogLinks(restaurant ? record : null);
     elements.id.value = restaurant ? record.id : "";
     elements.name.value = restaurant ? record.name : "";
     elements.street.value = restaurant ? record.street : "";
