@@ -641,10 +641,32 @@
         </section>
 
         <section class="section-view" id="commissions-section" hidden>
-          <section class="placeholder-panel">
-            <p class="eyebrow">Commissions</p>
-            <h3>Track salesperson commissions here.</h3>
-            <p>Good first fields: salesperson, restaurant, sale amount, commission rate, amount owed, and paid date.</p>
+          <section class="card table-card">
+            <div class="card-heading">
+              <div>
+                <p class="eyebrow">Commissions</p>
+                <h3>Commission tracking</h3>
+                <p class="helper">Calculated from invoices marked Paid. Enter the collected amount after any credit card fee.</p>
+              </div>
+              <p class="helper" id="commissions-summary">No paid invoices yet.</p>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Restaurant</th>
+                    <th>Sales Rep</th>
+                    <th>Paid Date</th>
+                    <th>Collected</th>
+                    <th>Rate</th>
+                    <th>Commission</th>
+                    <th>Invoice</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody id="commissions-list"></tbody>
+              </table>
+            </div>
           </section>
         </section>
       </main>
@@ -1099,6 +1121,6 @@
 
     <input id="import-file" type="file" accept="application/json" hidden />
     <input id="prospect-import-file" type="file" accept=".csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" hidden />
-    <script src="/backoffice/app.js?v=backoffice-v92" defer></script>
+    <script src="/backoffice/app.js?v=backoffice-v93" defer></script>
   </body>
 </html>

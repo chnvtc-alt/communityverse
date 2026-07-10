@@ -220,6 +220,8 @@
     collectionPaidDate: document.querySelector("#collection-paid-date"),
     collectionNotes: document.querySelector("#collection-notes"),
     collectionsList: document.querySelector("#collections-list"),
+    commissionsList: document.querySelector("#commissions-list"),
+    commissionsSummary: document.querySelector("#commissions-summary"),
     invoiceTemplateMonth: document.querySelector("#invoice-template-month"),
     invoiceTemplateType: document.querySelector("#invoice-template-type"),
     invoiceTemplateDescription: document.querySelector("#invoice-template-description"),
@@ -2385,6 +2387,76 @@
       : '<tr><td colspan="8"><div class="empty-state">No collection records yet.</div></td></tr>';
   }
 
+  function restaurantForCollection(collection = {}) {
+    return state.restaurants.find((restaurant) => restaurant.id === collection.restaurantId)
+      || state.restaurants.find((restaurant) =>
+        restaurant.name.toLowerCase() === String(collection.restaurantName || "").trim().toLowerCase()
+      )
+      || null;
+  }
+
+  function addMonths(dateValue = "", months = 0) {
+    const date = new Date(`${dateValue}T00:00:00`);
+    if (Number.isNaN(date.getTime())) return "";
+    date.setMonth(date.getMonth() + months);
+    return date.toISOString().slice(0, 10);
+  }
+
+  function commissionRateFor(restaurant = {}, collection = {}) {
+    const startDate = restaurant.serviceStartDate || restaurant.saleDate || collection.dueDate || collection.paidDate || "";
+    const collectedDate = collection.paidDate || collection.dueDate || startDate;
+    const secondYearStart = addMonths(startDate, 12);
+    return secondYearStart && collectedDate >= secondYearStart ? 0.25 : 0.5;
+  }
+
+  function commissionRows() {
+    return state.collections
+      .filter((collection) => collection.status === "paid")
+      .map((collection) => {
+        const restaurant = restaurantForCollection(collection);
+        const collected = numberFromMoney(collection.amount, 0);
+        const rate = commissionRateFor(restaurant || {}, collection);
+        return {
+          collection,
+          restaurant,
+          rep: cleanSalesRep(restaurant?.assignedTo || restaurant?.salesperson || DEFAULT_OWNER),
+          collected,
+          rate,
+          commission: Math.round(collected * rate * 100) / 100,
+        };
+      })
+      .sort((left, right) =>
+        String(right.collection.paidDate || right.collection.dueDate || "").localeCompare(String(left.collection.paidDate || left.collection.dueDate || "")) ||
+        left.rep.localeCompare(right.rep) ||
+        String(left.collection.restaurantName || "").localeCompare(String(right.collection.restaurantName || ""))
+      );
+  }
+
+  function renderCommissions() {
+    const rows = commissionRows();
+    const totalCollected = rows.reduce((total, row) => total + row.collected, 0);
+    const totalCommission = rows.reduce((total, row) => total + row.commission, 0);
+    elements.commissionsSummary.textContent = rows.length
+      ? `${rows.length} paid ${rows.length === 1 ? "invoice" : "invoices"} / ${moneyValue(totalCollected)} collected / ${moneyValue(totalCommission)} commission owed`
+      : "No paid invoices yet.";
+    elements.commissionsList.innerHTML = rows.length
+      ? rows.map((row) => `
+          <tr>
+            <td>
+              <strong>${escapeHtml(row.restaurant?.name || row.collection.restaurantName || "Unknown restaurant")}</strong>
+            </td>
+            <td>${escapeHtml(row.rep)}</td>
+            <td>${escapeHtml(shortDate(row.collection.paidDate || row.collection.dueDate))}</td>
+            <td>${escapeHtml(moneyValue(row.collected))}</td>
+            <td>${row.rate === 0.5 ? "50% first 12 months" : "25% after year 1"}</td>
+            <td><strong>${escapeHtml(moneyValue(row.commission))}</strong></td>
+            <td>${escapeHtml(row.collection.invoiceNumber || "")}</td>
+            <td>${escapeHtml(invoiceTableNote(row.collection.notes))}</td>
+          </tr>
+        `).join("")
+      : '<tr><td colspan="8"><div class="empty-state">No commissions yet. Mark an invoice Paid after money is collected.</div></td></tr>';
+  }
+
   function collectionStatusOptions(selectedStatus = "") {
     return Object.entries(collectionStatusLabels).map(([value, label]) => `
       <option value="${escapeHtml(value)}"${value === selectedStatus ? " selected" : ""}>${escapeHtml(label)}</option>
@@ -2496,6 +2568,7 @@
     renderProspects();
     renderSales();
     renderCollections();
+    renderCommissions();
     renderExpenses();
   }
 
@@ -2915,7 +2988,7 @@
     elements.collectionForm.reset();
     elements.collectionInvoice.value = nextInvoiceNumber();
     elements.collectionStatus.value = "not-sent";
-    renderCollections();
+    render();
   }
 
   function editCollection(id) {
@@ -2953,7 +3026,7 @@
     );
     state.editingCollectionId = "";
     cacheBackofficeData();
-    renderCollections();
+    render();
   }
 
   async function deleteCollection(id) {
@@ -2966,7 +3039,7 @@
       state.editingCollectionId = "";
     }
     cacheBackofficeData();
-    renderCollections();
+    render();
   }
 
   async function sendInvoiceEmail(id, { test = false } = {}) {
