@@ -454,16 +454,39 @@ function repRestaurantPublic(restaurant = {}, repName = "") {
     assignedTo: repName,
     prospectNotes: restaurant.prospectNotes,
     contactHistory: restaurant.contactHistory,
+    saleDate: restaurant.saleDate,
+    packageName: restaurant.packageName,
+    gameName: restaurant.gameName,
+    serviceStartDate: restaurant.serviceStartDate,
+    serviceEndDate: restaurant.serviceEndDate,
+    monthlyAmount: restaurant.monthlyAmount,
+    setupFee: restaurant.setupFee,
+    paymentStatus: restaurant.paymentStatus,
+    firstInvoiceDate: restaurant.firstInvoiceDate,
+    salesperson: repName,
+    setupStatus: restaurant.setupStatus,
+    salesNotes: restaurant.salesNotes,
   };
 }
 
 export async function fetchBackofficeRepData(repName = "") {
   const rep = safeString(repName);
   const data = await fetchBackofficeData();
+  const repRestaurants = data.restaurants.filter((restaurant) => repOwnsRestaurant(restaurant, rep));
+  const repRestaurantIds = new Set(repRestaurants.map((restaurant) => restaurant.id).filter(Boolean));
+  const repRestaurantNames = new Set(repRestaurants.map((restaurant) => comparableText(restaurant.name)).filter(Boolean));
   return {
-    restaurants: data.restaurants
-      .filter((restaurant) => restaurant.status === "prospect" && repOwnsRestaurant(restaurant, rep))
+    restaurants: repRestaurants
+      .filter((restaurant) => restaurant.status === "prospect")
       .map((restaurant) => repRestaurantPublic(restaurant, rep)),
+    sales: repRestaurants
+      .filter((restaurant) => restaurant.status === "customer")
+      .map((restaurant) => repRestaurantPublic(restaurant, rep)),
+    collections: data.collections
+      .filter((collection) =>
+        repRestaurantIds.has(collection.restaurantId) ||
+        repRestaurantNames.has(comparableText(collection.restaurantName))
+      ),
   };
 }
 

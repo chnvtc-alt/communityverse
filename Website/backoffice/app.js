@@ -2387,14 +2387,6 @@
       : '<tr><td colspan="8"><div class="empty-state">No collection records yet.</div></td></tr>';
   }
 
-  function restaurantForCollection(collection = {}) {
-    return state.restaurants.find((restaurant) => restaurant.id === collection.restaurantId)
-      || state.restaurants.find((restaurant) =>
-        restaurant.name.toLowerCase() === String(collection.restaurantName || "").trim().toLowerCase()
-      )
-      || null;
-  }
-
   function addMonths(dateValue = "", months = 0) {
     const date = new Date(`${dateValue}T00:00:00`);
     if (Number.isNaN(date.getTime())) return "";
@@ -2409,52 +2401,77 @@
     return secondYearStart && collectedDate >= secondYearStart ? 0.25 : 0.5;
   }
 
-  function commissionRows() {
+  function collectionsForRestaurant(restaurant = {}) {
+    const nameKey = String(restaurant.name || "").trim().toLowerCase();
     return state.collections
+      .filter((collection) =>
+        (restaurant.id && collection.restaurantId === restaurant.id) ||
+        (nameKey && String(collection.restaurantName || "").trim().toLowerCase() === nameKey)
+      );
+  }
+
+  function expectedFirstYearCommission(restaurant = {}) {
+    const setupFee = numberFromMoney(restaurant.setupFee, 0);
+    const monthlyAmount = numberFromMoney(restaurant.monthlyAmount, 0);
+    return Math.round((setupFee + monthlyAmount * 12) * 0.5 * 100) / 100;
+  }
+
+  function paidCommissionForRestaurant(restaurant = {}) {
+    return collectionsForRestaurant(restaurant)
       .filter((collection) => collection.status === "paid")
-      .map((collection) => {
-        const restaurant = restaurantForCollection(collection);
+      .reduce((totals, collection) => {
         const collected = numberFromMoney(collection.amount, 0);
-        const rate = commissionRateFor(restaurant || {}, collection);
+        const rate = commissionRateFor(restaurant, collection);
+        totals.collected += collected;
+        totals.commission += Math.round(collected * rate * 100) / 100;
+        return totals;
+      }, { collected: 0, commission: 0 });
+  }
+
+  function commissionRows() {
+    return state.restaurants
+      .filter((restaurant) => restaurant.status === "customer")
+      .map((restaurant) => {
+        const paid = paidCommissionForRestaurant(restaurant);
         return {
-          collection,
           restaurant,
-          rep: cleanSalesRep(restaurant?.assignedTo || restaurant?.salesperson || DEFAULT_OWNER),
-          collected,
-          rate,
-          commission: Math.round(collected * rate * 100) / 100,
+          rep: cleanSalesRep(restaurant.assignedTo || restaurant.salesperson || DEFAULT_OWNER),
+          expected: expectedFirstYearCommission(restaurant),
+          collected: paid.collected,
+          due: Math.round(paid.commission * 100) / 100,
         };
       })
       .sort((left, right) =>
-        String(right.collection.paidDate || right.collection.dueDate || "").localeCompare(String(left.collection.paidDate || left.collection.dueDate || "")) ||
+        String(right.restaurant.saleDate || right.restaurant.serviceStartDate || "").localeCompare(String(left.restaurant.saleDate || left.restaurant.serviceStartDate || "")) ||
         left.rep.localeCompare(right.rep) ||
-        String(left.collection.restaurantName || "").localeCompare(String(right.collection.restaurantName || ""))
+        String(left.restaurant.name || "").localeCompare(String(right.restaurant.name || ""))
       );
   }
 
   function renderCommissions() {
     const rows = commissionRows();
     const totalCollected = rows.reduce((total, row) => total + row.collected, 0);
-    const totalCommission = rows.reduce((total, row) => total + row.commission, 0);
+    const totalExpected = rows.reduce((total, row) => total + row.expected, 0);
+    const totalDue = rows.reduce((total, row) => total + row.due, 0);
     elements.commissionsSummary.textContent = rows.length
-      ? `${rows.length} paid ${rows.length === 1 ? "invoice" : "invoices"} / ${moneyValue(totalCollected)} collected / ${moneyValue(totalCommission)} commission owed`
-      : "No paid invoices yet.";
+      ? `${rows.length} ${rows.length === 1 ? "sale" : "sales"} / ${moneyValue(totalExpected)} expected / ${moneyValue(totalCollected)} collected / ${moneyValue(totalDue)} due`
+      : "No customer sales yet.";
     elements.commissionsList.innerHTML = rows.length
       ? rows.map((row) => `
           <tr>
             <td>
-              <strong>${escapeHtml(row.restaurant?.name || row.collection.restaurantName || "Unknown restaurant")}</strong>
+              <strong>${escapeHtml(row.restaurant.name || "Unknown restaurant")}</strong>
             </td>
             <td>${escapeHtml(row.rep)}</td>
-            <td>${escapeHtml(shortDate(row.collection.paidDate || row.collection.dueDate))}</td>
-            <td>${escapeHtml(moneyValue(row.collected))}</td>
-            <td>${row.rate === 0.5 ? "50% first 12 months" : "25% after year 1"}</td>
-            <td><strong>${escapeHtml(moneyValue(row.commission))}</strong></td>
-            <td>${escapeHtml(row.collection.invoiceNumber || "")}</td>
-            <td>${escapeHtml(invoiceTableNote(row.collection.notes))}</td>
+            <td>${escapeHtml(shortDate(row.restaurant.saleDate || row.restaurant.serviceStartDate))}</td>
+            <td>${escapeHtml(moneyValue(row.restaurant.monthlyAmount))}</td>
+            <td>${escapeHtml(moneyValue(row.expected))}</td>
+            <td>${row.collected ? escapeHtml(moneyValue(row.collected)) : '<span class="helper">Not paid yet</span>'}</td>
+            <td>${row.due ? `<strong>${escapeHtml(moneyValue(row.due))}</strong>` : '<span class="helper">Not due yet</span>'}</td>
+            <td>${escapeHtml(row.restaurant.salesNotes || row.restaurant.packageName || "")}</td>
           </tr>
         `).join("")
-      : '<tr><td colspan="8"><div class="empty-state">No commissions yet. Mark an invoice Paid after money is collected.</div></td></tr>';
+      : '<tr><td colspan="8"><div class="empty-state">No customer sales yet. Change a restaurant status to Customer after a sale.</div></td></tr>';
   }
 
   function collectionStatusOptions(selectedStatus = "") {

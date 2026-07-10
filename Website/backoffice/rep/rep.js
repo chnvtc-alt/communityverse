@@ -82,11 +82,15 @@
     contactHistoryDate: document.querySelector("#contact-history-date"),
     contactHistoryNote: document.querySelector("#contact-history-note"),
     contactHistoryList: document.querySelector("#contact-history-list"),
+    commissionCount: document.querySelector("#commission-count"),
+    commissionList: document.querySelector("#commission-list"),
   };
 
   const state = {
     key: localStorage.getItem(KEY_STORAGE) || "",
     restaurants: [],
+    sales: [],
+    collections: [],
     emailTemplate: { ...DEFAULT_EMAIL_TEMPLATE },
     editingContactHistory: [],
   };
@@ -131,6 +135,24 @@
     if (!latest) return "No contact yet";
     const type = labelFor(contactTypeLabels, latest.type, latest.type);
     return [type, latest.date, latest.note].filter(Boolean).join(" - ");
+  }
+
+  function moneyValue(value) {
+    const trimmed = String(value || "").trim();
+    if (!trimmed) return "";
+    const amount = Number(trimmed.replace(/[$,]/g, ""));
+    if (!Number.isFinite(amount)) return trimmed;
+    return amount.toLocaleString("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: amount % 1 ? 2 : 0,
+    });
+  }
+
+  function numberFromMoney(value, fallback = 0) {
+    const rawValue = String(value || "");
+    const amount = Number(rawValue.replace(/[^0-9.]/g, ""));
+    return /\d/.test(rawValue) && Number.isFinite(amount) && amount >= 0 ? amount : fallback;
   }
 
   function shortDate(value = "") {
@@ -274,6 +296,31 @@
       assignedTo: REP_NAME,
       prospectNotes: String(record.prospectNotes || "").trim(),
       contactHistory: Array.isArray(record.contactHistory) ? record.contactHistory : [],
+      saleDate: String(record.saleDate || "").trim(),
+      packageName: String(record.packageName || "").trim(),
+      gameName: String(record.gameName || "").trim(),
+      serviceStartDate: String(record.serviceStartDate || record.saleDate || "").trim(),
+      serviceEndDate: String(record.serviceEndDate || "").trim(),
+      monthlyAmount: String(record.monthlyAmount || "").trim(),
+      setupFee: String(record.setupFee || "").trim(),
+      paymentStatus: String(record.paymentStatus || "").trim(),
+      firstInvoiceDate: String(record.firstInvoiceDate || "").trim(),
+      setupStatus: String(record.setupStatus || "").trim(),
+      salesNotes: String(record.salesNotes || "").trim(),
+    };
+  }
+
+  function normalizeCollection(record = {}) {
+    return {
+      id: String(record.id || "").trim(),
+      restaurantId: String(record.restaurantId || "").trim(),
+      restaurantName: String(record.restaurantName || "").trim(),
+      invoiceNumber: String(record.invoiceNumber || "").trim(),
+      dueDate: String(record.dueDate || "").trim(),
+      amount: String(record.amount || "").trim(),
+      status: String(record.status || "not-sent").trim(),
+      paidDate: String(record.paidDate || "").trim(),
+      notes: String(record.notes || "").trim(),
     };
   }
 
@@ -308,9 +355,14 @@
     state.restaurants = Array.isArray(data.restaurants)
       ? data.restaurants.map(normalizeRestaurant).filter((restaurant) => restaurant.name)
       : [];
+    state.sales = Array.isArray(data.sales)
+      ? data.sales.map(normalizeRestaurant).filter((restaurant) => restaurant.name)
+      : [];
+    state.collections = Array.isArray(data.collections) ? data.collections.map(normalizeCollection) : [];
     state.emailTemplate = normalizeEmailTemplate(data.emailTemplate);
     setStatus("List updated");
     renderList();
+    renderCommissions();
   }
 
   function filteredRestaurants() {
@@ -427,6 +479,86 @@
             </tr>
           `).join("")
       : '<tr><td colspan="10"><div class="empty-state">No Doyce prospects match this search and score range.</div></td></tr>';
+  }
+
+  function addMonths(dateValue = "", months = 0) {
+    const date = new Date(`${dateValue}T00:00:00`);
+    if (Number.isNaN(date.getTime())) return "";
+    date.setMonth(date.getMonth() + months);
+    return date.toISOString().slice(0, 10);
+  }
+
+  function commissionRateFor(restaurant = {}, collection = {}) {
+    const startDate = restaurant.serviceStartDate || restaurant.saleDate || collection.dueDate || collection.paidDate || "";
+    const collectedDate = collection.paidDate || collection.dueDate || startDate;
+    const secondYearStart = addMonths(startDate, 12);
+    return secondYearStart && collectedDate >= secondYearStart ? 0.25 : 0.5;
+  }
+
+  function collectionsForRestaurant(restaurant = {}) {
+    const nameKey = String(restaurant.name || "").trim().toLowerCase();
+    return state.collections.filter((collection) =>
+      (restaurant.id && collection.restaurantId === restaurant.id) ||
+      (nameKey && String(collection.restaurantName || "").trim().toLowerCase() === nameKey)
+    );
+  }
+
+  function expectedFirstYearCommission(restaurant = {}) {
+    const setupFee = numberFromMoney(restaurant.setupFee, 0);
+    const monthlyAmount = numberFromMoney(restaurant.monthlyAmount, 0);
+    return Math.round((setupFee + monthlyAmount * 12) * 0.5 * 100) / 100;
+  }
+
+  function paidCommissionForRestaurant(restaurant = {}) {
+    return collectionsForRestaurant(restaurant)
+      .filter((collection) => collection.status === "paid")
+      .reduce((totals, collection) => {
+        const collected = numberFromMoney(collection.amount, 0);
+        const rate = commissionRateFor(restaurant, collection);
+        totals.collected += collected;
+        totals.commission += Math.round(collected * rate * 100) / 100;
+        return totals;
+      }, { collected: 0, commission: 0 });
+  }
+
+  function commissionRows() {
+    return state.sales
+      .map((restaurant) => {
+        const paid = paidCommissionForRestaurant(restaurant);
+        return {
+          restaurant,
+          expected: expectedFirstYearCommission(restaurant),
+          collected: paid.collected,
+          due: Math.round(paid.commission * 100) / 100,
+        };
+      })
+      .sort((left, right) =>
+        String(right.restaurant.saleDate || right.restaurant.serviceStartDate || "").localeCompare(String(left.restaurant.saleDate || left.restaurant.serviceStartDate || "")) ||
+        String(left.restaurant.name || "").localeCompare(String(right.restaurant.name || ""))
+      );
+  }
+
+  function renderCommissions() {
+    const rows = commissionRows();
+    const totalExpected = rows.reduce((total, row) => total + row.expected, 0);
+    const totalCollected = rows.reduce((total, row) => total + row.collected, 0);
+    const totalDue = rows.reduce((total, row) => total + row.due, 0);
+    elements.commissionCount.textContent = rows.length
+      ? `${rows.length} ${rows.length === 1 ? "sale" : "sales"} / ${moneyValue(totalExpected)} expected / ${moneyValue(totalCollected)} collected / ${moneyValue(totalDue)} due`
+      : "No sales yet.";
+    elements.commissionList.innerHTML = rows.length
+      ? rows.map((row) => `
+          <tr>
+            <td><strong>${escapeHtml(row.restaurant.name)}</strong></td>
+            <td>${escapeHtml(shortDate(row.restaurant.saleDate || row.restaurant.serviceStartDate))}</td>
+            <td>${escapeHtml(moneyValue(row.restaurant.monthlyAmount))}</td>
+            <td>${escapeHtml(moneyValue(row.expected))}</td>
+            <td>${row.collected ? escapeHtml(moneyValue(row.collected)) : '<span class="helper">Not paid yet</span>'}</td>
+            <td>${row.due ? `<strong>${escapeHtml(moneyValue(row.due))}</strong>` : '<span class="helper">Not due yet</span>'}</td>
+            <td>${escapeHtml(row.restaurant.packageName || row.restaurant.paymentStatus || "")}</td>
+          </tr>
+        `).join("")
+      : '<tr><td colspan="7"><div class="empty-state">Sales will appear here after Tim marks one of your prospects as a customer.</div></td></tr>';
   }
 
   function renderDialogLinks(restaurant = null) {
@@ -591,6 +723,8 @@
     localStorage.removeItem(KEY_STORAGE);
     state.key = "";
     state.restaurants = [];
+    state.sales = [];
+    state.collections = [];
     elements.repKey.value = "";
     setLoggedIn(false);
   }
