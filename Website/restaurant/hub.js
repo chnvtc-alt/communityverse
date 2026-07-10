@@ -4,6 +4,9 @@
   const editMode = query.has("edit");
   const hubMode = query.get("hub") === "1" || query.get("view") === "hub";
   const authCallbackMode = query.get("auth") === "callback";
+  const requestedMetric = query.get("metric");
+  const requestedScope = query.get("scope") === "restaurant" ? "restaurant" : "overall";
+  const requestedLeaderboardRestaurantSlug = core.slugify(query.get("restaurant") || "");
   const salesDemoHubMode = query.get("demo") === "1" || (() => {
     try {
       return window.sessionStorage?.getItem("restaurantSalesDemoCta") === "1";
@@ -18,6 +21,12 @@
       label: "Total Score",
       rankLabel: "Total Score",
       description: "Total of your score breakdown.",
+    },
+    {
+      value: "restaurantScore",
+      label: "Restaurant Score",
+      rankLabel: "Restaurant Score",
+      description: "Score for the selected restaurant, without your overall spendable points.",
     },
     {
       value: "rating",
@@ -52,9 +61,13 @@
   }
 
   const state = {
-    metric: metricOptions.some((option) => option.value === query.get("metric")) ? query.get("metric") : "netWorth",
-    leaderboardScope: query.get("scope") === "restaurant" ? "restaurant" : "overall",
-    leaderboardRestaurantSlug: core.slugify(query.get("restaurant") || "") || "americana",
+    metric: metricOptions.some((option) => option.value === requestedMetric)
+      ? requestedMetric
+      : requestedScope === "restaurant"
+        ? "restaurantScore"
+        : "netWorth",
+    leaderboardScope: requestedScope,
+    leaderboardRestaurantSlug: requestedLeaderboardRestaurantSlug,
     selectedDirectorySlug: "",
     selectedGameMode: query.get("mode") === "friends" ? "friends" : "solo",
     splashStatsScope: "overall",
@@ -624,7 +637,7 @@
       return stats.gamesPlayed;
     }
 
-    if (metric === "restaurantValue") {
+    if (metric === "restaurantValue" || metric === "restaurantScore") {
       return stats.restaurantValue || 0;
     }
 
@@ -648,7 +661,12 @@
   }
 
   function formatMetricValue(value, metric) {
-    if (metric === "estimatedSales" || metric === "restaurantValue" || metric === "netWorth") {
+    if (
+      metric === "estimatedSales" ||
+      metric === "restaurantValue" ||
+      metric === "restaurantScore" ||
+      metric === "netWorth"
+    ) {
       return core.formatCurrency(value);
     }
 
@@ -670,9 +688,24 @@
     );
   }
 
-  function getSelectedLeaderboardRestaurant() {
+  function getDefaultLeaderboardRestaurantSlug(profile) {
+    const recentRestaurantSlug = String(profile?.recentSessions?.[0]?.restaurantSlug || "").trim();
+    if (recentRestaurantSlug && getPlayableRestaurants().some((restaurant) => restaurant.slug === recentRestaurantSlug)) {
+      return recentRestaurantSlug;
+    }
+
+    const baseRestaurantSlug = String(profile?.baseRestaurantSlug || "").trim();
+    if (baseRestaurantSlug && getPlayableRestaurants().some((restaurant) => restaurant.slug === baseRestaurantSlug)) {
+      return baseRestaurantSlug;
+    }
+
+    return getFeaturedDirectorySlug(getDirectoryRestaurants(profile));
+  }
+
+  function getSelectedLeaderboardRestaurant(profile = null) {
+    const selectedSlug = state.leaderboardRestaurantSlug || getDefaultLeaderboardRestaurantSlug(profile);
     const selectedRestaurant = getPlayableRestaurants().find(
-      (restaurant) => restaurant.slug === state.leaderboardRestaurantSlug
+      (restaurant) => restaurant.slug === selectedSlug
     );
     if (selectedRestaurant) {
       return selectedRestaurant;
@@ -680,7 +713,7 @@
 
     return (
       getPlayableRestaurants({ publicOnly: true }).find(
-        (restaurant) => restaurant.slug === state.leaderboardRestaurantSlug
+        (restaurant) => restaurant.slug === selectedSlug
       ) ||
       getPlayableRestaurants({ publicOnly: true })[0] ||
       core.restaurants[0] ||
@@ -1986,7 +2019,7 @@
 
   function renderLeaderboard() {
     const profile = core.getActiveProfile();
-    const restaurant = getSelectedLeaderboardRestaurant();
+    const restaurant = getSelectedLeaderboardRestaurant(profile);
     const rows =
       state.leaderboardScope === "overall"
         ? core.getLeaderboard(state.metric)
@@ -2122,6 +2155,11 @@
         const { control: type } = event.currentTarget.dataset;
         if (type === "scope") {
           state.leaderboardScope = event.currentTarget.value;
+          if (state.leaderboardScope === "restaurant" && state.metric === "netWorth") {
+            state.metric = "restaurantScore";
+          } else if (state.leaderboardScope === "overall" && state.metric === "restaurantScore") {
+            state.metric = "netWorth";
+          }
         } else if (type === "restaurant") {
           state.leaderboardRestaurantSlug = event.currentTarget.value;
         }
