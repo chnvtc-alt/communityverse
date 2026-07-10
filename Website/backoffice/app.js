@@ -2410,10 +2410,14 @@
       );
   }
 
-  function expectedFirstYearCommission(restaurant = {}) {
-    const setupFee = numberFromMoney(restaurant.setupFee, 0);
+  function expectedMonthlyCommission(restaurant = {}) {
     const monthlyAmount = numberFromMoney(restaurant.monthlyAmount, 0);
-    return Math.round((setupFee + monthlyAmount * 12) * 0.5 * 100) / 100;
+    return Math.round(monthlyAmount * 0.5 * 100) / 100;
+  }
+
+  function expectedAnnualCommission(restaurant = {}) {
+    const setupFee = numberFromMoney(restaurant.setupFee, 0);
+    return Math.round((setupFee * 0.5 + expectedMonthlyCommission(restaurant) * 12) * 100) / 100;
   }
 
   function paidCommissionForRestaurant(restaurant = {}) {
@@ -2430,13 +2434,14 @@
 
   function commissionRows() {
     return state.restaurants
-      .filter((restaurant) => restaurant.status === "customer")
+      .filter((restaurant) => restaurant.status === "customer" && cleanSalesRep(restaurant.assignedTo || restaurant.salesperson || DEFAULT_OWNER) === "Doyce")
       .map((restaurant) => {
         const paid = paidCommissionForRestaurant(restaurant);
         return {
           restaurant,
           rep: cleanSalesRep(restaurant.assignedTo || restaurant.salesperson || DEFAULT_OWNER),
-          expected: expectedFirstYearCommission(restaurant),
+          expectedMonthly: expectedMonthlyCommission(restaurant),
+          expectedAnnual: expectedAnnualCommission(restaurant),
           collected: paid.collected,
           due: Math.round(paid.commission * 100) / 100,
         };
@@ -2451,11 +2456,12 @@
   function renderCommissions() {
     const rows = commissionRows();
     const totalCollected = rows.reduce((total, row) => total + row.collected, 0);
-    const totalExpected = rows.reduce((total, row) => total + row.expected, 0);
+    const totalExpectedMonthly = rows.reduce((total, row) => total + row.expectedMonthly, 0);
+    const totalExpectedAnnual = rows.reduce((total, row) => total + row.expectedAnnual, 0);
     const totalDue = rows.reduce((total, row) => total + row.due, 0);
     elements.commissionsSummary.textContent = rows.length
-      ? `${rows.length} ${rows.length === 1 ? "sale" : "sales"} / ${moneyValue(totalExpected)} expected / ${moneyValue(totalCollected)} collected / ${moneyValue(totalDue)} due`
-      : "No customer sales yet.";
+      ? `${rows.length} Doyce ${rows.length === 1 ? "sale" : "sales"} / ${moneyValue(totalExpectedMonthly)} expected monthly / ${moneyValue(totalExpectedAnnual)} expected annual / ${moneyValue(totalDue)} due`
+      : "No Doyce customer sales yet.";
     elements.commissionsList.innerHTML = rows.length
       ? rows.map((row) => `
           <tr>
@@ -2465,13 +2471,14 @@
             <td>${escapeHtml(row.rep)}</td>
             <td>${escapeHtml(shortDate(row.restaurant.saleDate || row.restaurant.serviceStartDate))}</td>
             <td>${escapeHtml(moneyValue(row.restaurant.monthlyAmount))}</td>
-            <td>${escapeHtml(moneyValue(row.expected))}</td>
+            <td>${escapeHtml(moneyValue(row.expectedMonthly))}</td>
+            <td>${escapeHtml(moneyValue(row.expectedAnnual))}</td>
             <td>${row.collected ? escapeHtml(moneyValue(row.collected)) : '<span class="helper">Not paid yet</span>'}</td>
             <td>${row.due ? `<strong>${escapeHtml(moneyValue(row.due))}</strong>` : '<span class="helper">Not due yet</span>'}</td>
             <td>${escapeHtml(row.restaurant.salesNotes || row.restaurant.packageName || "")}</td>
           </tr>
         `).join("")
-      : '<tr><td colspan="8"><div class="empty-state">No customer sales yet. Change a restaurant status to Customer after a sale.</div></td></tr>';
+      : '<tr><td colspan="9"><div class="empty-state">No Doyce customer sales yet. Leave Sales Rep as Doyce when marking one of his prospects as Customer.</div></td></tr>';
   }
 
   function collectionStatusOptions(selectedStatus = "") {
