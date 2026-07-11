@@ -888,7 +888,7 @@
           <a class="button button-hot" id="start-game-button" href="${escapeHtml(playHref)}">${escapeHtml(startButtonText)}</a>
           ${
             showMyRestaurantButton
-              ? `<a class="button button-muted" href="/restaurant/?hub=1">View My Restaurant</a>`
+              ? `<a class="button button-muted" href="/restaurant/?hub=1#leaderboard-panel">View Leaderboard</a>`
               : ""
           }
           ${!customerId ? `<a class="button button-muted" href="${escapeHtml(multiplayerHref)}">Play With Friends</a>` : ""}

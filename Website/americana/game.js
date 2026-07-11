@@ -2078,11 +2078,11 @@
             replayCustomer
               ? `
                 <a class="button button-muted" href="${restaurantBasePath()}?home=1">Cancel Replay</a>
-                <a class="button button-muted" href="/restaurant/?hub=1">View My Virtual Restaurant</a>
+                <a class="button button-muted" href="/restaurant/?hub=1#leaderboard-panel">View Leaderboard</a>
               `
               : profile && !isSalesDemoMode()
                 ? `
-                  <a class="button button-muted" href="/restaurant/?hub=1">View My Virtual Restaurant</a>
+                  <a class="button button-muted" href="/restaurant/?hub=1#leaderboard-panel">View Leaderboard</a>
                 `
               : ""
           }
@@ -2167,7 +2167,7 @@
           <a class="button button-hot" id="start-game-button" href="${startHref}">${escapeHtml(startButtonText)}</a>
           ${
             profile && !isSalesDemoMode()
-              ? `<a class="button button-muted" href="/restaurant/?hub=1">View My Virtual Restaurant</a>`
+              ? `<a class="button button-muted" href="/restaurant/?hub=1#leaderboard-panel">View Leaderboard</a>`
               : ""
           }
           ${!isSalesDemoMode() ? "" : `<a class="button button-muted" href="${restaurantPlayPath()}?multiplayer=1">Play With Friends</a>`}
@@ -2340,7 +2340,7 @@
                   ? `<button class="button button-hot" id="begin-questions-button" type="button" ${liveWaiting ? "disabled" : ""}>${liveWaiting ? "Waiting For Host" : liveActive ? "Join Live Question" : "View Live Results"}</button>`
                   : `<button class="button button-hot" id="begin-questions-button" type="button">Begin Questions</button>`
               }
-              ${salesDemoMode ? "" : `<a class="button button-muted" href="/restaurant/?hub=1">View My Collection / Leaderboard</a>`}
+              ${salesDemoMode ? "" : `<a class="button button-muted" href="/restaurant/?hub=1#leaderboard-panel">View Leaderboard</a>`}
               <button class="button button-muted" id="reveal-how-to-play-button" type="button" data-how-to-play-button>${escapeHtml(howToPlayText)}</button>
             </div>
           </div>
@@ -2992,9 +2992,7 @@
               ? "Character Unlocked"
               : "Character Not Unlocked";
     const customerValue = Math.max(0, Number(session.customerValue) || 0);
-    const resultCollectionButtonText = unlockedThisRound || hadUnlockedBefore
-      ? "View My Collection"
-      : "View My Restaurant";
+    const resultCollectionButtonText = "View Leaderboard";
     const resultAwardSummary = customerValue > 0
       ? `Score ${session.score}/${session.questions.length} • Reward ${core.formatCurrency(customerValue)}`
       : `Score ${session.score}/${session.questions.length}`;
@@ -3013,7 +3011,7 @@
           </div>
         `
       : `
-          <a class="result-banner result-award-card" href="/restaurant/?hub=1" aria-label="View your character collection">
+          <a class="result-banner result-award-card" href="/restaurant/?hub=1#leaderboard-panel" aria-label="View leaderboard">
             <div class="result-celebration">
               <p class="result-celebration-kicker">${escapeHtml(resultHeadline)} - ${escapeHtml(resultSubheadline)}</p>
               <h2 class="result-celebration-title">${escapeHtml(session.customer.name)}</h2>
@@ -3124,7 +3122,7 @@
               : `
                 <div class="button-row result-followup-actions">
                   <button class="button button-hot" id="play-again-button" type="button">Play Again</button>
-                  <a class="button button-muted" href="${salesDemoMode ? "/get-your-own-game/" : "/restaurant/?hub=1"}">${salesDemoMode ? "Get Your Own Game" : "View My Virtual Restaurant"}</a>
+                  <a class="button button-muted" href="${salesDemoMode ? "/get-your-own-game/" : "/restaurant/?hub=1#leaderboard-panel"}">${salesDemoMode ? "Get Your Own Game" : "View Leaderboard"}</a>
                   <button class="button button-muted" id="result-how-to-play-button" type="button" data-how-to-play-button>${salesDemoMode ? "See the Benefits" : "How to Play"}</button>
                   ${!salesDemoMode ? netWorthPromptMarkup : ""}
                 </div>
