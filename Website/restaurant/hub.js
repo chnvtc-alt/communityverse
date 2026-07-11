@@ -5,7 +5,8 @@
   const hubMode = query.get("hub") === "1" || query.get("view") === "hub";
   const authCallbackMode = query.get("auth") === "callback";
   const requestedMetric = query.get("metric");
-  const requestedScope = query.get("scope") === "restaurant" ? "restaurant" : "overall";
+  const requestedScope =
+    query.get("scope") === "overall" || requestedMetric === "netWorth" ? "overall" : "restaurant";
   const requestedLeaderboardRestaurantSlug = core.slugify(query.get("restaurant") || "");
   const salesDemoHubMode = query.get("demo") === "1" || (() => {
     try {
@@ -17,21 +18,21 @@
 
   const metricOptions = [
     {
+      value: "characterPoints",
+      label: "Character Points",
+      rankLabel: "Character Points",
+      description: "Points earned from characters unlocked at the selected restaurant.",
+    },
+    {
       value: "netWorth",
       label: "Total Score",
       rankLabel: "Total Score",
-      description: "Total of your score breakdown.",
-    },
-    {
-      value: "restaurantScore",
-      label: "Restaurant Score",
-      rankLabel: "Restaurant Score",
-      description: "Score for the selected restaurant, without your overall spendable points.",
+      description: "Overall score from your virtual restaurant, characters, trivia, and spendable points.",
     },
     {
       value: "triviaPoints",
-      label: "Trivia Points",
-      rankLabel: "Trivia Points",
+      label: "Correct Answers",
+      rankLabel: "Correct Answers",
       description: "Correct answers won in trivia games for the selected restaurant.",
     },
     {
@@ -70,7 +71,7 @@
     metric: metricOptions.some((option) => option.value === requestedMetric)
       ? requestedMetric
       : requestedScope === "restaurant"
-        ? "restaurantScore"
+        ? "characterPoints"
         : "netWorth",
     leaderboardScope: requestedScope,
     leaderboardRestaurantSlug: requestedLeaderboardRestaurantSlug,
@@ -647,7 +648,11 @@
       return stats.totalCorrectAnswers;
     }
 
-    if (metric === "restaurantValue" || metric === "restaurantScore") {
+    if (metric === "characterPoints") {
+      return stats.estimatedSales;
+    }
+
+    if (metric === "restaurantValue") {
       return stats.restaurantValue || 0;
     }
 
@@ -673,8 +678,8 @@
   function formatMetricValue(value, metric) {
     if (
       metric === "estimatedSales" ||
+      metric === "characterPoints" ||
       metric === "restaurantValue" ||
-      metric === "restaurantScore" ||
       metric === "netWorth"
     ) {
       return core.formatCurrency(value);
@@ -2068,13 +2073,14 @@
           const value = formatMetricValue(row.value, state.metric);
           const isCurrent = profile && row.profileId === profile.id;
           const gameCount = Math.round(Number(row.stats?.gamesPlayed) || 0);
+          const showGameCount = state.metric === "characterPoints" || state.metric === "triviaPoints";
 
           return `
               <div class="leaderboard-row ${isCurrent ? "leaderboard-row-current" : ""}">
               <div class="leaderboard-rank">${row.rank}</div>
               <div class="leaderboard-main">
                 <p class="leaderboard-name">${escapeHtml(row.restaurantName)}</p>
-                ${state.metric === "triviaPoints" ? `<p class="helper">${gameCount} game${gameCount === 1 ? "" : "s"}</p>` : ""}
+                ${showGameCount ? `<p class="helper">${gameCount} game${gameCount === 1 ? "" : "s"}</p>` : ""}
               </div>
               <p class="leaderboard-value">${value}</p>
             </div>
@@ -2162,6 +2168,11 @@
     elements.leaderboard.querySelectorAll(".metric-button").forEach((button) => {
       button.addEventListener("click", () => {
         state.metric = button.dataset.metric;
+        if (state.metric === "netWorth") {
+          state.leaderboardScope = "overall";
+        } else if (state.metric === "characterPoints" || state.metric === "triviaPoints") {
+          state.leaderboardScope = "restaurant";
+        }
         renderAll();
       });
     });
@@ -2172,8 +2183,11 @@
         if (type === "scope") {
           state.leaderboardScope = event.currentTarget.value;
           if (state.leaderboardScope === "restaurant" && state.metric === "netWorth") {
-            state.metric = "restaurantScore";
-          } else if (state.leaderboardScope === "overall" && state.metric === "restaurantScore") {
+            state.metric = "characterPoints";
+          } else if (
+            state.leaderboardScope === "overall" &&
+            (state.metric === "characterPoints" || state.metric === "triviaPoints")
+          ) {
             state.metric = "netWorth";
           }
         } else if (type === "restaurant") {

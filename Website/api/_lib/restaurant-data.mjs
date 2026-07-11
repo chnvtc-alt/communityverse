@@ -427,6 +427,10 @@ export function leaderboardValue(stats, metric) {
     return stats.gamesPlayed;
   }
 
+  if (metric === "characterPoints") {
+    return stats.estimatedSales;
+  }
+
   if (metric === "triviaPoints") {
     return stats.totalCorrectAnswers;
   }

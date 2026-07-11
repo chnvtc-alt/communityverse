@@ -5481,10 +5481,10 @@
               ? accuracy
             : metric === "gamesPlayed"
               ? stats.gamesPlayed
+              : metric === "characterPoints"
+                ? stats.estimatedSales
               : metric === "triviaPoints"
                 ? stats.totalCorrectAnswers
-              : metric === "restaurantScore"
-                ? getRestaurantValue(safeProfile, stats, restaurantSlug)
               : metric === "restaurantValue"
                 ? restaurantValueStats.restaurantValue || getRestaurantValue(safeProfile, restaurantValueStats)
               : metric === "netWorth"
