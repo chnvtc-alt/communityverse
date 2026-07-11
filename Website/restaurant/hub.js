@@ -29,6 +29,12 @@
       description: "Score for the selected restaurant, without your overall spendable points.",
     },
     {
+      value: "triviaPoints",
+      label: "Trivia Points",
+      rankLabel: "Trivia Points",
+      description: "Correct answers won in trivia games for the selected restaurant.",
+    },
+    {
       value: "rating",
       label: "Trivia %",
       rankLabel: "Trivia %",
@@ -637,6 +643,10 @@
       return stats.gamesPlayed;
     }
 
+    if (metric === "triviaPoints") {
+      return stats.totalCorrectAnswers;
+    }
+
     if (metric === "restaurantValue" || metric === "restaurantScore") {
       return stats.restaurantValue || 0;
     }
@@ -674,6 +684,10 @@
       const percent = Math.max(0, Math.min(100, Number(value) || 0));
       const rounded = Math.round(percent * 10) / 10;
       return `${rounded}%`;
+    }
+
+    if (metric === "triviaPoints") {
+      return `${Math.round(value || 0)} pts`;
     }
 
     return String(Math.round(value || 0));
@@ -2053,12 +2067,14 @@
         .map((row) => {
           const value = formatMetricValue(row.value, state.metric);
           const isCurrent = profile && row.profileId === profile.id;
+          const gameCount = Math.round(Number(row.stats?.gamesPlayed) || 0);
 
           return `
               <div class="leaderboard-row ${isCurrent ? "leaderboard-row-current" : ""}">
               <div class="leaderboard-rank">${row.rank}</div>
               <div class="leaderboard-main">
                 <p class="leaderboard-name">${escapeHtml(row.restaurantName)}</p>
+                ${state.metric === "triviaPoints" ? `<p class="helper">${gameCount} game${gameCount === 1 ? "" : "s"}</p>` : ""}
               </div>
               <p class="leaderboard-value">${value}</p>
             </div>

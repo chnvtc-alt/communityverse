@@ -5481,6 +5481,8 @@
               ? accuracy
             : metric === "gamesPlayed"
               ? stats.gamesPlayed
+              : metric === "triviaPoints"
+                ? stats.totalCorrectAnswers
               : metric === "restaurantScore"
                 ? getRestaurantValue(safeProfile, stats, restaurantSlug)
               : metric === "restaurantValue"
