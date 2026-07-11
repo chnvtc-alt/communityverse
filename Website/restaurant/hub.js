@@ -766,7 +766,7 @@
 
     return `
       <div class="leaderboard-game-switcher">
-        <p class="kicker">Choose A Restaurant Challenge Game</p>
+        <p class="kicker">Choose a Game</p>
         <div class="leaderboard-game-switcher-row">
           ${
             selectedImage
@@ -1738,7 +1738,7 @@
             <div class="hero-side">
               <div class="hero-card hero-card-strong hero-directory-showcase hero-directory-showcase-compact" id="directory-card">
                 <div class="hero-directory-picker">
-                  <p class="kicker" style="margin: 0;">Choose A Restaurant Challenge Game</p>
+                  <p class="kicker" style="margin: 0;">Choose a Game</p>
                 </div>
                 ${
                   selectedDirectoryRestaurant
