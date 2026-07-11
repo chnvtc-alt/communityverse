@@ -2150,7 +2150,13 @@
 
       <div class="leaderboard-explainer">
         <h3 class="kicker">${scopeLabel}</h3>
-        <p class="helper">${escapeHtml(selectedMetric.description)}</p>
+        <p class="helper">${escapeHtml(
+          state.metric === "characterPoints" && state.leaderboardScope === "overall"
+            ? "Character points earned across all public restaurant games."
+            : state.metric === "triviaPoints" && state.leaderboardScope === "overall"
+              ? "Correct answers won across all public restaurant games."
+              : selectedMetric.description
+        )}</p>
       </div>
       ${currentRankMarkup}
       <div class="leaderboard-scroll">
@@ -2170,8 +2176,6 @@
         state.metric = button.dataset.metric;
         if (state.metric === "netWorth") {
           state.leaderboardScope = "overall";
-        } else if (state.metric === "characterPoints" || state.metric === "triviaPoints") {
-          state.leaderboardScope = "restaurant";
         }
         renderAll();
       });
@@ -2184,11 +2188,6 @@
           state.leaderboardScope = event.currentTarget.value;
           if (state.leaderboardScope === "restaurant" && state.metric === "netWorth") {
             state.metric = "characterPoints";
-          } else if (
-            state.leaderboardScope === "overall" &&
-            (state.metric === "characterPoints" || state.metric === "triviaPoints")
-          ) {
-            state.metric = "netWorth";
           }
         } else if (type === "restaurant") {
           state.leaderboardRestaurantSlug = event.currentTarget.value;
