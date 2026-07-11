@@ -1739,33 +1739,24 @@
               <div class="hero-card hero-card-strong hero-directory-showcase hero-directory-showcase-compact" id="directory-card">
                 <div class="hero-directory-picker">
                   <p class="kicker" style="margin: 0;">Choose A Restaurant Challenge Game</p>
-                  <div class="hero-directory-picker-row">
-                    ${
-                      selectedDirectoryRestaurant?.image
-                        ? `<img class="hero-directory-picker-logo" src="${selectedDirectoryRestaurant.image}" alt="${escapeHtml(selectedDirectoryRestaurant.name)} logo" />`
-                        : selectedDirectoryRestaurant
-                          ? `<span class="hero-directory-picker-logo hero-directory-picker-logo-fallback" aria-hidden="true">${escapeHtml(selectedDirectoryRestaurant.name.charAt(0) || "R")}</span>`
-                          : ""
-                    }
-                    <label class="field" style="gap: 6px;">
-                      <select class="select hero-directory-select" id="directory-select" aria-label="Choose a Restaurant Challenge game">
-                        ${getDirectoryRestaurants(profile)
-                          .map(
-                            (restaurantOption) => `
-                              <option value="${restaurantOption.slug}" ${selectedDirectoryRestaurant && restaurantOption.slug === selectedDirectoryRestaurant.slug ? "selected" : ""}>
-                                ${escapeHtml(restaurantOption.name)}${restaurantOption.slug === baseRestaurantSlug ? " (Base)" : restaurantOption.slug === recentRestaurantSlug ? " (Last Played)" : ""}
-                              </option>
-                            `
-                          )
-                          .join("")}
-                      </select>
-                    </label>
-                  </div>
                 </div>
                 ${
                   selectedDirectoryRestaurant
                     ? `
                   <article class="hero-directory-item hero-directory-item-compact ${selectedDirectoryRestaurant.available ? "" : "hero-directory-item-muted"}">
+                        <label class="hero-directory-card-select" aria-label="Choose a Restaurant Challenge game">
+                          <select id="directory-select" aria-label="Choose a Restaurant Challenge game">
+                            ${getDirectoryRestaurants(profile)
+                              .map(
+                                (restaurantOption) => `
+                                  <option value="${restaurantOption.slug}" ${selectedDirectoryRestaurant && restaurantOption.slug === selectedDirectoryRestaurant.slug ? "selected" : ""}>
+                                    ${escapeHtml(restaurantOption.name)}${restaurantOption.slug === baseRestaurantSlug ? " (Base)" : restaurantOption.slug === recentRestaurantSlug ? " (Last Played)" : ""}
+                                  </option>
+                                `
+                              )
+                              .join("")}
+                          </select>
+                        </label>
                         <img class="hero-directory-image" src="${selectedDirectoryRestaurant.image}" alt="${escapeHtml(selectedDirectoryRestaurant.name)} logo" />
                         <div>
                           <h2 class="section-title" style="margin-bottom: 4px; color: inherit; font-size: 1.2rem;">${escapeHtml(selectedDirectoryRestaurant.name)}</h2>
