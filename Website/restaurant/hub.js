@@ -740,6 +740,58 @@
     );
   }
 
+  function getLeaderboardRestaurantOptions(profile = null, selectedRestaurant = null) {
+    return [
+      ...getDirectoryRestaurants(profile),
+      ...(selectedRestaurant && selectedRestaurant.visibleInList === false
+        ? [directoryEntryFromRestaurant(selectedRestaurant)]
+        : []),
+    ].filter(
+      (restaurantOption, index, list) =>
+        restaurantOption &&
+        list.findIndex((item) => item.slug === restaurantOption.slug) === index
+    );
+  }
+
+  function renderLeaderboardRestaurantSwitcher(profile, restaurant) {
+    if (state.leaderboardScope !== "restaurant" || !restaurant) {
+      return "";
+    }
+
+    const options = getLeaderboardRestaurantOptions(profile, restaurant);
+    const selectedOption =
+      options.find((restaurantOption) => restaurantOption.slug === restaurant.slug) ||
+      directoryEntryFromRestaurant(restaurant);
+    const selectedImage = selectedOption.image || restaurant.logoSquare || restaurant.squareImage || restaurant.logoHorizontal || restaurant.heroImage;
+
+    return `
+      <div class="leaderboard-game-switcher">
+        <p class="kicker">Choose A Restaurant Challenge Game</p>
+        <div class="leaderboard-game-switcher-row">
+          ${
+            selectedImage
+              ? `<img class="leaderboard-game-switcher-logo" src="${escapeHtml(selectedImage)}" alt="${escapeHtml(selectedOption.name)} logo" />`
+              : `<div class="leaderboard-game-switcher-logo leaderboard-game-switcher-logo-fallback" aria-hidden="true">${escapeHtml(selectedOption.name.charAt(0) || "R")}</div>`
+          }
+          <label class="field leaderboard-game-switcher-field">
+            <span class="sr-only">Restaurant leaderboard</span>
+            <select class="select hero-directory-select leaderboard-game-switcher-select" data-control="restaurant" aria-label="Restaurant leaderboard">
+              ${options
+                .map(
+                  (restaurantOption) => `
+                    <option value="${restaurantOption.slug}" ${restaurantOption.slug === restaurant.slug ? "selected" : ""}>
+                      ${escapeHtml(restaurantOption.name)}
+                    </option>
+                  `
+                )
+                .join("")}
+            </select>
+          </label>
+        </div>
+      </div>
+    `;
+  }
+
   function directoryEntryFromRestaurant(restaurant) {
     return {
       slug: restaurant.slug,
@@ -1687,19 +1739,28 @@
               <div class="hero-card hero-card-strong hero-directory-showcase hero-directory-showcase-compact" id="directory-card">
                 <div class="hero-directory-picker">
                   <p class="kicker" style="margin: 0;">Choose A Restaurant Challenge Game</p>
-                  <label class="field" style="gap: 6px;">
-                    <select class="select hero-directory-select" id="directory-select" aria-label="Choose a Restaurant Challenge game">
-                      ${getDirectoryRestaurants(profile)
-                        .map(
-                          (restaurantOption) => `
-                            <option value="${restaurantOption.slug}" ${selectedDirectoryRestaurant && restaurantOption.slug === selectedDirectoryRestaurant.slug ? "selected" : ""}>
-                              ${escapeHtml(restaurantOption.name)}${restaurantOption.slug === baseRestaurantSlug ? " (Base)" : restaurantOption.slug === recentRestaurantSlug ? " (Last Played)" : ""}
-                            </option>
-                          `
-                        )
-                        .join("")}
-                    </select>
-                  </label>
+                  <div class="hero-directory-picker-row">
+                    ${
+                      selectedDirectoryRestaurant?.image
+                        ? `<img class="hero-directory-picker-logo" src="${selectedDirectoryRestaurant.image}" alt="${escapeHtml(selectedDirectoryRestaurant.name)} logo" />`
+                        : selectedDirectoryRestaurant
+                          ? `<span class="hero-directory-picker-logo hero-directory-picker-logo-fallback" aria-hidden="true">${escapeHtml(selectedDirectoryRestaurant.name.charAt(0) || "R")}</span>`
+                          : ""
+                    }
+                    <label class="field" style="gap: 6px;">
+                      <select class="select hero-directory-select" id="directory-select" aria-label="Choose a Restaurant Challenge game">
+                        ${getDirectoryRestaurants(profile)
+                          .map(
+                            (restaurantOption) => `
+                              <option value="${restaurantOption.slug}" ${selectedDirectoryRestaurant && restaurantOption.slug === selectedDirectoryRestaurant.slug ? "selected" : ""}>
+                                ${escapeHtml(restaurantOption.name)}${restaurantOption.slug === baseRestaurantSlug ? " (Base)" : restaurantOption.slug === recentRestaurantSlug ? " (Last Played)" : ""}
+                              </option>
+                            `
+                          )
+                          .join("")}
+                      </select>
+                    </label>
+                  </div>
                 </div>
                 ${
                   selectedDirectoryRestaurant
@@ -1979,7 +2040,10 @@
     if (directorySelect) {
       directorySelect.addEventListener("change", (event) => {
         state.selectedDirectorySlug = event.currentTarget.value;
-        renderHero();
+        if (state.leaderboardScope === "restaurant") {
+          state.leaderboardRestaurantSlug = event.currentTarget.value;
+        }
+        renderAll();
         applyMobileTabVisibility();
       });
     }
@@ -2045,6 +2109,10 @@
         : core.getLeaderboard(state.metric, restaurant?.slug || "americana");
     const scopeLabel = state.leaderboardScope === "overall" ? "Overall" : restaurant?.name || "Restaurant";
     const selectedMetric = metricOptions.find((option) => option.value === state.metric) || metricOptions[0];
+    const playTarget =
+      state.leaderboardScope === "restaurant" && restaurant
+        ? { href: `/${restaurant.slug}/`, name: restaurant.name }
+        : getPlayAgainTarget(profile);
     const currentRow = profile ? rows.find((row) => row.profileId === profile.id) : null;
     const currentRankMarkup =
       currentRow
@@ -2103,37 +2171,13 @@
               <option value="restaurant" ${state.leaderboardScope === "restaurant" ? "selected" : ""}>Restaurant</option>
             </select>
           </label>
-          ${
-            state.leaderboardScope === "restaurant"
-              ? `
-                <label class="field" style="gap: 6px;">
-                  <span class="field-label">Restaurant</span>
-                  <select class="select leaderboard-select" data-control="restaurant" aria-label="Restaurant leaderboard">
-                    ${[
-                      ...getPlayableRestaurants({ publicOnly: true }),
-                      ...(restaurant && restaurant.visibleInList === false ? [restaurant] : []),
-                    ]
-                      .filter((restaurantOption, index, list) =>
-                        list.findIndex((item) => item.slug === restaurantOption.slug) === index
-                      )
-                      .map(
-                        (restaurantOption) => `
-                          <option value="${restaurantOption.slug}" ${restaurantOption.slug === (restaurant?.slug || "americana") ? "selected" : ""}>
-                            ${escapeHtml(restaurantOption.name)}
-                          </option>
-                        `
-                      )
-                      .join("")}
-                  </select>
-                </label>
-              `
-              : ""
-          }
         </div>
       </div>
 
+      ${renderLeaderboardRestaurantSwitcher(profile, restaurant)}
+
       <div class="leaderboard-actions">
-        <a class="button button-primary button-sm" href="${getPlayAgainTarget(profile).href}">Play ${escapeHtml(getPlayAgainTarget(profile).name)}</a>
+        <a class="button button-primary button-sm" href="${playTarget.href}">Play ${escapeHtml(playTarget.name)}</a>
       </div>
 
       <div class="leaderboard-tabs" role="tablist" aria-label="Leaderboard metric">

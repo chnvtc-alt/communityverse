@@ -42,6 +42,18 @@ img {
   display: block;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .app-shell {
   max-width: 1320px;
   margin: 0 auto;
@@ -1789,6 +1801,31 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   position: relative;
 }
 
+.hero-directory-picker-row {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.hero-directory-picker-logo {
+  width: 58px;
+  height: 58px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.hero-directory-picker-logo-fallback {
+  display: grid;
+  place-items: center;
+  color: rgba(255, 253, 248, 0.96);
+  font-family: Arial, sans-serif;
+  font-weight: 900;
+  font-size: 1.35rem;
+}
+
 .hero-directory-picker .field::after {
   content: "";
   position: absolute;
@@ -2490,6 +2527,74 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   margin: 12px 0 4px;
 }
 
+.leaderboard-game-switcher {
+  display: grid;
+  gap: 10px;
+  margin: 14px 0 6px;
+  padding: 12px;
+  border-radius: 18px;
+  color: rgba(255, 253, 248, 0.96);
+  background:
+    linear-gradient(180deg, rgba(44, 42, 36, 0.98), rgba(28, 26, 22, 0.98)),
+    radial-gradient(circle at top left, rgba(213, 138, 43, 0.22), transparent 42%);
+  border: 1px solid rgba(255, 253, 248, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.leaderboard-game-switcher .kicker {
+  margin: 0;
+  color: rgba(255, 253, 248, 0.92);
+  font-size: 0.82rem;
+  letter-spacing: 0.16em;
+}
+
+.leaderboard-game-switcher-row {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.leaderboard-game-switcher-logo {
+  width: 58px;
+  height: 58px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.leaderboard-game-switcher-logo-fallback {
+  display: grid;
+  place-items: center;
+  font-family: Arial, sans-serif;
+  font-weight: 900;
+  font-size: 1.35rem;
+}
+
+.leaderboard-game-switcher-field {
+  position: relative;
+  min-width: 0;
+}
+
+.leaderboard-game-switcher-field::after {
+  content: "";
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid rgba(47, 111, 82, 0.95);
+  border-bottom: 2px solid rgba(47, 111, 82, 0.95);
+  pointer-events: none;
+  transform: translateY(-68%) rotate(45deg);
+}
+
+.leaderboard-game-switcher-select {
+  width: 100%;
+  min-width: 0;
+}
+
 .leaderboard-select {
   min-width: 170px;
 }
@@ -2598,6 +2703,10 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     overflow: hidden;
     clip: rect(0 0 0 0);
     white-space: nowrap;
+  }
+
+  html.restaurant-hub-mode #leaderboard-panel .leaderboard-game-switcher {
+    display: none;
   }
 
   html.restaurant-hub-mode #leaderboard-panel .leaderboard-explainer {
