@@ -2338,14 +2338,11 @@ function statsCard(label, value, note = "") {
 
 function pageVisitStatsMarkup() {
   const restaurantStats = statsPageStats?.restaurant || {};
-  return `
-    <section class="stats-grid">
-      ${statsCard("Restaurant page today", formatWholeNumber(restaurantStats.today || 0), "Unique browser visits to /restaurant today")}
-      ${statsCard("Restaurant page 7 days", formatWholeNumber(restaurantStats.sevenDays || 0), "Unique browser visits in the last 7 days")}
-      ${statsCard("Restaurant page 30 days", formatWholeNumber(restaurantStats.thirtyDays || 0), "Unique browser visits in the last 30 days")}
-      ${statsCard("Restaurant page total", formatWholeNumber(restaurantStats.total || 0), "Unique browser-day visits recorded")}
-    </section>
-  `;
+  return statsCard(
+    "Restaurant page 30 days",
+    formatWholeNumber(restaurantStats.thirtyDays || 0),
+    "Unique browser visits to /restaurant in the last 30 days"
+  );
 }
 
 function statsList(title, rows, emptyText, rowTemplate) {
@@ -2388,8 +2385,6 @@ function renderStats() {
   const returningPlayers = getReturningPlayerRows(normalProfiles);
 
   elements.statsDashboard.innerHTML = `
-    ${pageVisitStatsMarkup()}
-
     <section class="stats-grid">
       ${statsCard("Saved restaurants", formatWholeNumber(summary.savedCount), `${formatPercent(summary.savedCount, summary.totalProfiles)} of normal profiles`)}
       ${statsCard("Still guest-only", formatWholeNumber(summary.guestCount), `${formatPercent(summary.guestCount, summary.totalProfiles)} of normal profiles`)}
@@ -2400,6 +2395,7 @@ function renderStats() {
       ${statsCard("Games today", formatWholeNumber(summary.gamesTodayCount), `${selectedRestaurantName} plays recorded today`)}
       ${statsCard("Reached 4 games", formatWholeNumber(summary.fourGameCount), `${formatPercent(summary.fourGameCount, summary.profilesWithGames)} of players with games`)}
       ${statsCard("Email recovery", formatWholeNumber(summary.emailConnectedCount), `${formatPercent(summary.emailConnectedCount, summary.totalProfiles)} of normal profiles`)}
+      ${pageVisitStatsMarkup()}
     </section>
 
     <section class="stats-grid stats-grid-wide">
