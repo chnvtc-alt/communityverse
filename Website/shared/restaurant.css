@@ -2522,15 +2522,16 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   justify-items: start;
 }
 
-.leaderboard-help-button {
-  min-height: 34px;
-}
-
 .leaderboard-controls {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   align-items: flex-start;
+  margin: 10px 0 4px;
+}
+
+.leaderboard-scope-field {
+  gap: 6px;
 }
 
 .leaderboard-actions {
@@ -2609,7 +2610,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 }
 
 .leaderboard-select {
-  min-width: 170px;
+  min-width: 180px;
 }
 
 .leaderboard-rank {

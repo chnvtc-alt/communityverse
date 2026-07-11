@@ -2152,16 +2152,6 @@
       <div class="leaderboard-head">
         <div class="leaderboard-title-stack">
           <h2 class="section-title">Leaderboards</h2>
-          <button class="button button-muted button-sm leaderboard-help-button" type="button" data-how-to-play-button>How to Play</button>
-        </div>
-        <div class="leaderboard-controls">
-          <label class="field" style="gap: 6px;">
-            <span class="field-label">Scope</span>
-            <select class="select leaderboard-select" data-control="scope" aria-label="Leaderboard scope">
-              <option value="overall" ${state.leaderboardScope === "overall" ? "selected" : ""}>Overall</option>
-              <option value="restaurant" ${state.leaderboardScope === "restaurant" ? "selected" : ""}>Restaurant</option>
-            </select>
-          </label>
         </div>
       </div>
 
@@ -2169,6 +2159,16 @@
 
       <div class="leaderboard-actions">
         <a class="button button-primary button-sm" href="${playTarget.href}">Play ${escapeHtml(playTarget.name)}</a>
+      </div>
+
+      <div class="leaderboard-controls">
+        <label class="field leaderboard-scope-field">
+          <span class="field-label">View</span>
+          <select class="select leaderboard-select" data-control="scope" aria-label="Leaderboard scope">
+            <option value="overall" ${state.leaderboardScope === "overall" ? "selected" : ""}>Overall</option>
+            <option value="restaurant" ${state.leaderboardScope === "restaurant" ? "selected" : ""}>This Restaurant</option>
+          </select>
+        </label>
       </div>
 
       <div class="leaderboard-tabs" role="tablist" aria-label="Leaderboard metric">
