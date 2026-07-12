@@ -804,8 +804,16 @@
     };
   }
 
+  function isRealDirectoryRestaurant(restaurant = {}) {
+    const slug = String(restaurant.slug || "").toLowerCase();
+    const name = String(restaurant.name || "").toLowerCase();
+    return !["americana", "americana-grill", "wafflemaster", "waffle-master"].includes(slug) &&
+      !/^americana\b/.test(name) &&
+      name !== "waffle master";
+  }
+
   function getDirectoryRestaurants(profile = null) {
-    const playableRestaurants = getPlayableRestaurants({ publicOnly: true });
+    const playableRestaurants = getPlayableRestaurants({ publicOnly: true }).filter(isRealDirectoryRestaurant);
     const privateSlugs = [
       String(profile?.baseRestaurantSlug || "").trim(),
       String(profile?.recentSessions?.[0]?.restaurantSlug || "").trim(),
@@ -829,15 +837,7 @@
       return privateRestaurants.map(directoryEntryFromRestaurant);
     }
 
-    return [
-      {
-        slug: "americana",
-        name: "Americana Diner",
-        image: "../assets/restaurant-challenge/restaurants/americana/americana-diner-logo.jpg",
-        href: "/americana/",
-        available: true,
-      },
-    ];
+    return [];
   }
 
   function getFeaturedDirectorySlug(directoryRestaurants) {
@@ -880,7 +880,12 @@
     }
 
     const profile = core.getActiveProfile();
-    const directoryRestaurants = getDirectoryRestaurants(profile);
+    const directoryRestaurants = getDirectoryRestaurants(profile).slice(0, 4);
+    if (!directoryRestaurants.length) {
+      elements.restaurantDirectory.innerHTML = `<p class="empty-state">Open the full directory to see listed restaurant games.</p>`;
+      return;
+    }
+
     elements.restaurantDirectory.innerHTML = directoryRestaurants
       .map((restaurant) => {
         const description = restaurant.description || restaurant.location || "Play a quick 10-question trivia game for this restaurant.";
