@@ -130,9 +130,9 @@
         }
       })();
     </script>
-    <link rel="stylesheet" href="../shared/restaurant.css?v=directory-preview-v1" />
+    <link rel="stylesheet" href="../shared/restaurant.css?v=directory-callout-v1" />
     <script defer src="../shared/app-core.js?v=name-variety-v1"></script>
-    <script defer src="hub.js?v=directory-preview-v1"></script>
+    <script defer src="hub.js?v=directory-callout-v1"></script>
   </head>
   <body data-page="hub">
     <main class="app-shell">
@@ -255,15 +255,20 @@
 
       <section class="challenge-info-section challenge-seo-section" aria-labelledby="challenge-restaurant-games-title">
         <p class="kicker">Restaurant Trivia Games</p>
-        <h2 class="section-title" id="challenge-restaurant-games-title">Featured restaurant games.</h2>
+        <h2 class="section-title" id="challenge-restaurant-games-title">Restaurant game directory.</h2>
         <p class="copy">
-          Explore a few active Restaurant Challenge games here, or open the full directory to see every listed restaurant.
+          Explore featured restaurants and choose a game to play from the full Restaurant Challenge Directory.
         </p>
+        <a class="challenge-directory-hero-link" href="/restaurant/directory/" aria-label="Open Restaurant Directory">
+          <img
+            class="challenge-directory-hero-image"
+            src="/assets/restaurant-challenge/restaurant-directory-hero.jpg"
+            alt="CommunityVerse Games Restaurant Directory. Explore featured restaurants. Choose a game to play."
+            loading="lazy"
+          />
+        </a>
         <div class="section-actions">
           <a class="button button-muted" href="/restaurant/directory/">View Restaurant Directory</a>
-        </div>
-        <div class="challenge-directory-grid" id="challenge-restaurant-directory" aria-label="Restaurant trivia game directory">
-          <p class="copy challenge-directory-loading">Loading restaurant games...</p>
         </div>
       </section>
 
