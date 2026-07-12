@@ -1609,7 +1609,7 @@
                       </div>
                         <div class="hero-profile-actions hero-profile-actions-top">
                           ${!emailConnected ? `<button class="button button-primary button-sm" type="button" data-show-connect-email>Save With Email</button>` : ""}
-                          <button class="button button-muted button-sm" type="button" data-edit-profile>Change Restaurant Name</button>
+                          <button class="button button-muted button-sm" type="button" data-edit-profile>Rename My Restaurant</button>
                         </div>
                     </div>
                     ${!state.profileEditMode && !emailConnected ? renderConnectInfoMarkup(profile) : ``}
@@ -1665,7 +1665,7 @@
                     </div>
                     <div class="hero-profile-actions hero-profile-actions-top">
                       ${!emailConnected ? `<button class="button button-primary button-sm" type="button" data-show-connect-email>Save With Email</button>` : ""}
-                      <button class="button button-muted button-sm" type="button" data-edit-profile>Change Restaurant Name</button>
+                      <button class="button button-muted button-sm" type="button" data-edit-profile>Rename My Restaurant</button>
                     </div>
                   </div>
                   ${!state.profileEditMode && !emailConnected ? renderConnectInfoMarkup(profile) : ``}
@@ -2113,7 +2113,10 @@
             <div class="leaderboard-current-rank-main">
               <div class="leaderboard-current-rank-number">#${currentRow.rank}</div>
               <div>
-                <p class="leaderboard-current-rank-name">${escapeHtml(currentRow.restaurantName)}</p>
+                <div class="leaderboard-current-rank-details">
+                  <p class="leaderboard-current-rank-name">${escapeHtml(currentRow.restaurantName)}</p>
+                  ${profile && !profile.isGuest ? `<button class="button button-muted button-sm leaderboard-rename-button" type="button" data-leaderboard-rename>Rename My Restaurant</button>` : ""}
+                </div>
                 <p class="leaderboard-current-rank-label">Your current position</p>
               </div>
               <p class="leaderboard-current-rank-value">${formatMetricValue(currentRow.value, state.metric)}</p>
@@ -2228,6 +2231,24 @@
           state.leaderboardRestaurantSlug = event.currentTarget.value;
         }
         renderAll();
+      });
+    });
+
+    elements.leaderboard.querySelectorAll("[data-leaderboard-rename]").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.activeMobileTab = "overview";
+        state.profileEditMode = true;
+        renderAll();
+        requestAnimationFrame(() => {
+          if (elements.hero) {
+            scrollMobileSection(elements.hero, 18);
+          }
+          const input = document.getElementById("hero-restaurant-name");
+          if (input instanceof HTMLInputElement) {
+            input.focus();
+            input.select();
+          }
+        });
       });
     });
 

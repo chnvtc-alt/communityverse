@@ -2425,6 +2425,19 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   font-weight: 850;
 }
 
+.leaderboard-current-rank-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  align-items: center;
+}
+
+.leaderboard-rename-button {
+  min-height: 30px;
+  padding: 0 10px;
+  font-size: 0.78rem;
+}
+
 .leaderboard-current-rank-label {
   margin: 2px 0 0;
   color: var(--muted);
