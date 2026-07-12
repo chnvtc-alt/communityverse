@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Restaurant Challenge Directory | CommunityVerse Games</title>
+    <meta
+      name="description"
+      content="Browse active Restaurant Challenge trivia games, find restaurant details, and choose a local restaurant game to play."
+    />
+    <meta name="robots" content="index,follow,max-image-preview:large" />
+    <link rel="canonical" href="https://communityversegames.com/restaurant/directory/" />
+    <meta property="og:site_name" content="CommunityVerse Games" />
+    <meta property="og:title" content="Restaurant Challenge Directory | CommunityVerse Games" />
+    <meta
+      property="og:description"
+      content="Browse active Restaurant Challenge trivia games and choose a restaurant game to play."
+    />
+    <meta property="og:url" content="https://communityversegames.com/restaurant/directory/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://communityversegames.com/assets/restaurant-challenge/restaurant-challenge-trivia-hero.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Restaurant Challenge Directory | CommunityVerse Games" />
+    <meta
+      name="twitter:description"
+      content="Browse active Restaurant Challenge trivia games and choose a restaurant game to play."
+    />
+    <meta name="twitter:image" content="https://communityversegames.com/assets/restaurant-challenge/restaurant-challenge-trivia-hero.jpg" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "@id": "https://communityversegames.com/restaurant/directory/#page",
+        "name": "Restaurant Challenge Directory",
+        "description": "A directory of active Restaurant Challenge trivia games from CommunityVerse Games.",
+        "url": "https://communityversegames.com/restaurant/directory/",
+        "isPartOf": {
+          "@type": "WebSite",
+          "@id": "https://communityversegames.com/#website",
+          "name": "CommunityVerse Games",
+          "url": "https://communityversegames.com/"
+        }
+      }
+    </script>
+    <link rel="stylesheet" href="/shared/restaurant.css?v=restaurant-directory-v1" />
+    <script defer src="directory.js?v=restaurant-directory-v1"></script>
+  </head>
+  <body data-page="restaurant-directory">
+    <main class="app-shell directory-shell">
+      <header class="topbar">
+        <div>
+          <a class="brand" href="/">CommunityVerse Games</a>
+        </div>
+        <div class="topbar-actions">
+          <a class="topbar-contact" href="/restaurant/">Restaurant Challenge</a>
+        </div>
+      </header>
+
+      <section class="directory-hero" aria-labelledby="directory-title">
+        <p class="kicker">Restaurant Challenge</p>
+        <h1 class="page-title" id="directory-title">Restaurant Game Directory</h1>
+        <p class="copy">
+          Browse active Restaurant Challenge games, visit a restaurant's website when available, or jump straight into a quick 10-question trivia game.
+        </p>
+      </section>
+
+      <section class="directory-toolbar panel" aria-label="Directory controls">
+        <label class="field directory-search-field">
+          <span class="field-label">Search Restaurants</span>
+          <input class="input" id="directory-search" type="search" placeholder="Restaurant, city, or keyword..." autocomplete="off" />
+        </label>
+        <p class="directory-count" id="directory-count">Loading restaurants...</p>
+      </section>
+
+      <section class="directory-grid" id="directory-grid" aria-live="polite">
+        <p class="copy directory-loading">Loading active restaurant games...</p>
+      </section>
+
+      <footer class="site-footer">
+        <span>Copyright - CommunityVerse Games. All rights reserved</span>
+        <span aria-hidden="true">|</span>
+        <a href="/privacy/">Privacy Policy</a>
+        <span aria-hidden="true">|</span>
+        <a href="/terms/">Terms of Use</a>
+      </footer>
+    </main>
+    <script defer src="/_vercel/insights/script.js"></script>
+  </body>
+</html>

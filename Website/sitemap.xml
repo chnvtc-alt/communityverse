@@ -9,6 +9,10 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://communityversegames.com/restaurant/directory/</loc>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://communityversegames.com/sam-and-roscos</loc>
     <priority>1.0</priority>
   </url>
