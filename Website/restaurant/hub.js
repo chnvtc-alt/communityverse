@@ -506,6 +506,11 @@
         closeContact();
       }
     });
+
+    const contactRequest = new URLSearchParams(window.location.search).get("contact");
+    if (contactRequest === "1" || window.location.hash === "#contact") {
+      window.setTimeout(openContact, 100);
+    }
   }
 
   function getSplashStatsOptions(profile, selectedRestaurantSlug) {
@@ -626,7 +631,7 @@
     elements.leaderboard.classList.toggle("hidden", !showLeaderboard);
 
     if (elements.footer) {
-      elements.footer.classList.toggle("hidden", !showOverview);
+      elements.footer.classList.remove("hidden");
     }
 
     if (elements.sections) {
