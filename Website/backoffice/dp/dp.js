@@ -503,9 +503,26 @@
     );
   }
 
+  function billingMonthsForSale(restaurant = {}) {
+    const plan = String(restaurant.packageName || "").toLowerCase();
+    const monthMatch = plan.match(/(\d+)\s*(?:month|months|mo|mos)\b/);
+    if (monthMatch) {
+      return Math.max(1, Number(monthMatch[1]) || 1);
+    }
+    if (/\b(?:annual|yearly|1\s*year|12\s*month|12\s*mo)\b/.test(plan)) {
+      return 12;
+    }
+    return 1;
+  }
+
+  function monthlyEquivalentAmount(restaurant = {}) {
+    const amount = numberFromMoney(restaurant.monthlyAmount, 0);
+    const billingMonths = billingMonthsForSale(restaurant);
+    return billingMonths > 1 ? Math.round((amount / billingMonths) * 100) / 100 : amount;
+  }
+
   function expectedMonthlyCommission(restaurant = {}) {
-    const monthlyAmount = numberFromMoney(restaurant.monthlyAmount, 0);
-    return Math.round(monthlyAmount * 0.5 * 100) / 100;
+    return Math.round(monthlyEquivalentAmount(restaurant) * 0.5 * 100) / 100;
   }
 
   function expectedAnnualCommission(restaurant = {}) {

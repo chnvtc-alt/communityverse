@@ -100,7 +100,7 @@
                     <tr>
                       <th>Month</th>
                       <th>New Sales</th>
-                      <th>New Monthly</th>
+                      <th>New Monthly Value</th>
                     </tr>
                   </thead>
                   <tbody id="monthly-sales-list"></tbody>
@@ -480,7 +480,7 @@
                     <th>Start</th>
                     <th>End</th>
                     <th><button class="sort-button" type="button" data-sales-sort="package">Package</button></th>
-                    <th><button class="sort-button" type="button" data-sales-sort="monthly">Monthly</button></th>
+                    <th><button class="sort-button" type="button" data-sales-sort="monthly">Amount</button></th>
                     <th><button class="sort-button" type="button" data-sales-sort="payment">Payment</button></th>
                     <th><button class="sort-button" type="button" data-sales-sort="setup">Setup</button></th>
                   </tr>
@@ -895,7 +895,7 @@
                 <input id="service-end-date" type="date" />
               </label>
               <label>
-                Monthly Amount
+                Monthly / Sale Amount
                 <input id="monthly-amount" inputmode="decimal" placeholder="199" />
               </label>
               <label>
@@ -1122,6 +1122,6 @@
 
     <input id="import-file" type="file" accept="application/json" hidden />
     <input id="prospect-import-file" type="file" accept=".csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" hidden />
-    <script src="/backoffice/app.js?v=backoffice-v95" defer></script>
+    <script src="/backoffice/app.js?v=backoffice-v96" defer></script>
   </body>
 </html>

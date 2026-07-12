@@ -1116,9 +1116,9 @@
 
   function renderMetrics() {
     const customers = state.restaurants.filter((restaurant) => restaurant.status === "customer");
-    const thisMonthSales = sumMonthlySales(customers.filter((restaurant) => saleMonth(restaurant) === currentMonth()));
-    const recurringMonthly = sumMonthlySales(customers.filter(isRecurringSale));
-    const yearSales = sumMonthlySales(customers.filter((restaurant) => saleYear(restaurant) === currentYear()));
+    const thisMonthSales = sumSaleAmounts(customers.filter((restaurant) => saleMonth(restaurant) === currentMonth()));
+    const recurringMonthly = sumMonthlyEquivalent(customers.filter(isRecurringSale));
+    const yearSales = sumSaleAmounts(customers.filter((restaurant) => saleYear(restaurant) === currentYear()));
     const topProspects = state.restaurants.filter(isTopProspect).length;
     elements.metricTotal.textContent = moneyMetric(thisMonthSales);
     elements.metricCustomers.textContent = moneyMetric(recurringMonthly);
@@ -1243,8 +1243,34 @@
     return saleDateFor(restaurant).slice(0, 4);
   }
 
-  function sumMonthlySales(restaurants) {
-    return restaurants.reduce((total, restaurant) => total + numberFromMoney(restaurant.monthlyAmount, 0), 0);
+  function billingMonthsForSale(restaurant = {}) {
+    const plan = String(restaurant.packageName || "").toLowerCase();
+    const monthMatch = plan.match(/(\d+)\s*(?:month|months|mo|mos)\b/);
+    if (monthMatch) {
+      return Math.max(1, Number(monthMatch[1]) || 1);
+    }
+    if (/\b(?:annual|yearly|1\s*year|12\s*month|12\s*mo)\b/.test(plan)) {
+      return 12;
+    }
+    return 1;
+  }
+
+  function saleAmount(restaurant = {}) {
+    return numberFromMoney(restaurant.monthlyAmount, 0);
+  }
+
+  function monthlyEquivalentAmount(restaurant = {}) {
+    const amount = saleAmount(restaurant);
+    const billingMonths = billingMonthsForSale(restaurant);
+    return billingMonths > 1 ? Math.round((amount / billingMonths) * 100) / 100 : amount;
+  }
+
+  function sumSaleAmounts(restaurants) {
+    return restaurants.reduce((total, restaurant) => total + saleAmount(restaurant), 0);
+  }
+
+  function sumMonthlyEquivalent(restaurants) {
+    return restaurants.reduce((total, restaurant) => total + monthlyEquivalentAmount(restaurant), 0);
   }
 
   function moneyMetric(value) {
@@ -1269,7 +1295,7 @@
         }
         const record = records.get(month);
         record.count += 1;
-        record.amount += numberFromMoney(restaurant.monthlyAmount, 0);
+        record.amount += monthlyEquivalentAmount(restaurant);
         return records;
       }, new Map());
     return [...months.values()].sort((left, right) => right.month.localeCompare(left.month));
@@ -2411,8 +2437,7 @@
   }
 
   function expectedMonthlyCommission(restaurant = {}) {
-    const monthlyAmount = numberFromMoney(restaurant.monthlyAmount, 0);
-    return Math.round(monthlyAmount * 0.5 * 100) / 100;
+    return Math.round(monthlyEquivalentAmount(restaurant) * 0.5 * 100) / 100;
   }
 
   function expectedAnnualCommission(restaurant = {}) {
