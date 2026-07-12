@@ -101,6 +101,12 @@ export function normalizeRestaurant(restaurant) {
     safeRestaurant.publicGameName || safeRestaurant.public_game_name || ""
   ).trim();
   safeRestaurant.location = String(safeRestaurant.location || "").trim();
+  safeRestaurant.street = String(safeRestaurant.street || safeRestaurant.address || "").trim();
+  safeRestaurant.city = String(safeRestaurant.city || "").trim();
+  safeRestaurant.state = String(safeRestaurant.state || "").trim();
+  safeRestaurant.zip = String(safeRestaurant.zip || "").trim();
+  safeRestaurant.phone = String(safeRestaurant.phone || safeRestaurant.telephone || "").trim();
+  safeRestaurant.website = String(safeRestaurant.website || safeRestaurant.url || "").trim();
   safeRestaurant.areaSlug = slugifyRestaurant(safeRestaurant.areaSlug || safeRestaurant.area_slug || "");
   safeRestaurant.themeTags = normalizeThemeTags(safeRestaurant.themeTags || safeRestaurant.theme_tags || "");
   safeRestaurant.description = String(safeRestaurant.description || "").trim();

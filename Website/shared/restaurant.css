@@ -841,7 +841,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .directory-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
   align-items: stretch;
 }
@@ -4690,7 +4690,8 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
   .challenge-play-controls,
   .challenge-info-grid,
-  .challenge-directory-grid {
+  .challenge-directory-grid,
+  .directory-grid {
     grid-template-columns: 1fr;
   }
 

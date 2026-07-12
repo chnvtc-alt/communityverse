@@ -126,6 +126,12 @@ const elements = {
   restaurantPageSlug: document.querySelector("#restaurant-page-slug"),
   restaurantPublicGameName: document.querySelector("#restaurant-public-game-name"),
   restaurantLocation: document.querySelector("#restaurant-location"),
+  restaurantStreet: document.querySelector("#restaurant-street"),
+  restaurantCity: document.querySelector("#restaurant-city"),
+  restaurantState: document.querySelector("#restaurant-state"),
+  restaurantZip: document.querySelector("#restaurant-zip"),
+  restaurantPhone: document.querySelector("#restaurant-phone"),
+  restaurantWebsite: document.querySelector("#restaurant-website"),
   restaurantAreaSlug: document.querySelector("#restaurant-area-slug"),
   restaurantThemeTags: document.querySelector("#restaurant-theme-tags"),
   restaurantIncludeAreaQuestions: document.querySelector("#restaurant-include-area-questions"),
@@ -922,6 +928,12 @@ function normalizeRestaurantRecord(restaurant) {
   safeRestaurant.name = String(safeRestaurant.name || "").trim();
   safeRestaurant.publicGameName = String(safeRestaurant.publicGameName || "").trim();
   safeRestaurant.location = String(safeRestaurant.location || "").trim();
+  safeRestaurant.street = String(safeRestaurant.street || safeRestaurant.address || "").trim();
+  safeRestaurant.city = String(safeRestaurant.city || "").trim();
+  safeRestaurant.state = String(safeRestaurant.state || "").trim();
+  safeRestaurant.zip = String(safeRestaurant.zip || "").trim();
+  safeRestaurant.phone = String(safeRestaurant.phone || safeRestaurant.telephone || "").trim();
+  safeRestaurant.website = String(safeRestaurant.website || safeRestaurant.url || "").trim();
   safeRestaurant.areaSlug = slugify(safeRestaurant.areaSlug || "");
   safeRestaurant.themeTags = Array.isArray(safeRestaurant.themeTags)
     ? safeRestaurant.themeTags.map((tag) => slugify(tag)).filter(Boolean)
@@ -2724,6 +2736,12 @@ function resetRestaurantEditor(restaurant = null) {
   elements.restaurantPageSlug.value = restaurant?.slug || "";
   elements.restaurantPublicGameName.value = restaurant?.publicGameName || "";
   elements.restaurantLocation.value = restaurant?.location || "";
+  elements.restaurantStreet.value = restaurant?.street || "";
+  elements.restaurantCity.value = restaurant?.city || "";
+  elements.restaurantState.value = restaurant?.state || "";
+  elements.restaurantZip.value = restaurant?.zip || "";
+  elements.restaurantPhone.value = restaurant?.phone || "";
+  elements.restaurantWebsite.value = restaurant?.website || "";
   elements.restaurantAreaSlug.value = restaurant?.areaSlug || "";
   elements.restaurantThemeTags.value = (restaurant?.themeTags || []).join(", ");
   elements.restaurantIncludeAreaQuestions.checked = restaurant?.includeAreaQuestions !== false;
@@ -2759,6 +2777,12 @@ function restaurantFromForm() {
     name: elements.restaurantName.value.trim(),
     publicGameName: elements.restaurantPublicGameName.value.trim(),
     location: elements.restaurantLocation.value.trim(),
+    street: elements.restaurantStreet.value.trim(),
+    city: elements.restaurantCity.value.trim(),
+    state: elements.restaurantState.value.trim(),
+    zip: elements.restaurantZip.value.trim(),
+    phone: elements.restaurantPhone.value.trim(),
+    website: elements.restaurantWebsite.value.trim(),
     areaSlug: elements.restaurantAreaSlug.value.trim(),
     themeTags: splitCommaList(elements.restaurantThemeTags.value).map((tag) => slugify(tag)).filter(Boolean),
     includeAreaQuestions: elements.restaurantIncludeAreaQuestions.checked,

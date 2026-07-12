@@ -39,15 +39,22 @@
   }
 
   function visibleRestaurants(list) {
+    const hiddenDirectorySlugs = new Set(["americana", "americana-grill", "wafflemaster", "waffle-master"]);
     return (Array.isArray(list) ? list : [])
-      .filter((restaurant) =>
-        restaurant &&
-        restaurant.active !== false &&
-        restaurant.playable !== false &&
-        restaurant.visibleInList !== false &&
-        restaurant.slug &&
-        restaurant.name
-      )
+      .filter((restaurant) => {
+        const slug = String(restaurant?.slug || "").toLowerCase();
+        const name = String(restaurant?.name || "").toLowerCase();
+        const isDemo = hiddenDirectorySlugs.has(slug) || /^americana\b/.test(name) || name === "waffle master";
+        return (
+          restaurant &&
+          restaurant.active !== false &&
+          restaurant.playable !== false &&
+          restaurant.visibleInList !== false &&
+          !isDemo &&
+          restaurant.slug &&
+          restaurant.name
+        );
+      })
       .sort((left, right) =>
         (Number(left.sortOrder) || 0) - (Number(right.sortOrder) || 0) ||
         String(left.name || "").localeCompare(String(right.name || ""))
@@ -55,18 +62,7 @@
   }
 
   function fallbackRestaurants() {
-    return [
-      {
-        slug: "americana",
-        name: "Americana Diner",
-        description: "Classic comfort food in Pepperville. Answer 10 questions and unlock a collectible character.",
-        logoSquare: "/assets/restaurant-challenge/restaurants/americana/americana-diner-logo.jpg",
-        location: "Pepperville",
-        active: true,
-        playable: true,
-        visibleInList: true,
-      },
-    ];
+    return [];
   }
 
   async function loadRestaurants() {
@@ -76,11 +72,11 @@
       const data = await response.json();
       restaurants = visibleRestaurants(data);
     } catch (error) {
-      restaurants = fallbackRestaurants();
+      restaurants = [];
     }
 
     if (!restaurants.length) {
-      restaurants = fallbackRestaurants();
+      restaurants = [];
     }
 
     renderDirectory();
@@ -147,7 +143,7 @@
     elements.count.textContent = `${filtered.length} active game${filtered.length === 1 ? "" : "s"}`;
 
     if (!filtered.length) {
-      elements.grid.innerHTML = `<p class="empty-state">No restaurant games match that search.</p>`;
+      elements.grid.innerHTML = `<p class="empty-state">${query ? "No restaurant games match that search." : "No public restaurant games are listed yet."}</p>`;
       return;
     }
 
