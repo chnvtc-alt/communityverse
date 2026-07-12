@@ -423,6 +423,12 @@ textarea {
   gap: 8px;
 }
 
+.stats-section-scrollable .stats-list {
+  max-height: 560px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
 .stats-row {
   display: flex;
   gap: 14px;

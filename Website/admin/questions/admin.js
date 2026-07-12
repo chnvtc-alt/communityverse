@@ -2281,8 +2281,7 @@ function getTopPublicGameRows(list) {
       games,
       players: playersBySlug.get(slug) || 0,
     }))
-    .sort((left, right) => right.games - left.games || left.name.localeCompare(right.name))
-    .slice(0, 8);
+    .sort((left, right) => right.games - left.games || left.name.localeCompare(right.name));
 }
 
 function getMostActiveProfileRows(list) {
@@ -2345,9 +2344,9 @@ function pageVisitStatsMarkup() {
   );
 }
 
-function statsList(title, rows, emptyText, rowTemplate) {
+function statsList(title, rows, emptyText, rowTemplate, extraClass = "") {
   return `
-    <section class="stats-section">
+    <section class="stats-section ${extraClass}">
       <h2>${escapeHtml(title)}</h2>
       <div class="stats-list">
         ${
@@ -2434,7 +2433,7 @@ function renderStats() {
           <span>${escapeHtml(row.name)} <small>${formatWholeNumber(row.players)} player${row.players === 1 ? "" : "s"}</small></span>
           <strong>${formatWholeNumber(row.games)}</strong>
         </div>
-      `)}
+      `, "stats-section-scrollable")}
     </section>
 
     <p class="stats-footnote">Main stats count Normal Player profiles only. Excluded from stats: ${formatWholeNumber(excludedProfiles.length)} (${formatWholeNumber(adminProfiles.length)} admin · ${formatWholeNumber(testerProfiles.length)} tester). Current view: ${escapeHtml(isOverallStatsScope() ? "Overall" : selectedRestaurantName)}. Last normal-player recorded play: ${escapeHtml(summary.lastPlayedAt ? formatShortDate(summary.lastPlayedAt) : "not available")}.</p>
