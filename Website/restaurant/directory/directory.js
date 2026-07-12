@@ -117,21 +117,22 @@
 
     return `
       <article class="directory-card">
-        <div class="directory-card-logo-wrap">
-          ${
-            logo
-              ? `<img class="directory-card-logo" src="${escapeHtml(logo)}" alt="${escapeHtml(`${restaurant.name} logo`)}" loading="lazy" />`
-              : `<span class="directory-card-logo directory-card-logo-fallback" aria-hidden="true">${escapeHtml(String(restaurant.name).charAt(0) || "R")}</span>`
-          }
-        </div>
-        <div class="directory-card-body">
-          <h2>${escapeHtml(restaurant.name)}</h2>
-          <p class="directory-card-copy">${escapeHtml(description)}</p>
-          ${details ? `<div class="directory-card-details">${details}</div>` : ""}
-          <div class="directory-card-actions">
-            <a class="button button-primary button-sm" href="${escapeHtml(gameHref)}">Play Game</a>
-            ${website ? `<a class="button button-muted button-sm" href="${escapeHtml(website)}" target="_blank" rel="noopener">Website</a>` : ""}
+        <div class="directory-card-main">
+          <div class="directory-card-logo-wrap">
+            ${
+              logo
+                ? `<img class="directory-card-logo" src="${escapeHtml(logo)}" alt="${escapeHtml(`${restaurant.name} logo`)}" loading="lazy" />`
+                : `<span class="directory-card-logo directory-card-logo-fallback" aria-hidden="true">${escapeHtml(String(restaurant.name).charAt(0) || "R")}</span>`
+            }
           </div>
+          <div class="directory-card-info">
+            <h2>${escapeHtml(restaurant.name)}</h2>
+            ${details ? `<div class="directory-card-details">${details}</div>` : ""}
+          </div>
+        </div>
+        <p class="directory-card-copy">${escapeHtml(description)}</p>
+        <div class="directory-card-actions">
+          <a class="button button-primary button-sm" href="${escapeHtml(gameHref)}">Play Game</a>
         </div>
       </article>
     `;

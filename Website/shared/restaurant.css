@@ -802,9 +802,9 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .directory-hero {
   display: grid;
-  gap: 12px;
-  margin-bottom: 18px;
-  padding: clamp(22px, 5vw, 42px);
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: clamp(16px, 4vw, 28px);
   border-radius: 18px;
   border: 1px solid rgba(93, 116, 105, 0.14);
   background:
@@ -813,17 +813,13 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   box-shadow: var(--shadow);
 }
 
-.directory-hero .copy {
-  max-width: 780px;
-}
-
 .directory-toolbar {
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
   align-items: end;
   justify-content: space-between;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
   padding: 16px;
 }
 
@@ -848,8 +844,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .directory-card {
   display: grid;
-  grid-template-columns: 112px minmax(0, 1fr);
-  gap: 16px;
+  gap: 12px;
   min-height: 100%;
   padding: 16px;
   border: 1px solid rgba(93, 116, 105, 0.14);
@@ -860,6 +855,13 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .directory-card-logo-wrap {
   min-width: 0;
+}
+
+.directory-card-main {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
 }
 
 .directory-card-logo {
@@ -880,7 +882,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   font-weight: 900;
 }
 
-.directory-card-body {
+.directory-card-info {
   display: grid;
   gap: 8px;
   min-width: 0;
@@ -920,7 +922,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .challenge-faq-item summary,
@@ -4697,11 +4699,23 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
   .directory-toolbar {
     align-items: stretch;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding: 12px;
+  }
+
+  .directory-hero {
+    margin-bottom: 10px;
+    padding: 14px 16px;
+    border-radius: 16px;
+  }
+
+  .directory-card-main {
+    grid-template-columns: 76px minmax(0, 1fr);
+    gap: 12px;
   }
 
   .directory-card {
-    grid-template-columns: 76px minmax(0, 1fr);
-    gap: 12px;
     padding: 12px;
   }
 
