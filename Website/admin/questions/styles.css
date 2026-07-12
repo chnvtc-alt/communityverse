@@ -540,6 +540,35 @@ textarea {
   background: var(--muted);
 }
 
+.restaurant-paused-group {
+  border: 1px solid rgba(30, 41, 37, 0.14);
+  border-radius: 6px;
+  background: rgba(255, 250, 240, 0.72);
+}
+
+.restaurant-paused-group > summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  color: var(--ink);
+  cursor: pointer;
+  font-family: "Courier New", monospace;
+  font-weight: 800;
+}
+
+.restaurant-paused-group > summary span:last-child {
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.restaurant-paused-list {
+  display: grid;
+  gap: 12px;
+  padding: 0 12px 12px;
+}
+
 .question-prompt {
   margin: 0 0 10px;
   font-family: "Fraunces", serif;

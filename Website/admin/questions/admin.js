@@ -1326,8 +1326,62 @@ function getRestaurantStatus(restaurant) {
   return restaurant.visibleInList ? "Public" : "Private link";
 }
 
+function isPausedRestaurant(restaurant) {
+  return !restaurant.active || !restaurant.playable;
+}
+
+function renderRestaurantCard(restaurant) {
+  const image = displayImageUrl(restaurant.heroImage || restaurant.logoSquare);
+  const status = getRestaurantStatus(restaurant);
+  const chips = [
+    status,
+    restaurant.slug,
+    restaurant.areaSlug,
+    ...(Array.isArray(restaurant.themeTags) ? restaurant.themeTags.map((tag) => `#${tag}`) : []),
+    restaurant.location,
+  ].filter(Boolean);
+  const startLink = `/${restaurant.slug}/`;
+  const playLink = `/${restaurant.slug}/play/`;
+
+  return `
+    <article class="question-card ${isPausedRestaurant(restaurant) ? "inactive" : ""}" data-id="${escapeHtml(restaurant.id)}">
+      <div class="restaurant-card-layout">
+        <img class="restaurant-card-photo" src="${escapeHtml(image)}" alt="${escapeHtml(restaurant.name)}" />
+        <div>
+          <p class="question-prompt">${escapeHtml(restaurant.name)}</p>
+          <p class="question-answer">${escapeHtml(restaurant.publicGameName || `${restaurant.name} Game`)}</p>
+          <p class="subtle" style="margin-top: 6px;">${escapeHtml(restaurant.description || restaurant.location || "")}</p>
+          <div class="question-meta">
+            ${chips.map((chip) => `<span class="meta-chip">${escapeHtml(chip)}</span>`).join("")}
+            <span class="meta-chip">${escapeHtml(startLink)}</span>
+            <span class="meta-chip">${escapeHtml(playLink)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="button button-secondary edit-restaurant-button" type="button">Edit</button>
+        <button class="button button-quiet toggle-restaurant-playable-button" type="button">
+          ${isPausedRestaurant(restaurant) ? "Play by link" : "Pause"}
+        </button>
+        <button class="button button-quiet toggle-restaurant-list-button" type="button">
+          ${restaurant.visibleInList ? "Hide from list" : "Show publicly"}
+        </button>
+      </div>
+    </article>
+  `;
+}
+
 function renderRestaurants() {
-  elements.restaurantCount.textContent = `${restaurants.length} restaurant${restaurants.length === 1 ? "" : "s"}`;
+  const pausedRestaurants = restaurants.filter(isPausedRestaurant);
+  const activeRestaurants = restaurants.filter((restaurant) => !isPausedRestaurant(restaurant));
+  const filterQuery = elements.restaurantFilterQuery.value.trim();
+  const filterStatus = elements.restaurantFilterStatus.value;
+  const filterArea = elements.restaurantFilterArea.value.trim();
+  const shouldGroupPaused = filterStatus === "all" && !filterQuery && !filterArea && pausedRestaurants.length > 0;
+
+  elements.restaurantCount.textContent = shouldGroupPaused
+    ? `${activeRestaurants.length} active, ${pausedRestaurants.length} paused`
+    : `${restaurants.length} restaurant${restaurants.length === 1 ? "" : "s"}`;
   updateSuggestions();
   populateCustomerSuggestions();
   renderFeedbackRestaurantFilter();
@@ -1337,48 +1391,23 @@ function renderRestaurants() {
     return;
   }
 
-  elements.restaurantList.innerHTML = restaurants
-    .map((restaurant) => {
-      const image = displayImageUrl(restaurant.heroImage || restaurant.logoSquare);
-      const status = getRestaurantStatus(restaurant);
-      const chips = [
-        status,
-        restaurant.slug,
-        restaurant.areaSlug,
-        ...(Array.isArray(restaurant.themeTags) ? restaurant.themeTags.map((tag) => `#${tag}`) : []),
-        restaurant.location,
-      ].filter(Boolean);
-      const startLink = `/${restaurant.slug}/`;
-      const playLink = `/${restaurant.slug}/play/`;
+  if (!shouldGroupPaused) {
+    elements.restaurantList.innerHTML = restaurants.map(renderRestaurantCard).join("");
+    return;
+  }
 
-      return `
-        <article class="question-card ${restaurant.active && restaurant.playable ? "" : "inactive"}" data-id="${escapeHtml(restaurant.id)}">
-          <div class="restaurant-card-layout">
-            <img class="restaurant-card-photo" src="${escapeHtml(image)}" alt="${escapeHtml(restaurant.name)}" />
-            <div>
-              <p class="question-prompt">${escapeHtml(restaurant.name)}</p>
-              <p class="question-answer">${escapeHtml(restaurant.publicGameName || `${restaurant.name} Game`)}</p>
-              <p class="subtle" style="margin-top: 6px;">${escapeHtml(restaurant.description || restaurant.location || "")}</p>
-              <div class="question-meta">
-                ${chips.map((chip) => `<span class="meta-chip">${escapeHtml(chip)}</span>`).join("")}
-                <span class="meta-chip">${escapeHtml(startLink)}</span>
-                <span class="meta-chip">${escapeHtml(playLink)}</span>
-              </div>
-            </div>
-          </div>
-          <div class="card-actions">
-            <button class="button button-secondary edit-restaurant-button" type="button">Edit</button>
-            <button class="button button-quiet toggle-restaurant-playable-button" type="button">
-              ${restaurant.active && restaurant.playable ? "Pause" : "Play by link"}
-            </button>
-            <button class="button button-quiet toggle-restaurant-list-button" type="button">
-              ${restaurant.visibleInList ? "Hide from list" : "Show publicly"}
-            </button>
-          </div>
-        </article>
-      `;
-    })
-    .join("");
+  elements.restaurantList.innerHTML = `
+    ${activeRestaurants.map(renderRestaurantCard).join("")}
+    <details class="restaurant-paused-group">
+      <summary>
+        <span>Paused games</span>
+        <span>${pausedRestaurants.length} hidden from this list</span>
+      </summary>
+      <div class="restaurant-paused-list">
+        ${pausedRestaurants.map(renderRestaurantCard).join("")}
+      </div>
+    </details>
+  `;
 }
 
 async function loadRestaurants({ quiet = false } = {}) {
