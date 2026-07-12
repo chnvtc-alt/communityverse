@@ -801,16 +801,19 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 }
 
 .directory-hero {
-  display: grid;
-  gap: 8px;
+  display: block;
+  overflow: hidden;
   margin-bottom: 12px;
-  padding: clamp(16px, 4vw, 28px);
   border-radius: 18px;
   border: 1px solid rgba(93, 116, 105, 0.14);
-  background:
-    linear-gradient(120deg, rgba(255, 251, 243, 0.96), rgba(239, 247, 239, 0.78)),
-    radial-gradient(circle at right top, rgba(213, 138, 43, 0.18), transparent 36%);
+  background: rgba(255, 251, 243, 0.92);
   box-shadow: var(--shadow);
+}
+
+.directory-hero-image {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .directory-toolbar {
@@ -4706,7 +4709,6 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
   .directory-hero {
     margin-bottom: 10px;
-    padding: 14px 16px;
     border-radius: 16px;
   }
 
