@@ -3522,15 +3522,15 @@
   function recurringPaymentLink(record, restaurant = null) {
     const params = new URLSearchParams();
     const invoiceNumber = String(record?.invoiceNumber || "").trim();
-    const restaurantName = String(record?.restaurantName || restaurant?.name || "").trim();
     if (invoiceNumber) {
       params.set("invoice", invoiceNumber);
     }
-    if (restaurantName) {
-      params.set("restaurant", restaurantName);
-    }
     const query = params.toString();
     return query ? `${SUBSCRIPTION_LINK}?${query}` : SUBSCRIPTION_LINK;
+  }
+
+  function recurringPaymentDisplayLink() {
+    return "communityversegames.com/subscribe/";
   }
 
   function pdfText(value) {
@@ -3643,6 +3643,10 @@
     const addText = (text, x, y, size = 11, bold = false) => {
       lines.push(`BT /${bold ? "F2" : "F1"} ${size} Tf ${x} ${y} Td (${pdfText(text)}) Tj ET`);
     };
+    const addPanel = (x, y, width, height, fill = "0.86 0.92 0.92", stroke = "0.73 0.70 0.64") => {
+      lines.push(`q ${fill} rg ${x} ${y} ${width} ${height} re f Q`);
+      lines.push(`q ${stroke} RG 0.8 w ${x} ${y} ${width} ${height} re S Q`);
+    };
     const logoBytes = await loadPdfLogoBytes();
     if (logoBytes) {
       lines.push(`q ${PDF_LOGO_WIDTH} 0 0 ${PDF_LOGO_HEIGHT} 48 706 cm /Logo Do Q`);
@@ -3678,15 +3682,22 @@
     });
     addText(details.amount, 500, 512, 10);
     lines.push(`0.8 w 48 ${descriptionY - 6} m 564 ${descriptionY - 6} l S`);
+    addPanel(48, descriptionY - 46, 516, 34, "0.98 0.96 0.91", "0.78 0.73 0.64");
     addText("Total Due", 48, descriptionY - 28, 12, true);
     addText(details.amount, 500, descriptionY - 28, 12, true);
 
-    const payY = descriptionY - 76;
+    const payY = descriptionY - 82;
+    addPanel(48, payY - 46, 516, 66, details.isRecurring ? "0.86 0.92 0.92" : "0.94 0.97 0.94", "0.73 0.70 0.64");
     addText(details.isRecurring ? "Set up recurring monthly payment" : "Pay online", 48, payY, 11, true);
-    addText(primaryLink, 48, payY - 16, 10);
-    const statusY = payY - 54;
-    addText(`Payment type: ${details.paymentTypeLabel}`, 48, statusY, 11, true);
-    addText(`Status: ${details.status}`, 48, statusY - 18, 11, true);
+    if (details.isRecurring) {
+      addText(`Go to ${recurringPaymentDisplayLink()}`, 48, payY - 16, 10);
+      addText(`Invoice: ${record.invoiceNumber || "shown above"}`, 48, payY - 30, 10);
+    } else {
+      addText(PAYMENT_LINK, 48, payY - 16, 10);
+    }
+    const statusY = payY - 72;
+    addText(`Payment type: ${details.paymentTypeLabel}`, 48, statusY, 10, true);
+    addText(`Status: ${details.status}`, 48, statusY - 16, 10, true);
 
     const stream = lines.join("\n");
     return {
@@ -3757,8 +3768,8 @@
           <p class="invoice-label">${details.isRecurring ? "Monthly Subscription" : "Pay Online"}</p>
           <a href="${escapeHtml(primaryLink)}" target="_blank" rel="noopener">${escapeHtml(primaryText)}</a>
           ${details.isRecurring
-            ? '<span>Renews automatically each month from the signup date unless canceled.</span>'
-            : `<a href="${escapeHtml(subscriptionLink)}" target="_blank" rel="noopener">Set up recurring monthly payment instead</a>`}
+            ? `<span>Go to ${escapeHtml(recurringPaymentDisplayLink())}. Invoice: ${escapeHtml(record.invoiceNumber || "shown above")}. Renews automatically each month from the signup date unless canceled.</span>`
+            : ""}
         </section>
         <p class="invoice-status">Payment type: ${escapeHtml(details.paymentTypeLabel)}</p>
         <p class="invoice-status">Status: ${escapeHtml(details.status)}</p>
@@ -3816,7 +3827,7 @@
           "",
           `The monthly amount is ${details.amount}. Your subscription starts when you sign up and renews automatically each month on that same day unless canceled.`,
           "",
-          "Please use this PayPal subscription link:",
+          "Please use this CommunityVerse subscription page:",
           subscriptionLink,
           "",
           "A PDF is attached for your records.",
