@@ -3820,10 +3820,6 @@
           subscriptionLink,
           "",
           "A PDF is attached for your records.",
-          "",
-          "Best Wishes,",
-          "Tim Collins - Game Developer",
-          INVOICE_SENDER.business,
         ].join("\n")
       : [
           `Hi ${greetingName},`,
@@ -3833,14 +3829,7 @@
           "You can mail a check or pay online with a credit card through PayPal, using this PayPal link:",
           PAYMENT_LINK,
           "",
-          "If you would rather set up automatic monthly payments, use this subscription link:",
-          subscriptionLink,
-          "",
           "A PDF of this invoice is attached for your records.",
-          "",
-          "Best Wishes,",
-          "Tim Collins - Game Developer",
-          INVOICE_SENDER.business,
         ].join("\n");
     const draftUrl = mailtoUrl(email, subject, body);
     if (draftUrl.length > MAILTO_FULL_DRAFT_LIMIT) {

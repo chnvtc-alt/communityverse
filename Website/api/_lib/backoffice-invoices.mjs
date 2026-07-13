@@ -293,14 +293,8 @@ function invoiceHtml(collection = {}, restaurant = {}, isTest = false) {
   const primaryButton = details.isRecurring ? "Set Up Monthly Subscription" : "Pay Now";
   const primaryIntro = details.isRecurring
     ? `Use this PayPal link to set up the ${htmlEscape(details.amount)} monthly Restaurant Challenge subscription. It starts when you sign up and renews automatically each month on that same day unless canceled.`
-    : "You can mail a check, pay this invoice one time with the green Pay Now button, or set up recurring monthly payments using the link below.";
-  const secondaryBox = details.isRecurring
-    ? ""
-    : `<div style="background:#fffaf2;border:1px solid #d8d0bf;padding:18px;margin-bottom:24px;">
-        <p style="margin:0 0 8px;font-weight:800;">Want recurring monthly payments?</p>
-        <p style="margin:0 0 14px;">Use this PayPal subscription link to set up the monthly Restaurant Challenge payment.</p>
-        <a href="${htmlEscape(subscriptionLink)}" style="display:inline-block;background:#d58a2b;color:#fff;text-decoration:none;padding:11px 22px;border-radius:6px;font-weight:800;">Set Up Monthly Payment</a>
-      </div>`;
+    : "You can mail a check or pay this invoice one time with the green Pay Now button.";
+  const secondaryBox = "";
   const testNote = isTest ? `<p style="margin:0 0 18px;color:#a15c00;font-weight:700;">Test send only. This was not sent to the customer.</p>` : "";
   return `<!doctype html>
 <html>
@@ -355,9 +349,6 @@ function invoiceText(collection = {}, restaurant = {}, isTest = false) {
         "",
         "You can mail a check or pay online with a credit card through PayPal, using this PayPal link:",
         PAYMENT_LINK,
-        "",
-        "If you would rather set up automatic monthly payments, use this subscription link:",
-        subscriptionLink,
         "",
         "A PDF of this invoice is attached for your records.",
       ];
