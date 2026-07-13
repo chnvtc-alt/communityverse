@@ -3732,7 +3732,7 @@
         ${details.isRecurring ? `
           <section class="invoice-email-callout">
             <strong>Monthly subscription setup</strong>
-            <p>Use the CommunityVerse subscription page to set up the ${escapeHtml(details.amount)} monthly Restaurant Challenge payment.</p>
+            <p>Use the CommunityVerse subscription page to set up the ${escapeHtml(details.amount)} monthly Restaurant Challenge payment securely through PayPal.</p>
             <a class="button button-muted" href="${escapeHtml(primaryLink)}" target="_blank" rel="noopener">Open Subscription Page</a>
             <span>Clean address: ${escapeHtml(recurringPaymentDisplayLink())} · Invoice ${escapeHtml(record.invoiceNumber || "")}</span>
           </section>
@@ -3743,7 +3743,7 @@
             ? `Here is the setup link for your ${escapeHtml(gameName)} monthly subscription. Thank you for allowing us to promote your restaurant through your trivia game.`
             : `Here is your invoice for ${escapeHtml(month)} for ${escapeHtml(gameName)}. Thank you for allowing us to promote your restaurant through your trivia game.`}</p>
           <p>${details.isRecurring
-            ? `Your subscription starts when you sign up and renews automatically each month on that same day unless canceled.`
+            ? `Your subscription is set up securely through PayPal, starts when you sign up, and renews automatically each month on that same day unless canceled.`
             : `You can pay this invoice one time with the Pay Now button.`}</p>
           <p>A PDF of this invoice is attached for your records.</p>
         </section>
@@ -3808,7 +3808,7 @@
           "",
           `Here is the setup link for your ${gameName} monthly subscription. Thank you for allowing us to promote your restaurant through your trivia game.`,
           "",
-          `The monthly amount is ${details.amount}. Your subscription starts when you sign up and renews automatically each month on that same day unless canceled.`,
+          `The monthly amount is ${details.amount}. Your subscription is set up securely through PayPal, starts when you sign up, and renews automatically each month on that same day unless canceled.`,
           "",
           "Please use this CommunityVerse subscription page:",
           subscriptionLink,

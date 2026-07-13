@@ -304,7 +304,7 @@ function invoiceHtml(collection = {}, restaurant = {}, isTest = false) {
   const primaryLink = details.isRecurring ? subscriptionLink : PAYMENT_LINK;
   const primaryButton = details.isRecurring ? "Set Up Monthly Subscription" : "Pay Now";
   const primaryIntro = details.isRecurring
-    ? `Use this CommunityVerse subscription page to set up the ${htmlEscape(details.amount)} monthly Restaurant Challenge subscription. It starts when you sign up and renews automatically each month on that same day unless canceled.`
+    ? `Use this CommunityVerse subscription page to set up the ${htmlEscape(details.amount)} monthly Restaurant Challenge subscription securely through PayPal. It starts when you sign up and renews automatically each month on that same day unless canceled.`
     : "You can pay this invoice one time with the green Pay Now button.";
   const secondaryBox = "";
   const testNote = isTest ? `<p style="margin:0 0 18px;color:#a15c00;font-weight:700;">Test send only. This was not sent to the customer.</p>` : "";
@@ -323,7 +323,7 @@ function invoiceHtml(collection = {}, restaurant = {}, isTest = false) {
       </div>
       ${details.isRecurring ? `<div style="background:#fffaf2;border:1px solid #d8d0bf;padding:18px;margin-bottom:24px;">
         <p style="margin:0 0 8px;font-weight:800;">Monthly subscription setup</p>
-        <p style="margin:0 0 14px;">Use the CommunityVerse subscription page to set up the ${htmlEscape(details.amount)} monthly Restaurant Challenge payment.</p>
+        <p style="margin:0 0 14px;">Use the CommunityVerse subscription page to set up the ${htmlEscape(details.amount)} monthly Restaurant Challenge payment securely through PayPal.</p>
         <a href="${htmlEscape(primaryLink)}" style="display:inline-block;background:#d58a2b;color:#fff;text-decoration:none;padding:11px 22px;border-radius:6px;font-weight:800;">Open Subscription Page</a>
       </div>` : secondaryBox}
       ${testNote}
@@ -350,7 +350,7 @@ function invoiceText(collection = {}, restaurant = {}, isTest = false) {
         "",
         `Here is the setup link for your ${details.gameName} monthly subscription. Thank you for allowing us to promote your restaurant through your trivia game.`,
         "",
-        `The monthly amount is ${details.amount}. Your subscription starts when you sign up and renews automatically each month on that same day unless canceled.`,
+        `The monthly amount is ${details.amount}. Your subscription is set up securely through PayPal, starts when you sign up, and renews automatically each month on that same day unless canceled.`,
         "",
         "Please use this CommunityVerse subscription page:",
         subscriptionLink,
