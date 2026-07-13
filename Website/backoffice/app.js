@@ -2551,11 +2551,9 @@
 
   function paypalPaymentNote(payment = {}) {
     return [
-      "PayPal payment",
+      "PayPal payment received.",
       payment.transactionId ? `Transaction ID: ${payment.transactionId}` : "",
       payment.profileId ? `Profile ID: ${payment.profileId}` : "",
-      payment.customerName ? `Customer: ${payment.customerName}` : "",
-      payment.customerEmail ? `Customer email: ${payment.customerEmail}` : "",
       payment.grossAmount ? `Gross amount: ${moneyValue(payment.grossAmount)}` : "",
       payment.feeAmount ? `PayPal fee: ${moneyValue(payment.feeAmount)}` : "",
       payment.netAmount ? `Net amount after PayPal fee: ${moneyValue(payment.netAmount)}` : "",
@@ -2824,9 +2822,25 @@
     `).join("");
   }
 
-  function invoiceTableNote(notes = "") {
-    const text = stripPaymentTypeNote(notes);
-    const periodMatch = text.match(/(?:Partial service period|Service period):\s*(.+?)(?:\.\s*$|$)/i);
+  function noteMatch(notes = "", pattern) {
+    const match = String(notes || "").match(pattern);
+    return match?.[1] ? match[1].trim() : "";
+  }
+
+  function invoiceTableNote(record = {}) {
+    const text = stripPaymentTypeNote(record.notes);
+    if (/PayPal payment/i.test(text)) {
+      const transaction = noteMatch(text, /Transaction ID:\s*([^/\n]+)/i);
+      const gross = noteMatch(text, /Gross amount:\s*([^/\n]+)/i);
+      const net = noteMatch(text, /Net amount after PayPal fee:\s*([^/\n]+)/i);
+      return [
+        "PayPal payment recorded",
+        gross ? `Gross ${gross}` : "",
+        net ? `Net ${net}` : "",
+        transaction ? `Transaction ${transaction}` : "",
+      ].filter(Boolean).join(". ");
+    }
+    const periodMatch = text.match(/(?:Partial service period|Service period):\s*(.+?)(?:\.|$)/i);
     return periodMatch ? periodMatch[1].trim() : text;
   }
 
@@ -2866,11 +2880,10 @@
         <td>${escapeHtml(moneyValue(record.amount))}</td>
         <td>${escapeHtml(labelFor(collectionStatusLabels, record.status, "Not Sent"))}</td>
         <td>${escapeHtml(shortDate(record.paidDate))}</td>
-        <td>${escapeHtml(invoiceTableNote(record.notes))}</td>
+        <td>${escapeHtml(invoiceTableNote(record))}</td>
         <td class="table-actions">
           <button class="text-button" type="button" data-edit-collection-id="${escapeHtml(record.id)}">Edit</button>
-          <button class="text-button" type="button" data-send-collection-id="${escapeHtml(record.id)}">${record.paymentType === "manual" ? "Send Invoice" : "Send Subscription"}</button>
-          <button class="text-button" type="button" data-email-collection-id="${escapeHtml(record.id)}">${record.paymentType === "manual" ? "Email Invoice" : "Email Subscription"}</button>
+          <button class="text-button" type="button" data-email-collection-id="${escapeHtml(record.id)}">Draft Email</button>
           <button class="text-button" type="button" data-print-collection-id="${escapeHtml(record.id)}">View / Save PDF</button>
           <button class="text-button" type="button" data-delete-collection-id="${escapeHtml(record.id)}">Remove</button>
         </td>
@@ -3829,7 +3842,16 @@
           "Tim Collins - Game Developer",
           INVOICE_SENDER.business,
         ].join("\n");
-    window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const draftUrl = mailtoUrl(email, subject, body);
+    if (draftUrl.length > MAILTO_FULL_DRAFT_LIMIT) {
+      copyTextToClipboard(body);
+      window.location.href = mailtoUrl(email, subject);
+      window.setTimeout(() => {
+        window.alert("The email message was long, so Back Office copied it. If your email opens without the message body, paste it into the email before sending.");
+      }, 800);
+      return;
+    }
+    window.location.href = draftUrl;
   }
 
   function salesEmailValue(value = "", restaurant = {}) {
@@ -4938,10 +4960,6 @@
     const emailCollectionButton = event.target.closest("[data-email-collection-id]");
     if (emailCollectionButton) {
       openInvoiceEmail(emailCollectionButton.dataset.emailCollectionId);
-    }
-    const sendCollectionButton = event.target.closest("[data-send-collection-id]");
-    if (sendCollectionButton) {
-      sendInvoiceEmail(sendCollectionButton.dataset.sendCollectionId);
     }
     const applyPaypalPaymentButton = event.target.closest("[data-apply-paypal-payment]");
     if (applyPaypalPaymentButton) {
