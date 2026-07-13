@@ -98,6 +98,9 @@
 
   const paymentStatusLabels = {
     "not-invoiced": "Not Invoiced",
+    "subscription-sent": "Subscription Sent",
+    "subscription-active": "Subscription Active",
+    canceled: "Canceled",
     "invoice-sent": "Invoice Sent",
     paid: "Paid",
     "past-due": "Past Due",
@@ -125,6 +128,11 @@
     sent: "Sent",
     paid: "Paid",
     "past-due": "Past Due",
+  };
+
+  const collectionPaymentTypeLabels = {
+    recurring: "Recurring Monthly",
+    manual: "Manual Invoice",
   };
 
   const expenseCategoryLabels = {
@@ -215,6 +223,7 @@
     collectionForm: document.querySelector("#collection-form"),
     collectionRestaurant: document.querySelector("#collection-restaurant"),
     collectionInvoice: document.querySelector("#collection-invoice"),
+    collectionPaymentType: document.querySelector("#collection-payment-type"),
     collectionDueDate: document.querySelector("#collection-due-date"),
     collectionAmount: document.querySelector("#collection-amount"),
     collectionStatus: document.querySelector("#collection-status"),
@@ -553,17 +562,46 @@
     return `contact-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   }
 
+  function paymentTypeFromNotes(notes = "") {
+    const match = String(notes || "").match(/\bPayment type:\s*(Recurring monthly subscription|Manual one-time invoice)\./i);
+    if (!match) {
+      return "manual";
+    }
+    return /manual/i.test(match[1]) ? "manual" : "recurring";
+  }
+
+  function paymentTypeLabel(paymentType = "recurring") {
+    return labelFor(collectionPaymentTypeLabels, paymentType, collectionPaymentTypeLabels.recurring);
+  }
+
+  function stripPaymentTypeNote(notes = "") {
+    return String(notes || "")
+      .replace(/\bPayment type:\s*(?:Recurring monthly subscription|Manual one-time invoice)\.\s*/i, "")
+      .trim();
+  }
+
+  function collectionNotesWithPaymentType(notes = "", paymentType = "recurring") {
+    const label = paymentType === "manual" ? "Manual one-time invoice" : "Recurring monthly subscription";
+    const cleanNotes = stripPaymentTypeNote(notes);
+    return [`Payment type: ${label}.`, cleanNotes].filter(Boolean).join(" ");
+  }
+
   function normalizeCollection(record = {}) {
+    const notes = String(record.notes || "").trim();
+    const paymentType = collectionPaymentTypeLabels[record.paymentType]
+      ? record.paymentType
+      : paymentTypeFromNotes(notes);
     return {
       id: String(record.id || "").trim() || makeCollectionId(),
       restaurantId: String(record.restaurantId || "").trim(),
       restaurantName: String(record.restaurantName || "").trim(),
       invoiceNumber: String(record.invoiceNumber || "").trim(),
+      paymentType,
       dueDate: String(record.dueDate || "").trim(),
       amount: String(record.amount || "").trim(),
       status: collectionStatusLabels[record.status] ? record.status : "not-sent",
       paidDate: String(record.paidDate || "").trim(),
-      notes: String(record.notes || "").trim(),
+      notes,
       createdAt: String(record.createdAt || new Date().toISOString()).trim(),
     };
   }
@@ -2330,7 +2368,10 @@
     const monthValue = elements.invoiceTemplateMonth.value || currentMonth();
     const monthlyAmount = numberFromMoney(restaurant?.monthlyAmount, 19);
     const billingType = elements.invoiceTemplateType.value;
-    const nextAmount = billingType === "half"
+    const paymentType = elements.collectionPaymentType.value || "recurring";
+    const nextAmount = paymentType === "recurring"
+      ? monthlyAmount
+      : billingType === "half"
       ? monthlyAmount / 2
       : billingType === "auto"
         ? proratedAmount(monthlyAmount, restaurant?.serviceStartDate, monthValue)
@@ -2382,20 +2423,40 @@
     };
   }
 
+  function renewalDayLabel(dateText = "") {
+    const day = Number(String(dateText || "").slice(8, 10));
+    if (!day) {
+      return "the signup day";
+    }
+    const suffix = day % 10 === 1 && day !== 11
+      ? "st"
+      : day % 10 === 2 && day !== 12
+        ? "nd"
+        : day % 10 === 3 && day !== 13
+          ? "rd"
+          : "th";
+    return `the ${day}${suffix}`;
+  }
+
   function fillMonthlyInvoiceTemplate() {
     const restaurant = state.restaurants.find((record) => record.id === elements.collectionRestaurant.value);
     const monthValue = elements.invoiceTemplateMonth.value || currentMonth();
     const restaurantName = restaurant?.name || "Restaurant Challenge";
     const gameName = gameNameForInvoice(restaurant, restaurantName);
     const billingType = elements.invoiceTemplateType.value;
+    const paymentType = elements.collectionPaymentType.value || "recurring";
     const monthlyAmount = numberFromMoney(restaurant?.monthlyAmount, 19);
-    const calculatedAmount = billingType === "half"
+    const calculatedAmount = paymentType === "recurring"
+      ? monthlyAmount
+      : billingType === "half"
       ? monthlyAmount / 2
       : billingType === "auto"
         ? proratedAmount(monthlyAmount, restaurant?.serviceStartDate, monthValue)
         : monthlyAmount;
     const isProrated = calculatedAmount !== monthlyAmount;
-    const defaultDescription = billingType === "half" || isProrated
+    const defaultDescription = paymentType === "recurring"
+      ? `${gameName} Monthly Subscription Setup`
+      : billingType === "half" || isProrated
       ? `${gameName} Partial Month Subscription`
       : `${gameName} Monthly Subscription`;
     const description = elements.invoiceTemplateDescription.value.trim() || defaultDescription;
@@ -2408,7 +2469,10 @@
     elements.collectionAmount.value = amount;
     elements.collectionStatus.value = "not-sent";
     const period = invoiceServicePeriod(restaurant, monthValue, billingType, isProrated);
-    elements.collectionNotes.value = `${description}. ${period.prefix}: ${period.label}.`;
+    const paymentNote = paymentType === "recurring"
+      ? `Subscription starts when the customer signs up and renews monthly on ${renewalDayLabel(restaurant?.serviceStartDate || restaurant?.saleDate)}.`
+      : `${period.prefix}: ${period.label}.`;
+    elements.collectionNotes.value = collectionNotesWithPaymentType(`${description}. ${paymentNote}`, paymentType);
   }
 
   function firstPaymentMatch(text = "", patterns = []) {
@@ -2616,13 +2680,14 @@
     } else {
       state.collections.unshift(savedCollection);
     }
-    const shouldUpdateRestaurant = restaurant.paymentStatus !== "paid" ||
+    const nextPaymentStatus = payment.profileId ? "subscription-active" : "paid";
+    const shouldUpdateRestaurant = restaurant.paymentStatus !== nextPaymentStatus ||
       (payment.profileId && String(restaurant.paypalSubscriptionId || "").trim() !== payment.profileId);
     if (shouldUpdateRestaurant) {
       const updatedRestaurant = normalizeRestaurant({
         ...restaurant,
         paypalSubscriptionId: payment.profileId || restaurant.paypalSubscriptionId,
-        paymentStatus: "paid",
+        paymentStatus: nextPaymentStatus,
         salesNotes: payment.profileId
           ? appendUniqueNote(restaurant.salesNotes, `PayPal Profile ID: ${payment.profileId}`)
           : restaurant.salesNotes,
@@ -2651,7 +2716,7 @@
     });
     elements.collectionsList.innerHTML = records.length
       ? records.map(collectionRow).join("")
-      : '<tr><td colspan="8"><div class="empty-state">No collection records yet.</div></td></tr>';
+      : '<tr><td colspan="9"><div class="empty-state">No collection records yet.</div></td></tr>';
   }
 
   function addMonths(dateValue = "", months = 0) {
@@ -2753,8 +2818,14 @@
     `).join("");
   }
 
+  function collectionPaymentTypeOptions(selectedType = "recurring") {
+    return Object.entries(collectionPaymentTypeLabels).map(([value, label]) => `
+      <option value="${escapeHtml(value)}"${value === selectedType ? " selected" : ""}>${escapeHtml(label)}</option>
+    `).join("");
+  }
+
   function invoiceTableNote(notes = "") {
-    const text = String(notes || "").trim();
+    const text = stripPaymentTypeNote(notes);
     const periodMatch = text.match(/(?:Partial service period|Service period):\s*(.+?)(?:\.\s*$|$)/i);
     return periodMatch ? periodMatch[1].trim() : text;
   }
@@ -2765,6 +2836,11 @@
         <tr data-collection-editor-id="${escapeHtml(record.id)}">
           <td><strong>${escapeHtml(record.restaurantName || "No restaurant")}</strong></td>
           <td><input data-edit-collection-invoice value="${escapeHtml(record.invoiceNumber)}" /></td>
+          <td>
+            <select data-edit-collection-payment-type>
+              ${collectionPaymentTypeOptions(record.paymentType)}
+            </select>
+          </td>
           <td><input data-edit-collection-due-date type="date" value="${escapeHtml(record.dueDate)}" /></td>
           <td><input data-edit-collection-amount inputmode="decimal" value="${escapeHtml(record.amount)}" /></td>
           <td>
@@ -2773,7 +2849,7 @@
             </select>
           </td>
           <td><input data-edit-collection-paid-date type="date" value="${escapeHtml(record.paidDate)}" /></td>
-          <td><input data-edit-collection-notes value="${escapeHtml(record.notes)}" /></td>
+          <td><input data-edit-collection-notes value="${escapeHtml(stripPaymentTypeNote(record.notes))}" /></td>
           <td class="table-actions">
             <button class="text-button" type="button" data-save-collection-id="${escapeHtml(record.id)}">Save</button>
             <button class="text-button" type="button" data-cancel-collection-edit>Cancel</button>
@@ -2785,6 +2861,7 @@
       <tr>
         <td><strong>${escapeHtml(record.restaurantName || "No restaurant")}</strong></td>
         <td>${escapeHtml(record.invoiceNumber)}</td>
+        <td>${escapeHtml(paymentTypeLabel(record.paymentType))}</td>
         <td>${escapeHtml(shortDate(record.dueDate))}</td>
         <td>${escapeHtml(moneyValue(record.amount))}</td>
         <td>${escapeHtml(labelFor(collectionStatusLabels, record.status, "Not Sent"))}</td>
@@ -2792,8 +2869,8 @@
         <td>${escapeHtml(invoiceTableNote(record.notes))}</td>
         <td class="table-actions">
           <button class="text-button" type="button" data-edit-collection-id="${escapeHtml(record.id)}">Edit</button>
-          <button class="text-button" type="button" data-send-collection-id="${escapeHtml(record.id)}">Send Invoice</button>
-          <button class="text-button" type="button" data-email-collection-id="${escapeHtml(record.id)}">Email Invoice</button>
+          <button class="text-button" type="button" data-send-collection-id="${escapeHtml(record.id)}">${record.paymentType === "manual" ? "Send Invoice" : "Send Subscription"}</button>
+          <button class="text-button" type="button" data-email-collection-id="${escapeHtml(record.id)}">${record.paymentType === "manual" ? "Email Invoice" : "Email Subscription"}</button>
           <button class="text-button" type="button" data-print-collection-id="${escapeHtml(record.id)}">View / Save PDF</button>
           <button class="text-button" type="button" data-delete-collection-id="${escapeHtml(record.id)}">Remove</button>
         </td>
@@ -3262,11 +3339,12 @@
       restaurantId: restaurant?.id || "",
       restaurantName: restaurant?.name || "",
       invoiceNumber: elements.collectionInvoice.value,
+      paymentType: elements.collectionPaymentType.value,
       dueDate: elements.collectionDueDate.value,
       amount: elements.collectionAmount.value,
       status: elements.collectionStatus.value,
       paidDate: elements.collectionPaidDate.value,
-      notes: elements.collectionNotes.value,
+      notes: collectionNotesWithPaymentType(elements.collectionNotes.value, elements.collectionPaymentType.value),
     });
     if (!record.restaurantName && !record.invoiceNumber && !record.amount) {
       return;
@@ -3279,6 +3357,7 @@
     cacheBackofficeData();
     elements.collectionForm.reset();
     elements.collectionInvoice.value = nextInvoiceNumber();
+    elements.collectionPaymentType.value = "recurring";
     elements.collectionStatus.value = "not-sent";
     render();
   }
@@ -3302,11 +3381,15 @@
     const record = normalizeCollection({
       ...existing,
       invoiceNumber: editor.querySelector("[data-edit-collection-invoice]")?.value,
+      paymentType: editor.querySelector("[data-edit-collection-payment-type]")?.value,
       dueDate: editor.querySelector("[data-edit-collection-due-date]")?.value,
       amount: editor.querySelector("[data-edit-collection-amount]")?.value,
       status: editor.querySelector("[data-edit-collection-status]")?.value,
       paidDate: editor.querySelector("[data-edit-collection-paid-date]")?.value,
-      notes: editor.querySelector("[data-edit-collection-notes]")?.value,
+      notes: collectionNotesWithPaymentType(
+        editor.querySelector("[data-edit-collection-notes]")?.value,
+        editor.querySelector("[data-edit-collection-payment-type]")?.value
+      ),
     });
     const data = await saveAction("saveCollection", { collection: record });
     if (!data?.collection) {
@@ -3340,7 +3423,8 @@
       return;
     }
     if (!test) {
-      const confirmed = window.confirm(`Send invoice ${record.invoiceNumber || ""} to ${record.restaurantName || "this customer"} now?`);
+      const label = record.paymentType === "manual" ? `invoice ${record.invoiceNumber || ""}` : "subscription setup link";
+      const confirmed = window.confirm(`Send ${label} to ${record.restaurantName || "this customer"} now?`);
       if (!confirmed) {
         return;
       }
@@ -3357,7 +3441,28 @@
       cacheBackofficeData();
       renderCollections();
     }
-    window.alert(test ? `Test invoice sent to ${data.sentTo || "the test email"}.` : `Invoice sent to ${data.sentTo || "the customer"}.`);
+    if (!test && record.paymentType !== "manual") {
+      const restaurant = state.restaurants.find((item) => item.id === record.restaurantId);
+      if (restaurant && !["subscription-active", "paid"].includes(restaurant.paymentStatus)) {
+        const updatedRestaurant = normalizeRestaurant({
+          ...restaurant,
+          paymentStatus: "subscription-sent",
+          firstInvoiceDate: restaurant.firstInvoiceDate || record.dueDate || today(),
+          updatedAt: new Date().toISOString(),
+        });
+        const restaurantData = await saveAction("saveRestaurant", { restaurant: updatedRestaurant }, "Marked subscription sent");
+        if (restaurantData?.restaurant) {
+          const savedRestaurant = normalizeRestaurant(restaurantData.restaurant);
+          state.restaurants = state.restaurants.map((item) =>
+            item.id === savedRestaurant.id ? savedRestaurant : item
+          );
+          cacheBackofficeData();
+          render();
+        }
+      }
+    }
+    const sentLabel = record.paymentType === "manual" ? "invoice" : "subscription setup";
+    window.alert(test ? `Test ${sentLabel} sent to ${data.sentTo || "the test email"}.` : `${sentLabel[0].toUpperCase()}${sentLabel.slice(1)} sent to ${data.sentTo || "the customer"}.`);
   }
 
   function invoiceCustomerAddressLines(restaurant) {
@@ -3384,12 +3489,17 @@
 
   function invoiceDetails(record) {
     const restaurant = state.restaurants.find((item) => item.id === record.restaurantId);
+    const paymentType = record.paymentType || paymentTypeFromNotes(record.notes);
+    const isRecurring = paymentType !== "manual";
     return {
       restaurant,
+      paymentType,
+      isRecurring,
+      paymentTypeLabel: paymentTypeLabel(paymentType),
       customerName: record.restaurantName || restaurant?.name || "Restaurant",
       contact: restaurant ? contactName(restaurant) : "",
       addressLines: invoiceCustomerAddressLines(restaurant),
-      description: record.notes || "Restaurant Challenge monthly subscription.",
+      description: stripPaymentTypeNote(record.notes) || "Restaurant Challenge monthly subscription.",
       amount: moneyValue(record.amount),
       dueDate: shortDate(record.dueDate) || "Not set",
       status: labelFor(collectionStatusLabels, record.status, "Not Sent"),
@@ -3445,7 +3555,7 @@
     }
   }
 
-  function buildPdfBytes({ stream, payY, logoBytes = null } = {}) {
+  function buildPdfBytes({ stream, payY, linkUrl = PAYMENT_LINK, logoBytes = null } = {}) {
     const streamBytes = textBytes(stream);
     const resources = logoBytes
       ? "/Resources << /Font << /F1 4 0 R /F2 5 0 R >> /XObject << /Logo 8 0 R >> >>"
@@ -3461,7 +3571,7 @@
         streamBytes,
         textBytes("\nendstream"),
       ]),
-      textBytes(`<< /Type /Annot /Subtype /Link /Rect [48 ${payY - 21} 330 ${payY - 9}] /Border [0 0 0] /A << /S /URI /URI (${pdfText(PAYMENT_LINK)}) >> >>`),
+      textBytes(`<< /Type /Annot /Subtype /Link /Rect [48 ${payY - 21} 390 ${payY - 9}] /Border [0 0 0] /A << /S /URI /URI (${pdfText(linkUrl)}) >> >>`),
     ];
     if (logoBytes) {
       objects.push(concatBytes([
@@ -3515,6 +3625,7 @@
   async function buildInvoicePdf(record) {
     const details = invoiceDetails(record);
     const subscriptionLink = recurringPaymentLink(record, details.restaurant);
+    const primaryLink = details.isRecurring ? subscriptionLink : PAYMENT_LINK;
     const lines = [];
     const addText = (text, x, y, size = 11, bold = false) => {
       lines.push(`BT /${bold ? "F2" : "F1"} ${size} Tf ${x} ${y} Td (${pdfText(text)}) Tj ET`);
@@ -3558,16 +3669,15 @@
     addText(details.amount, 500, descriptionY - 28, 12, true);
 
     const payY = descriptionY - 76;
-    addText("Pay online", 48, payY, 11, true);
-    addText(PAYMENT_LINK, 48, payY - 16, 10);
-    const subscribeY = payY - 50;
-    addText("Set up recurring monthly payment", 48, subscribeY, 11, true);
-    addText(subscriptionLink, 48, subscribeY - 16, 10);
-    addText(`Status: ${details.status}`, 48, subscribeY - 54, 11, true);
+    addText(details.isRecurring ? "Set up recurring monthly payment" : "Pay online", 48, payY, 11, true);
+    addText(primaryLink, 48, payY - 16, 10);
+    const statusY = payY - 54;
+    addText(`Payment type: ${details.paymentTypeLabel}`, 48, statusY, 11, true);
+    addText(`Status: ${details.status}`, 48, statusY - 18, 11, true);
 
     const stream = lines.join("\n");
     return {
-      blob: new Blob([buildPdfBytes({ stream, payY, logoBytes })], { type: "application/pdf" }),
+      blob: new Blob([buildPdfBytes({ stream, payY, linkUrl: primaryLink, logoBytes })], { type: "application/pdf" }),
       filename: `${invoicePrintTitle(record, details.customerName)}.pdf`,
     };
   }
@@ -3579,6 +3689,8 @@
     }
     const details = invoiceDetails(record);
     const subscriptionLink = recurringPaymentLink(record, details.restaurant);
+    const primaryLink = details.isRecurring ? subscriptionLink : PAYMENT_LINK;
+    const primaryText = details.isRecurring ? "Set Up Monthly Subscription" : "Pay this invoice with PayPal";
     state.invoicePreviewId = id;
     elements.invoicePreviewContent.innerHTML = `
       <article class="invoice-document">
@@ -3629,10 +3741,13 @@
           </tfoot>
         </table>
         <section class="invoice-payment">
-          <p class="invoice-label">Pay Online</p>
-          <a href="${escapeHtml(PAYMENT_LINK)}" target="_blank" rel="noopener">Pay this invoice with PayPal</a>
-          <a href="${escapeHtml(subscriptionLink)}" target="_blank" rel="noopener">Set up recurring monthly payment</a>
+          <p class="invoice-label">${details.isRecurring ? "Monthly Subscription" : "Pay Online"}</p>
+          <a href="${escapeHtml(primaryLink)}" target="_blank" rel="noopener">${escapeHtml(primaryText)}</a>
+          ${details.isRecurring
+            ? '<span>Renews automatically each month from the signup date unless canceled.</span>'
+            : `<a href="${escapeHtml(subscriptionLink)}" target="_blank" rel="noopener">Set up recurring monthly payment instead</a>`}
         </section>
+        <p class="invoice-status">Payment type: ${escapeHtml(details.paymentTypeLabel)}</p>
         <p class="invoice-status">Status: ${escapeHtml(details.status)}</p>
       </article>
     `;
@@ -3674,26 +3789,46 @@
     const greetingName = restaurant?.contactFirstName || contactName(restaurant) || customerName;
     const invoiceNumber = record.invoiceNumber || "your invoice";
     const subscriptionLink = recurringPaymentLink(record, restaurant);
+    const details = invoiceDetails(record);
     const gameName = invoiceGameName(record, restaurant, customerName);
     const month = invoiceMonthFromDate(record.dueDate) || "this month";
-    const subject = `Invoice ${invoiceNumber} from CommunityVerse Games`;
-    const body = [
-      `Hi ${greetingName},`,
-      "",
-      `Here is your invoice for ${month} for ${gameName}. Thank you for allowing us to promote your restaurant through your trivia game.`,
-      "",
-      "You can mail a check or pay online with a credit card through PayPal, using this PayPal link:",
-      PAYMENT_LINK,
-      "",
-      "To set up the $19 monthly recurring payment, use this subscription link:",
-      subscriptionLink,
-      "",
-      "A PDF of this invoice is attached for your records.",
-      "",
-      "Best Wishes,",
-      "Tim Collins - Game Developer",
-      INVOICE_SENDER.business,
-    ].join("\n");
+    const subject = details.isRecurring
+      ? `Set up your Restaurant Challenge monthly subscription`
+      : `Invoice ${invoiceNumber} from CommunityVerse Games`;
+    const body = details.isRecurring
+      ? [
+          `Hi ${greetingName},`,
+          "",
+          `Here is the setup link for your ${gameName} monthly subscription. Thank you for allowing us to promote your restaurant through your trivia game.`,
+          "",
+          `The monthly amount is ${details.amount}. Your subscription starts when you sign up and renews automatically each month on that same day unless canceled.`,
+          "",
+          "Please use this PayPal subscription link:",
+          subscriptionLink,
+          "",
+          "A PDF is attached for your records.",
+          "",
+          "Best Wishes,",
+          "Tim Collins - Game Developer",
+          INVOICE_SENDER.business,
+        ].join("\n")
+      : [
+          `Hi ${greetingName},`,
+          "",
+          `Here is your invoice for ${month} for ${gameName}. Thank you for allowing us to promote your restaurant through your trivia game.`,
+          "",
+          "You can mail a check or pay online with a credit card through PayPal, using this PayPal link:",
+          PAYMENT_LINK,
+          "",
+          "If you would rather set up automatic monthly payments, use this subscription link:",
+          subscriptionLink,
+          "",
+          "A PDF of this invoice is attached for your records.",
+          "",
+          "Best Wishes,",
+          "Tim Collins - Game Developer",
+          INVOICE_SENDER.business,
+        ].join("\n");
     window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   }
 
@@ -4671,6 +4806,7 @@
   elements.collectionForm.addEventListener("submit", addCollection);
   elements.collectionRestaurant.addEventListener("change", fillNextInvoiceNumber);
   elements.collectionRestaurant.addEventListener("change", updateInvoiceTemplateAmount);
+  elements.collectionPaymentType.addEventListener("change", updateInvoiceTemplateAmount);
   elements.invoiceTemplateMonth.addEventListener("change", updateInvoiceTemplateAmount);
   elements.invoiceTemplateType.addEventListener("change", updateInvoiceTemplateAmount);
   elements.fillMonthlyInvoiceButton.addEventListener("click", fillMonthlyInvoiceTemplate);

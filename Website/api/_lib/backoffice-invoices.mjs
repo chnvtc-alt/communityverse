@@ -107,7 +107,7 @@ function pdfLogoBytes() {
   }
 }
 
-function buildPdfDocument({ stream, payY, logoBytes = null } = {}) {
+function buildPdfDocument({ stream, payY, linkUrl = PAYMENT_LINK, logoBytes = null } = {}) {
   const streamBytes = Buffer.from(stream, "utf8");
   const resources = logoBytes
     ? "/Resources << /Font << /F1 4 0 R /F2 5 0 R >> /XObject << /Logo 8 0 R >> >>"
@@ -123,7 +123,7 @@ function buildPdfDocument({ stream, payY, logoBytes = null } = {}) {
       streamBytes,
       Buffer.from("\nendstream", "utf8"),
     ]),
-    Buffer.from(`<< /Type /Annot /Subtype /Link /Rect [48 ${payY - 21} 330 ${payY - 9}] /Border [0 0 0] /A << /S /URI /URI (${pdfText(PAYMENT_LINK)}) >> >>`, "utf8"),
+    Buffer.from(`<< /Type /Annot /Subtype /Link /Rect [48 ${payY - 21} 390 ${payY - 9}] /Border [0 0 0] /A << /S /URI /URI (${pdfText(linkUrl)}) >> >>`, "utf8"),
   ];
   if (logoBytes) {
     objects.push(Buffer.concat([
@@ -165,18 +165,37 @@ function gameName(collection = {}, restaurant = {}, customerName = "Restaurant")
 
 function invoiceDetails(collection = {}, restaurant = {}) {
   const customerName = collection.restaurantName || restaurant.name || "Restaurant";
+  const paymentType = paymentTypeFromNotes(collection.notes);
+  const isRecurring = paymentType !== "manual";
   return {
     customerName,
+    paymentType,
+    isRecurring,
+    paymentTypeLabel: isRecurring ? "Recurring Monthly" : "Manual Invoice",
     contact: contactName(restaurant),
     greetingName: contactGreeting(restaurant, customerName),
     gameName: gameName(collection, restaurant, customerName),
     invoiceMonth: invoiceMonth(collection.dueDate),
     addressLines: addressLines(restaurant),
-    description: collection.notes || "Restaurant Challenge monthly subscription.",
+    description: stripPaymentTypeNote(collection.notes) || "Restaurant Challenge monthly subscription.",
     amount: moneyValue(collection.amount),
     dueDate: shortDate(collection.dueDate) || "Not set",
     status: collection.status || "not-sent",
   };
+}
+
+function paymentTypeFromNotes(notes = "") {
+  const match = safeString(notes).match(/\bPayment type:\s*(Recurring monthly subscription|Manual one-time invoice)\./i);
+  if (!match) {
+    return "manual";
+  }
+  return /manual/i.test(match[1]) ? "manual" : "recurring";
+}
+
+function stripPaymentTypeNote(notes = "") {
+  return safeString(notes)
+    .replace(/\bPayment type:\s*(?:Recurring monthly subscription|Manual one-time invoice)\.\s*/i, "")
+    .trim();
 }
 
 function recurringPaymentLink(collection = {}, restaurant = {}) {
@@ -196,6 +215,7 @@ function recurringPaymentLink(collection = {}, restaurant = {}) {
 function buildInvoicePdf(collection = {}, restaurant = {}) {
   const details = invoiceDetails(collection, restaurant);
   const subscriptionLink = recurringPaymentLink(collection, restaurant);
+  const primaryLink = details.isRecurring ? subscriptionLink : PAYMENT_LINK;
   const lines = [];
   const addText = (text, x, y, size = 11, bold = false) => {
     lines.push(`BT /${bold ? "F2" : "F1"} ${size} Tf ${x} ${y} Td (${pdfText(text)}) Tj ET`);
@@ -239,15 +259,14 @@ function buildInvoicePdf(collection = {}, restaurant = {}) {
   addText(details.amount, 500, descriptionY - 28, 12, true);
 
   const payY = descriptionY - 76;
-  addText("Pay online", 48, payY, 11, true);
-  addText(PAYMENT_LINK, 48, payY - 16, 10);
-  const subscribeY = payY - 50;
-  addText("Set up recurring monthly payment", 48, subscribeY, 11, true);
-  addText(subscriptionLink, 48, subscribeY - 16, 10);
-  addText(`Status: ${details.status}`, 48, subscribeY - 54, 11, true);
+  addText(details.isRecurring ? "Set up recurring monthly payment" : "Pay online", 48, payY, 11, true);
+  addText(primaryLink, 48, payY - 16, 10);
+  const statusY = payY - 54;
+  addText(`Payment type: ${details.paymentTypeLabel}`, 48, statusY, 11, true);
+  addText(`Status: ${details.status}`, 48, statusY - 18, 11, true);
 
   const stream = lines.join("\n");
-  return buildPdfDocument({ stream, payY, logoBytes }).toString("base64");
+  return buildPdfDocument({ stream, payY, linkUrl: primaryLink, logoBytes }).toString("base64");
 }
 
 function getResendConfig() {
@@ -261,12 +280,27 @@ function getResendConfig() {
 
 function invoiceSubject(collection = {}, isTest = false) {
   const prefix = isTest ? "TEST - " : "";
+  if (paymentTypeFromNotes(collection.notes) !== "manual") {
+    return `${prefix}Set up your Restaurant Challenge monthly subscription`;
+  }
   return `${prefix}Invoice ${collection.invoiceNumber || ""} from CommunityVerse Games`.trim();
 }
 
 function invoiceHtml(collection = {}, restaurant = {}, isTest = false) {
   const details = invoiceDetails(collection, restaurant);
   const subscriptionLink = recurringPaymentLink(collection, restaurant);
+  const primaryLink = details.isRecurring ? subscriptionLink : PAYMENT_LINK;
+  const primaryButton = details.isRecurring ? "Set Up Monthly Subscription" : "Pay Now";
+  const primaryIntro = details.isRecurring
+    ? `Use this PayPal link to set up the ${htmlEscape(details.amount)} monthly Restaurant Challenge subscription. It starts when you sign up and renews automatically each month on that same day unless canceled.`
+    : "You can mail a check, pay this invoice one time with the green Pay Now button, or set up recurring monthly payments using the link below.";
+  const secondaryBox = details.isRecurring
+    ? ""
+    : `<div style="background:#fffaf2;border:1px solid #d8d0bf;padding:18px;margin-bottom:24px;">
+        <p style="margin:0 0 8px;font-weight:800;">Want recurring monthly payments?</p>
+        <p style="margin:0 0 14px;">Use this PayPal subscription link to set up the monthly Restaurant Challenge payment.</p>
+        <a href="${htmlEscape(subscriptionLink)}" style="display:inline-block;background:#d58a2b;color:#fff;text-decoration:none;padding:11px 22px;border-radius:6px;font-weight:800;">Set Up Monthly Payment</a>
+      </div>`;
   const testNote = isTest ? `<p style="margin:0 0 18px;color:#a15c00;font-weight:700;">Test send only. This was not sent to the customer.</p>` : "";
   return `<!doctype html>
 <html>
@@ -279,17 +313,15 @@ function invoiceHtml(collection = {}, restaurant = {}, isTest = false) {
       <div style="background:#dcebec;padding:26px 18px;text-align:center;margin-bottom:24px;">
         <p style="margin:0 0 8px;font-weight:700;">DUE ${htmlEscape(details.dueDate)}</p>
         <div style="font-size:44px;font-weight:800;margin-bottom:16px;">${htmlEscape(details.amount)}</div>
-        <a href="${PAYMENT_LINK}" style="display:inline-block;background:#1f6b4a;color:#fff;text-decoration:none;padding:12px 34px;border-radius:6px;font-weight:800;">Pay Now</a>
+        <a href="${htmlEscape(primaryLink)}" style="display:inline-block;background:#1f6b4a;color:#fff;text-decoration:none;padding:12px 34px;border-radius:6px;font-weight:800;">${primaryButton}</a>
       </div>
-      <div style="background:#fffaf2;border:1px solid #d8d0bf;padding:18px;margin-bottom:24px;">
-        <p style="margin:0 0 8px;font-weight:800;">Want recurring monthly payments?</p>
-        <p style="margin:0 0 14px;">Use this PayPal subscription link to set up the $19 monthly Restaurant Challenge payment.</p>
-        <a href="${htmlEscape(subscriptionLink)}" style="display:inline-block;background:#d58a2b;color:#fff;text-decoration:none;padding:11px 22px;border-radius:6px;font-weight:800;">Set Up Monthly Payment</a>
-      </div>
+      ${secondaryBox}
       ${testNote}
       <p>Hi ${htmlEscape(details.greetingName)},</p>
-      <p>Here is your invoice for ${htmlEscape(details.invoiceMonth)} for ${htmlEscape(details.gameName)}. Thank you for allowing us to promote your restaurant through your trivia game.</p>
-      <p>You can mail a check, pay this invoice one time with the green Pay Now button, or set up the monthly recurring payment with the subscription link above.</p>
+      <p>${details.isRecurring
+        ? `Here is the setup link for your ${htmlEscape(details.gameName)} monthly subscription. Thank you for allowing us to promote your restaurant through your trivia game.`
+        : `Here is your invoice for ${htmlEscape(details.invoiceMonth)} for ${htmlEscape(details.gameName)}. Thank you for allowing us to promote your restaurant through your trivia game.`}</p>
+      <p>${primaryIntro}</p>
       <p>A PDF of this invoice is attached for your records.</p>
       <hr style="border:0;border-top:1px solid #d8d0bf;margin:26px 0;" />
       <p style="margin:0;">Best Wishes,<br /><strong>Tim Collins - Game Developer</strong><br />${INVOICE_SENDER.business}</p>
@@ -300,19 +332,37 @@ function invoiceHtml(collection = {}, restaurant = {}, isTest = false) {
 
 function invoiceText(collection = {}, restaurant = {}, isTest = false) {
   const details = invoiceDetails(collection, restaurant);
+  const subscriptionLink = recurringPaymentLink(collection, restaurant);
+  const lines = details.isRecurring
+    ? [
+        isTest ? "TEST SEND ONLY - This was not sent to the customer." : "",
+        `Hi ${details.greetingName},`,
+        "",
+        `Here is the setup link for your ${details.gameName} monthly subscription. Thank you for allowing us to promote your restaurant through your trivia game.`,
+        "",
+        `The monthly amount is ${details.amount}. Your subscription starts when you sign up and renews automatically each month on that same day unless canceled.`,
+        "",
+        "Please use this PayPal subscription link:",
+        subscriptionLink,
+        "",
+        "A PDF is attached for your records.",
+      ]
+    : [
+        isTest ? "TEST SEND ONLY - This was not sent to the customer." : "",
+        `Hi ${details.greetingName},`,
+        "",
+        `Here is your invoice for ${details.invoiceMonth} for ${details.gameName}. Thank you for allowing us to promote your restaurant through your trivia game.`,
+        "",
+        "You can mail a check or pay online with a credit card through PayPal, using this PayPal link:",
+        PAYMENT_LINK,
+        "",
+        "If you would rather set up automatic monthly payments, use this subscription link:",
+        subscriptionLink,
+        "",
+        "A PDF of this invoice is attached for your records.",
+      ];
   return [
-    isTest ? "TEST SEND ONLY - This was not sent to the customer." : "",
-    `Hi ${details.greetingName},`,
-    "",
-    `Here is your invoice for ${details.invoiceMonth} for ${details.gameName}. Thank you for allowing us to promote your restaurant through your trivia game.`,
-    "",
-    "You can mail a check or pay online with a credit card through PayPal, using this PayPal link:",
-    PAYMENT_LINK,
-    "",
-    "To set up the $19 monthly recurring payment, use this subscription link:",
-    recurringPaymentLink(collection, restaurant),
-    "",
-    "A PDF of this invoice is attached for your records.",
+    ...lines,
     "",
     "Best Wishes,",
     "Tim Collins - Game Developer",
