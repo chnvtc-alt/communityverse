@@ -3734,7 +3734,7 @@
             <strong>Monthly subscription setup</strong>
             <p>Use the CommunityVerse subscription page to set up the ${escapeHtml(details.amount)} monthly Restaurant Challenge payment securely through PayPal.</p>
             <a class="button button-muted" href="${escapeHtml(primaryLink)}" target="_blank" rel="noopener">Open Subscription Page</a>
-            <span>Clean address: ${escapeHtml(recurringPaymentDisplayLink())} · Invoice ${escapeHtml(record.invoiceNumber || "")}</span>
+            <span>Website: ${escapeHtml(recurringPaymentDisplayLink())} · Invoice ${escapeHtml(record.invoiceNumber || "")}</span>
           </section>
         ` : ""}
         <section class="invoice-email-copy">
