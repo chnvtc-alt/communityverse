@@ -167,6 +167,7 @@ function invoiceDetails(collection = {}, restaurant = {}) {
   const customerName = collection.restaurantName || restaurant.name || "Restaurant";
   const paymentType = paymentTypeFromNotes(collection.notes);
   const isRecurring = paymentType !== "manual";
+  const monthlyAmount = isRecurring ? moneyValue(restaurant.monthlyAmount || collection.amount) : "";
   return {
     customerName,
     paymentType,
@@ -178,7 +179,7 @@ function invoiceDetails(collection = {}, restaurant = {}) {
     invoiceMonth: invoiceMonth(collection.dueDate),
     addressLines: addressLines(restaurant),
     description: stripPaymentTypeNote(collection.notes) || "Restaurant Challenge monthly subscription.",
-    amount: moneyValue(collection.amount),
+    amount: monthlyAmount || moneyValue(collection.amount),
     dueDate: shortDate(collection.dueDate) || "Not set",
     status: collection.status || "not-sent",
   };
@@ -320,7 +321,11 @@ function invoiceHtml(collection = {}, restaurant = {}, isTest = false) {
         <div style="font-size:44px;font-weight:800;margin-bottom:16px;">${htmlEscape(details.amount)}</div>
         <a href="${htmlEscape(primaryLink)}" style="display:inline-block;background:#1f6b4a;color:#fff;text-decoration:none;padding:12px 34px;border-radius:6px;font-weight:800;">${primaryButton}</a>
       </div>
-      ${secondaryBox}
+      ${details.isRecurring ? `<div style="background:#fffaf2;border:1px solid #d8d0bf;padding:18px;margin-bottom:24px;">
+        <p style="margin:0 0 8px;font-weight:800;">Monthly subscription setup</p>
+        <p style="margin:0 0 14px;">Use the CommunityVerse subscription page to set up the ${htmlEscape(details.amount)} monthly Restaurant Challenge payment.</p>
+        <a href="${htmlEscape(primaryLink)}" style="display:inline-block;background:#d58a2b;color:#fff;text-decoration:none;padding:11px 22px;border-radius:6px;font-weight:800;">Open Subscription Page</a>
+      </div>` : secondaryBox}
       ${testNote}
       <p>Hi ${htmlEscape(details.greetingName)},</p>
       <p>${details.isRecurring

@@ -244,6 +244,7 @@
     invoicePreviewDialog: document.querySelector("#invoice-preview-dialog"),
     invoicePreviewContent: document.querySelector("#invoice-preview-content"),
     closeInvoicePreviewButton: document.querySelector("#close-invoice-preview-button"),
+    sendPreviewedInvoiceButton: document.querySelector("#send-previewed-invoice-button"),
     printInvoiceButton: document.querySelector("#print-invoice-button"),
     expenseForm: document.querySelector("#expense-form"),
     expenseDate: document.querySelector("#expense-date"),
@@ -2883,7 +2884,7 @@
         <td>${escapeHtml(invoiceTableNote(record))}</td>
         <td class="table-actions">
           <button class="text-button" type="button" data-edit-collection-id="${escapeHtml(record.id)}">Edit</button>
-          <button class="text-button" type="button" data-email-collection-id="${escapeHtml(record.id)}">Draft Email</button>
+          <button class="text-button" type="button" data-email-collection-id="${escapeHtml(record.id)}">Preview Email</button>
           <button class="text-button" type="button" data-print-collection-id="${escapeHtml(record.id)}">View / Save PDF</button>
           <button class="text-button" type="button" data-delete-collection-id="${escapeHtml(record.id)}">Remove</button>
         </td>
@@ -3504,6 +3505,7 @@
     const restaurant = state.restaurants.find((item) => item.id === record.restaurantId);
     const paymentType = record.paymentType || paymentTypeFromNotes(record.notes);
     const isRecurring = paymentType !== "manual";
+    const monthlyAmount = isRecurring ? moneyValue(restaurant?.monthlyAmount || record.amount) : "";
     return {
       restaurant,
       paymentType,
@@ -3513,7 +3515,7 @@
       contact: restaurant ? contactName(restaurant) : "",
       addressLines: invoiceCustomerAddressLines(restaurant),
       description: stripPaymentTypeNote(record.notes) || "Restaurant Challenge monthly subscription.",
-      amount: moneyValue(record.amount),
+      amount: monthlyAmount || moneyValue(record.amount),
       dueDate: shortDate(record.dueDate) || "Not set",
       status: labelFor(collectionStatusLabels, record.status, "Not Sent"),
     };
@@ -3714,65 +3716,37 @@
     const details = invoiceDetails(record);
     const subscriptionLink = recurringPaymentLink(record, details.restaurant);
     const primaryLink = details.isRecurring ? subscriptionLink : PAYMENT_LINK;
-    const primaryText = details.isRecurring ? "Set Up Monthly Subscription" : "Pay this invoice with PayPal";
+    const primaryText = details.isRecurring ? "Set Up Monthly Subscription" : "Pay Now";
+    const gameName = invoiceGameName(record, details.restaurant, details.customerName);
+    const month = invoiceMonthFromDate(record.dueDate) || "this month";
     state.invoicePreviewId = id;
     elements.invoicePreviewContent.innerHTML = `
-      <article class="invoice-document">
-        <header class="invoice-header">
-          <div>
-            <img class="invoice-logo" src="${LOGO_PATH}" alt="CommunityVerse Games" />
-            <p class="eyebrow">CommunityVerse Games</p>
-            <h2>Invoice</h2>
-          </div>
-          <div class="invoice-meta">
-            <strong>${escapeHtml(record.invoiceNumber || "Invoice")}</strong>
-            <span>Due ${escapeHtml(shortDate(record.dueDate) || "Not set")}</span>
-          </div>
-        </header>
-        <section class="invoice-parties">
-          <div>
-            <p class="invoice-label">Bill To</p>
-            <strong>${escapeHtml(details.customerName)}</strong>
-            ${details.contact ? `<span>${escapeHtml(details.contact)}</span>` : ""}
-            ${details.addressLines.map((line) => `<span>${escapeHtml(line)}</span>`).join("")}
-          </div>
-          <div>
-            <p class="invoice-label">From</p>
-            <strong>${escapeHtml(INVOICE_SENDER.business)}</strong>
-            <span>${escapeHtml(INVOICE_SENDER.street)}</span>
-            <span>${escapeHtml(INVOICE_SENDER.cityStateZip)}</span>
-            <span>${escapeHtml(INVOICE_SENDER.phone)}</span>
-          </div>
+      <article class="invoice-email-preview">
+        <p class="invoice-email-eyebrow">Invoice ${escapeHtml(record.invoiceNumber || "")} Details</p>
+        <img class="invoice-email-logo" src="${LOGO_PATH}" alt="CommunityVerse Games" />
+        <section class="invoice-email-total">
+          <p>Due ${escapeHtml(shortDate(record.dueDate) || "Not set")}</p>
+          <strong>${escapeHtml(details.amount)}</strong>
+          <a class="button button-primary" href="${escapeHtml(primaryLink)}" target="_blank" rel="noopener">${escapeHtml(primaryText)}</a>
         </section>
-        <table class="invoice-lines">
-          <thead>
-            <tr>
-              <th>Description</th>
-              <th>Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>${escapeHtml(details.description)}</td>
-              <td>${escapeHtml(details.amount)}</td>
-            </tr>
-          </tbody>
-          <tfoot>
-            <tr>
-              <th>Total Due</th>
-              <th>${escapeHtml(details.amount)}</th>
-            </tr>
-          </tfoot>
-        </table>
-        <section class="invoice-payment">
-          <p class="invoice-label">${details.isRecurring ? "Monthly Subscription" : "Pay Online"}</p>
-          <a href="${escapeHtml(primaryLink)}" target="_blank" rel="noopener">${escapeHtml(primaryText)}</a>
-          ${details.isRecurring
-            ? `<span>Go to ${escapeHtml(recurringPaymentDisplayLink())}. Invoice: ${escapeHtml(record.invoiceNumber || "shown above")}. Renews automatically each month from the signup date unless canceled.</span>`
-            : ""}
+        ${details.isRecurring ? `
+          <section class="invoice-email-callout">
+            <strong>Monthly subscription setup</strong>
+            <p>Use the CommunityVerse subscription page to set up the ${escapeHtml(details.amount)} monthly Restaurant Challenge payment.</p>
+            <a class="button button-muted" href="${escapeHtml(primaryLink)}" target="_blank" rel="noopener">Open Subscription Page</a>
+            <span>Clean address: ${escapeHtml(recurringPaymentDisplayLink())} · Invoice ${escapeHtml(record.invoiceNumber || "")}</span>
+          </section>
+        ` : ""}
+        <section class="invoice-email-copy">
+          <p>Hi ${escapeHtml(details.restaurant?.contactFirstName || contactName(details.restaurant) || details.customerName)},</p>
+          <p>${details.isRecurring
+            ? `Here is the setup link for your ${escapeHtml(gameName)} monthly subscription. Thank you for allowing us to promote your restaurant through your trivia game.`
+            : `Here is your invoice for ${escapeHtml(month)} for ${escapeHtml(gameName)}. Thank you for allowing us to promote your restaurant through your trivia game.`}</p>
+          <p>${details.isRecurring
+            ? `Your subscription starts when you sign up and renews automatically each month on that same day unless canceled.`
+            : `You can mail a check or pay this invoice one time with the Pay Now button.`}</p>
+          <p>A PDF of this invoice is attached for your records.</p>
         </section>
-        <p class="invoice-status">Payment type: ${escapeHtml(details.paymentTypeLabel)}</p>
-        <p class="invoice-status">Status: ${escapeHtml(details.status)}</p>
       </article>
     `;
     elements.invoicePreviewDialog.showModal();
@@ -3796,6 +3770,15 @@
     link.click();
     link.remove();
     window.setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+  }
+
+  async function sendPreviewedInvoiceEmail() {
+    const id = state.invoicePreviewId;
+    if (!id) {
+      return;
+    }
+    await sendInvoiceEmail(id);
+    closeInvoicePreview();
   }
 
   function openInvoiceEmail(id) {
@@ -4835,6 +4818,7 @@
   elements.paypalPasteForm.addEventListener("submit", previewPaypalPayment);
   elements.clearPaypalPasteButton.addEventListener("click", clearPaypalPaymentPaste);
   elements.closeInvoicePreviewButton.addEventListener("click", closeInvoicePreview);
+  elements.sendPreviewedInvoiceButton.addEventListener("click", sendPreviewedInvoiceEmail);
   elements.printInvoiceButton.addEventListener("click", saveInvoicePdf);
   elements.expenseForm.addEventListener("submit", addExpense);
   elements.search.addEventListener("input", renderRestaurantTable);
@@ -4959,7 +4943,7 @@
     }
     const emailCollectionButton = event.target.closest("[data-email-collection-id]");
     if (emailCollectionButton) {
-      openInvoiceEmail(emailCollectionButton.dataset.emailCollectionId);
+      openInvoicePreview(emailCollectionButton.dataset.emailCollectionId);
     }
     const applyPaypalPaymentButton = event.target.closest("[data-apply-paypal-payment]");
     if (applyPaypalPaymentButton) {
