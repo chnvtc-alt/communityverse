@@ -118,6 +118,7 @@ export function restaurantFromRecord(record = {}, contactHistory = []) {
     setupFee: record.setup_fee == null ? "" : String(record.setup_fee),
     paymentStatus: safeString(record.payment_status),
     firstInvoiceDate: safeString(record.first_invoice_date),
+    paypalSubscriptionId: safeString(record.paypal_subscription_id),
     salesperson: safeString(record.salesperson || record.assigned_to || "Tim"),
     setupStatus: safeString(record.setup_status),
     salesNotes: safeString(record.sales_notes),
@@ -166,6 +167,7 @@ export function expenseFromRecord(record = {}) {
 export function restaurantToRecord(restaurant = {}, idMap = new Map(), options = {}) {
   const includeGameName = options.includeGameName !== false;
   const includeResearchFields = options.includeResearchFields !== false;
+  const includePaypalSubscriptionId = options.includePaypalSubscriptionId !== false;
   const legacyNameParts = contactNameFromLegacy(restaurant);
   const incomingId = safeString(restaurant.id);
   const id = existingUuid(incomingId) || idMap.get(incomingId) || randomUUID();
@@ -207,6 +209,7 @@ export function restaurantToRecord(restaurant = {}, idMap = new Map(), options =
     setup_fee: safeNumber(restaurant.setupFee),
     payment_status: safeString(restaurant.paymentStatus),
     first_invoice_date: safeDate(restaurant.firstInvoiceDate),
+    ...(includePaypalSubscriptionId ? { paypal_subscription_id: safeString(restaurant.paypalSubscriptionId) } : {}),
     salesperson: safeString(restaurant.salesperson || restaurant.assignedTo || "Tim"),
     setup_status: safeString(restaurant.setupStatus),
     sales_notes: safeString(restaurant.salesNotes),
@@ -331,14 +334,16 @@ export async function saveBackofficeRestaurant(restaurant = {}) {
   } catch (error) {
     const message = String(error?.message || "");
     const missingGameName = message.includes("game_name");
+    const missingPaypalSubscriptionId = message.includes("paypal_subscription_id");
     const missingResearchFields =
       ["currently_does_trivia", "website", "facebook_page"].some((column) => message.includes(column)) ||
       (message.includes("boolean") && message.includes("possible"));
-    if (!missingGameName && !missingResearchFields) {
+    if (!missingGameName && !missingResearchFields && !missingPaypalSubscriptionId) {
       throw error;
     }
     savedRecord = restaurantToRecord(restaurant, idMap, {
       includeGameName: !missingGameName,
+      includePaypalSubscriptionId: !missingPaypalSubscriptionId,
       includeResearchFields: !missingResearchFields,
     });
     rows = await supabaseRequest("backoffice_restaurants?on_conflict=id", {
@@ -463,6 +468,7 @@ function repRestaurantPublic(restaurant = {}, repName = "") {
     setupFee: restaurant.setupFee,
     paymentStatus: restaurant.paymentStatus,
     firstInvoiceDate: restaurant.firstInvoiceDate,
+    paypalSubscriptionId: restaurant.paypalSubscriptionId,
     salesperson: repName,
     setupStatus: restaurant.setupStatus,
     salesNotes: restaurant.salesNotes,

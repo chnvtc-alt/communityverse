@@ -321,3 +321,10 @@ on conflict (id) do update set public = excluded.public;
 insert into storage.buckets (id, name, public)
 values ('restaurant-images', 'restaurant-images', true)
 on conflict (id) do update set public = excluded.public;
+
+do $$
+begin
+  if to_regclass('public.backoffice_restaurants') is not null then
+    alter table public.backoffice_restaurants add column if not exists paypal_subscription_id text not null default '';
+  end if;
+end $$;

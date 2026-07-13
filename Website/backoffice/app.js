@@ -298,6 +298,7 @@
     setupFee: document.querySelector("#setup-fee"),
     paymentStatus: document.querySelector("#payment-status"),
     firstInvoiceDate: document.querySelector("#first-invoice-date"),
+    paypalSubscriptionId: document.querySelector("#paypal-subscription-id"),
     setupStatus: document.querySelector("#setup-status"),
     salesNotes: document.querySelector("#sales-notes"),
     quickContactDialog: document.querySelector("#quick-contact-dialog"),
@@ -523,6 +524,7 @@
       setupFee: String(record.setupFee || "").trim(),
       paymentStatus: paymentStatusLabels[record.paymentStatus] ? record.paymentStatus : "",
       firstInvoiceDate: String(record.firstInvoiceDate || "").trim(),
+      paypalSubscriptionId: String(record.paypalSubscriptionId || "").trim(),
       salesperson: String(record.salesperson || record.assignedTo || DEFAULT_OWNER).trim(),
       setupStatus: setupStatusLabels[record.setupStatus] ? record.setupStatus : "",
       salesNotes: String(record.salesNotes || "").trim(),
@@ -833,6 +835,7 @@
       restaurant.setupFee,
       restaurant.paymentStatus,
       restaurant.firstInvoiceDate,
+      restaurant.paypalSubscriptionId,
       restaurant.setupStatus,
       restaurant.salesNotes,
       restaurant.notes,
@@ -2673,6 +2676,7 @@
     elements.setupFee.value = restaurant ? record.setupFee : "";
     elements.paymentStatus.value = restaurant ? record.paymentStatus : "";
     elements.firstInvoiceDate.value = restaurant ? record.firstInvoiceDate : "";
+    elements.paypalSubscriptionId.value = restaurant ? record.paypalSubscriptionId : "";
     elements.setupStatus.value = restaurant ? record.setupStatus : "";
     elements.salesNotes.value = restaurant ? record.salesNotes : "";
     updateSaleDetailsVisibility();
@@ -2728,6 +2732,7 @@
       setupFee: elements.setupFee.value,
       paymentStatus: elements.paymentStatus.value,
       firstInvoiceDate: elements.firstInvoiceDate.value,
+      paypalSubscriptionId: elements.paypalSubscriptionId.value,
       salesperson: cleanSalesRep(elements.assignedTo.value),
       setupStatus: elements.setupStatus.value,
       salesNotes: elements.salesNotes.value,
