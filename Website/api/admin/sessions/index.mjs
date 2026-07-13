@@ -1,6 +1,6 @@
 import { requireQuestionsAdmin } from "../../_lib/admin-auth.mjs";
 import { sessionFromRecord } from "../../_lib/restaurant-data.mjs";
-import { hasSupabaseConfig, jsonResponse, supabaseRequest } from "../../_lib/supabase.mjs";
+import { hasSupabaseConfig, jsonResponse, supabaseRequestAll } from "../../_lib/supabase.mjs";
 
 function preflight(request) {
   const denied = requireQuestionsAdmin(request);
@@ -21,7 +21,7 @@ export async function GET(request) {
     const query = profileId
       ? `sessions?select=id,profile_id,restaurant_slug,completed_at,payload_json&profile_id=eq.${encodeURIComponent(profileId)}&order=completed_at.desc`
       : "sessions?select=id,profile_id,restaurant_slug,completed_at,payload_json&order=completed_at.desc";
-    const rows = await supabaseRequest(query);
+    const rows = await supabaseRequestAll(query);
     const sessions = Array.isArray(rows) ? rows.map(sessionFromRecord).filter(Boolean) : [];
     return jsonResponse({ ok: true, sessions, count: sessions.length });
   } catch (error) {
