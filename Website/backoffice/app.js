@@ -31,6 +31,7 @@
     phone: "404-428-6302",
   };
   const PAYMENT_LINK = "https://www.paypal.com/ncp/payment/HSHM25X6JZFZ4";
+  const SUBSCRIPTION_LINK = "https://communityversegames.com/subscribe/";
   const LOGO_PATH = "/assets/communityverse-games-logo-transparent-cropped.png";
   const PDF_LOGO_PATH = "/assets/communityverse-games-logo-pdf.jpg";
   const PDF_LOGO_WIDTH = 230;
@@ -3153,6 +3154,20 @@
     };
   }
 
+  function recurringPaymentLink(record, restaurant = null) {
+    const params = new URLSearchParams();
+    const invoiceNumber = String(record?.invoiceNumber || "").trim();
+    const restaurantName = String(record?.restaurantName || restaurant?.name || "").trim();
+    if (invoiceNumber) {
+      params.set("invoice", invoiceNumber);
+    }
+    if (restaurantName) {
+      params.set("restaurant", restaurantName);
+    }
+    const query = params.toString();
+    return query ? `${SUBSCRIPTION_LINK}?${query}` : SUBSCRIPTION_LINK;
+  }
+
   function pdfText(value) {
     return String(value || "")
       .replace(/[^\x09\x0A\x0D\x20-\x7E]/g, "")
@@ -3257,6 +3272,7 @@
 
   async function buildInvoicePdf(record) {
     const details = invoiceDetails(record);
+    const subscriptionLink = recurringPaymentLink(record, details.restaurant);
     const lines = [];
     const addText = (text, x, y, size = 11, bold = false) => {
       lines.push(`BT /${bold ? "F2" : "F1"} ${size} Tf ${x} ${y} Td (${pdfText(text)}) Tj ET`);
@@ -3302,7 +3318,10 @@
     const payY = descriptionY - 76;
     addText("Pay online", 48, payY, 11, true);
     addText(PAYMENT_LINK, 48, payY - 16, 10);
-    addText(`Status: ${details.status}`, 48, payY - 54, 11, true);
+    const subscribeY = payY - 50;
+    addText("Set up recurring monthly payment", 48, subscribeY, 11, true);
+    addText(subscriptionLink, 48, subscribeY - 16, 10);
+    addText(`Status: ${details.status}`, 48, subscribeY - 54, 11, true);
 
     const stream = lines.join("\n");
     return {
@@ -3317,6 +3336,7 @@
       return;
     }
     const details = invoiceDetails(record);
+    const subscriptionLink = recurringPaymentLink(record, details.restaurant);
     state.invoicePreviewId = id;
     elements.invoicePreviewContent.innerHTML = `
       <article class="invoice-document">
@@ -3369,6 +3389,7 @@
         <section class="invoice-payment">
           <p class="invoice-label">Pay Online</p>
           <a href="${escapeHtml(PAYMENT_LINK)}" target="_blank" rel="noopener">Pay this invoice with PayPal</a>
+          <a href="${escapeHtml(subscriptionLink)}" target="_blank" rel="noopener">Set up recurring monthly payment</a>
         </section>
         <p class="invoice-status">Status: ${escapeHtml(details.status)}</p>
       </article>
@@ -3410,6 +3431,7 @@
     const customerName = record.restaurantName || restaurant?.name || "there";
     const greetingName = restaurant?.contactFirstName || contactName(restaurant) || customerName;
     const invoiceNumber = record.invoiceNumber || "your invoice";
+    const subscriptionLink = recurringPaymentLink(record, restaurant);
     const gameName = invoiceGameName(record, restaurant, customerName);
     const month = invoiceMonthFromDate(record.dueDate) || "this month";
     const subject = `Invoice ${invoiceNumber} from CommunityVerse Games`;
@@ -3420,6 +3442,9 @@
       "",
       "You can mail a check or pay online with a credit card through PayPal, using this PayPal link:",
       PAYMENT_LINK,
+      "",
+      "To set up the $19 monthly recurring payment, use this subscription link:",
+      subscriptionLink,
       "",
       "A PDF of this invoice is attached for your records.",
       "",

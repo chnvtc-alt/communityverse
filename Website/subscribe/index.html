@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Restaurant Challenge Monthly Subscription | CommunityVerse Games</title>
+    <meta
+      name="description"
+      content="Set up the CommunityVerse Games Restaurant Challenge monthly subscription through PayPal."
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #1f2924;
+        --green: #1f6b4a;
+        --muted: #5f6f66;
+        --paper: #fffaf2;
+        --line: #d8d0bf;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: #ebe6d8;
+        color: var(--ink);
+        font-family: Arial, sans-serif;
+      }
+
+      main {
+        width: min(720px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 34px 0;
+      }
+
+      .panel {
+        padding: 26px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--paper);
+        box-shadow: 0 16px 38px rgba(53, 43, 27, 0.1);
+      }
+
+      .logo {
+        display: block;
+        width: min(320px, 100%);
+        height: auto;
+        margin: 0 auto 24px;
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        color: var(--green);
+        font-size: 0.76rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0 0 12px;
+        font-family: Georgia, serif;
+        font-size: clamp(2rem, 8vw, 3.35rem);
+        line-height: 0.98;
+      }
+
+      p {
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .summary {
+        display: grid;
+        gap: 10px;
+        margin: 22px 0;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.58);
+      }
+
+      .summary p {
+        margin: 0;
+      }
+
+      .summary strong {
+        color: var(--ink);
+      }
+
+      .paypal-wrap {
+        margin-top: 22px;
+      }
+
+      .note {
+        margin-top: 18px;
+        font-size: 0.9rem;
+      }
+
+      .status {
+        display: none;
+        margin-top: 18px;
+        padding: 14px;
+        border-radius: 8px;
+        background: #e7f3eb;
+        color: var(--green);
+        font-weight: 800;
+      }
+
+      .status.visible {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="panel">
+        <img class="logo" src="/assets/communityverse-games-logo-transparent-cropped.png" alt="CommunityVerse Games" />
+        <p class="eyebrow">Restaurant Challenge Trivia</p>
+        <h1>Monthly Subscription</h1>
+        <p>Use this page to set up the $19 monthly Restaurant Challenge subscription through PayPal.</p>
+        <div class="summary">
+          <p><strong>Restaurant:</strong> <span id="restaurant-name">Restaurant Challenge customer</span></p>
+          <p><strong>Invoice:</strong> <span id="invoice-number">Not provided</span></p>
+          <p><strong>Plan:</strong> $19 per month</p>
+        </div>
+        <div class="paypal-wrap" id="paypal-button-container-P-9A7118975H960980JNJKNL7A"></div>
+        <p class="status" id="subscription-status"></p>
+        <p class="note">After PayPal confirms the subscription, CommunityVerse Games will match it to the restaurant and invoice shown above.</p>
+      </section>
+    </main>
+    <script src="https://www.paypal.com/sdk/js?client-id=AXaWBrGU5o4xUINO7mMOUL-qB0wXPAUaXUSc1w_e_fI3vCDdj03dDeTIheSnEo0WTiyqdNnCJsmBpPB_&vault=true&intent=subscription" data-sdk-integration-source="button-factory"></script>
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const invoiceNumber = String(params.get("invoice") || "").trim();
+      const restaurantName = String(params.get("restaurant") || "").trim();
+      const customId = [invoiceNumber, restaurantName].filter(Boolean).join(" - ").slice(0, 127);
+
+      document.getElementById("invoice-number").textContent = invoiceNumber || "Not provided";
+      document.getElementById("restaurant-name").textContent = restaurantName || "Restaurant Challenge customer";
+
+      paypal.Buttons({
+        style: {
+          shape: "rect",
+          color: "gold",
+          layout: "vertical",
+          label: "subscribe"
+        },
+        createSubscription: function(data, actions) {
+          const subscription = {
+            plan_id: "P-9A7118975H960980JNJKNL7A"
+          };
+          if (customId) {
+            subscription.custom_id = customId;
+          }
+          return actions.subscription.create(subscription);
+        },
+        onApprove: function(data) {
+          const status = document.getElementById("subscription-status");
+          status.textContent = "Subscription approved. PayPal subscription ID: " + data.subscriptionID;
+          status.classList.add("visible");
+        }
+      }).render("#paypal-button-container-P-9A7118975H960980JNJKNL7A");
+    </script>
+  </body>
+</html>
