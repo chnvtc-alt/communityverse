@@ -566,7 +566,7 @@
   function paymentTypeFromNotes(notes = "") {
     const match = String(notes || "").match(/\bPayment type:\s*(Recurring monthly subscription|Manual one-time invoice)\./i);
     if (!match) {
-      return "manual";
+      return "recurring";
     }
     return /manual/i.test(match[1]) ? "manual" : "recurring";
   }
@@ -3744,7 +3744,7 @@
             : `Here is your invoice for ${escapeHtml(month)} for ${escapeHtml(gameName)}. Thank you for allowing us to promote your restaurant through your trivia game.`}</p>
           <p>${details.isRecurring
             ? `Your subscription starts when you sign up and renews automatically each month on that same day unless canceled.`
-            : `You can mail a check or pay this invoice one time with the Pay Now button.`}</p>
+            : `You can pay this invoice one time with the Pay Now button.`}</p>
           <p>A PDF of this invoice is attached for your records.</p>
         </section>
       </article>
@@ -3820,7 +3820,7 @@
           "",
           `Here is your invoice for ${month} for ${gameName}. Thank you for allowing us to promote your restaurant through your trivia game.`,
           "",
-          "You can mail a check or pay online with a credit card through PayPal, using this PayPal link:",
+          "You can pay online with a credit card through PayPal, using this PayPal link:",
           PAYMENT_LINK,
           "",
           "A PDF of this invoice is attached for your records.",

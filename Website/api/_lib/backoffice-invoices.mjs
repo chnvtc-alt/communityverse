@@ -188,7 +188,7 @@ function invoiceDetails(collection = {}, restaurant = {}) {
 function paymentTypeFromNotes(notes = "") {
   const match = safeString(notes).match(/\bPayment type:\s*(Recurring monthly subscription|Manual one-time invoice)\./i);
   if (!match) {
-    return "manual";
+    return "recurring";
   }
   return /manual/i.test(match[1]) ? "manual" : "recurring";
 }
@@ -305,7 +305,7 @@ function invoiceHtml(collection = {}, restaurant = {}, isTest = false) {
   const primaryButton = details.isRecurring ? "Set Up Monthly Subscription" : "Pay Now";
   const primaryIntro = details.isRecurring
     ? `Use this CommunityVerse subscription page to set up the ${htmlEscape(details.amount)} monthly Restaurant Challenge subscription. It starts when you sign up and renews automatically each month on that same day unless canceled.`
-    : "You can mail a check or pay this invoice one time with the green Pay Now button.";
+    : "You can pay this invoice one time with the green Pay Now button.";
   const secondaryBox = "";
   const testNote = isTest ? `<p style="margin:0 0 18px;color:#a15c00;font-weight:700;">Test send only. This was not sent to the customer.</p>` : "";
   return `<!doctype html>
@@ -363,7 +363,7 @@ function invoiceText(collection = {}, restaurant = {}, isTest = false) {
         "",
         `Here is your invoice for ${details.invoiceMonth} for ${details.gameName}. Thank you for allowing us to promote your restaurant through your trivia game.`,
         "",
-        "You can mail a check or pay online with a credit card through PayPal, using this PayPal link:",
+        "You can pay online with a credit card through PayPal, using this PayPal link:",
         PAYMENT_LINK,
         "",
         "A PDF of this invoice is attached for your records.",
