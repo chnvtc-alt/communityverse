@@ -221,6 +221,10 @@
     collectionPaidDate: document.querySelector("#collection-paid-date"),
     collectionNotes: document.querySelector("#collection-notes"),
     collectionsList: document.querySelector("#collections-list"),
+    paypalPasteForm: document.querySelector("#paypal-paste-form"),
+    paypalPasteText: document.querySelector("#paypal-paste-text"),
+    paypalPaymentPreview: document.querySelector("#paypal-payment-preview"),
+    clearPaypalPasteButton: document.querySelector("#clear-paypal-paste-button"),
     commissionsList: document.querySelector("#commissions-list"),
     commissionsSummary: document.querySelector("#commissions-summary"),
     invoiceTemplateMonth: document.querySelector("#invoice-template-month"),
@@ -350,6 +354,7 @@
     editingCollectionId: "",
     editingExpenseId: "",
     invoicePreviewId: "",
+    pendingPaypalPayment: null,
     pendingProspectImport: [],
     researchTarget: null,
     salesEmailTargetId: "",
@@ -677,6 +682,7 @@
       elements.openResearchSearchesButton,
       elements.resetSalesEmail1Button,
       elements.resetDoyceEmailButton,
+      elements.clearPaypalPasteButton,
     ].forEach((element) => {
       if (element) element.disabled = loading;
     });
@@ -2405,6 +2411,237 @@
     elements.collectionNotes.value = `${description}. ${period.prefix}: ${period.label}.`;
   }
 
+  function firstPaymentMatch(text = "", patterns = []) {
+    const source = String(text || "");
+    for (const pattern of patterns) {
+      const match = source.match(pattern);
+      if (match?.[1]) {
+        return match[1].trim();
+      }
+    }
+    return "";
+  }
+
+  function paymentDateFromPaypalText(text = "") {
+    const match = String(text || "").match(/\b([A-Z][a-z]{2}\s+\d{1,2},\s+\d{4})\b/);
+    if (!match) {
+      return today();
+    }
+    const date = new Date(`${match[1]}T00:00:00`);
+    return Number.isNaN(date.getTime()) ? today() : dateInputValue(date);
+  }
+
+  function parseMoneyText(value = "") {
+    const amount = Number(String(value || "").replace(/[^0-9.]/g, ""));
+    return Number.isFinite(amount) ? amount : 0;
+  }
+
+  function parsePaypalPaymentText(text = "") {
+    const source = String(text || "");
+    const profileId = firstPaymentMatch(source, [
+      /\bProfile ID\s+([A-Z0-9-]+)/i,
+      /\bRecurring Payment ID\s+([A-Z0-9-]+)/i,
+      /\bSubscription ID\s+([A-Z0-9-]+)/i,
+      /\b(I-[A-Z0-9]+)\b/i,
+    ]);
+    const transactionId = firstPaymentMatch(source, [
+      /\bTransaction ID:\s*\[?([A-Z0-9]+)/i,
+      /\bTransaction ID\s+([A-Z0-9]+)/i,
+    ]);
+    const customerName = firstPaymentMatch(source, [
+      /\bCustomer name\s+([^\n]+)/i,
+      /\bPaid by\s+([^\n]+)/i,
+      /\bpayment from\s+(.+?)\s+for\s+/i,
+    ]);
+    const customerEmail = firstPaymentMatch(source, [
+      /\bCustomer email\s+([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})/i,
+      /\b([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})\b/i,
+    ]).toLowerCase();
+    const grossText = firstPaymentMatch(source, [
+      /\bAmount received\s+\$?\s*([0-9,]+(?:\.[0-9]{2})?)/i,
+      /\bGross Amount\s+\$?\s*([0-9,]+(?:\.[0-9]{2})?)/i,
+      /\bGross amount\s+\$?\s*([0-9,]+(?:\.[0-9]{2})?)/i,
+    ]);
+    const feeText = firstPaymentMatch(source, [
+      /\bTransaction fee\s+-?\$?\s*([0-9,]+(?:\.[0-9]{2})?)/i,
+    ]);
+    const netText = firstPaymentMatch(source, [
+      /\bNet Amount\s+\$?\s*([0-9,]+(?:\.[0-9]{2})?)/i,
+      /\bNet amount\s+\$?\s*([0-9,]+(?:\.[0-9]{2})?)/i,
+    ]);
+    const grossAmount = parseMoneyText(grossText);
+    const feeAmount = parseMoneyText(feeText);
+    const netAmount = parseMoneyText(netText);
+    return {
+      profileId,
+      transactionId,
+      customerName,
+      customerEmail,
+      grossAmount,
+      feeAmount,
+      netAmount,
+      paidDate: paymentDateFromPaypalText(source),
+      rawText: source,
+    };
+  }
+
+  function paypalPaymentNote(payment = {}) {
+    return [
+      "PayPal payment",
+      payment.transactionId ? `Transaction ID: ${payment.transactionId}` : "",
+      payment.profileId ? `Profile ID: ${payment.profileId}` : "",
+      payment.customerName ? `Customer: ${payment.customerName}` : "",
+      payment.customerEmail ? `Customer email: ${payment.customerEmail}` : "",
+      payment.grossAmount ? `Gross amount: ${moneyValue(payment.grossAmount)}` : "",
+      payment.feeAmount ? `PayPal fee: ${moneyValue(payment.feeAmount)}` : "",
+      payment.netAmount ? `Net amount after PayPal fee: ${moneyValue(payment.netAmount)}` : "",
+    ].filter(Boolean).join(" / ");
+  }
+
+  function paypalNetAmountFromNotes(notes = "") {
+    const match = String(notes || "").match(/Net amount after PayPal fee:\s*\$?\s*([0-9,]+(?:\.[0-9]{2})?)/i);
+    return match ? parseMoneyText(match[1]) : 0;
+  }
+
+  function findPaypalPaymentRestaurant(payment = {}) {
+    const profileKey = String(payment.profileId || "").trim().toLowerCase();
+    if (profileKey) {
+      const restaurant = state.restaurants.find((record) =>
+        String(record.paypalSubscriptionId || "").trim().toLowerCase() === profileKey
+      );
+      if (restaurant) {
+        return { restaurant, reason: "PayPal Profile ID" };
+      }
+    }
+    const emailKey = String(payment.customerEmail || "").trim().toLowerCase();
+    if (emailKey) {
+      const matches = state.restaurants.filter((record) =>
+        String(record.contactEmail || "").trim().toLowerCase() === emailKey ||
+        String(record.secondContactEmail || "").trim().toLowerCase() === emailKey
+      );
+      if (matches.length === 1) {
+        return { restaurant: matches[0], reason: "customer email" };
+      }
+    }
+    return { restaurant: null, reason: "" };
+  }
+
+  function openCollectionsForRestaurant(restaurant = {}) {
+    const records = collectionsForRestaurant(restaurant)
+      .filter((collection) => collection.status !== "paid")
+      .sort((left, right) => String(left.dueDate || "9999-12-31").localeCompare(String(right.dueDate || "9999-12-31")));
+    return records[0] || null;
+  }
+
+  function renderPaypalPaymentPreview() {
+    const pending = state.pendingPaypalPayment;
+    if (!pending) {
+      elements.paypalPaymentPreview.hidden = true;
+      elements.paypalPaymentPreview.innerHTML = "";
+      return;
+    }
+    const { payment, restaurant, reason, collection } = pending;
+    const hasMatch = Boolean(restaurant);
+    elements.paypalPaymentPreview.hidden = false;
+    elements.paypalPaymentPreview.innerHTML = `
+      <div class="paypal-payment-preview-card ${hasMatch ? "" : "is-warning"}">
+        <h4>${hasMatch ? "PayPal match found" : "No safe match found"}</h4>
+        <p class="helper">${hasMatch ? `Matched ${escapeHtml(restaurant.name)} by ${escapeHtml(reason)}.` : "I could not safely match this PayPal payment to a restaurant. Add the PayPal Profile ID to the restaurant card, then preview again."}</p>
+        <dl>
+          <div><dt>Restaurant</dt><dd>${hasMatch ? escapeHtml(restaurant.name) : "No match"}</dd></div>
+          <div><dt>Profile ID</dt><dd>${escapeHtml(payment.profileId || "Not found")}</dd></div>
+          <div><dt>Transaction</dt><dd>${escapeHtml(payment.transactionId || "Not found")}</dd></div>
+          <div><dt>Customer</dt><dd>${escapeHtml([payment.customerName, payment.customerEmail].filter(Boolean).join(" / ") || "Not found")}</dd></div>
+          <div><dt>Paid Date</dt><dd>${escapeHtml(shortDate(payment.paidDate) || payment.paidDate)}</dd></div>
+          <div><dt>Gross Amount</dt><dd>${escapeHtml(payment.grossAmount ? moneyValue(payment.grossAmount) : "Not found")}</dd></div>
+          <div><dt>Net Amount</dt><dd>${escapeHtml(payment.netAmount ? moneyValue(payment.netAmount) : "Not shown in this paste")}</dd></div>
+          <div><dt>Invoice</dt><dd>${collection ? `Will mark invoice ${escapeHtml(collection.invoiceNumber || collection.id)} paid` : hasMatch ? "Will create a PayPal payment record" : "No change will be made"}</dd></div>
+        </dl>
+        ${hasMatch ? '<button class="button button-primary" type="button" data-apply-paypal-payment>Apply Payment</button>' : ""}
+      </div>
+    `;
+  }
+
+  function previewPaypalPayment(event) {
+    event.preventDefault();
+    const payment = parsePaypalPaymentText(elements.paypalPasteText.value);
+    if (!payment.profileId && !payment.customerEmail && !payment.transactionId && !payment.grossAmount) {
+      window.alert("I could not find PayPal payment details in that paste. Try copying the PayPal email text again.");
+      return;
+    }
+    const match = findPaypalPaymentRestaurant(payment);
+    state.pendingPaypalPayment = {
+      payment,
+      restaurant: match.restaurant,
+      reason: match.reason,
+      collection: match.restaurant ? openCollectionsForRestaurant(match.restaurant) : null,
+    };
+    renderPaypalPaymentPreview();
+  }
+
+  function clearPaypalPaymentPaste() {
+    elements.paypalPasteText.value = "";
+    state.pendingPaypalPayment = null;
+    renderPaypalPaymentPreview();
+  }
+
+  async function applyPaypalPayment() {
+    const pending = state.pendingPaypalPayment;
+    if (!pending?.restaurant) {
+      return;
+    }
+    const payment = pending.payment;
+    const restaurant = pending.restaurant;
+    const note = paypalPaymentNote(payment);
+    const collection = normalizeCollection({
+      ...(pending.collection || {}),
+      id: pending.collection?.id || makeCollectionId(),
+      restaurantId: restaurant.id,
+      restaurantName: restaurant.name,
+      invoiceNumber: pending.collection?.invoiceNumber || (payment.transactionId ? `PP-${payment.transactionId.slice(-6)}` : "PayPal"),
+      dueDate: pending.collection?.dueDate || payment.paidDate || today(),
+      amount: payment.grossAmount ? String(payment.grossAmount.toFixed(2)) : pending.collection?.amount,
+      status: "paid",
+      paidDate: payment.paidDate || today(),
+      notes: appendUniqueNote(pending.collection?.notes || "", note),
+    });
+    const collectionData = await saveAction("saveCollection", { collection }, "Applied PayPal payment");
+    if (!collectionData?.collection) {
+      return;
+    }
+    const savedCollection = normalizeCollection(collectionData.collection);
+    const existingCollectionIndex = state.collections.findIndex((record) => record.id === savedCollection.id);
+    if (existingCollectionIndex >= 0) {
+      state.collections[existingCollectionIndex] = savedCollection;
+    } else {
+      state.collections.unshift(savedCollection);
+    }
+    const shouldUpdateRestaurant = restaurant.paymentStatus !== "paid" ||
+      (payment.profileId && String(restaurant.paypalSubscriptionId || "").trim() !== payment.profileId);
+    if (shouldUpdateRestaurant) {
+      const updatedRestaurant = normalizeRestaurant({
+        ...restaurant,
+        paypalSubscriptionId: payment.profileId || restaurant.paypalSubscriptionId,
+        paymentStatus: "paid",
+        salesNotes: payment.profileId
+          ? appendUniqueNote(restaurant.salesNotes, `PayPal Profile ID: ${payment.profileId}`)
+          : restaurant.salesNotes,
+        updatedAt: new Date().toISOString(),
+      });
+      const restaurantData = await saveAction("saveRestaurant", { restaurant: updatedRestaurant }, "Saved PayPal Profile ID");
+      if (restaurantData?.restaurant) {
+        const savedRestaurant = normalizeRestaurant(restaurantData.restaurant);
+        const existingRestaurantIndex = state.restaurants.findIndex((record) => record.id === savedRestaurant.id);
+        if (existingRestaurantIndex >= 0) {
+          state.restaurants[existingRestaurantIndex] = savedRestaurant;
+        }
+      }
+    }
+    cacheBackofficeData();
+    clearPaypalPaymentPaste();
+    render();
+  }
+
   function renderCollections() {
     renderCollectionRestaurantOptions();
     const records = [...state.collections].sort((left, right) => {
@@ -2453,7 +2690,7 @@
     return collectionsForRestaurant(restaurant)
       .filter((collection) => collection.status === "paid")
       .reduce((totals, collection) => {
-        const collected = numberFromMoney(collection.amount, 0);
+        const collected = paypalNetAmountFromNotes(collection.notes) || numberFromMoney(collection.amount, 0);
         const rate = commissionRateFor(restaurant, collection);
         totals.collected += collected;
         totals.commission += Math.round(collected * rate * 100) / 100;
@@ -4437,6 +4674,8 @@
   elements.invoiceTemplateMonth.addEventListener("change", updateInvoiceTemplateAmount);
   elements.invoiceTemplateType.addEventListener("change", updateInvoiceTemplateAmount);
   elements.fillMonthlyInvoiceButton.addEventListener("click", fillMonthlyInvoiceTemplate);
+  elements.paypalPasteForm.addEventListener("submit", previewPaypalPayment);
+  elements.clearPaypalPasteButton.addEventListener("click", clearPaypalPaymentPaste);
   elements.closeInvoicePreviewButton.addEventListener("click", closeInvoicePreview);
   elements.printInvoiceButton.addEventListener("click", saveInvoicePdf);
   elements.expenseForm.addEventListener("submit", addExpense);
@@ -4567,6 +4806,10 @@
     const sendCollectionButton = event.target.closest("[data-send-collection-id]");
     if (sendCollectionButton) {
       sendInvoiceEmail(sendCollectionButton.dataset.sendCollectionId);
+    }
+    const applyPaypalPaymentButton = event.target.closest("[data-apply-paypal-payment]");
+    if (applyPaypalPaymentButton) {
+      applyPaypalPayment();
     }
     const deleteExpenseButton = event.target.closest("[data-delete-expense-id]");
     if (deleteExpenseButton) {

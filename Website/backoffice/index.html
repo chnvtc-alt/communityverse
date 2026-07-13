@@ -558,6 +558,20 @@
               </label>
               <button class="button button-primary" type="submit">Add Invoice</button>
             </form>
+            <details class="paypal-paste-panel">
+              <summary>Paste PayPal Payment</summary>
+              <form class="paypal-paste-form" id="paypal-paste-form">
+                <label>
+                  PayPal email or transaction details
+                  <textarea id="paypal-paste-text" rows="6" placeholder="Paste the PayPal payment email or transaction details here..."></textarea>
+                </label>
+                <div class="dialog-actions">
+                  <button class="button button-muted" id="clear-paypal-paste-button" type="button">Clear</button>
+                  <button class="button button-primary" type="submit">Preview Match</button>
+                </div>
+              </form>
+              <div class="paypal-payment-preview" id="paypal-payment-preview" hidden></div>
+            </details>
             <div class="table-wrap">
               <table>
                 <thead>
