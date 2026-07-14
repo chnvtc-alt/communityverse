@@ -825,7 +825,10 @@
     return (Array.isArray(restaurants) ? restaurants : []).filter(
       (restaurantOption, index, list) =>
         restaurantOption &&
-        list.findIndex((item) => item.slug === restaurantOption.slug) === index
+        list.findIndex((item) =>
+          item.slug === restaurantOption.slug ||
+          String(item.name || "").trim().toLowerCase() === String(restaurantOption.name || "").trim().toLowerCase()
+        ) === index
     );
   }
 

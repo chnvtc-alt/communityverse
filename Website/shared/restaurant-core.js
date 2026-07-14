@@ -1602,7 +1602,12 @@
 
     const mergedRestaurants = [...normalizedRestaurants];
     restaurants.forEach((restaurant) => {
-      if (restaurant?.slug && !mergedRestaurants.some((item) => item.slug === restaurant.slug)) {
+      const restaurantNameKey = normalizeText(restaurant?.name || "");
+      const alreadyIncluded = mergedRestaurants.some((item) =>
+        item.slug === restaurant?.slug ||
+        (restaurantNameKey && normalizeText(item.name || "") === restaurantNameKey)
+      );
+      if (restaurant?.slug && !alreadyIncluded) {
         mergedRestaurants.push(restaurant);
       }
     });
