@@ -1466,7 +1466,7 @@
             <td><button class="text-button" type="button" data-research-restaurant-id="${escapeHtml(restaurant.id)}">Research</button></td>
             <td>${
               restaurant.contactEmail
-                ? `<a class="text-button" href="${escapeHtml(salesEmailDraftUrlForRestaurant(restaurant))}" data-log-sales-email-id="${escapeHtml(restaurant.id)}">Send Email 1</a>`
+                ? `<button class="text-button" type="button" data-sales-email-id="${escapeHtml(restaurant.id)}">Preview Email 1</button>`
                 : '<span class="helper">No email</span>'
             }</td>
           </tr>
@@ -3863,11 +3863,6 @@
     };
   }
 
-  function salesEmailDraftUrlForRestaurant(restaurant = {}) {
-    const draft = salesEmailDraftForRestaurant(restaurant);
-    return mailtoUrl(draft.email, draft.subject, draft.body);
-  }
-
   function copyTextToClipboard(text = "") {
     if (!navigator.clipboard || !text) {
       return false;
@@ -3930,38 +3925,6 @@
     }
   }
 
-  async function logDirectSalesEmailOne(id = "") {
-    const restaurant = state.restaurants.find((record) => record.id === id);
-    if (!restaurant) {
-      return;
-    }
-    const contact = normalizeContactHistory([{
-      id: makeContactId(),
-      type: "E",
-      date: today(),
-      response: false,
-      note: "Email 1",
-    }])[0];
-    const updatedRestaurant = normalizeRestaurant({
-      ...restaurant,
-      contactHistory: contact ? [contact, ...(restaurant.contactHistory || [])] : restaurant.contactHistory,
-      lastContacted: today(),
-      prospectStage: ["", "new-lead"].includes(restaurant.prospectStage) ? "contacted" : restaurant.prospectStage,
-      updatedAt: new Date().toISOString(),
-    });
-    const data = await saveAction("saveRestaurant", { restaurant: updatedRestaurant }, "Logged Email 1");
-    if (!data?.restaurant) {
-      return;
-    }
-    const savedRecord = normalizeRestaurant(data.restaurant);
-    const existingIndex = state.restaurants.findIndex((record) => record.id === savedRecord.id);
-    if (existingIndex >= 0) {
-      state.restaurants[existingIndex] = savedRecord;
-    }
-    cacheBackofficeData();
-    render();
-  }
-
   function openSalesEmailDialog(id) {
     const restaurant = state.restaurants.find((record) => record.id === id);
     if (!restaurant) {
@@ -3975,7 +3938,7 @@
     state.salesEmailTargetId = restaurant.id;
     elements.salesEmailRestaurantId.value = restaurant.id;
     elements.salesEmailTitle.textContent = `Send Email 1 to ${restaurant.name}`;
-    elements.salesEmailHelper.textContent = "Edit this draft if needed. Open the email first, then press Log Email 1 after the draft opens.";
+    elements.salesEmailHelper.textContent = "Review this draft, open it in Mail, then press Log Email 1 after the draft opens.";
     elements.salesEmailTo.value = restaurant.contactEmail;
     elements.salesEmailSubject.value = salesEmailValue(template.subject, restaurant);
     elements.salesEmailBody.value = salesEmailValue(template.body, restaurant);
@@ -4900,10 +4863,6 @@
     const salesEmailButton = event.target.closest("[data-sales-email-id]");
     if (salesEmailButton) {
       openSalesEmailDialog(salesEmailButton.dataset.salesEmailId);
-    }
-    const logSalesEmailLink = event.target.closest("[data-log-sales-email-id]");
-    if (logSalesEmailLink) {
-      logDirectSalesEmailOne(logSalesEmailLink.dataset.logSalesEmailId);
     }
     const removeContactButton = event.target.closest("[data-remove-contact-id]");
     if (removeContactButton) {
