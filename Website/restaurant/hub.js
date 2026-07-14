@@ -270,7 +270,7 @@
     }
 
     const profile = core.getActiveProfile();
-    const directoryRestaurants = getDirectoryRestaurants(profile);
+    const directoryRestaurants = getPlayableDropdownRestaurants(profile);
     const selectedSlug = state.selectedDirectorySlug || getDefaultDirectorySlug(profile);
     const selectedRestaurant =
       directoryRestaurants.find((restaurant) => restaurant.slug === selectedSlug) ||
@@ -727,7 +727,7 @@
       return baseRestaurantSlug;
     }
 
-    return getFeaturedDirectorySlug(getDirectoryRestaurants(profile));
+    return getFeaturedDirectorySlug(getPlayableDropdownRestaurants(profile));
   }
 
   function getSelectedLeaderboardRestaurant(profile = null) {
@@ -751,7 +751,7 @@
 
   function getLeaderboardRestaurantOptions(profile = null, selectedRestaurant = null) {
     return [
-      ...getDirectoryRestaurants(profile),
+      ...getPlayableDropdownRestaurants(profile),
       ...(selectedRestaurant && selectedRestaurant.visibleInList === false
         ? [directoryEntryFromRestaurant(selectedRestaurant)]
         : []),
@@ -813,21 +813,29 @@
     };
   }
 
-  function isRealDirectoryRestaurant(restaurant = {}) {
+  function isHiddenFromRestaurantDirectory(restaurant = {}) {
     const slug = String(restaurant.slug || "").toLowerCase();
     const name = String(restaurant.name || "").toLowerCase();
-    return !["americana", "americana-grill", "wafflemaster", "waffle-master"].includes(slug) &&
-      !/^americana\b/.test(name) &&
-      name !== "waffle master";
+    return ["americana", "americana-grill", "wafflemaster", "waffle-master"].includes(slug) ||
+      /^americana\b/.test(name) ||
+      name === "waffle master";
   }
 
-  function getDirectoryRestaurants(profile = null) {
-    const playableRestaurants = getPlayableRestaurants({ publicOnly: true }).filter(isRealDirectoryRestaurant);
+  function uniqueRestaurantEntries(restaurants) {
+    return (Array.isArray(restaurants) ? restaurants : []).filter(
+      (restaurantOption, index, list) =>
+        restaurantOption &&
+        list.findIndex((item) => item.slug === restaurantOption.slug) === index
+    );
+  }
+
+  function getPrivateProfileRestaurants(profile = null) {
     const privateSlugs = [
       String(profile?.baseRestaurantSlug || "").trim(),
       String(profile?.recentSessions?.[0]?.restaurantSlug || "").trim(),
     ].filter(Boolean);
-    const privateRestaurants = privateSlugs
+
+    return privateSlugs
       .map((slug) => core.getRestaurantBySlug(slug))
       .filter(
         (restaurant, index, list) =>
@@ -837,9 +845,18 @@
           restaurant.visibleInList === false &&
           list.findIndex((item) => item?.slug === restaurant.slug) === index
       );
+  }
+
+  function getDirectoryRestaurants(profile = null) {
+    const playableRestaurants = getPlayableRestaurants({ publicOnly: true }).filter(
+      (restaurant) => !isHiddenFromRestaurantDirectory(restaurant)
+    );
+    const privateRestaurants = getPrivateProfileRestaurants(profile).filter(
+      (restaurant) => !isHiddenFromRestaurantDirectory(restaurant)
+    );
 
     if (playableRestaurants.length) {
-      return [...playableRestaurants, ...privateRestaurants].map(directoryEntryFromRestaurant);
+      return uniqueRestaurantEntries([...playableRestaurants, ...privateRestaurants].map(directoryEntryFromRestaurant));
     }
 
     if (privateRestaurants.length) {
@@ -847,6 +864,16 @@
     }
 
     return [];
+  }
+
+  function getPlayableDropdownRestaurants(profile = null) {
+    const publicRestaurants = getPlayableRestaurants({ publicOnly: true });
+    const directoryHiddenPlayableRestaurants = getPlayableRestaurants().filter(isHiddenFromRestaurantDirectory);
+    const privateRestaurants = getPrivateProfileRestaurants(profile);
+    return uniqueRestaurantEntries(
+      [...publicRestaurants, ...directoryHiddenPlayableRestaurants, ...privateRestaurants]
+        .map(directoryEntryFromRestaurant)
+    );
   }
 
   function getFeaturedDirectorySlug(directoryRestaurants) {
@@ -862,7 +889,7 @@
   function getDefaultDirectorySlug(profile) {
     const baseRestaurantSlug = String(profile?.baseRestaurantSlug || "").trim();
     const recentRestaurantSlug = String(profile?.recentSessions?.[0]?.restaurantSlug || "").trim();
-    const directoryRestaurants = getDirectoryRestaurants(profile);
+    const directoryRestaurants = getPlayableDropdownRestaurants(profile);
     if (baseRestaurantSlug && directoryRestaurants.some((restaurant) => restaurant.slug === baseRestaurantSlug)) {
       return baseRestaurantSlug;
     }
@@ -873,7 +900,7 @@
   }
 
   function getSelectedDirectoryRestaurant(profile) {
-    const directoryRestaurants = getDirectoryRestaurants(profile);
+    const directoryRestaurants = getPlayableDropdownRestaurants(profile);
     const defaultSlug = getDefaultDirectorySlug(profile);
     const selectedSlug = state.selectedDirectorySlug || defaultSlug;
     return (
@@ -1760,7 +1787,7 @@
                   <article class="hero-directory-item hero-directory-item-compact ${selectedDirectoryRestaurant.available ? "" : "hero-directory-item-muted"}">
                         <label class="hero-directory-card-select" aria-label="Choose a Restaurant Challenge game">
                           <select id="directory-select" aria-label="Choose a Restaurant Challenge game">
-                            ${getDirectoryRestaurants(profile)
+                            ${getPlayableDropdownRestaurants(profile)
                               .map(
                                 (restaurantOption) => `
                                   <option value="${restaurantOption.slug}" ${selectedDirectoryRestaurant && restaurantOption.slug === selectedDirectoryRestaurant.slug ? "selected" : ""}>
