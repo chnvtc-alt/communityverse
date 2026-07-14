@@ -2242,11 +2242,7 @@ function getDailyPlayRows(list, dayCount = 60) {
   }));
 }
 
-function getRestaurantPlayRows(list, dayCount = 60) {
-  const oldestAllowed = new Date();
-  oldestAllowed.setHours(0, 0, 0, 0);
-  oldestAllowed.setDate(oldestAllowed.getDate() - (dayCount - 1));
-  const recentGamesBySlug = new Map();
+function getRestaurantPlayRows(list) {
   const trackedGamesBySlug = new Map();
   const playersBySlug = new Map();
 
@@ -2264,9 +2260,6 @@ function getRestaurantPlayRows(list, dayCount = 60) {
       }
       addMapCount(trackedGamesBySlug, slug, 1);
       playerSlugs.add(slug);
-      if (timestamp >= oldestAllowed.getTime()) {
-        addMapCount(recentGamesBySlug, slug, 1);
-      }
     });
     playerSlugs.forEach((slug) => addMapCount(playersBySlug, slug, 1));
   });
@@ -2274,11 +2267,10 @@ function getRestaurantPlayRows(list, dayCount = 60) {
   return [...trackedGamesBySlug.keys()]
     .map((slug) => ({
       name: profileRestaurantName(slug),
-      recentGames: recentGamesBySlug.get(slug) || 0,
       trackedGames: trackedGamesBySlug.get(slug) || 0,
       players: playersBySlug.get(slug) || 0,
     }))
-    .sort((left, right) => right.recentGames - left.recentGames || right.trackedGames - left.trackedGames || left.name.localeCompare(right.name));
+    .sort((left, right) => right.trackedGames - left.trackedGames || left.name.localeCompare(right.name));
 }
 
 function getStatsRestaurantOptions(list) {
@@ -2334,34 +2326,6 @@ function getNewRestaurantRows(list, dayCount = 14) {
     label: formatShortDate(`${key}T12:00:00`),
     created,
   }));
-}
-
-function getTopPublicGameRows(list) {
-  const gamesBySlug = new Map();
-  const playersBySlug = new Map();
-
-  list.forEach((profile) => {
-    const restaurantStats = profile.restaurantStats && typeof profile.restaurantStats === "object"
-      ? profile.restaurantStats
-      : {};
-    Object.entries(restaurantStats).forEach(([slug, stats]) => {
-      if (!isOverallStatsScope() && slugify(slug || "") !== statsRestaurantScope) {
-        return;
-      }
-      const games = Number(stats?.gamesPlayed) || 0;
-      if (!slug || !games) return;
-      addMapCount(gamesBySlug, slug, games);
-      addMapCount(playersBySlug, slug, 1);
-    });
-  });
-
-  return [...gamesBySlug.entries()]
-    .map(([slug, games]) => ({
-      name: profileRestaurantName(slug),
-      games,
-      players: playersBySlug.get(slug) || 0,
-    }))
-    .sort((left, right) => right.games - left.games || left.name.localeCompare(right.name));
 }
 
 function getMostActiveProfileRows(list) {
@@ -2458,9 +2422,8 @@ function renderStats() {
   const dailyTitle = statsRestaurantScope === "overall"
     ? "Plays By Day - Last 60 Days"
     : `Plays By Day - Last 60 Days: ${selectedRestaurantName}`;
-  const restaurantPlayRows = getRestaurantPlayRows(normalProfiles, 60);
+  const restaurantPlayRows = getRestaurantPlayRows(normalProfiles);
   const createdRows = getNewRestaurantRows(normalProfiles);
-  const topPublicGames = getTopPublicGameRows(normalProfiles);
   const activeProfiles = getMostActiveProfileRows(normalProfiles);
   const returningPlayers = getReturningPlayerRows(normalProfiles);
 
@@ -2485,10 +2448,10 @@ function renderStats() {
           <strong>${formatWholeNumber(row.games)}</strong>
         </div>
       `, "stats-section-scrollable")}
-      ${statsList("Plays By Restaurant - Last 60 Days", restaurantPlayRows, "No restaurant plays found.", (row) => `
+      ${statsList("Tracked Plays By Restaurant - All Time", restaurantPlayRows, "No restaurant plays found.", (row) => `
         <div class="stats-row">
-          <span>${escapeHtml(row.name)} <small>${formatWholeNumber(row.players)} player${row.players === 1 ? "" : "s"} · ${formatWholeNumber(row.trackedGames)} all tracked</small></span>
-          <strong>${formatWholeNumber(row.recentGames)}</strong>
+          <span>${escapeHtml(row.name)} <small>${formatWholeNumber(row.players)} player${row.players === 1 ? "" : "s"}</small></span>
+          <strong>${formatWholeNumber(row.trackedGames)}</strong>
         </div>
       `, "stats-section-scrollable")}
       ${statsList("New Restaurants By Day", createdRows, "No recent restaurants found.", (row) => `
@@ -2512,15 +2475,6 @@ function renderStats() {
           <strong>${formatWholeNumber(row.games)}</strong>
         </div>
       `)}
-    </section>
-
-    <section class="stats-grid stats-grid-wide">
-      ${statsList("Most Played Public Games", topPublicGames, "No public game activity found.", (row) => `
-        <div class="stats-row">
-          <span>${escapeHtml(row.name)} <small>${formatWholeNumber(row.players)} player${row.players === 1 ? "" : "s"}</small></span>
-          <strong>${formatWholeNumber(row.games)}</strong>
-        </div>
-      `, "stats-section-scrollable")}
     </section>
 
     <p class="stats-footnote">Main stats count Normal Player profiles only. Excluded from stats: ${formatWholeNumber(excludedProfiles.length)} (${formatWholeNumber(adminProfiles.length)} admin · ${formatWholeNumber(testerProfiles.length)} tester). Current view: ${escapeHtml(isOverallStatsScope() ? "Overall" : selectedRestaurantName)}. Last normal-player recorded play: ${escapeHtml(summary.lastPlayedAt ? formatShortDate(summary.lastPlayedAt) : "not available")}.</p>
