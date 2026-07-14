@@ -130,9 +130,9 @@
         }
       })();
     </script>
-    <link rel="stylesheet" href="../shared/restaurant.css?v=directory-callout-v1" />
+    <link rel="stylesheet" href="../shared/restaurant.css?v=compact-restaurant-home-v1" />
     <script defer src="../shared/app-core.js?v=public-restaurant-fallback-v1"></script>
-    <script defer src="hub.js?v=footer-contact-v1"></script>
+    <script defer src="hub.js?v=compact-restaurant-home-v1"></script>
   </head>
   <body data-page="hub">
     <main class="app-shell">
@@ -157,7 +157,11 @@
           </a>
           <div class="challenge-play-heading">
             <h1 class="page-title challenge-splash-title" id="restaurant-challenge-title">Play a 3-Minute Trivia Challenge</h1>
-            <p class="challenge-splash-lead">Play solo or compete live with friends. With thousands of questions and collectible characters, every game is different.</p>
+            <p class="challenge-splash-lead">Choose a restaurant, answer 10 quick questions, unlock characters, and climb the leaderboards.</p>
+            <div class="challenge-hero-actions">
+              <button class="button button-muted challenge-splash-secondary" id="splash-how-to-play-button" type="button" data-how-to-play-button>How to Play</button>
+              <a class="button button-muted challenge-splash-secondary" href="/restaurant/directory/">Restaurant Directory</a>
+            </div>
           </div>
         </div>
 
@@ -221,53 +225,11 @@
             </div>
 
             <div class="challenge-splash-actions">
-              <a class="button button-muted challenge-splash-secondary" id="splash-my-restaurant-button" href="/restaurant/?hub=1#hero-panel">My Restaurant</a>
               <a class="button button-muted challenge-splash-secondary" id="splash-leaderboard-button" href="/restaurant/?hub=1#leaderboard-panel">Leaderboards</a>
-              <button class="button button-muted challenge-splash-secondary" id="splash-how-to-play-button" type="button" data-how-to-play-button>How to Play</button>
+              <a class="button button-muted challenge-splash-secondary" id="splash-collection-button" href="/restaurant/?hub=1#collection-panel">Character Collection</a>
+              <a class="button button-muted challenge-splash-secondary" id="splash-my-restaurant-button" href="/restaurant/?hub=1#hero-panel">My Restaurant</a>
             </div>
           </div>
-        </div>
-      </section>
-
-      <section class="challenge-info-section" aria-labelledby="challenge-info-title">
-        <p class="kicker">Why People Come Back</p>
-        <h2 class="section-title" id="challenge-info-title">A quick trivia game built for repeat play.</h2>
-        <div class="challenge-info-grid">
-          <section class="challenge-info-item">
-            <h3>Quick to Play</h3>
-            <p>Each game takes about 3 minutes, making it perfect while waiting for food or whenever you have a few minutes to spare.</p>
-          </section>
-          <section class="challenge-info-item">
-            <h3>Play Your Way</h3>
-            <p>Play solo or challenge friends in real time, even if they're in another city.</p>
-          </section>
-          <section class="challenge-info-item">
-            <h3>Keep Coming Back</h3>
-            <p>With over 1,300 questions and growing daily, every game feels different.</p>
-          </section>
-          <section class="challenge-info-item">
-            <h3>Earn Rewards</h3>
-            <p>Great scores unlock collectible characters, and if you'd like, you can build your own virtual restaurant and climb the leaderboards.</p>
-          </section>
-        </div>
-      </section>
-
-      <section class="challenge-info-section challenge-seo-section" aria-labelledby="challenge-restaurant-games-title">
-        <p class="kicker">Restaurant Trivia Games</p>
-        <h2 class="section-title" id="challenge-restaurant-games-title">Restaurant game directory.</h2>
-        <p class="copy">
-          Explore featured restaurants and choose a game to play from the full Restaurant Challenge Directory.
-        </p>
-        <a class="challenge-directory-hero-link" href="/restaurant/directory/" aria-label="Open Restaurant Directory">
-          <img
-            class="challenge-directory-hero-image"
-            src="/assets/restaurant-challenge/restaurant-directory-hero.jpg"
-            alt="CommunityVerse Games Restaurant Directory. Explore featured restaurants. Choose a game to play."
-            loading="lazy"
-          />
-        </a>
-        <div class="section-actions">
-          <a class="button button-muted" href="/restaurant/directory/">View Restaurant Directory</a>
         </div>
       </section>
 
@@ -451,6 +413,8 @@
         <a href="/terms/">Terms of Use</a>
         <span aria-hidden="true">|</span>
         <a href="#contact" data-contact-button>Contact</a>
+        <span aria-hidden="true">|</span>
+        <a href="/get-your-own-game/">For Restaurants</a>
       </footer>
     </main>
     <script defer src="/_vercel/insights/script.js"></script>

@@ -148,6 +148,7 @@
     splashCreateRoomButton: document.getElementById("splash-create-room-button"),
     splashMyRestaurantButton: document.getElementById("splash-my-restaurant-button"),
     splashLeaderboardButton: document.getElementById("splash-leaderboard-button"),
+    splashCollectionButton: document.getElementById("splash-collection-button"),
     splashHowToPlayButton: document.getElementById("splash-how-to-play-button"),
     restaurantDirectory: document.getElementById("challenge-restaurant-directory"),
     challengeModeInputs: Array.from(document.querySelectorAll("input[name='challengeMode']")),
@@ -317,6 +318,9 @@
     }
     if (elements.splashLeaderboardButton) {
       elements.splashLeaderboardButton.href = "/restaurant/?hub=1#leaderboard-panel";
+    }
+    if (elements.splashCollectionButton) {
+      elements.splashCollectionButton.href = "/restaurant/?hub=1#collection-panel";
     }
     renderSplashProgress(profile, selectedRestaurant?.slug || "");
     if (elements.splashStatsScope) {
