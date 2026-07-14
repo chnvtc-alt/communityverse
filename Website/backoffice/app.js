@@ -1466,7 +1466,7 @@
             <td><button class="text-button" type="button" data-research-restaurant-id="${escapeHtml(restaurant.id)}">Research</button></td>
             <td>${
               restaurant.contactEmail
-                ? `<button class="text-button" type="button" data-sales-email-id="${escapeHtml(restaurant.id)}">Preview Email 1</button>`
+                ? `<a class="text-button" href="${escapeHtml(salesEmailDraftUrlForRestaurant(restaurant))}">Open Email 1</a>`
                 : '<span class="helper">No email</span>'
             }</td>
           </tr>
@@ -3861,6 +3861,11 @@
       subject: salesEmailValue(template.subject, restaurant),
       body: salesEmailValue(template.body, restaurant),
     };
+  }
+
+  function salesEmailDraftUrlForRestaurant(restaurant = {}) {
+    const draft = salesEmailDraftForRestaurant(restaurant);
+    return mailtoUrl(draft.email, draft.subject, draft.body);
   }
 
   function copyTextToClipboard(text = "") {
