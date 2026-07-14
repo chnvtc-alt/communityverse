@@ -62,7 +62,14 @@
   }
 
   function fallbackRestaurants() {
-    return [];
+    return [
+      { slug: "hudsons", name: "Hudson's Hickory House", publicGameName: "The Hudson's Hickory House Game" },
+      { slug: "cinema-tavern", name: "Cinema Tavern", publicGameName: "The Cinema Tavern Game" },
+      { slug: "sam-and-roscos", name: "Sam & Rosco's", publicGameName: "The Sam & Rosco's Game" },
+      { slug: "marcossp", name: "Marco's Pizza - South Paulding", publicGameName: "Marco's Pizza - South Paulding Game" },
+      { slug: "fabianos", name: "Fabiano's", publicGameName: "The Fabiano's Game" },
+      { slug: "gabes-downtown", name: "Gabe's Downtown", publicGameName: "The Gabe's Downtown Game" },
+    ];
   }
 
   async function loadRestaurants() {
@@ -76,7 +83,7 @@
     }
 
     if (!restaurants.length) {
-      restaurants = [];
+      restaurants = visibleRestaurants(fallbackRestaurants());
     }
 
     renderDirectory();
