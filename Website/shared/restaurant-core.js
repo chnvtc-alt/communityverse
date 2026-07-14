@@ -1600,7 +1600,14 @@
       return;
     }
 
-    restaurants.splice(0, restaurants.length, ...normalizedRestaurants);
+    const mergedRestaurants = [...normalizedRestaurants];
+    restaurants.forEach((restaurant) => {
+      if (restaurant?.slug && !mergedRestaurants.some((item) => item.slug === restaurant.slug)) {
+        mergedRestaurants.push(restaurant);
+      }
+    });
+
+    restaurants.splice(0, restaurants.length, ...mergedRestaurants);
   }
 
   async function refreshRestaurantBankFromServer() {
