@@ -3893,36 +3893,26 @@
     if (!email || !subject || !body) {
       return "";
     }
-    const fullDraftUrl = mailtoUrl(email, subject, body);
-    if (fullDraftUrl.length > MAILTO_FULL_DRAFT_LIMIT) {
-      return mailtoUrl(email, subject);
-    }
-    return fullDraftUrl;
+    return mailtoUrl(email, subject, body);
   }
 
   function updateSalesEmailDraftLink() {
     const draftUrl = salesEmailDraftUrl();
-    elements.openSalesEmailDraftLink.href = draftUrl || "mailto:";
+    elements.openSalesEmailDraftLink.disabled = !draftUrl;
     elements.openSalesEmailDraftLink.setAttribute("aria-disabled", draftUrl ? "false" : "true");
   }
 
   function openSalesEmailDraft(event) {
+    event.preventDefault();
     const email = elements.salesEmailTo.value.trim();
     const subject = elements.salesEmailSubject.value.trim();
     const body = elements.salesEmailBody.value.trim();
     updateSalesEmailDraftLink();
     if (!email || !subject || !body) {
-      event.preventDefault();
       window.alert("Add an email address, subject, and message before opening the email.");
       return;
     }
-    const fullDraftUrl = mailtoUrl(email, subject, body);
-    if (fullDraftUrl.length > MAILTO_FULL_DRAFT_LIMIT) {
-      copyTextToClipboard(body);
-      window.setTimeout(() => {
-        window.alert("That email was long, so Back Office copied the message text. If the email opens without the message, paste it into the email body.");
-      }, 800);
-    }
+    window.location.href = mailtoUrl(email, subject, body);
   }
 
   function openSalesEmailDialog(id) {
