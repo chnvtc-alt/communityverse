@@ -2245,6 +2245,12 @@ function getDailyPlayRows(list, dayCount = 60) {
 function getRestaurantPlayRows(list) {
   const trackedGamesBySlug = new Map();
   const playersBySlug = new Map();
+  const activeRestaurantSlugs = new Set(
+    restaurants
+      .filter((restaurant) => restaurant && restaurant.active !== false && restaurant.playable !== false)
+      .map((restaurant) => slugify(restaurant.slug || restaurant.name || ""))
+      .filter(Boolean)
+  );
 
   list.forEach((profile) => {
     const playerSlugs = new Set();
@@ -2264,17 +2270,35 @@ function getRestaurantPlayRows(list) {
     playerSlugs.forEach((slug) => addMapCount(playersBySlug, slug, 1));
   });
 
-  return [...trackedGamesBySlug.keys()]
+  const rowSlugs = isOverallStatsScope()
+    ? new Set([...activeRestaurantSlugs, ...trackedGamesBySlug.keys()])
+    : new Set([statsRestaurantScope].filter(Boolean));
+
+  return [...rowSlugs]
     .map((slug) => ({
       name: profileRestaurantName(slug),
       trackedGames: trackedGamesBySlug.get(slug) || 0,
       players: playersBySlug.get(slug) || 0,
+      sortOrder: restaurants.find((restaurant) => restaurant.slug === slug)?.sortOrder || 0,
     }))
-    .sort((left, right) => right.trackedGames - left.trackedGames || left.name.localeCompare(right.name));
+    .sort((left, right) =>
+      right.trackedGames - left.trackedGames ||
+      left.sortOrder - right.sortOrder ||
+      left.name.localeCompare(right.name)
+    );
 }
 
 function getStatsRestaurantOptions(list) {
   const slugs = new Set();
+  restaurants
+    .filter((restaurant) => restaurant && restaurant.active !== false && restaurant.playable !== false)
+    .forEach((restaurant) => {
+      const slug = slugify(restaurant.slug || restaurant.name || "");
+      if (slug) {
+        slugs.add(slug);
+      }
+    });
+
   list.forEach((profile) => {
     profileSessions(profile).forEach((session) => {
       const slug = slugify(session?.restaurantSlug || "");
