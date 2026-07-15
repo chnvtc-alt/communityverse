@@ -2448,7 +2448,7 @@ function renderStats() {
           <strong>${formatWholeNumber(row.games)}</strong>
         </div>
       `, "stats-section-scrollable")}
-      ${statsList("Tracked Plays By Restaurant - All Time", restaurantPlayRows, "No restaurant plays found.", (row) => `
+      ${statsList("Tracked Plays By Restaurant", restaurantPlayRows, "No restaurant plays found.", (row) => `
         <div class="stats-row">
           <span>${escapeHtml(row.name)} <small>${formatWholeNumber(row.players)} player${row.players === 1 ? "" : "s"}</small></span>
           <strong>${formatWholeNumber(row.trackedGames)}</strong>
