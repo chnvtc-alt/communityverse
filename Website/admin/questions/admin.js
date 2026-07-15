@@ -2139,6 +2139,7 @@ function getStatsSummary(list) {
     const days = getStatsProfileActivity(profile).daysSinceLast;
     return days !== null && days >= 7;
   }).length;
+  const playedMoreThanOneCount = profilesWithGames.filter((profile) => getStatsProfileGameCount(profile) > 1).length;
   const fourGameCount = profilesWithGames.filter((profile) => getStatsProfileGameCount(profile) >= 4).length;
   const totalGames = scopedProfiles.reduce((total, profile) => total + getStatsProfileGameCount(profile), 0);
   const totalSessionsTracked = scopedProfiles.reduce((total, profile) => total + getStatsProfileSessions(profile).length, 0);
@@ -2155,6 +2156,7 @@ function getStatsSummary(list) {
     oneDayCount,
     playedTodayCount,
     quietCount,
+    playedMoreThanOneCount,
     fourGameCount,
     totalGames,
     totalSessionsTracked,
@@ -2447,16 +2449,14 @@ function renderStats() {
 
   elements.statsDashboard.innerHTML = `
     <section class="stats-grid">
-      ${statsCard("Saved restaurants", formatWholeNumber(summary.savedCount), `${formatPercent(summary.savedCount, summary.totalProfiles)} of normal profiles`)}
-      ${statsCard("Still guest-only", formatWholeNumber(summary.guestCount), `${formatPercent(summary.guestCount, summary.totalProfiles)} of normal profiles`)}
-      ${statsCard("Returning players", formatWholeNumber(summary.returnedCount), `${formatPercent(summary.returnedCount, summary.profilesWithGames)} of players with games`)}
-      ${statsCard("One tracked day", formatWholeNumber(summary.oneDayCount), `${formatPercent(summary.oneDayCount, summary.profilesWithGames)} of players with games`)}
       ${statsCard("Total games", formatWholeNumber(summary.totalGames), `${formatWholeNumber(summary.totalSessionsTracked)} tracked session${summary.totalSessionsTracked === 1 ? "" : "s"}`)}
-      ${statsCard("Players today", formatWholeNumber(summary.playedTodayCount), isOverallStatsScope() ? "Restaurant profiles active today" : `${selectedRestaurantName} profiles active today`)}
       ${statsCard("Games today", formatWholeNumber(summary.gamesTodayCount), `${selectedRestaurantName} plays recorded today`)}
+      ${statsCard("Players today", formatWholeNumber(summary.playedTodayCount), isOverallStatsScope() ? "Restaurant profiles active today" : `${selectedRestaurantName} profiles active today`)}
+      ${statsCard("Played more than one game", formatWholeNumber(summary.playedMoreThanOneCount), `${formatPercent(summary.playedMoreThanOneCount, summary.profilesWithGames)} of players with games`)}
       ${statsCard("Reached 4 games", formatWholeNumber(summary.fourGameCount), `${formatPercent(summary.fourGameCount, summary.profilesWithGames)} of players with games`)}
+      ${statsCard("Saved restaurants", formatWholeNumber(summary.savedCount), `${formatPercent(summary.savedCount, summary.totalProfiles)} of normal profiles`)}
       ${statsCard("Email recovery", formatWholeNumber(summary.emailConnectedCount), `${formatPercent(summary.emailConnectedCount, summary.totalProfiles)} of normal profiles`)}
-      ${pageVisitStatsMarkup()}
+      ${statsCard("Returning players", formatWholeNumber(summary.returnedCount), `${formatPercent(summary.returnedCount, summary.profilesWithGames)} of players with games`)}
     </section>
 
     <section class="stats-grid stats-grid-wide">
