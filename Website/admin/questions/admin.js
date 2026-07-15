@@ -2245,9 +2245,14 @@ function getDailyPlayRows(list, dayCount = 60) {
 function getRestaurantPlayRows(list) {
   const trackedGamesBySlug = new Map();
   const playersBySlug = new Map();
-  const activeRestaurantSlugs = new Set(
+  const publicRestaurantSlugs = new Set(
     restaurants
-      .filter((restaurant) => restaurant && restaurant.active !== false && restaurant.playable !== false)
+      .filter((restaurant) =>
+        restaurant &&
+        restaurant.active !== false &&
+        restaurant.playable !== false &&
+        restaurant.visibleInList !== false
+      )
       .map((restaurant) => slugify(restaurant.slug || restaurant.name || ""))
       .filter(Boolean)
   );
@@ -2271,8 +2276,8 @@ function getRestaurantPlayRows(list) {
   });
 
   const rowSlugs = isOverallStatsScope()
-    ? new Set([...activeRestaurantSlugs, ...trackedGamesBySlug.keys()])
-    : new Set([statsRestaurantScope].filter(Boolean));
+    ? publicRestaurantSlugs
+    : new Set(publicRestaurantSlugs.has(statsRestaurantScope) ? [statsRestaurantScope] : []);
 
   return [...rowSlugs]
     .map((slug) => ({
@@ -2288,32 +2293,21 @@ function getRestaurantPlayRows(list) {
     );
 }
 
-function getStatsRestaurantOptions(list) {
+function getStatsRestaurantOptions() {
   const slugs = new Set();
   restaurants
-    .filter((restaurant) => restaurant && restaurant.active !== false && restaurant.playable !== false)
+    .filter((restaurant) =>
+      restaurant &&
+      restaurant.active !== false &&
+      restaurant.playable !== false &&
+      restaurant.visibleInList !== false
+    )
     .forEach((restaurant) => {
       const slug = slugify(restaurant.slug || restaurant.name || "");
       if (slug) {
         slugs.add(slug);
       }
     });
-
-  list.forEach((profile) => {
-    profileSessions(profile).forEach((session) => {
-      const slug = slugify(session?.restaurantSlug || "");
-      if (slug) {
-        slugs.add(slug);
-      }
-    });
-
-    Object.keys(profile?.restaurantStats || {}).forEach((slug) => {
-      const normalizedSlug = slugify(slug || "");
-      if (normalizedSlug) {
-        slugs.add(normalizedSlug);
-      }
-    });
-  });
 
   return ["overall", ...[...slugs].sort((left, right) => left.localeCompare(right))];
 }
@@ -2323,7 +2317,7 @@ function renderStatsRestaurantFilter(list) {
     return;
   }
 
-  const options = getStatsRestaurantOptions(list);
+  const options = getStatsRestaurantOptions();
   if (!options.includes(statsRestaurantScope)) {
     statsRestaurantScope = "overall";
   }
