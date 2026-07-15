@@ -2471,7 +2471,7 @@ function renderStats() {
           <span>${escapeHtml(row.name)} <small>${formatWholeNumber(row.players)} player${row.players === 1 ? "" : "s"}</small></span>
           <strong>${formatWholeNumber(row.trackedGames)}</strong>
         </div>
-      `, "stats-section-scrollable")}
+      `, "stats-section-public-restaurants")}
       ${statsList("New Restaurants By Day", createdRows, "No recent restaurants found.", (row) => `
         <div class="stats-row">
           <span>${escapeHtml(row.label)}</span>

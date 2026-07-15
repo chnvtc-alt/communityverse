@@ -429,6 +429,15 @@ textarea {
   padding-right: 4px;
 }
 
+.stats-section-public-restaurants .stats-list {
+  max-height: none;
+  overflow: visible;
+}
+
+.stats-section-public-restaurants .stats-row {
+  padding-block: 9px;
+}
+
 .stats-row {
   display: flex;
   gap: 14px;
