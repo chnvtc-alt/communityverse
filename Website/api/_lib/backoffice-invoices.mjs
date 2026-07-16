@@ -168,6 +168,7 @@ function invoiceDetails(collection = {}, restaurant = {}) {
   const paymentType = paymentTypeFromNotes(collection.notes);
   const isRecurring = paymentType !== "manual";
   const monthlyAmount = isRecurring ? moneyValue(restaurant.monthlyAmount || collection.amount) : "";
+  const dueDate = shortDate(collection.dueDate);
   return {
     customerName,
     paymentType,
@@ -180,7 +181,8 @@ function invoiceDetails(collection = {}, restaurant = {}) {
     addressLines: addressLines(restaurant),
     description: stripPaymentTypeNote(collection.notes) || "Restaurant Challenge monthly subscription.",
     amount: monthlyAmount || moneyValue(collection.amount),
-    dueDate: shortDate(collection.dueDate) || "Not set",
+    dueDate: dueDate || "Not set",
+    dueLabel: dueDate ? `Due ${dueDate}` : isRecurring ? "Payment due now" : "Due date not set",
     status: collection.status || "not-sent",
   };
 }
@@ -234,7 +236,7 @@ function buildInvoicePdf(collection = {}, restaurant = {}) {
 
   addText("Invoice", 48, 664, 28, true);
   addText(collection.invoiceNumber || "Invoice", 510, 742, 12, true);
-  addText(`Due ${details.dueDate}`, 470, 720, 11);
+  addText(details.dueLabel, 470, 720, 11);
 
   addText("Bill To", 48, 622, 12, true);
   addText(details.customerName, 48, 602, 11, true);
@@ -325,7 +327,7 @@ function invoiceHtml(collection = {}, restaurant = {}, isTest = false) {
         <img src="${LOGO_URL}" alt="CommunityVerse Games" width="320" style="display:block;width:100%;max-width:320px;height:auto;margin:0 auto;" />
       </div>
       <div style="background:#dcebec;padding:26px 18px;text-align:center;margin-bottom:24px;">
-        <p style="margin:0 0 8px;font-weight:700;">DUE ${htmlEscape(details.dueDate)}</p>
+        <p style="margin:0 0 8px;font-weight:700;text-transform:uppercase;">${htmlEscape(details.dueLabel)}</p>
         <div style="font-size:44px;font-weight:800;margin-bottom:16px;">${htmlEscape(details.amount)}</div>
         <a href="${htmlEscape(primaryLink)}" style="display:inline-block;background:#1f6b4a;color:#fff;text-decoration:none;padding:12px 34px;border-radius:6px;font-weight:800;">${primaryButton}</a>
       </div>

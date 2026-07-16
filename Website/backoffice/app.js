@@ -3522,6 +3522,14 @@
     return fileSafeName(`${customerName} Invoice ${record.invoiceNumber || ""}`) || "CommunityVerse Invoice";
   }
 
+  function invoiceDueLabel(record = {}, isRecurring = false) {
+    const dueDate = shortDate(record.dueDate);
+    if (dueDate) {
+      return `Due ${dueDate}`;
+    }
+    return isRecurring ? "Payment due now" : "Due date not set";
+  }
+
   function invoiceDetails(record) {
     const restaurant = state.restaurants.find((item) => item.id === record.restaurantId);
     const paymentType = record.paymentType || paymentTypeFromNotes(record.notes);
@@ -3538,6 +3546,7 @@
       description: stripPaymentTypeNote(record.notes) || "Restaurant Challenge monthly subscription.",
       amount: monthlyAmount || moneyValue(record.amount),
       dueDate: shortDate(record.dueDate) || "Not set",
+      dueLabel: invoiceDueLabel(record, isRecurring),
       status: labelFor(collectionStatusLabels, record.status, "Not Sent"),
     };
   }
@@ -3687,7 +3696,7 @@
 
     addText("Invoice", 48, 664, 28, true);
     addText(record.invoiceNumber || "Invoice", 510, 742, 12, true);
-    addText(`Due ${details.dueDate}`, 470, 720, 11);
+    addText(details.dueLabel, 470, 720, 11);
 
     addText("Bill To", 48, 622, 12, true);
     addText(details.customerName, 48, 602, 11, true);
@@ -3754,7 +3763,7 @@
         <p class="invoice-email-eyebrow">Invoice ${escapeHtml(record.invoiceNumber || "")} Details</p>
         <img class="invoice-email-logo" src="${LOGO_PATH}" alt="CommunityVerse Games" />
         <section class="invoice-email-total">
-          <p>Due ${escapeHtml(shortDate(record.dueDate) || "Not set")}</p>
+          <p>${escapeHtml(details.dueLabel)}</p>
           <strong>${escapeHtml(details.amount)}</strong>
           <a class="button button-primary" href="${escapeHtml(primaryLink)}" target="_blank" rel="noopener">${escapeHtml(primaryText)}</a>
         </section>
