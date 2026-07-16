@@ -89,6 +89,24 @@
         color: var(--ink);
       }
 
+      .payment-note {
+        margin: 18px 0 0;
+        padding: 14px 16px;
+        border: 1px solid #cfded3;
+        border-radius: 8px;
+        background: #eef7f1;
+      }
+
+      .payment-note strong {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--ink);
+      }
+
+      .payment-note p {
+        margin: 0;
+      }
+
       .paypal-wrap {
         margin-top: 22px;
       }
@@ -124,6 +142,10 @@
           <p><strong>Restaurant:</strong> <span id="restaurant-name">Restaurant Challenge customer</span></p>
           <p><strong>Invoice:</strong> <span id="invoice-number">Not provided</span></p>
           <p><strong>Plan:</strong> $19 per month</p>
+        </div>
+        <div class="payment-note">
+          <strong>PayPal account optional</strong>
+          <p>PayPal processes the payment securely, but you can pay with a debit or credit card. If PayPal asks you to save info or create a PayPal account, you can turn that option off and continue with the card payment.</p>
         </div>
         <div class="paypal-wrap" id="paypal-button-container-P-9A7118975H960980JNJKNL7A"></div>
         <p class="status" id="subscription-status"></p>
