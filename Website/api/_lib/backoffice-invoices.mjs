@@ -298,13 +298,21 @@ function invoiceSubject(collection = {}, isTest = false) {
   return `${prefix}Invoice ${collection.invoiceNumber || ""} from CommunityVerse Games`.trim();
 }
 
+function recurringPaymentCalloutText(amount) {
+  return `Use the CommunityVerse subscription page to set up the ${amount} monthly Restaurant Challenge payment. PayPal processes the payment securely, but a PayPal account is optional. You can pay with a debit or credit card without a PayPal account, or without using your existing account, by turning off the button that says "Save info & create your PayPal account".`;
+}
+
+function recurringPaymentEmailText() {
+  return "Thank you for allowing us to promote your restaurant through your trivia game. Here is the payment link to set up your monthly payment. You may cancel at any time. We use PayPal for processing, but you do not need a PayPal account. You may pay with a credit card. If PayPal asks you to create or save a PayPal account, you can turn that option off and continue with a card payment.";
+}
+
 function invoiceHtml(collection = {}, restaurant = {}, isTest = false) {
   const details = invoiceDetails(collection, restaurant);
   const subscriptionLink = recurringPaymentLink(collection, restaurant);
   const primaryLink = details.isRecurring ? subscriptionLink : PAYMENT_LINK;
   const primaryButton = details.isRecurring ? "Set Up Monthly Subscription" : "Pay Now";
   const primaryIntro = details.isRecurring
-    ? `Your subscription starts when you sign up and renews automatically each month on that same day unless canceled. PayPal processes the payment securely, but a PayPal account is optional. You can pay with a debit or credit card. If PayPal asks you to create or save a PayPal account, turn that option off and continue with the card payment.`
+    ? recurringPaymentEmailText()
     : "You can pay this invoice one time with the green Pay Now button.";
   const secondaryBox = "";
   const testNote = isTest ? `<p style="margin:0 0 18px;color:#a15c00;font-weight:700;">Test send only. This was not sent to the customer.</p>` : "";
@@ -323,15 +331,15 @@ function invoiceHtml(collection = {}, restaurant = {}, isTest = false) {
       </div>
       ${details.isRecurring ? `<div style="background:#fffaf2;border:1px solid #d8d0bf;padding:18px;margin-bottom:24px;">
         <p style="margin:0 0 8px;font-weight:800;">Monthly subscription setup</p>
-        <p style="margin:0 0 14px;">Use the CommunityVerse subscription page to set up the ${htmlEscape(details.amount)} monthly Restaurant Challenge payment. PayPal processes the payment securely, but a PayPal account is optional. You can pay with a debit or credit card.</p>
+        <p style="margin:0 0 14px;">${htmlEscape(recurringPaymentCalloutText(details.amount))}</p>
         <a href="${htmlEscape(primaryLink)}" style="display:inline-block;background:#d58a2b;color:#fff;text-decoration:none;padding:11px 22px;border-radius:6px;font-weight:800;">Open Subscription Page</a>
       </div>` : secondaryBox}
       ${testNote}
       <p>Hi ${htmlEscape(details.greetingName)},</p>
       <p>${details.isRecurring
-        ? `Here is the setup link for your ${htmlEscape(details.gameName)} monthly subscription. Thank you for allowing us to promote your restaurant through your trivia game.`
+        ? htmlEscape(primaryIntro)
         : `Here is your invoice for ${htmlEscape(details.invoiceMonth)} for ${htmlEscape(details.gameName)}. Thank you for allowing us to promote your restaurant through your trivia game.`}</p>
-      <p>${primaryIntro}</p>
+      ${details.isRecurring ? "" : `<p>${primaryIntro}</p>`}
       <p>A PDF of this invoice is attached for your records.</p>
       <hr style="border:0;border-top:1px solid #d8d0bf;margin:26px 0;" />
       <p style="margin:0;">Best Wishes,<br /><strong>Tim Collins - Game Developer</strong><br />${INVOICE_SENDER.business}</p>
@@ -348,11 +356,7 @@ function invoiceText(collection = {}, restaurant = {}, isTest = false) {
         isTest ? "TEST SEND ONLY - This was not sent to the customer." : "",
         `Hi ${details.greetingName},`,
         "",
-        `Here is the setup link for your ${details.gameName} monthly subscription. Thank you for allowing us to promote your restaurant through your trivia game.`,
-        "",
-        `The monthly amount is ${details.amount}. PayPal processes the payment securely, but a PayPal account is optional. You can pay with a debit or credit card. If PayPal asks you to create or save a PayPal account, turn that option off and continue with the card payment.`,
-        "",
-        "Your subscription starts when you sign up and renews automatically each month on that same day unless canceled.",
+        recurringPaymentEmailText(),
         "",
         "Please use this CommunityVerse subscription page:",
         subscriptionLink,
