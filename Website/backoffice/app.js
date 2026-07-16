@@ -2845,11 +2845,32 @@
     return periodMatch ? periodMatch[1].trim() : text;
   }
 
+  function restaurantForCollection(record = {}) {
+    const restaurantName = String(record.restaurantName || "").trim().toLowerCase();
+    return state.restaurants.find((restaurant) =>
+      (record.restaurantId && restaurant.id === record.restaurantId) ||
+      (restaurantName && String(restaurant.name || "").trim().toLowerCase() === restaurantName)
+    );
+  }
+
+  function collectionRestaurantCell(record = {}) {
+    const restaurant = restaurantForCollection(record);
+    const label = record.restaurantName || restaurant?.name || "No restaurant";
+    if (!restaurant?.id) {
+      return `<strong>${escapeHtml(label)}</strong>`;
+    }
+    return `
+      <button class="link-button strong-link" type="button" data-collection-restaurant-id="${escapeHtml(restaurant.id)}">
+        ${escapeHtml(label)}
+      </button>
+    `;
+  }
+
   function collectionRow(record) {
     if (state.editingCollectionId === record.id) {
       return `
         <tr data-collection-editor-id="${escapeHtml(record.id)}">
-          <td><strong>${escapeHtml(record.restaurantName || "No restaurant")}</strong></td>
+          <td>${collectionRestaurantCell(record)}</td>
           <td><input data-edit-collection-invoice value="${escapeHtml(record.invoiceNumber)}" /></td>
           <td>
             <select data-edit-collection-payment-type>
@@ -2874,7 +2895,7 @@
     }
     return `
       <tr>
-        <td><strong>${escapeHtml(record.restaurantName || "No restaurant")}</strong></td>
+        <td>${collectionRestaurantCell(record)}</td>
         <td>${escapeHtml(record.invoiceNumber)}</td>
         <td>${escapeHtml(paymentTypeLabel(record.paymentType))}</td>
         <td>${escapeHtml(shortDate(record.dueDate))}</td>
@@ -4848,6 +4869,10 @@
     const editButton = event.target.closest("[data-edit-id]");
     if (editButton) {
       openRestaurantEditor(editButton.dataset.editId);
+    }
+    const collectionRestaurantButton = event.target.closest("[data-collection-restaurant-id]");
+    if (collectionRestaurantButton) {
+      openRestaurantEditor(collectionRestaurantButton.dataset.collectionRestaurantId);
     }
     const contactButton = event.target.closest("[data-contact-id]");
     if (contactButton) {
