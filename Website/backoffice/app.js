@@ -3565,10 +3565,6 @@
     return "communityversegames.com/subscribe/";
   }
 
-  function recurringPaymentCalloutText(amount) {
-    return `Use the CommunityVerse subscription page to set up the ${amount} monthly Restaurant Challenge payment. PayPal processes the payment securely, but a PayPal account is optional. You can pay with a debit or credit card without a PayPal account, or without using your existing account, by turning off the button that says "Save info & create your PayPal account".`;
-  }
-
   function recurringPaymentEmailText() {
     return "Thank you for allowing us to promote your restaurant through your trivia game. Here is the payment link to set up your monthly payment. You may cancel at any time. We use PayPal for processing, but you do not need a PayPal account. You may pay with a credit card. If PayPal asks you to create or save a PayPal account, you can turn that option off and continue with a card payment.";
   }
@@ -3735,9 +3731,6 @@
     } else {
       addText(PAYMENT_LINK, 48, payY - 16, 10);
     }
-    const statusY = payY - 72;
-    addText(`Payment type: ${details.paymentTypeLabel}`, 48, statusY, 10, true);
-    addText(`Status: ${details.status}`, 48, statusY - 16, 10, true);
 
     const stream = lines.join("\n");
     return {
@@ -3767,13 +3760,6 @@
           <strong>${escapeHtml(details.amount)}</strong>
           <a class="button button-primary" href="${escapeHtml(primaryLink)}" target="_blank" rel="noopener">${escapeHtml(primaryText)}</a>
         </section>
-        ${details.isRecurring ? `
-          <section class="invoice-email-callout">
-            <strong>Monthly subscription setup</strong>
-            <p>${escapeHtml(recurringPaymentCalloutText(details.amount))}</p>
-            <a class="button button-muted" href="${escapeHtml(primaryLink)}" target="_blank" rel="noopener">Open Subscription Page</a>
-          </section>
-        ` : ""}
         <section class="invoice-email-copy">
           <p>Hi ${escapeHtml(details.restaurant?.contactFirstName || contactName(details.restaurant) || details.customerName)},</p>
           <p>${details.isRecurring

@@ -1157,25 +1157,9 @@ th {
   line-height: 1;
 }
 
-.invoice-email-callout {
-  display: grid;
-  align-items: start;
-  justify-items: start;
-  gap: 10px;
-  padding: 18px;
-  background: #fffaf2;
-  border: 1px solid var(--line);
-}
-
-.invoice-email-callout p,
 .invoice-email-copy p {
   margin: 0;
   line-height: 1.45;
-}
-
-.invoice-email-callout span {
-  color: var(--muted);
-  font-size: 0.9rem;
 }
 
 .invoice-email-copy {
