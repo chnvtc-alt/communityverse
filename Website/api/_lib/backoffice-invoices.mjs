@@ -204,8 +204,12 @@ function stripPaymentTypeNote(notes = "") {
 function recurringPaymentLink(collection = {}, restaurant = {}) {
   const params = new URLSearchParams();
   const invoiceNumber = safeString(collection.invoiceNumber);
+  const restaurantName = safeString(restaurant.name || collection.restaurantName);
   if (invoiceNumber) {
     params.set("invoice", invoiceNumber);
+  }
+  if (restaurantName) {
+    params.set("restaurant", restaurantName);
   }
   const query = params.toString();
   return query ? `${SUBSCRIPTION_LINK}?${query}` : SUBSCRIPTION_LINK;

@@ -3554,8 +3554,12 @@
   function recurringPaymentLink(record, restaurant = null) {
     const params = new URLSearchParams();
     const invoiceNumber = String(record?.invoiceNumber || "").trim();
+    const restaurantName = String(restaurant?.name || record?.restaurantName || "").trim();
     if (invoiceNumber) {
       params.set("invoice", invoiceNumber);
+    }
+    if (restaurantName) {
+      params.set("restaurant", restaurantName);
     }
     const query = params.toString();
     return query ? `${SUBSCRIPTION_LINK}?${query}` : SUBSCRIPTION_LINK;
