@@ -1490,7 +1490,6 @@
     ["Colorado", "CO"],
     ["Connecticut", "CT"],
     ["Delaware", "DE"],
-    ["District of Columbia", "DC"],
     ["Florida", "FL"],
     ["Georgia", "GA"],
     ["Hawaii", "HI"],
@@ -1540,6 +1539,18 @@
   const US_STATE_CODE_PATTERN = US_STATE_LIST.map(([, code]) => code).join("|");
   const US_STATE_NAME_PATTERN = US_STATE_LIST.map(([name]) => name.replace(/\s+/g, "\\s+")).join("|");
   const US_STATE_PATTERN = `(?:${US_STATE_CODE_PATTERN}|${US_STATE_NAME_PATTERN})`;
+
+  function renderLeadBuilderStateOptions(selectedValue = "GA") {
+    const selectedState = stateCode(selectedValue) || "GA";
+    if (!elements.leadBuilderState) {
+      return;
+    }
+    elements.leadBuilderState.innerHTML = US_STATE_LIST
+      .map(([name, code]) => `
+        <option value="${escapeHtml(code)}"${code === selectedState ? " selected" : ""}>${escapeHtml(name)}</option>
+      `)
+      .join("");
+  }
 
   function stateCodeFromText(value = "", fallback = "") {
     const cleaned = String(value || "").trim();
@@ -4950,6 +4961,7 @@
 
   elements.expenseDate.value = today();
   elements.invoiceTemplateMonth.value = currentMonth();
+  renderLeadBuilderStateOptions(elements.leadBuilderState?.value || "GA");
   fillSalesEmailTemplateForm();
   updateInvoiceTemplateAmount();
   if (adminKey) {
