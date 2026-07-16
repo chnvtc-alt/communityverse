@@ -1170,6 +1170,7 @@ th {
 .invoice-email-callout p,
 .invoice-email-copy p {
   margin: 0;
+  line-height: 1.45;
 }
 
 .invoice-email-callout span {

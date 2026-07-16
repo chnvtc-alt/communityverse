@@ -3763,7 +3763,6 @@
             <strong>Monthly subscription setup</strong>
             <p>${escapeHtml(recurringPaymentCalloutText(details.amount))}</p>
             <a class="button button-muted" href="${escapeHtml(primaryLink)}" target="_blank" rel="noopener">Open Subscription Page</a>
-            <span>Website: ${escapeHtml(recurringPaymentDisplayLink())} · Invoice ${escapeHtml(record.invoiceNumber || "")}</span>
           </section>
         ` : ""}
         <section class="invoice-email-copy">
