@@ -2600,6 +2600,19 @@
     return match ? parseMoneyText(match[1]) : 0;
   }
 
+  function nextPaymentDueFromNotes(notes = "") {
+    const match = String(notes || "").match(/Next payment due:\s*([0-9]{4}-[0-9]{2}-[0-9]{2}|[0-9]{1,2}[/-][0-9]{1,2}[/-][0-9]{2,4})/i);
+    if (!match?.[1]) return "";
+    const value = match[1].trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+    const parts = value.split(/[/-]/);
+    if (parts.length !== 3) return "";
+    const month = parts[0].padStart(2, "0");
+    const day = parts[1].padStart(2, "0");
+    const year = parts[2].length === 2 ? `20${parts[2]}` : parts[2];
+    return `${year}-${month}-${day}`;
+  }
+
   function findPaypalPaymentRestaurant(payment = {}) {
     const profileKey = String(payment.profileId || "").trim().toLowerCase();
     if (profileKey) {
@@ -2747,6 +2760,7 @@
         }
       }
     }
+    await ensureNextRecurringCollection(restaurant, savedCollection, payment);
     cacheBackofficeData();
     clearPaypalPaymentPaste();
     render();
@@ -2772,6 +2786,51 @@
     if (existingRestaurantIndex >= 0) {
       state.restaurants[existingRestaurantIndex] = savedRestaurant;
     }
+  }
+
+  async function ensureNextRecurringCollection(restaurant = {}, paidCollection = {}, payment = {}) {
+    if (paidCollection.paymentType !== "recurring" || paidCollection.status !== "paid") {
+      return null;
+    }
+    const restaurantKey = String(restaurant.id || paidCollection.restaurantId || "").trim();
+    const restaurantNameKey = String(restaurant.name || paidCollection.restaurantName || "").trim().toLowerCase();
+    const nextDueDate = payment.nextPaymentDue ||
+      nextPaymentDueFromNotes(paidCollection.notes) ||
+      addMonths(paidCollection.dueDate || paidCollection.paidDate || today(), 1);
+    if (!nextDueDate) {
+      return null;
+    }
+    const existingNext = state.collections.find((collection) => {
+      const sameRestaurant = (restaurantKey && collection.restaurantId === restaurantKey) ||
+        (restaurantNameKey && String(collection.restaurantName || "").trim().toLowerCase() === restaurantNameKey);
+      return sameRestaurant && collection.paymentType === "recurring" && collection.dueDate === nextDueDate;
+    });
+    if (existingNext) {
+      return existingNext;
+    }
+    const monthlyAmount = numberFromMoney(restaurant.monthlyAmount, numberFromMoney(paidCollection.amount, 19));
+    const nextCollection = normalizeCollection({
+      id: makeCollectionId(),
+      restaurantId: restaurantKey || paidCollection.restaurantId,
+      restaurantName: restaurant.name || paidCollection.restaurantName,
+      invoiceNumber: nextInvoiceNumber(),
+      paymentType: "recurring",
+      dueDate: nextDueDate,
+      amount: String(monthlyAmount.toFixed(2)).replace(/\.00$/, ""),
+      status: "sent",
+      paidDate: "",
+      notes: collectionNotesWithPaymentType(
+        `Recurring PayPal payment expected automatically. Next payment due: ${nextDueDate}.`,
+        "recurring"
+      ),
+    });
+    const data = await saveAction("saveCollection", { collection: nextCollection }, "Created next recurring invoice");
+    if (!data?.collection) {
+      return null;
+    }
+    const savedNext = normalizeCollection(data.collection);
+    state.collections.unshift(savedNext);
+    return savedNext;
   }
 
   function renderCollections() {
@@ -3553,6 +3612,9 @@
     state.collections = state.collections.map((collection) =>
       collection.id === savedRecord.id ? savedRecord : collection
     );
+    if (savedRecord.status === "paid") {
+      await ensureNextRecurringCollection(restaurantForCollection(savedRecord), savedRecord);
+    }
     state.editingCollectionId = "";
     cacheBackofficeData();
     render();
