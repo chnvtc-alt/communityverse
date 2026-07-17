@@ -233,6 +233,7 @@
     collectionsList: document.querySelector("#collections-list"),
     collectionsOutstandingSummary: document.querySelector("#collections-outstanding-summary"),
     paymentsHistoryPanel: document.querySelector("#payments-history-panel"),
+    collectionsPaymentsTitle: document.querySelector("#collections-payments-title"),
     collectionsPaymentsList: document.querySelector("#collections-payments-list"),
     collectionsPaymentsSummary: document.querySelector("#collections-payments-summary"),
     paypalPasteForm: document.querySelector("#paypal-paste-form"),
@@ -2887,12 +2888,28 @@
       ? outstanding.map((record) => collectionRow(record)).join("")
       : '<tr><td colspan="9"><div class="empty-state">No outstanding invoices.</div></td></tr>';
 
+    const paymentTotals = paymentTotalsForYear(payments, currentYear());
+    elements.collectionsPaymentsTitle.textContent = `Payments Received ${paymentTotals.year}`;
     elements.collectionsPaymentsSummary.textContent = payments.length
-      ? `${payments.length} paid invoice${payments.length === 1 ? "" : "s"}.`
+      ? `Payments ${moneyValue(paymentTotals.gross)} / Fees ${moneyValue(paymentTotals.fees)} / ${paymentTotals.year} Net Received ${moneyValue(paymentTotals.net)}`
       : "No payments recorded yet.";
     elements.collectionsPaymentsList.innerHTML = payments.length
       ? payments.map((record) => collectionRow(record, { showPaymentAmounts: true })).join("")
       : '<tr><td colspan="11"><div class="empty-state">No payments recorded yet.</div></td></tr>';
+  }
+
+  function paymentTotalsForYear(payments = [], year = currentYear()) {
+    return payments
+      .filter((record) => String(record.paidDate || "").startsWith(`${year}-`))
+      .reduce((totals, record) => {
+        const gross = numberFromMoney(record.amount, 0);
+        const fee = paypalFeeAmountFromNotes(record.notes) ?? 0;
+        const net = paypalNetAmountFromNotes(record.notes) ?? Math.max(0, gross - fee);
+        totals.gross += gross;
+        totals.fees += fee;
+        totals.net += net;
+        return totals;
+      }, { year, gross: 0, fees: 0, net: 0 });
   }
 
   function compareOutstandingCollections(left, right) {
