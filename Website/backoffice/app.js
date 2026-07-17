@@ -3589,7 +3589,7 @@
   }
 
   async function saveCollectionEdit(id) {
-    const editor = elements.collectionsList.querySelector(`[data-collection-editor-id="${id}"]`);
+    const editor = document.querySelector(`[data-collection-editor-id="${id}"]`);
     const existing = state.collections.find((record) => record.id === id);
     if (!editor || !existing) {
       return;
