@@ -61,7 +61,7 @@
     prospects: "Prospects",
     "lead-builder": "Lead Builder",
     sales: "Sales",
-    collections: "Invoices",
+    collections: "Invoices / Payments",
     expenses: "Expenses",
     commissions: "Commissions",
   };
@@ -230,6 +230,10 @@
     collectionPaidDate: document.querySelector("#collection-paid-date"),
     collectionNotes: document.querySelector("#collection-notes"),
     collectionsList: document.querySelector("#collections-list"),
+    collectionsOutstandingSummary: document.querySelector("#collections-outstanding-summary"),
+    paymentsHistoryPanel: document.querySelector("#payments-history-panel"),
+    collectionsPaymentsList: document.querySelector("#collections-payments-list"),
+    collectionsPaymentsSummary: document.querySelector("#collections-payments-summary"),
     paypalPasteForm: document.querySelector("#paypal-paste-form"),
     paypalPasteText: document.querySelector("#paypal-paste-text"),
     paypalPaymentPreview: document.querySelector("#paypal-payment-preview"),
@@ -2719,14 +2723,53 @@
 
   function renderCollections() {
     renderCollectionRestaurantOptions();
-    const records = [...state.collections].sort((left, right) => {
-      const leftDate = left.dueDate || "9999-12-31";
-      const rightDate = right.dueDate || "9999-12-31";
-      return leftDate.localeCompare(rightDate);
-    });
-    elements.collectionsList.innerHTML = records.length
-      ? records.map(collectionRow).join("")
-      : '<tr><td colspan="9"><div class="empty-state">No collection records yet.</div></td></tr>';
+    const records = [...state.collections];
+    const outstanding = records
+      .filter((record) => record.status !== "paid")
+      .sort(compareOutstandingCollections);
+    const payments = records
+      .filter((record) => record.status === "paid")
+      .sort(comparePaidCollections);
+
+    elements.collectionsOutstandingSummary.textContent = outstanding.length
+      ? `${outstanding.length} outstanding invoice${outstanding.length === 1 ? "" : "s"} sorted by attention needed.`
+      : "No outstanding invoices.";
+    elements.collectionsList.innerHTML = outstanding.length
+      ? outstanding.map(collectionRow).join("")
+      : '<tr><td colspan="9"><div class="empty-state">No outstanding invoices.</div></td></tr>';
+
+    elements.collectionsPaymentsSummary.textContent = payments.length
+      ? `${payments.length} paid invoice${payments.length === 1 ? "" : "s"}.`
+      : "No payments recorded yet.";
+    elements.collectionsPaymentsList.innerHTML = payments.length
+      ? payments.map(collectionRow).join("")
+      : '<tr><td colspan="9"><div class="empty-state">No payments recorded yet.</div></td></tr>';
+  }
+
+  function compareOutstandingCollections(left, right) {
+    const statusPriority = {
+      "not-sent": 0,
+      "past-due": 1,
+      sent: 2,
+    };
+    const leftPriority = statusPriority[left.status] ?? 3;
+    const rightPriority = statusPriority[right.status] ?? 3;
+    if (leftPriority !== rightPriority) {
+      return leftPriority - rightPriority;
+    }
+    const leftDate = left.dueDate || "9999-12-31";
+    const rightDate = right.dueDate || "9999-12-31";
+    return leftDate.localeCompare(rightDate) ||
+      String(left.restaurantName || "").localeCompare(String(right.restaurantName || "")) ||
+      String(left.invoiceNumber || "").localeCompare(String(right.invoiceNumber || ""));
+  }
+
+  function comparePaidCollections(left, right) {
+    const leftDate = left.paidDate || left.dueDate || "";
+    const rightDate = right.paidDate || right.dueDate || "";
+    return rightDate.localeCompare(leftDate) ||
+      String(left.restaurantName || "").localeCompare(String(right.restaurantName || "")) ||
+      String(left.invoiceNumber || "").localeCompare(String(right.invoiceNumber || ""));
   }
 
   function addMonths(dateValue = "", months = 0) {

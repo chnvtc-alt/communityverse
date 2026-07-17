@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,650;9..144,760&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v76" />
+    <link rel="stylesheet" href="/backoffice/styles.css?v=backoffice-v77" />
   </head>
   <body>
     <section class="login-panel" id="login-panel">
@@ -42,7 +42,7 @@
           <button class="nav-item is-active" type="button" data-section="prospects">Prospects</button>
           <button class="nav-item" type="button" data-section="lead-builder">Lead Builder</button>
           <button class="nav-item" type="button" data-section="sales">Sales</button>
-          <button class="nav-item" type="button" data-section="collections">Invoices</button>
+          <button class="nav-item" type="button" data-section="collections">Invoices / Payments</button>
           <button class="nav-item" type="button" data-section="expenses">Expenses</button>
           <button class="nav-item" type="button" data-section="commissions">Commissions</button>
         </nav>
@@ -490,8 +490,8 @@
           <section class="card table-card">
             <div class="card-heading">
               <div>
-                <h3>Invoices</h3>
-                <p class="helper">Invoice and payment follow-up for sold accounts.</p>
+                <h3>Invoices / Payments</h3>
+                <p class="helper">Outstanding invoices stay up top. Paid items move into payment history below.</p>
               </div>
             </div>
             <div class="invoice-template-panel">
@@ -574,6 +574,12 @@
               </form>
               <div class="paypal-payment-preview" id="paypal-payment-preview" hidden></div>
             </details>
+            <div class="invoice-list-heading">
+              <div>
+                <h4>Outstanding invoices</h4>
+                <p class="helper" id="collections-outstanding-summary">Invoices that still need payment or follow-up.</p>
+              </div>
+            </div>
             <div class="table-wrap">
               <table>
                 <thead>
@@ -592,6 +598,30 @@
                 <tbody id="collections-list"></tbody>
               </table>
             </div>
+            <details class="payments-history-panel" id="payments-history-panel">
+              <summary>
+                <span>Payments received</span>
+                <span class="helper" id="collections-payments-summary">Paid invoice history.</span>
+              </summary>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Restaurant</th>
+                      <th>Invoice #</th>
+                      <th>Payment Type</th>
+                      <th>Due Date</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                      <th>Paid Date</th>
+                      <th>Notes</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="collections-payments-list"></tbody>
+                </table>
+              </div>
+            </details>
           </section>
         </section>
 
@@ -1147,6 +1177,6 @@
 
     <input id="import-file" type="file" accept="application/json" hidden />
     <input id="prospect-import-file" type="file" accept=".csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" hidden />
-    <script src="/backoffice/app.js?v=backoffice-v115" defer></script>
+    <script src="/backoffice/app.js?v=backoffice-v116" defer></script>
   </body>
 </html>

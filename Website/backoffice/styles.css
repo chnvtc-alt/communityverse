@@ -564,6 +564,41 @@ h3 {
   justify-self: start;
 }
 
+.invoice-list-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: end;
+  margin-top: 18px;
+}
+
+.invoice-list-heading h4 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.payments-history-panel {
+  margin-top: 18px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 250, 242, 0.58);
+}
+
+.payments-history-panel summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  color: var(--green);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.payments-history-panel .table-wrap {
+  margin-top: 12px;
+}
+
 .paypal-paste-panel {
   margin: 14px 0;
   padding: 14px;
