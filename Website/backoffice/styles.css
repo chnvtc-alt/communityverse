@@ -785,6 +785,17 @@ th {
   text-transform: uppercase;
 }
 
+.invoice-table th,
+.invoice-table td {
+  padding: 10px 9px;
+  font-size: 0.78rem;
+  line-height: 1.22;
+}
+
+.invoice-table .text-button {
+  font-size: inherit;
+}
+
 .compact-table th,
 .compact-table td {
   overflow: hidden;

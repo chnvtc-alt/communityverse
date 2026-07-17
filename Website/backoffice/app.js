@@ -131,8 +131,8 @@
   };
 
   const collectionPaymentTypeLabels = {
-    recurring: "Recurring Monthly",
-    manual: "Manual Invoice",
+    recurring: "Recurring",
+    manual: "Manual",
   };
 
   const expenseCategoryLabels = {
@@ -2752,13 +2752,8 @@
   }
 
   function compareOutstandingCollections(left, right) {
-    const statusPriority = {
-      "not-sent": 0,
-      "past-due": 1,
-      sent: 2,
-    };
-    const leftPriority = statusPriority[left.status] ?? 3;
-    const rightPriority = statusPriority[right.status] ?? 3;
+    const leftPriority = outstandingCollectionPriority(left);
+    const rightPriority = outstandingCollectionPriority(right);
     if (leftPriority !== rightPriority) {
       return leftPriority - rightPriority;
     }
@@ -2767,6 +2762,17 @@
     return leftDate.localeCompare(rightDate) ||
       String(left.restaurantName || "").localeCompare(String(right.restaurantName || "")) ||
       String(left.invoiceNumber || "").localeCompare(String(right.invoiceNumber || ""));
+  }
+
+  function outstandingCollectionPriority(record = {}) {
+    const dueDate = String(record.dueDate || "").trim();
+    const isFutureDue = dueDate && dueDate > today();
+    if (record.status === "past-due") return 0;
+    if (record.status === "not-sent" && !isFutureDue) return 1;
+    if (record.status === "sent" && !isFutureDue) return 2;
+    if (record.status === "not-sent" && isFutureDue) return 3;
+    if (record.status === "sent" && isFutureDue) return 4;
+    return 5;
   }
 
   function comparePaidCollections(left, right) {
