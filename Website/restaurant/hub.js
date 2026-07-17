@@ -1633,6 +1633,20 @@
         <div class="hero-grid">
           <div class="hero-content-panel hero-content-panel-main">
           ${
+            state.showSignIn && profileState === "registered"
+              ? `
+                <div class="hero-profile-strip hero-profile-strip-guest hub-sign-in-panel">
+                  <div>
+                    <p class="kicker" style="margin: 0 0 4px;">Email Sign-In</p>
+                    <h2 class="hero-profile-name">Restore your saved restaurant.</h2>
+                    <p class="copy compact-copy" style="margin: 4px 0 12px;">Enter the email connected to your restaurant, then tap the secure link we send you.</p>
+                    ${renderSignInMarkup()}
+                  </div>
+                </div>
+              `
+              : ""
+          }
+          ${
             profileState === "registered"
               ? compactMobile
                 ? `

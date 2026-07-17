@@ -1345,6 +1345,10 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   margin: 0;
 }
 
+.hub-sign-in-panel {
+  border-color: rgba(32, 98, 68, 0.22);
+}
+
 .hero-profile-name {
   margin: 0;
   font-size: 1.25rem;
