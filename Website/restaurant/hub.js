@@ -1031,7 +1031,7 @@
     if (!state.showSignIn) {
       return `
         <button class="text-button hub-sign-in-toggle" type="button" data-show-sign-in>
-          Already registered? Sign in
+          Already registered? Send a sign-in link
         </button>
       `;
     }
@@ -1042,7 +1042,7 @@
           <label class="field-label" for="hub-sign-in-email">Email address</label>
           <div class="hero-profile-edit-row">
             <input class="input hero-profile-input" id="hub-sign-in-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
-            <button class="button button-primary button-sm" id="hub-sign-in-submit" type="submit">Email Sign-In Link</button>
+            <button class="button button-primary button-sm" id="hub-sign-in-submit" type="submit">Send Sign-In Link</button>
           </div>
         </div>
         <p class="helper ${state.authMessage ? "" : "hidden"}" id="hub-auth-message" aria-live="polite">${escapeHtml(state.authMessage)}</p>
@@ -1639,7 +1639,7 @@
                   <div>
                     <p class="kicker" style="margin: 0 0 4px;">Email Sign-In</p>
                     <h2 class="hero-profile-name">Restore your saved restaurant.</h2>
-                    <p class="copy compact-copy" style="margin: 4px 0 12px;">Enter the email connected to your restaurant, then tap the secure link we send you.</p>
+                    <p class="copy compact-copy" style="margin: 4px 0 12px;">Enter the email connected to your restaurant. We will send a secure sign-in link, and you will need to tap that email link to finish signing in.</p>
                     ${renderSignInMarkup()}
                   </div>
                 </div>
@@ -2074,12 +2074,12 @@
         submitButton.textContent = "Sending...";
         try {
           await core.sendEmailSignInLink(email);
-          state.authMessage = "Check your email and tap the secure link to restore your virtual restaurant.";
+          state.authMessage = "Check your email to finish signing in. Tap the secure link in the email, then you will be returned to your saved restaurant.";
           renderHero();
         } catch (error) {
           state.authError = error instanceof Error ? error.message : "Unable to send the email link.";
           submitButton.disabled = false;
-          submitButton.textContent = "Email Sign-In Link";
+          submitButton.textContent = "Send Sign-In Link";
           renderHero();
         }
       });
