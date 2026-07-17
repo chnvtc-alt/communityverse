@@ -4030,21 +4030,25 @@
     return safeProfile.restaurantStats[restaurantSlug] || buildEmptyRestaurantStats();
   }
 
-  function selectNextImageQuestion(imageQuestions, lastImageQuestionId) {
+  function selectNextImageQuestion(imageQuestions, lastImageQuestionId, seenIds = new Set()) {
     if (!imageQuestions.length) {
       return null;
     }
 
+    const orderedQuestions = imageQuestions.slice();
     if (!lastImageQuestionId) {
-      return imageQuestions[0];
+      return orderedQuestions.find((question) => !seenIds.has(question.id)) || orderedQuestions[0];
     }
 
     const lastIndex = imageQuestions.findIndex((question) => question.id === lastImageQuestionId);
     if (lastIndex < 0) {
-      return imageQuestions[0];
+      return orderedQuestions.find((question) => !seenIds.has(question.id)) || orderedQuestions[0];
     }
 
-    return imageQuestions[(lastIndex + 1) % imageQuestions.length];
+    const nextQuestions = imageQuestions
+      .slice(lastIndex + 1)
+      .concat(imageQuestions.slice(0, lastIndex + 1));
+    return nextQuestions.find((question) => !seenIds.has(question.id)) || nextQuestions[0];
   }
 
   function getRestaurantBySlug(slug) {
@@ -4782,7 +4786,8 @@
     const restaurantImageQuestions = pools.restaurantQuestions.filter(isFoodPhotoQuestion);
     const restaurantImageQuestion = selectNextImageQuestion(
       restaurantImageQuestions,
-      getRestaurantQuestionMemory(profile, restaurant.slug).lastImageQuestionId
+      getRestaurantQuestionMemory(profile, restaurant.slug).lastImageQuestionId,
+      seenIds
     );
     const openRestaurantSlots = restaurantSlots.filter((slot) => !chosen[slot]);
     const restaurantSelection = [];
