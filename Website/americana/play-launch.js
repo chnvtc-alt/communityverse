@@ -1979,6 +1979,24 @@
     await copyMultiplayerRoomLink();
   }
 
+  async function requireSaveReadyBeforePlay() {
+    const issue = core.getActiveProfileSaveIssue?.();
+    if (!issue) {
+      try {
+        await core.syncActiveProfile?.();
+        return true;
+      } catch (error) {
+        window.alert("This saved restaurant needs email sign-in before new games can count. Please sign in, then start the game again.");
+        window.location.href = "/restaurant/?hub=1&signin=1";
+        return false;
+      }
+    }
+
+    window.alert(issue.message);
+    window.location.href = "/restaurant/?hub=1&signin=1";
+    return false;
+  }
+
   function renderSetup() {
     const profile = getProfile();
     const session = getSession();
@@ -2284,7 +2302,10 @@
       bindMultiplayerCard();
       const beginButton = document.getElementById("begin-questions-button");
       if (beginButton) {
-        beginButton.addEventListener("click", () => {
+        beginButton.addEventListener("click", async () => {
+          if (!(await requireSaveReadyBeforePlay())) {
+            return;
+          }
           if (isLiveRoundRoom() && state.multiplayerRoom?.liveStatus === "review") {
             renderLiveReviewPanel(session);
             return;
@@ -2352,7 +2373,10 @@
     bindHowToPlay();
     bindMultiplayerCard();
 
-    document.getElementById("begin-questions-button")?.addEventListener("click", () => {
+    document.getElementById("begin-questions-button")?.addEventListener("click", async () => {
+      if (!(await requireSaveReadyBeforePlay())) {
+        return;
+      }
       if (liveWaiting) {
         return;
       }
@@ -2372,6 +2396,9 @@
     const profile = ensurePlayableProfile();
     if (profile) {
       core.setActiveProfileId(profile.id);
+    }
+    if (!(await requireSaveReadyBeforePlay())) {
+      return;
     }
 
     const options = replayCustomer ? { customerId: replayCustomer.id } : {};
@@ -2403,6 +2430,12 @@
       const profile = ensurePlayableProfile();
       if (profile) {
         core.setActiveProfileId(profile.id);
+      }
+      if (!(await requireSaveReadyBeforePlay())) {
+        state.multiplayerLoading = false;
+        state.multiplayerMessage = "";
+        renderAll();
+        return;
       }
       const session = core.startNewSession(restaurantSlug, {});
       if (!session) {

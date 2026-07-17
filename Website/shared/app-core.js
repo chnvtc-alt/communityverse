@@ -2668,6 +2668,28 @@
     return token;
   }
 
+  function profileNeedsEmailSignIn(profile) {
+    if (!profile || isDemoProfile(profile)) {
+      return false;
+    }
+
+    return !getProfileAccessToken(profile.id);
+  }
+
+  function getActiveProfileSaveIssue() {
+    const profile = getActiveProfile();
+    if (!profileNeedsEmailSignIn(profile)) {
+      return null;
+    }
+
+    return {
+      code: "profile-sign-in-required",
+      message: "This saved restaurant needs email sign-in before new games can count. Please sign in, then start the game again.",
+      profileId: profile.id,
+      restaurantName: profile.restaurantName,
+    };
+  }
+
   async function syncProfilesToServer(profiles) {
     if (!USE_REMOTE_SYNC) {
       return;
@@ -2681,7 +2703,10 @@
       return;
     }
 
-    const token = ensureProfileAccessToken(activeProfile.id);
+    const token = getProfileAccessToken(activeProfile.id);
+    if (!token) {
+      throw new Error("This saved restaurant needs email sign-in before new games can count. Please sign in, then start the game again.");
+    }
     const syncedProfile = await requestJson(`/profiles/${encodeURIComponent(activeProfile.id)}`, {
       method: "PUT",
       headers: {
@@ -2712,7 +2737,7 @@
     await syncActiveProfile();
     const token = getProfileAccessToken(session.profileId);
     if (!token) {
-      return;
+      throw new Error("This saved restaurant needs email sign-in before new games can count. Please sign in, then start the game again.");
     }
     await requestJson("/sessions", {
       method: "POST",
@@ -3327,9 +3352,9 @@
     if (!profile?.id) {
       return null;
     }
-    const safeProfile = ensureProfileShape(profile);
     const profiles = getProfiles();
-    const index = profiles.findIndex((entry) => entry.id === safeProfile.id);
+    const index = profiles.findIndex((entry) => entry.id === profile.id);
+    const safeProfile = mergeProfileProgress(profile, index >= 0 ? profiles[index] : null);
     if (index >= 0) {
       profiles[index] = safeProfile;
     } else {
@@ -3890,6 +3915,78 @@
     const leftTime = Date.parse(left?.dateWon || "") || 0;
     const rightTime = Date.parse(right?.dateWon || "") || 0;
     return rightTime >= leftTime ? right : left;
+  }
+
+  function newerIsoValue(existingValue, incomingValue) {
+    const existingTime = Date.parse(existingValue || "") || 0;
+    const incomingTime = Date.parse(incomingValue || "") || 0;
+    return incomingTime >= existingTime ? incomingValue : existingValue;
+  }
+
+  function mergeRecentSessions(existingSessions, incomingSessions) {
+    const sessionsById = new Map();
+    [...(Array.isArray(existingSessions) ? existingSessions : []), ...(Array.isArray(incomingSessions) ? incomingSessions : [])]
+      .filter((session) => session && session.id)
+      .forEach((session) => {
+        const existing = sessionsById.get(session.id);
+        sessionsById.set(session.id, getNewerCollectionEntry(existing, session));
+      });
+
+    return [...sessionsById.values()]
+      .sort((left, right) => String(right.playedAt || right.completedAt || "").localeCompare(String(left.playedAt || left.completedAt || "")))
+      .slice(0, RECENT_SESSION_LIMIT);
+  }
+
+  function mergeRestaurantTriviaStats(existingStats = {}, incomingStats = {}) {
+    const merged = {};
+    new Set([...Object.keys(existingStats || {}), ...Object.keys(incomingStats || {})]).forEach((restaurantSlug) => {
+      const existing = existingStats[restaurantSlug] || {};
+      const incoming = incomingStats[restaurantSlug] || {};
+      merged[restaurantSlug] = Object.assign(buildEmptyRestaurantStats(), {
+        ...existing,
+        ...incoming,
+        gamesPlayed: Math.max(Number(existing.gamesPlayed) || 0, Number(incoming.gamesPlayed) || 0),
+        totalCorrectAnswers: Math.max(Number(existing.totalCorrectAnswers) || 0, Number(incoming.totalCorrectAnswers) || 0),
+        lastImageQuestionId: incoming.lastImageQuestionId || existing.lastImageQuestionId || "",
+        featuredGuestStartIndex: Math.max(Number(existing.featuredGuestStartIndex) || 0, Number(incoming.featuredGuestStartIndex) || 0),
+      });
+    });
+    return merged;
+  }
+
+  function mergeProfileProgress(existingProfile, incomingProfile) {
+    if (!existingProfile) {
+      return ensureProfileShape(incomingProfile);
+    }
+    if (!incomingProfile) {
+      return ensureProfileShape(existingProfile);
+    }
+
+    const existing = ensureProfileShape(existingProfile);
+    const incoming = ensureProfileShape(incomingProfile);
+    const merged = ensureProfileShape({
+      ...existing,
+      ...incoming,
+      playerName: incoming.playerName || existing.playerName,
+      restaurantName: incoming.restaurantName || existing.restaurantName,
+      restaurantSlug: incoming.restaurantSlug || existing.restaurantSlug,
+      restaurantNameUpdatedAt: newerIsoValue(existing.restaurantNameUpdatedAt, incoming.restaurantNameUpdatedAt),
+      lastPlayedAt: newerIsoValue(existing.lastPlayedAt, incoming.lastPlayedAt),
+      seenQuestionIds: [
+        ...new Set([
+          ...(existing.seenQuestionIds || []),
+          ...(incoming.seenQuestionIds || []),
+        ].map((id) => String(id || "").trim()).filter(Boolean)),
+      ],
+      recentSessions: mergeRecentSessions(existing.recentSessions, incoming.recentSessions),
+      customerCollection: dedupeCustomerCollection([
+        ...(existing.customerCollection || []),
+        ...(incoming.customerCollection || []),
+      ]),
+      restaurantStats: mergeRestaurantTriviaStats(existing.restaurantStats, incoming.restaurantStats),
+    });
+
+    return rebuildCollectionDerivedStats(merged);
   }
 
   function mergeCollectionEntries(existingEntry, incomingEntry) {
@@ -5573,7 +5670,7 @@
     saveProfiles(profiles);
     activeSessionState.session = clone(session);
     writeJson(STORAGE_KEYS.activeSession, session);
-    void syncSessionToServer(session);
+    void syncSessionToServer(session).catch(() => null);
   }
 
   function answerActiveSession(selectedIndex) {
@@ -5903,6 +6000,7 @@
     generateGuestRestaurantName,
     updateProfile,
     syncActiveProfile,
+    getActiveProfileSaveIssue,
     sendEmailSignInLink,
     checkEmailCanConnectProfile,
     completeEmailSignInFromUrl,
