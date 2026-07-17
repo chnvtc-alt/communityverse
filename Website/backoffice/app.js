@@ -2511,6 +2511,14 @@
     return Number.isNaN(date.getTime()) ? today() : dateInputValue(date);
   }
 
+  function paypalDateAfterLabel(text = "", label = "") {
+    const pattern = new RegExp(`\\b${label}\\s*:?\\s*([A-Z][a-z]{2}\\s+\\d{1,2},\\s+\\d{4})`, "i");
+    const match = String(text || "").match(pattern);
+    if (!match?.[1]) return "";
+    const date = new Date(`${match[1]}T00:00:00`);
+    return Number.isNaN(date.getTime()) ? "" : dateInputValue(date);
+  }
+
   function parseMoneyText(value = "") {
     const amount = Number(String(value || "").replace(/[^0-9.]/g, ""));
     return Number.isFinite(amount) ? amount : 0;
@@ -2518,10 +2526,12 @@
 
   function parsePaypalPaymentText(text = "") {
     const source = String(text || "");
+    const isProfileSetup = /new automatic payment profile|automatic payment profile information/i.test(source);
     const profileId = firstPaymentMatch(source, [
-      /\bProfile ID\s+([A-Z0-9-]+)/i,
-      /\bRecurring Payment ID\s+([A-Z0-9-]+)/i,
-      /\bSubscription ID\s+([A-Z0-9-]+)/i,
+      /\bAutomatic payment ID\s*:?\s*([A-Z0-9-]+)/i,
+      /\bProfile ID\s*:?\s*([A-Z0-9-]+)/i,
+      /\bRecurring Payment ID\s*:?\s*([A-Z0-9-]+)/i,
+      /\bSubscription ID\s*:?\s*([A-Z0-9-]+)/i,
       /\b(I-[A-Z0-9]+)\b/i,
     ]);
     const transactionId = firstPaymentMatch(source, [
@@ -2529,16 +2539,17 @@
       /\bTransaction ID\s+([A-Z0-9]+)/i,
     ]);
     const customerName = firstPaymentMatch(source, [
-      /\bCustomer name\s+([^\n]+)/i,
-      /\bPaid by\s+([^\n]+)/i,
+      /\bCustomer name\s*:?\s*([^\n]+)/i,
+      /\bPaid by\s*:?\s*([^\n]+)/i,
       /\bpayment from\s+(.+?)\s+for\s+/i,
     ]);
     const customerEmail = firstPaymentMatch(source, [
-      /\bCustomer email\s+([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})/i,
+      /\bCustomer email\s*:?\s*([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})/i,
       /\b([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})\b/i,
     ]).toLowerCase();
     const grossText = firstPaymentMatch(source, [
       /\bAmount received\s+\$?\s*([0-9,]+(?:\.[0-9]{2})?)/i,
+      /\bAmount paid each time\s*:?\s*\$?\s*([0-9,]+(?:\.[0-9]{2})?)/i,
       /\bGross Amount\s+\$?\s*([0-9,]+(?:\.[0-9]{2})?)/i,
       /\bGross amount\s+\$?\s*([0-9,]+(?:\.[0-9]{2})?)/i,
     ]);
@@ -2560,19 +2571,22 @@
       grossAmount,
       feeAmount,
       netAmount,
-      paidDate: paymentDateFromPaypalText(source),
+      paidDate: paypalDateAfterLabel(source, "Payments start") || paymentDateFromPaypalText(source),
+      nextPaymentDue: paypalDateAfterLabel(source, "Next payment due"),
+      isProfileSetup,
       rawText: source,
     };
   }
 
   function paypalPaymentNote(payment = {}) {
     return [
-      "PayPal payment received.",
+      payment.isProfileSetup ? "PayPal automatic payment profile created." : "PayPal payment received.",
       payment.transactionId ? `Transaction ID: ${payment.transactionId}` : "",
       payment.profileId ? `Profile ID: ${payment.profileId}` : "",
       payment.grossAmount ? `Gross amount: ${moneyValue(payment.grossAmount)}` : "",
       payment.feeAmount ? `PayPal fee: ${moneyValue(payment.feeAmount)}` : "",
       payment.netAmount ? `Net amount after PayPal fee: ${moneyValue(payment.netAmount)}` : "",
+      payment.nextPaymentDue ? `Next payment due: ${shortDate(payment.nextPaymentDue)}` : "",
     ].filter(Boolean).join(" / ");
   }
 
@@ -2625,22 +2639,28 @@
     }
     const { payment, restaurant, reason, collection } = pending;
     const hasMatch = Boolean(restaurant);
+    const isProfileSetup = Boolean(payment.isProfileSetup && !payment.transactionId);
+    const actionLabel = isProfileSetup
+      ? "Save Subscription Profile"
+      : "Apply Payment";
+    const paymentDateLabel = isProfileSetup ? "Start Date" : "Paid Date";
     elements.paypalPaymentPreview.hidden = false;
     elements.paypalPaymentPreview.innerHTML = `
       <div class="paypal-payment-preview-card ${hasMatch ? "" : "is-warning"}">
         <h4>${hasMatch ? "PayPal match found" : "No safe match found"}</h4>
-        <p class="helper">${hasMatch ? `Matched ${escapeHtml(restaurant.name)} by ${escapeHtml(reason)}.` : "I could not safely match this PayPal payment to a restaurant. Add the PayPal Profile ID to the restaurant card, then preview again."}</p>
+        <p class="helper">${hasMatch ? `Matched ${escapeHtml(restaurant.name)} by ${escapeHtml(reason)}.` : "I could not safely match this PayPal email to a restaurant. Add the PayPal Profile ID to the restaurant card, then preview again."}</p>
         <dl>
           <div><dt>Restaurant</dt><dd>${hasMatch ? escapeHtml(restaurant.name) : "No match"}</dd></div>
           <div><dt>Profile ID</dt><dd>${escapeHtml(payment.profileId || "Not found")}</dd></div>
           <div><dt>Transaction</dt><dd>${escapeHtml(payment.transactionId || "Not found")}</dd></div>
           <div><dt>Customer</dt><dd>${escapeHtml([payment.customerName, payment.customerEmail].filter(Boolean).join(" / ") || "Not found")}</dd></div>
-          <div><dt>Paid Date</dt><dd>${escapeHtml(shortDate(payment.paidDate) || payment.paidDate)}</dd></div>
+          <div><dt>${escapeHtml(paymentDateLabel)}</dt><dd>${escapeHtml(shortDate(payment.paidDate) || payment.paidDate)}</dd></div>
           <div><dt>Gross Amount</dt><dd>${escapeHtml(payment.grossAmount ? moneyValue(payment.grossAmount) : "Not found")}</dd></div>
           <div><dt>Net Amount</dt><dd>${escapeHtml(payment.netAmount ? moneyValue(payment.netAmount) : "Not shown in this paste")}</dd></div>
-          <div><dt>Invoice</dt><dd>${collection ? `Will mark invoice ${escapeHtml(collection.invoiceNumber || collection.id)} paid` : hasMatch ? "Will create a PayPal payment record" : "No change will be made"}</dd></div>
+          <div><dt>Next Payment</dt><dd>${escapeHtml(shortDate(payment.nextPaymentDue) || payment.nextPaymentDue || "Not shown")}</dd></div>
+          <div><dt>Invoice</dt><dd>${isProfileSetup ? "Will save the recurring profile. Paste the payment receipt to mark the invoice paid." : collection ? `Will mark invoice ${escapeHtml(collection.invoiceNumber || collection.id)} paid` : hasMatch ? "Will create a PayPal payment record" : "No change will be made"}</dd></div>
         </dl>
-        ${hasMatch ? '<button class="button button-primary" type="button" data-apply-paypal-payment>Apply Payment</button>' : ""}
+        ${hasMatch ? `<button class="button button-primary" type="button" data-apply-paypal-payment>${escapeHtml(actionLabel)}</button>` : ""}
       </div>
     `;
   }
@@ -2676,6 +2696,12 @@
     const payment = pending.payment;
     const restaurant = pending.restaurant;
     const note = paypalPaymentNote(payment);
+    if (payment.isProfileSetup && !payment.transactionId) {
+      await savePaypalSubscriptionProfile(restaurant, payment, note);
+      clearPaypalPaymentPaste();
+      render();
+      return;
+    }
     const collection = normalizeCollection({
       ...(pending.collection || {}),
       id: pending.collection?.id || makeCollectionId(),
@@ -2724,6 +2750,28 @@
     cacheBackofficeData();
     clearPaypalPaymentPaste();
     render();
+  }
+
+  async function savePaypalSubscriptionProfile(restaurant = {}, payment = {}, note = "") {
+    const updatedRestaurant = normalizeRestaurant({
+      ...restaurant,
+      paypalSubscriptionId: payment.profileId || restaurant.paypalSubscriptionId,
+      paymentStatus: "subscription-active",
+      salesNotes: appendUniqueNote(
+        appendUniqueNote(restaurant.salesNotes, payment.profileId ? `PayPal Profile ID: ${payment.profileId}` : ""),
+        note
+      ),
+      updatedAt: new Date().toISOString(),
+    });
+    const restaurantData = await saveAction("saveRestaurant", { restaurant: updatedRestaurant }, "Saved PayPal subscription profile");
+    if (!restaurantData?.restaurant) {
+      return;
+    }
+    const savedRestaurant = normalizeRestaurant(restaurantData.restaurant);
+    const existingRestaurantIndex = state.restaurants.findIndex((record) => record.id === savedRestaurant.id);
+    if (existingRestaurantIndex >= 0) {
+      state.restaurants[existingRestaurantIndex] = savedRestaurant;
+    }
   }
 
   function renderCollections() {
