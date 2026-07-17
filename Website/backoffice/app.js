@@ -1000,7 +1000,7 @@
   }
 
   function moneyValue(value) {
-    const trimmed = String(value || "").trim();
+    const trimmed = value === 0 ? "0" : String(value || "").trim();
     if (!trimmed) {
       return "";
     }
@@ -2593,12 +2593,48 @@
 
   function paypalNetAmountFromNotes(notes = "") {
     const match = String(notes || "").match(/Net amount after PayPal fee:\s*\$?\s*([0-9,]+(?:\.[0-9]{2})?)/i);
-    return match ? parseMoneyText(match[1]) : 0;
+    return match ? parseMoneyText(match[1]) : null;
   }
 
   function paypalFeeAmountFromNotes(notes = "") {
     const match = String(notes || "").match(/PayPal fee:\s*\$?\s*([0-9,]+(?:\.[0-9]{2})?)/i);
-    return match ? parseMoneyText(match[1]) : 0;
+    return match ? parseMoneyText(match[1]) : null;
+  }
+
+  function formatEditMoneyValue(value) {
+    return value === null || value === undefined ? "" : String(value.toFixed(2)).replace(/\.00$/, "");
+  }
+
+  function notesWithManualPaypalAmounts(notes = "", feeValue = "", netValue = "") {
+    let nextNotes = String(notes || "")
+      .replace(/\s*\/?\s*PayPal fee:\s*\$?\s*[0-9,]+(?:\.[0-9]{2})?/gi, "")
+      .replace(/\s*\/?\s*Net amount after PayPal fee:\s*\$?\s*[0-9,]+(?:\.[0-9]{2})?/gi, "")
+      .trim();
+    const feeText = String(feeValue || "").trim();
+    const netText = String(netValue || "").trim();
+    if (feeText !== "") {
+      nextNotes = appendUniqueNote(nextNotes, `PayPal fee: ${moneyValue(feeText) || "$0"}`);
+    }
+    if (netText !== "") {
+      nextNotes = appendUniqueNote(nextNotes, `Net amount after PayPal fee: ${moneyValue(netText) || "$0"}`);
+    }
+    return nextNotes;
+  }
+
+  function updateCollectionNetReceived(editor) {
+    if (!editor) return;
+    const amountInput = editor.querySelector("[data-edit-collection-amount]");
+    const feeInput = editor.querySelector("[data-edit-collection-paypal-fee]");
+    const netInput = editor.querySelector("[data-edit-collection-net-received]");
+    if (!amountInput || !feeInput || !netInput) return;
+    const feeText = String(feeInput.value || "").trim();
+    if (feeText === "") {
+      netInput.value = "";
+      return;
+    }
+    const amount = numberFromMoney(amountInput.value, 0);
+    const fee = numberFromMoney(feeText, 0);
+    netInput.value = formatEditMoneyValue(Math.max(0, amount - fee));
   }
 
   function nextPaymentDueFromNotes(notes = "") {
@@ -3039,13 +3075,16 @@
     const showPaymentAmounts = Boolean(options.showPaymentAmounts);
     const feeAmount = paypalFeeAmountFromNotes(record.notes);
     const netAmount = paypalNetAmountFromNotes(record.notes);
-    const paymentAmountCells = showPaymentAmounts
-      ? `
-          <td>${feeAmount ? escapeHtml(moneyValue(feeAmount)) : '<span class="helper">-</span>'}</td>
-          <td>${netAmount ? escapeHtml(moneyValue(netAmount)) : '<span class="helper">-</span>'}</td>
-        `
-      : "";
     if (state.editingCollectionId === record.id) {
+      const editFeeValue = formatEditMoneyValue(feeAmount);
+      const calculatedNetAmount = feeAmount === null ? netAmount : Math.max(0, numberFromMoney(record.amount, 0) - feeAmount);
+      const editNetValue = formatEditMoneyValue(calculatedNetAmount);
+      const paymentAmountEditCells = showPaymentAmounts
+        ? `
+            <td><input data-edit-collection-paypal-fee inputmode="decimal" value="${escapeHtml(editFeeValue)}" /></td>
+            <td><input data-edit-collection-net-received inputmode="decimal" value="${escapeHtml(editNetValue)}" readonly /></td>
+          `
+        : "";
       return `
         <tr data-collection-editor-id="${escapeHtml(record.id)}">
           <td>${collectionRestaurantCell(record)}</td>
@@ -3063,7 +3102,7 @@
             </select>
           </td>
           <td><input data-edit-collection-paid-date type="date" value="${escapeHtml(record.paidDate)}" /></td>
-          ${paymentAmountCells}
+          ${paymentAmountEditCells}
           <td><input data-edit-collection-notes value="${escapeHtml(stripPaymentTypeNote(record.notes))}" /></td>
           <td class="table-actions">
             <button class="text-button" type="button" data-save-collection-id="${escapeHtml(record.id)}">Save</button>
@@ -3081,7 +3120,10 @@
         <td>${escapeHtml(moneyValue(record.amount))}</td>
         <td>${escapeHtml(labelFor(collectionStatusLabels, record.status, "Not Sent"))}</td>
         <td>${escapeHtml(shortDate(record.paidDate))}</td>
-        ${paymentAmountCells}
+        ${showPaymentAmounts ? `
+          <td>${feeAmount !== null ? escapeHtml(moneyValue(feeAmount)) : '<span class="helper">-</span>'}</td>
+          <td>${netAmount !== null ? escapeHtml(moneyValue(netAmount)) : '<span class="helper">-</span>'}</td>
+        ` : ""}
         <td>${escapeHtml(invoiceTableNote(record))}</td>
         <td class="table-actions">
           <button class="text-button" type="button" data-edit-collection-id="${escapeHtml(record.id)}">Edit</button>
@@ -3592,18 +3634,24 @@
     if (!editor || !existing) {
       return;
     }
+    updateCollectionNetReceived(editor);
+    const notesInput = editor.querySelector("[data-edit-collection-notes]");
+    const paymentTypeInput = editor.querySelector("[data-edit-collection-payment-type]");
+    const feeInput = editor.querySelector("[data-edit-collection-paypal-fee]");
+    const netInput = editor.querySelector("[data-edit-collection-net-received]");
+    let notes = collectionNotesWithPaymentType(notesInput?.value, paymentTypeInput?.value);
+    if (feeInput || netInput) {
+      notes = notesWithManualPaypalAmounts(notes, feeInput?.value, netInput?.value);
+    }
     const record = normalizeCollection({
       ...existing,
       invoiceNumber: editor.querySelector("[data-edit-collection-invoice]")?.value,
-      paymentType: editor.querySelector("[data-edit-collection-payment-type]")?.value,
+      paymentType: paymentTypeInput?.value,
       dueDate: editor.querySelector("[data-edit-collection-due-date]")?.value,
       amount: editor.querySelector("[data-edit-collection-amount]")?.value,
       status: editor.querySelector("[data-edit-collection-status]")?.value,
       paidDate: editor.querySelector("[data-edit-collection-paid-date]")?.value,
-      notes: collectionNotesWithPaymentType(
-        editor.querySelector("[data-edit-collection-notes]")?.value,
-        editor.querySelector("[data-edit-collection-payment-type]")?.value
-      ),
+      notes,
     });
     const data = await saveAction("saveCollection", { collection: record });
     if (!data?.collection) {
@@ -5123,6 +5171,12 @@
     const cancelExpenseEditButton = event.target.closest("[data-cancel-expense-edit]");
     if (cancelExpenseEditButton) {
       cancelExpenseEdit();
+    }
+  });
+
+  document.addEventListener("input", (event) => {
+    if (event.target.closest("[data-edit-collection-amount], [data-edit-collection-paypal-fee]")) {
+      updateCollectionNetReceived(event.target.closest("[data-collection-editor-id]"));
     }
   });
 
