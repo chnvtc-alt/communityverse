@@ -587,6 +587,13 @@
       .trim();
   }
 
+  function stripPaymentBookkeepingNotes(notes = "") {
+    return String(notes || "")
+      .replace(/\s*\/?\s*PayPal fee:\s*\$?\s*[0-9,]+(?:\.[0-9]{2})?/gi, "")
+      .replace(/\s*\/?\s*Net amount after PayPal fee:\s*\$?\s*[0-9,]+(?:\.[0-9]{2})?/gi, "")
+      .trim();
+  }
+
   function collectionNotesWithPaymentType(notes = "", paymentType = "recurring") {
     const label = paymentType === "manual" ? "Manual one-time invoice" : "Recurring monthly subscription";
     const cleanNotes = stripPaymentTypeNote(notes);
@@ -2607,10 +2614,7 @@
   }
 
   function notesWithManualPaypalAmounts(notes = "", feeValue = "", netValue = "") {
-    let nextNotes = String(notes || "")
-      .replace(/\s*\/?\s*PayPal fee:\s*\$?\s*[0-9,]+(?:\.[0-9]{2})?/gi, "")
-      .replace(/\s*\/?\s*Net amount after PayPal fee:\s*\$?\s*[0-9,]+(?:\.[0-9]{2})?/gi, "")
-      .trim();
+    let nextNotes = stripPaymentBookkeepingNotes(notes);
     const feeText = String(feeValue || "").trim();
     const netText = String(netValue || "").trim();
     if (feeText !== "") {
@@ -3055,7 +3059,7 @@
   }
 
   function invoiceTableNote(record = {}) {
-    const text = stripPaymentTypeNote(record.notes);
+    const text = stripPaymentBookkeepingNotes(stripPaymentTypeNote(record.notes));
     if (/PayPal payment/i.test(text)) {
       const transaction = noteMatch(text, /Transaction ID:\s*([^/\n]+)/i);
       return transaction ? `PayPal ${transaction}` : "PayPal";
@@ -3117,7 +3121,7 @@
           </td>
           <td><input data-edit-collection-paid-date type="date" value="${escapeHtml(record.paidDate)}" /></td>
           ${paymentAmountEditCells}
-          <td><input data-edit-collection-notes value="${escapeHtml(stripPaymentTypeNote(record.notes))}" /></td>
+          <td><input data-edit-collection-notes value="${escapeHtml(stripPaymentBookkeepingNotes(stripPaymentTypeNote(record.notes)))}" /></td>
           <td class="table-actions">
             <button class="text-button" type="button" data-save-collection-id="${escapeHtml(record.id)}">Save</button>
             <button class="text-button" type="button" data-cancel-collection-edit>Cancel</button>
