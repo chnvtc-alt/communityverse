@@ -3041,10 +3041,7 @@
     const text = stripPaymentTypeNote(record.notes);
     if (/PayPal payment/i.test(text)) {
       const transaction = noteMatch(text, /Transaction ID:\s*([^/\n]+)/i);
-      return [
-        "PayPal payment recorded",
-        transaction ? `Transaction ${transaction}` : "",
-      ].filter(Boolean).join(". ");
+      return transaction ? `PayPal ${transaction}` : "PayPal";
     }
     const periodMatch = text.match(/(?:Partial service period|Service period):\s*(.+?)(?:\.|$)/i);
     return periodMatch ? periodMatch[1].trim() : text;
