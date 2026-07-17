@@ -3363,7 +3363,7 @@
     elements.quickContactType.value = "C";
     elements.quickContactDate.value = today();
     elements.quickContactResponse.checked = false;
-    elements.quickContactNextFollowUp.value = "";
+    elements.quickContactNextFollowUp.value = restaurant.nextFollowUp || "";
     elements.quickContactScore.value = restaurant.prospectScore || "5";
     elements.quickContactNote.value = "";
     renderQuickContactHistory(restaurant);
@@ -4245,6 +4245,7 @@
       contactEmail: email,
       contactHistory: contact ? [contact, ...(restaurant.contactHistory || [])] : restaurant.contactHistory,
       lastContacted: today(),
+      nextFollowUp: restaurant.nextFollowUp,
       prospectStage: ["", "new-lead"].includes(restaurant.prospectStage) ? "contacted" : restaurant.prospectStage,
       updatedAt: new Date().toISOString(),
     });
