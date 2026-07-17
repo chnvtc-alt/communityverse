@@ -2875,13 +2875,11 @@
   function outstandingCollectionPriority(record = {}) {
     const dueDate = String(record.dueDate || "").trim();
     const isFutureDue = dueDate && dueDate > today();
+    if (isFutureDue) return 4;
     if (record.status === "past-due") return 0;
-    if (record.status === "not-sent" && !isFutureDue) return 1;
-    if (record.status === "sent" && !isFutureDue) return 2;
-    if (record.status === "recurring" && !isFutureDue) return 3;
-    if (record.status === "not-sent" && isFutureDue) return 4;
-    if (record.status === "sent" && isFutureDue) return 5;
-    if (record.status === "recurring" && isFutureDue) return 6;
+    if (record.status === "not-sent") return 1;
+    if (record.status === "sent") return 2;
+    if (record.status === "recurring") return 3;
     return 7;
   }
 
