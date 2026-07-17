@@ -2581,6 +2581,11 @@
     return match ? parseMoneyText(match[1]) : 0;
   }
 
+  function paypalFeeAmountFromNotes(notes = "") {
+    const match = String(notes || "").match(/PayPal fee:\s*\$?\s*([0-9,]+(?:\.[0-9]{2})?)/i);
+    return match ? parseMoneyText(match[1]) : 0;
+  }
+
   function findPaypalPaymentRestaurant(payment = {}) {
     const profileKey = String(payment.profileId || "").trim().toLowerCase();
     if (profileKey) {
@@ -2735,15 +2740,15 @@
       ? `${outstanding.length} outstanding invoice${outstanding.length === 1 ? "" : "s"} sorted by attention needed.`
       : "No outstanding invoices.";
     elements.collectionsList.innerHTML = outstanding.length
-      ? outstanding.map(collectionRow).join("")
+      ? outstanding.map((record) => collectionRow(record)).join("")
       : '<tr><td colspan="9"><div class="empty-state">No outstanding invoices.</div></td></tr>';
 
     elements.collectionsPaymentsSummary.textContent = payments.length
       ? `${payments.length} paid invoice${payments.length === 1 ? "" : "s"}.`
       : "No payments recorded yet.";
     elements.collectionsPaymentsList.innerHTML = payments.length
-      ? payments.map(collectionRow).join("")
-      : '<tr><td colspan="9"><div class="empty-state">No payments recorded yet.</div></td></tr>';
+      ? payments.map((record) => collectionRow(record, { showPaymentAmounts: true })).join("")
+      : '<tr><td colspan="11"><div class="empty-state">No payments recorded yet.</div></td></tr>';
   }
 
   function compareOutstandingCollections(left, right) {
@@ -2886,12 +2891,8 @@
     const text = stripPaymentTypeNote(record.notes);
     if (/PayPal payment/i.test(text)) {
       const transaction = noteMatch(text, /Transaction ID:\s*([^/\n]+)/i);
-      const gross = noteMatch(text, /Gross amount:\s*([^/\n]+)/i);
-      const net = noteMatch(text, /Net amount after PayPal fee:\s*([^/\n]+)/i);
       return [
         "PayPal payment recorded",
-        gross ? `Gross ${gross}` : "",
-        net ? `Net ${net}` : "",
         transaction ? `Transaction ${transaction}` : "",
       ].filter(Boolean).join(". ");
     }
@@ -2920,7 +2921,16 @@
     `;
   }
 
-  function collectionRow(record) {
+  function collectionRow(record, options = {}) {
+    const showPaymentAmounts = Boolean(options.showPaymentAmounts);
+    const feeAmount = paypalFeeAmountFromNotes(record.notes);
+    const netAmount = paypalNetAmountFromNotes(record.notes);
+    const paymentAmountCells = showPaymentAmounts
+      ? `
+          <td>${feeAmount ? escapeHtml(moneyValue(feeAmount)) : '<span class="helper">-</span>'}</td>
+          <td>${netAmount ? escapeHtml(moneyValue(netAmount)) : '<span class="helper">-</span>'}</td>
+        `
+      : "";
     if (state.editingCollectionId === record.id) {
       return `
         <tr data-collection-editor-id="${escapeHtml(record.id)}">
@@ -2939,6 +2949,7 @@
             </select>
           </td>
           <td><input data-edit-collection-paid-date type="date" value="${escapeHtml(record.paidDate)}" /></td>
+          ${paymentAmountCells}
           <td><input data-edit-collection-notes value="${escapeHtml(stripPaymentTypeNote(record.notes))}" /></td>
           <td class="table-actions">
             <button class="text-button" type="button" data-save-collection-id="${escapeHtml(record.id)}">Save</button>
@@ -2956,11 +2967,11 @@
         <td>${escapeHtml(moneyValue(record.amount))}</td>
         <td>${escapeHtml(labelFor(collectionStatusLabels, record.status, "Not Sent"))}</td>
         <td>${escapeHtml(shortDate(record.paidDate))}</td>
+        ${paymentAmountCells}
         <td>${escapeHtml(invoiceTableNote(record))}</td>
         <td class="table-actions">
           <button class="text-button" type="button" data-edit-collection-id="${escapeHtml(record.id)}">Edit</button>
-          <button class="text-button" type="button" data-email-collection-id="${escapeHtml(record.id)}">Preview Email</button>
-          <button class="text-button" type="button" data-print-collection-id="${escapeHtml(record.id)}">View / Save PDF</button>
+          <button class="text-button" type="button" data-email-collection-id="${escapeHtml(record.id)}">Preview / Send</button>
           <button class="text-button" type="button" data-delete-collection-id="${escapeHtml(record.id)}">Remove</button>
         </td>
       </tr>
@@ -4971,10 +4982,6 @@
     const cancelCollectionEditButton = event.target.closest("[data-cancel-collection-edit]");
     if (cancelCollectionEditButton) {
       cancelCollectionEdit();
-    }
-    const printCollectionButton = event.target.closest("[data-print-collection-id]");
-    if (printCollectionButton) {
-      openInvoicePreview(printCollectionButton.dataset.printCollectionId);
     }
     const emailCollectionButton = event.target.closest("[data-email-collection-id]");
     if (emailCollectionButton) {
