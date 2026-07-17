@@ -126,6 +126,7 @@
   const collectionStatusLabels = {
     "not-sent": "Not Sent",
     sent: "Sent",
+    recurring: "Recurring",
     paid: "Paid",
     "past-due": "Past Due",
   };
@@ -2817,7 +2818,7 @@
       paymentType: "recurring",
       dueDate: nextDueDate,
       amount: String(monthlyAmount.toFixed(2)).replace(/\.00$/, ""),
-      status: "sent",
+      status: "recurring",
       paidDate: "",
       notes: collectionNotesWithPaymentType(
         `Recurring PayPal payment expected automatically. Next payment due: ${nextDueDate}.`,
@@ -2877,9 +2878,11 @@
     if (record.status === "past-due") return 0;
     if (record.status === "not-sent" && !isFutureDue) return 1;
     if (record.status === "sent" && !isFutureDue) return 2;
-    if (record.status === "not-sent" && isFutureDue) return 3;
-    if (record.status === "sent" && isFutureDue) return 4;
-    return 5;
+    if (record.status === "recurring" && !isFutureDue) return 3;
+    if (record.status === "not-sent" && isFutureDue) return 4;
+    if (record.status === "sent" && isFutureDue) return 5;
+    if (record.status === "recurring" && isFutureDue) return 6;
+    return 7;
   }
 
   function comparePaidCollections(left, right) {
