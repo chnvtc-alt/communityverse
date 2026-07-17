@@ -77,6 +77,37 @@ async function findProfilesForEmail(email) {
   });
 }
 
+function profileRecoveryScore(profile, email) {
+  const normalized = normalizedEmail(email);
+  let score = 0;
+  if (normalizedEmail(profile.ownerEmail) === normalized) {
+    score += 1000;
+  }
+  if (normalizedEmail(profile.pendingOwnerEmail) === normalized) {
+    score += 500;
+  }
+  if (profile.ownerUserId) {
+    score += 200;
+  }
+  if (!profile.isGuest) {
+    score += 100;
+  }
+  score += Math.min(99, Number(profile.stats?.gamesPlayed) || 0);
+  return score;
+}
+
+async function findRecoverableProfileForEmail(email) {
+  const matches = await findProfilesForEmail(email);
+  return matches
+    .sort((left, right) => {
+      const scoreDiff = profileRecoveryScore(right, email) - profileRecoveryScore(left, email);
+      if (scoreDiff) {
+        return scoreDiff;
+      }
+      return String(right.updatedAt || "").localeCompare(String(left.updatedAt || ""));
+    })[0] || null;
+}
+
 async function validateEmailCanConnectToProfile(email, profileId) {
   const normalized = normalizedEmail(email);
   if (!normalized || !profileId) {
@@ -187,6 +218,10 @@ async function completeMagicLink(body) {
     profile = await findPendingProfileForEmail(user.email);
   }
 
+  if (!profile && !claim) {
+    profile = await findRecoverableProfileForEmail(user.email);
+  }
+
   if (!profile) {
     return jsonResponse(
       {
@@ -199,7 +234,11 @@ async function completeMagicLink(body) {
     );
   }
 
-  if (profile.ownerUserId && profile.ownerUserId !== user.id) {
+  if (
+    profile.ownerUserId &&
+    profile.ownerUserId !== user.id &&
+    normalizedEmail(profile.ownerEmail) !== normalizedEmail(user.email)
+  ) {
     return jsonResponse({ ok: false, error: "This restaurant belongs to another account." }, 403);
   }
 
