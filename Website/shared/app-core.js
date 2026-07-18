@@ -8,7 +8,7 @@
   const API_BASE = "/api";
   const USE_REMOTE_SYNC = typeof window.fetch === "function";
   const FAVORITE_VISIT_GOAL = 10;
-  const FAVORITE_VALUE_MULTIPLIER = 1.2;
+  const FAVORITE_VALUE_MULTIPLIER = 2;
   const TRIVIA_LEADERBOARD_MIN_GAMES = 4;
   const CUSTOMER_STATUS_RANK = {
     lost: 0,
@@ -4400,6 +4400,10 @@
 
   function getScoredCollectionValue(entry, fallbackCustomer = null) {
     const storedValue = Math.max(0, Number(entry?.customerValue) || 0);
+    if (entry?.status === "favorite") {
+      return Math.max(storedValue, getFavoriteCustomerValue(entry || fallbackCustomer));
+    }
+
     if (storedValue > 0) {
       return storedValue;
     }
@@ -4407,12 +4411,25 @@
     return getCollectionValueForStatus(fallbackCustomer || entry, entry?.status);
   }
 
+  function getFavoriteBasePointValue(customerOrEntry) {
+    if (!customerOrEntry) {
+      return 0;
+    }
+
+    const bestScore = Math.max(0, Number(customerOrEntry.bestScore) || 0);
+    if (bestScore > 0) {
+      return getCharacterScoreValue(customerOrEntry, bestScore);
+    }
+
+    return Math.max(0, Number(customerOrEntry.regularValue) || 0);
+  }
+
   function getFavoriteCustomerValue(customerOrValue) {
     const baseValue =
       typeof customerOrValue === "number"
         ? customerOrValue
-        : Number(customerOrValue?.regularValue) || 0;
-    return Math.round(baseValue * FAVORITE_VALUE_MULTIPLIER);
+        : getFavoriteBasePointValue(customerOrValue);
+    return roundCharacterValue(baseValue * FAVORITE_VALUE_MULTIPLIER);
   }
 
   function getCollectionEntryValue(entry) {
@@ -4421,7 +4438,10 @@
     }
 
     if (entry.status === "favorite") {
-      return getFavoriteCustomerValue(Number(entry.regularValue) || 0);
+      return Math.max(
+        Math.max(0, Number(entry.customerValue) || 0),
+        getFavoriteCustomerValue(entry)
+      );
     }
 
     if (entry.customerValue) {
@@ -5470,6 +5490,8 @@
       replayCustomerId: preferredCustomer ? preferredCustomer.id : "",
       previousCustomerStatus: existingCollectionEntry ? existingCollectionEntry.status : "",
       previousFavoriteVisits: existingCollectionEntry ? Number(existingCollectionEntry.favoriteVisits) || 0 : 0,
+      previousCustomerValue: existingCollectionEntry ? Number(existingCollectionEntry.customerValue) || 0 : 0,
+      previousBestScore: existingCollectionEntry ? Number(existingCollectionEntry.bestScore) || 0 : 0,
       improvingExistingCustomer: Boolean(preferredCustomer),
       questions: fixedQuestions.length >= 10
         ? fixedQuestions
@@ -5660,6 +5682,7 @@
           bio: getCustomerBio(session.customer),
           dateWon: nowIso(),
         };
+        updatedEntry.customerValue = getCollectionEntryValue(updatedEntry);
 
         nextProfile.customerCollection = nextProfile.customerCollection.filter(
           (entry) => entry.customerId !== session.customer.id
@@ -5811,16 +5834,25 @@
         regularValue: boostedValues.regularValue,
         occasionalValue: boostedValues.occasionalValue,
       };
+      const currentCharacterValue =
+        scoreResult === "regular" ? getCharacterScoreValue(session.customer, session.score) : 0;
+      const previousBestScore = Math.max(0, Number(session.previousBestScore) || 0);
+      const previousBestValue =
+        previousBestScore > 0
+          ? getCharacterScoreValue(session.customer, previousBestScore)
+          : Math.max(0, Number(session.previousCustomerValue) || 0);
+      const bestCharacterValue = Math.max(previousBestValue, currentCharacterValue);
+      const favoriteCharacterValue = getFavoriteCustomerValue(bestCharacterValue);
       if (session.favoriteProgress) {
         session.favoriteProgress.regularValue = boostedValues.regularValue;
-        session.favoriteProgress.favoriteValue = boostedValues.favoriteValue;
+        session.favoriteProgress.favoriteValue = favoriteCharacterValue;
       }
       session.scoringVersion = "character-value-v2";
       session.customerValue =
         session.result === "favorite"
-          ? boostedValues.favoriteValue
+          ? favoriteCharacterValue
           : session.result === "regular"
-            ? getCharacterScoreValue(session.customer, session.score)
+            ? currentCharacterValue
             : 0;
       session.outcomeText =
         session.result === "favorite"

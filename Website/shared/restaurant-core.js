@@ -8,7 +8,7 @@
   const API_BASE = "/api";
   const USE_REMOTE_SYNC = typeof window.fetch === "function";
   const FAVORITE_VISIT_GOAL = 10;
-  const FAVORITE_VALUE_MULTIPLIER = 1.2;
+  const FAVORITE_VALUE_MULTIPLIER = 2;
   const TRIVIA_LEADERBOARD_MIN_GAMES = 4;
   const CUSTOMER_STATUS_RANK = {
     lost: 0,
@@ -4137,7 +4137,10 @@
     }
 
     if (entry.status === "favorite") {
-      return getFavoriteCustomerValue(Number(entry.regularValue) || 0);
+      return Math.max(
+        Math.max(0, Number(entry.customerValue) || 0),
+        getFavoriteCustomerValue(Number(entry.regularValue) || 0)
+      );
     }
 
     if (entry.status === "regular") {
