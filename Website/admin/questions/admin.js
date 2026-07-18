@@ -2127,6 +2127,16 @@ function buildLastDayKeys(dayCount = 14) {
   });
 }
 
+function profileHasRestaurantUpgrade(profile) {
+  const upgrades = profile?.restaurantEconomy?.upgrades;
+  return Boolean(upgrades && typeof upgrades === "object" && Object.keys(upgrades).length);
+}
+
+function profileHasRestaurantExpansion(profile) {
+  const expansionLevel = String(profile?.restaurantEconomy?.expansionLevel || EXPANSION_LEVELS[0]?.id || "").trim();
+  return Boolean(expansionLevel && expansionLevel !== (EXPANSION_LEVELS[0]?.id || "food-truck"));
+}
+
 function getStatsSummary(list) {
   const scopedProfiles = getStatsScopedProfiles(list);
   const profilesWithGames = scopedProfiles.filter((profile) => getStatsProfileGameCount(profile) > 0);
@@ -2141,6 +2151,8 @@ function getStatsSummary(list) {
   }).length;
   const playedMoreThanOneCount = profilesWithGames.filter((profile) => getStatsProfileGameCount(profile) > 1).length;
   const fourGameCount = profilesWithGames.filter((profile) => getStatsProfileGameCount(profile) >= 4).length;
+  const upgradedRestaurantCount = profilesWithGames.filter(profileHasRestaurantUpgrade).length;
+  const expandedRestaurantCount = profilesWithGames.filter(profileHasRestaurantExpansion).length;
   const totalGames = scopedProfiles.reduce((total, profile) => total + getStatsProfileGameCount(profile), 0);
   const totalSessionsTracked = scopedProfiles.reduce((total, profile) => total + getStatsProfileSessions(profile).length, 0);
   const gamesTodayCount = getDailyPlayRows(list, 1)[0]?.games || 0;
@@ -2158,6 +2170,8 @@ function getStatsSummary(list) {
     quietCount,
     playedMoreThanOneCount,
     fourGameCount,
+    upgradedRestaurantCount,
+    expandedRestaurantCount,
     totalGames,
     totalSessionsTracked,
     gamesTodayCount,
@@ -2246,7 +2260,9 @@ function getDailyPlayRows(list, dayCount = 60) {
 
 function getRestaurantPlayRows(list) {
   const trackedGamesBySlug = new Map();
+  const trackedGamesTodayBySlug = new Map();
   const playersBySlug = new Map();
+  const todayKey = dateKey(new Date().toISOString());
   const publicRestaurantSlugs = new Set(
     restaurants
       .filter((restaurant) =>
@@ -2272,6 +2288,9 @@ function getRestaurantPlayRows(list) {
         return;
       }
       addMapCount(trackedGamesBySlug, slug, 1);
+      if (dateKey(playedAt) === todayKey) {
+        addMapCount(trackedGamesTodayBySlug, slug, 1);
+      }
       playerSlugs.add(slug);
     });
     playerSlugs.forEach((slug) => addMapCount(playersBySlug, slug, 1));
@@ -2285,6 +2304,7 @@ function getRestaurantPlayRows(list) {
     .map((slug) => ({
       name: profileRestaurantName(slug),
       trackedGames: trackedGamesBySlug.get(slug) || 0,
+      trackedGamesToday: trackedGamesTodayBySlug.get(slug) || 0,
       players: playersBySlug.get(slug) || 0,
       sortOrder: restaurants.find((restaurant) => restaurant.slug === slug)?.sortOrder || 0,
     }))
@@ -2454,6 +2474,8 @@ function renderStats() {
       ${statsCard("Players today", formatWholeNumber(summary.playedTodayCount), isOverallStatsScope() ? "Restaurant profiles active today" : `${selectedRestaurantName} profiles active today`)}
       ${statsCard("Played more than one game", formatWholeNumber(summary.playedMoreThanOneCount), `${formatPercent(summary.playedMoreThanOneCount, summary.profilesWithGames)} of players with games`)}
       ${statsCard("Reached 4 games", formatWholeNumber(summary.fourGameCount), `${formatPercent(summary.fourGameCount, summary.profilesWithGames)} of players with games`)}
+      ${statsCard("Upgraded restaurants", formatWholeNumber(summary.upgradedRestaurantCount), `${formatPercent(summary.upgradedRestaurantCount, summary.profilesWithGames)} of players with games`)}
+      ${statsCard("Expanded restaurants", formatWholeNumber(summary.expandedRestaurantCount), `${formatPercent(summary.expandedRestaurantCount, summary.profilesWithGames)} of players with games`)}
       ${statsCard("Saved restaurants", formatWholeNumber(summary.savedCount), `${formatPercent(summary.savedCount, summary.totalProfiles)} of normal profiles`)}
       ${statsCard("Email recovery", formatWholeNumber(summary.emailConnectedCount), `${formatPercent(summary.emailConnectedCount, summary.totalProfiles)} of normal profiles`)}
       ${statsCard("Returning players", formatWholeNumber(summary.returnedCount), `${formatPercent(summary.returnedCount, summary.profilesWithGames)} of players with games`)}
@@ -2469,7 +2491,10 @@ function renderStats() {
       ${statsList("Tracked Plays By Restaurant", restaurantPlayRows, "No restaurant plays found.", (row) => `
         <div class="stats-row">
           <span>${escapeHtml(row.name)} <small>${formatWholeNumber(row.players)} player${row.players === 1 ? "" : "s"}</small></span>
-          <strong>${formatWholeNumber(row.trackedGames)}</strong>
+          <strong class="stats-row-metrics">
+            <span>${formatWholeNumber(row.trackedGames)}</span>
+            <small>Today ${formatWholeNumber(row.trackedGamesToday)}</small>
+          </strong>
         </div>
       `, "stats-section-public-restaurants")}
       ${statsList("New Restaurants By Day", createdRows, "No recent restaurants found.", (row) => `

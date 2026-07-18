@@ -464,6 +464,19 @@ textarea {
   white-space: nowrap;
 }
 
+.stats-row-metrics {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+}
+
+.stats-row-metrics small {
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 0.66rem;
+  font-weight: 600;
+}
+
 .stats-footnote {
   padding: 0 2px;
 }
