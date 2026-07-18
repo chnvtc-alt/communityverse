@@ -3399,6 +3399,20 @@
     }
   }
 
+  function profileActivityTime(profile) {
+    return Math.max(
+      Date.parse(profile?.lastPlayedAt || "") || 0,
+      Date.parse(profile?.restaurantNameUpdatedAt || "") || 0,
+      Date.parse(profile?.createdAt || "") || 0
+    );
+  }
+
+  function getMostRecentStoredProfile() {
+    return getProfiles()
+      .filter((profile) => profile?.id && !isDemoProfile(profile))
+      .sort((left, right) => profileActivityTime(right) - profileActivityTime(left))[0] || null;
+  }
+
   function getActiveProfile() {
     const profileId = getActiveProfileId();
     if (profileId) {
@@ -3415,6 +3429,13 @@
       activeProfileState.profile.id === activeProfileState.profileId
     ) {
       return activeProfileState.profile;
+    }
+
+    const restoredProfile = getMostRecentStoredProfile();
+    if (restoredProfile) {
+      setActiveProfileId(restoredProfile.id);
+      activeProfileState.profile = restoredProfile;
+      return restoredProfile;
     }
 
     return null;
