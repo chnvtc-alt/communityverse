@@ -4551,6 +4551,20 @@
     stats.estimatedSales = stats.totalCustomerValue;
   }
 
+  function customerSortPriority(customer) {
+    const sortOrder = Number(customer?.sortOrder) || 0;
+    return sortOrder > 0 ? sortOrder : Number.POSITIVE_INFINITY;
+  }
+
+  function filterLowestCustomerSortTier(customers = []) {
+    if (!customers.length) {
+      return [];
+    }
+
+    const lowestPriority = Math.min(...customers.map(customerSortPriority));
+    return customers.filter((customer) => customerSortPriority(customer) === lowestPriority);
+  }
+
   function getPhotoReadyCustomersForRestaurant(slug, profile = null) {
     const ownedCustomerIds = getOwnedCustomerIdsForRestaurant(profile, slug);
     return getCustomersForRestaurant(slug)
@@ -4566,7 +4580,11 @@
         if (leftExclusive !== rightExclusive) {
           return leftExclusive - rightExclusive;
         }
-        return (Number(left.sortOrder) || 0) - (Number(right.sortOrder) || 0);
+        const priorityDelta = customerSortPriority(left) - customerSortPriority(right);
+        if (priorityDelta) {
+          return priorityDelta;
+        }
+        return String(left.name || "").localeCompare(String(right.name || ""));
       });
   }
 
@@ -5313,9 +5331,10 @@
       customer.image && !customer.image.includes("customer-placeholder");
     const unownedRecentSafe = (customer) =>
       !recentCustomerIds.includes(customer.id) && !ownedCustomerIds.has(customer.id);
-    const pickFrom = (customers) => {
-      const photoReady = customers.filter(isPhotoReady);
-      return weightedCustomerPick(photoReady.length ? photoReady : customers);
+    const pickFrom = (customers, respectSortTier = false) => {
+      const candidates = respectSortTier ? filterLowestCustomerSortTier(customers) : customers;
+      const photoReady = candidates.filter(isPhotoReady);
+      return weightedCustomerPick(photoReady.length ? photoReady : candidates);
     };
     const restaurantSpecific = allCustomers.filter(
       (customer) =>
@@ -5324,7 +5343,7 @@
     );
 
     if (restaurantSpecific.length) {
-      return pickFrom(restaurantSpecific);
+      return pickFrom(restaurantSpecific, true);
     }
 
     const themeSpecific = allCustomers.filter(
