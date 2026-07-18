@@ -3110,6 +3110,15 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   line-height: 1.08;
 }
 
+.customer-mini-points {
+  margin: 1px 0 0;
+  color: var(--green);
+  font-family: Arial, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
 .customer-meta {
   margin: 0;
   font-size: 0.76rem;

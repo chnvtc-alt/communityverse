@@ -2446,7 +2446,7 @@
       selectedIsFeedbackReward
         ? `<p class="customer-favorite-progress">Special feedback reward. Cannot be invited back.</p>`
         : selectedCustomer?.status === "favorite"
-        ? `<p class="customer-favorite-progress">Favorite Character. Reward: ${core.formatCurrency(selectedValue)}</p>`
+        ? `<p class="customer-favorite-progress">Favorite Character. Points: ${core.formatCurrency(selectedValue)}</p>`
         : canBuildFavoriteProgress(selectedCustomer)
           ? `<p class="customer-favorite-progress">Favorite Progress: ${selectedFavoriteVisits} / ${favoriteGoal} successful visits</p>`
           : "";
@@ -2485,7 +2485,7 @@
                 <div class="collection-selected-mobile-row">
                   <img class="customer-avatar collection-selected-avatar" src="${resolveCustomerImage(selectedCustomer)}" alt="${escapeHtml(selectedCustomerName)}" onerror="this.onerror=null;this.src='../assets/restaurant-challenge/customers/customer-placeholder.svg';" />
                   <div class="collection-selected-mobile-actions">
-                    <span class="collection-selected-value">Reward ${core.formatCurrency(selectedValue)}</span>
+                    <span class="collection-selected-value">Points ${core.formatCurrency(selectedValue)}</span>
                     <span class="chip collection-selected-rarity-chip">${selectedCustomer.rarity}</span>
                     ${selectedInviteBackHref ? `<a class="button button-primary" id="selected-invite-back-button" href="${selectedInviteBackHref}">Play Again</a>` : ""}
                   </div>
@@ -2513,7 +2513,7 @@
                 </div>
                 <div class="chip-row" style="margin-top: 10px;">
                   <span class="chip">${selectedCustomer.rarity}</span>
-                  <span class="chip">Reward ${core.formatCurrency(selectedValue)}</span>
+                  <span class="chip">Points ${core.formatCurrency(selectedValue)}</span>
                 </div>
                 <div class="button-row" style="margin-top: 10px;">
                   ${selectedInviteBackHref ? `<a class="button button-primary" id="selected-invite-back-button" href="${selectedInviteBackHref}">Play Again</a>` : ""}
@@ -2543,7 +2543,7 @@
                       entryIsFeedbackReward
                         ? "Special feedback reward"
                         : entry.status === "favorite"
-                        ? `Reward: ${core.formatCurrency(entryValue)}`
+                        ? "Favorite Character"
                         : canBuildFavoriteProgress(entry)
                           ? `Favorite Progress: ${entryFavoriteVisits}/${favoriteGoal}`
                           : "";
@@ -2561,6 +2561,7 @@
                         <div class="customer-mini-copy">
                           <p class="customer-name">${escapeHtml(entryName)}</p>
                           <p class="customer-meta">${escapeHtml(entryStatusLabel)}</p>
+                          <p class="customer-mini-points">Points ${core.formatCurrency(entryValue)}</p>
                         </div>
                         ${isSelected ? `<span class="customer-mini-selected-label">Selected</span>` : ""}
                         ${entryProgress ? `<p class="customer-favorite-progress customer-favorite-progress-mini">${escapeHtml(entryProgress)}</p>` : ""}
