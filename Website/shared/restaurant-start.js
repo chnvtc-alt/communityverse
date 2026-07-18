@@ -818,9 +818,11 @@
     const demoExpectationLine = "In this demo you'll see: menu photo questions, restaurant trivia, collectible characters, and feedback surveys.";
     const openingQuestion = salesDemoMode
       ? ""
-      : "Can You Unlock A New Character For Your Collection?";
+      : customerId
+        ? "Can You Improve This Character?"
+        : "Can You Unlock A New Character For Your Collection?";
     const startButtonText = customerId
-      ? "INVITE BACK"
+      ? "PLAY AGAIN"
       : salesDemoMode
         ? "PLAY THE THREE MINUTE DEMO"
         : "START THE GAME";
@@ -840,7 +842,7 @@
             customerId
               ? `
                 <p class="helper opening-start-helper opening-title-helper" id="invite-copy">
-                  You invited a character back. Complete the round to try to upgrade them.
+                  This character is already in your collection. Play again to improve your points and build Favorite progress.
                 </p>
               `
               : ""

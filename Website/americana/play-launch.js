@@ -2014,7 +2014,9 @@
       : "";
     const openingQuestion = isSalesDemoMode()
       ? ""
-      : "Can You Unlock A New Character For Your Collection?";
+      : replayCustomer
+        ? "Can You Improve This Character?"
+        : "Can You Unlock A New Character For Your Collection?";
     const demoExpectationLine = "In this demo you'll see: menu photo questions, restaurant trivia, collectible characters, and feedback surveys.";
     const startButtonText = replayCustomer
       ? "PLAY AGAIN"
@@ -2132,9 +2134,15 @@
       : `${restaurantBasePath()}?play=1`;
     const openingQuestion = isSalesDemoMode()
       ? ""
-      : "Can You Unlock A New Character For Your Collection?";
+      : replayCustomer
+        ? "Can You Improve This Character?"
+        : "Can You Unlock A New Character For Your Collection?";
     const demoExpectationLine = "In this demo you'll see: menu photo questions, restaurant trivia, collectible characters, and feedback surveys.";
-    const startButtonText = isSalesDemoMode() ? "PLAY THE THREE MINUTE DEMO" : "START THE GAME";
+    const startButtonText = replayCustomer
+      ? "PLAY AGAIN"
+      : isSalesDemoMode()
+        ? "PLAY THE THREE MINUTE DEMO"
+        : "START THE GAME";
     elements.start.innerHTML = `
       <div class="opening-start-shell">
         <div class="opening-start-heading">
@@ -2237,7 +2245,14 @@
     const thresholds = core.getCustomerWinThresholds(customer);
     const rarity = customer.rarity || "Rare";
     const salesDemoMode = isSalesDemoMode();
-    const revealKicker = salesDemoMode ? "Collectible Character Demo" : "Play Trivia To Unlock This Character";
+    const collectionEntry = getCollectionEntryForSession(session);
+    const isFavoriteProgressReplay =
+      ["regular", "occasional", "favorite"].includes(collectionEntry?.status);
+    const revealKicker = salesDemoMode
+      ? "Collectible Character Demo"
+      : isFavoriteProgressReplay
+        ? "Play Trivia To Improve This Character"
+        : "Play Trivia To Unlock This Character";
     const revealBioMarkup = salesDemoMode
       ? `${escapeHtml(customer.name)} is an exclusive collectible character available only in your restaurant's game.<br />Players will come back to build their collection and unlock new characters.`
       : escapeHtml(customerBio);
@@ -2252,12 +2267,24 @@
       ? core.getCharacterValuePerExtraCorrect(customer)
       : Math.max(0, (Number(customer.regularValue) || 0) - (Number(customer.occasionalValue) || 0));
     const howToPlayText = salesDemoMode ? "See the Benefits" : "How to Play";
-    const collectionEntry = getCollectionEntryForSession(session);
     const favoriteGoal = core.getFavoriteVisitGoal();
     const favoriteVisits = Math.max(0, Math.min(favoriteGoal, Number(collectionEntry?.favoriteVisits) || 0));
     const bestScore = collectionEntry ? getBestScoreForCustomer(customer.id, collectionEntry) : 0;
     const bestValue = Math.max(0, Number(collectionEntry?.customerValue) || 0);
     const nextValueScore = Math.min(10, Math.max(unlockScore, bestScore + 1));
+    const revealEarningsMarkup = isFavoriteProgressReplay
+      ? `
+        <div class="customer-reveal-earnings">
+          <p><strong>${escapeHtml(customer.name)}</strong> is already unlocked in your collection.</p>
+          <p>Replay this character to improve your points with a better score and build Favorite progress.</p>
+        </div>
+      `
+      : `
+        <div class="customer-reveal-earnings">
+          <p>Need <strong>${unlockScore} correct answers</strong> to unlock this character.</p>
+          <p>Earn <strong>${core.formatCurrency(unlockValue)}</strong> for unlocking, plus <strong>${core.formatCurrency(valuePerExtraCorrect)}</strong> for each additional correct answer.</p>
+        </div>
+      `;
     const replayValueMarkup =
       collectionEntry && bestValue > 0
         ? `
@@ -2274,8 +2301,6 @@
           </div>
         `
         : "";
-    const isFavoriteProgressReplay =
-      ["regular", "occasional", "favorite"].includes(collectionEntry?.status);
     const liveWaiting = isLiveRoundRoom() && state.multiplayerRoom?.liveStatus === "waiting";
     const liveActive = isLiveRoundRoom() && state.multiplayerRoom?.liveStatus === "active";
     if (salesDemoMode) {
@@ -2349,10 +2374,7 @@
               <p class="customer-reveal-rarity">${escapeHtml(rarity)} ${escapeHtml(revealType)}</p>
               <h3 class="customer-reveal-name">${escapeHtml(customer.name)}</h3>
             </div>
-            <div class="customer-reveal-earnings">
-              <p>Need <strong>${unlockScore} correct answers</strong> to unlock this character.</p>
-              <p>Earn <strong>${core.formatCurrency(unlockValue)}</strong> for unlocking, plus <strong>${core.formatCurrency(valuePerExtraCorrect)}</strong> for each additional correct answer.</p>
-            </div>
+            ${revealEarningsMarkup}
             ${replayValueMarkup}
             ${favoriteBonusMarkup}
             <div class="button-row customer-reveal-actions">
@@ -3076,6 +3098,10 @@
     const feedbackRewardMarkup = renderFeedbackRewardCard();
     const multiplayerWinnerMarkup = state.multiplayerRoom ? `<div id="multiplayer-winner-slot">${roomWinnerMarkup(true)}</div>` : "";
     const multiplayerMarkup = state.multiplayerRoom ? `<div id="multiplayer-card-slot">${renderMultiplayerCard()}</div>` : "";
+    const showGuestSavePrompt =
+      isGuest &&
+      !state.showProfileForm &&
+      (isFourthGame || salesDemoMode || !hadUnlockedBefore);
 
     elements.result.innerHTML = `
       <div class="result-screen result-screen-${resultLayoutMode}">
@@ -3092,11 +3118,11 @@
         ${multiplayerMarkup}
         ${triviaLeaderboardMilestoneMarkup}
         ${
-          isGuest && !state.showProfileForm
+          showGuestSavePrompt
             ? `
               <div class="hero-card result-followup-card result-followup-card-guest" style="margin-top: 0; padding: 16px;">
                 <p class="kicker" style="margin: 0 0 6px;">${isFourthGame ? "Trivia % Leaderboard" : salesDemoMode ? "Save Demo Progress" : "Save Your Character Collection"}</p>
-                <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${isFourthGame ? "Congratulations! You completed your 4th game." : salesDemoMode ? "Keep your demo score." : unlockedThisRound ? `You just unlocked ${escapeHtml(session.customer.name)}.` : hadUnlockedBefore ? `${escapeHtml(session.customer.name)} is still in your collection.` : `You did not unlock ${escapeHtml(session.customer.name)} this time.`}</h3>
+                <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${isFourthGame ? "Congratulations! You completed your 4th game." : salesDemoMode ? "Keep your demo score." : unlockedThisRound && !hadUnlockedBefore ? `You just unlocked ${escapeHtml(session.customer.name)}.` : `You did not unlock ${escapeHtml(session.customer.name)} this time.`}</h3>
                 <p class="copy" style="margin: 0 0 12px;">${isFourthGame ? "Save your restaurant to view and keep your Trivia % leaderboard progress so far. No email required." : salesDemoMode ? "Save your demo progress if you want to see how profiles and leaderboards can work." : "Save your collection to keep and view your existing characters, track your trivia progress, and compete on the leaderboards. No email address is required."}</p>
                 <div class="button-row">
                   <button class="button button-hot result-save-progress-button" id="register-now-button" type="button">
