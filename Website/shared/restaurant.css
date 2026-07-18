@@ -3026,6 +3026,12 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   margin-top: 12px;
 }
 
+.collection-points-helper {
+  max-width: 820px;
+  margin-top: 8px;
+  font-size: 0.95rem;
+}
+
 .collection-action-bar {
   display: flex;
   flex-wrap: wrap;

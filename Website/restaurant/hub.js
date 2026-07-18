@@ -2422,7 +2422,7 @@
       ? `
         <div class="empty-state">
           <strong>No Favorite Characters yet.</strong>
-          <span>Play again for characters already in your collection. Score high enough on repeat visits to build Favorite progress. Favorite Characters become more valuable and can help your restaurant climb the leaderboards.</span>
+          <span>Choose an existing character from your collection and play again. Score high enough on repeat visits to build Favorite progress. When a character becomes a Favorite, that character's points double.</span>
         </div>
       `
       : `<p class="empty-state">No characters yet. Play a few rounds to build your roster.</p>`;
@@ -2458,6 +2458,7 @@
       elements.collection.innerHTML = `
       <h2 class="section-title">Character Collection</h2>
       <p class="copy">Your unlocked characters are stored here. Tap a card to view it or play for that character again.</p>
+      <p class="copy collection-points-helper">Want to earn more points? Choose an existing character from your collection and replay to improve your current points with a better score. If you unlock that character as a Favorite, that character's points double.</p>
       <div class="leaderboard-tabs collection-tabs" role="tablist" aria-label="Character collection filter">
         <button class="button ${state.collectionFilter === "all" ? "button-primary" : "button-muted"} metric-button" data-collection-filter="all" type="button">All Characters</button>
         <button class="button ${state.collectionFilter === "favorite" ? "button-primary" : "button-muted"} metric-button" data-collection-filter="favorite" type="button">Favorite Characters</button>
