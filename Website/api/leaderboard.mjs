@@ -2,16 +2,38 @@ import { buildLeaderboard, normalizeRestaurantSlug, profileFromRecord, sessionFr
 import { fetchRestaurantsFromSupabase } from "./_lib/restaurant-admin.mjs";
 import { hasSupabaseConfig, jsonResponse, supabaseRequest, supabaseRequestAll } from "./_lib/supabase.mjs";
 
-async function fetchProfiles() {
-  const rows = await supabaseRequest("profiles?select=id,player_name,restaurant_name,restaurant_slug,is_guest,created_at,updated_at,payload_json&order=updated_at.desc");
+const LEADERBOARD_CACHE_TTL_MS = 30000;
+const PROFILE_ID_FILTER_LIMIT = 150;
+const leaderboardCache = new Map();
+
+function restaurantSlugQueryValues(restaurantSlug) {
+  const normalizedSlug = normalizeRestaurantSlug(restaurantSlug);
+  const values = new Set([String(restaurantSlug || "").trim(), normalizedSlug].filter(Boolean));
+  if (normalizedSlug === "cinema-tavern") {
+    values.add("cinematavern");
+    values.add("cinema-tavern");
+  }
+  return [...values];
+}
+
+function inFilter(values) {
+  return `in.(${values.map((value) => encodeURIComponent(value)).join(",")})`;
+}
+
+async function fetchProfiles(profileIds = []) {
+  const idFilter = profileIds.length ? `&id=${inFilter(profileIds)}` : "";
+  const rows = await supabaseRequest(`profiles?select=id,player_name,restaurant_name,restaurant_slug,is_guest,created_at,updated_at,payload_json${idFilter}&order=updated_at.desc`);
   return Array.isArray(rows) ? rows.map(profileFromRecord).filter(Boolean) : [];
 }
 
-async function fetchSessionStatsByProfile() {
+async function fetchSessionStatsByProfile(restaurantSlug = "") {
+  const slugValues = restaurantSlugQueryValues(restaurantSlug);
+  const restaurantFilter = slugValues.length ? `&restaurant_slug=${inFilter(slugValues)}` : "";
   const rows = await supabaseRequestAll(
-    "sessions?select=id,profile_id,restaurant_slug,completed_at,payload_json&order=completed_at.desc"
+    `sessions?select=id,profile_id,restaurant_slug,completed_at,payload_json${restaurantFilter}&order=completed_at.desc`
   );
   const statsByProfile = {};
+  const profileIds = new Set();
   const seenSessionIds = new Set();
   (Array.isArray(rows) ? rows : []).map(sessionFromRecord).filter(Boolean).forEach((session) => {
     const sessionId = String(session.id || "").trim();
@@ -23,6 +45,7 @@ async function fetchSessionStatsByProfile() {
     if (sessionId) {
       seenSessionIds.add(sessionId);
     }
+    profileIds.add(profileId);
 
     statsByProfile[profileId] = statsByProfile[profileId] || {};
     const stats = statsByProfile[profileId][restaurantSlug] || { gamesPlayed: 0, totalCorrectAnswers: 0 };
@@ -31,7 +54,10 @@ async function fetchSessionStatsByProfile() {
     statsByProfile[profileId][restaurantSlug] = stats;
   });
 
-  return statsByProfile;
+  return {
+    statsByProfile,
+    profileIds: [...profileIds],
+  };
 }
 
 export async function GET(request) {
@@ -43,17 +69,31 @@ export async function GET(request) {
     const url = new URL(request.url);
     const metric = String(url.searchParams.get("metric") || "estimatedSales");
     const restaurantSlug = String(url.searchParams.get("restaurantSlug") || "");
-    const profiles = await fetchProfiles();
-    const sessionStatsByProfile = await fetchSessionStatsByProfile();
+    const cacheKey = `${metric}|${normalizeRestaurantSlug(restaurantSlug) || "overall"}`;
+    const cached = leaderboardCache.get(cacheKey);
+    if (cached && Date.now() - cached.createdAt < LEADERBOARD_CACHE_TTL_MS) {
+      return jsonResponse(cached.rows);
+    }
+
+    const { statsByProfile: sessionStatsByProfile, profileIds } = await fetchSessionStatsByProfile(restaurantSlug);
+    const shouldFilterProfiles = restaurantSlug && profileIds.length <= PROFILE_ID_FILTER_LIMIT;
+    const profiles = restaurantSlug && !profileIds.length
+      ? []
+      : await fetchProfiles(shouldFilterProfiles ? profileIds : []);
     const restaurants = await fetchRestaurantsFromSupabase();
     const publicRestaurantSlugs = restaurants
       .filter((restaurant) => restaurant.visibleInList !== false)
       .map((restaurant) => restaurant.slug);
 
-    return jsonResponse(buildLeaderboard(profiles, metric, restaurantSlug, {
+    const rows = buildLeaderboard(profiles, metric, restaurantSlug, {
       publicRestaurantSlugs,
       sessionStatsByProfile,
-    }));
+    });
+    leaderboardCache.set(cacheKey, {
+      createdAt: Date.now(),
+      rows,
+    });
+    return jsonResponse(rows);
   } catch (error) {
     return jsonResponse(
       { ok: false, error: error instanceof Error ? error.message : String(error) },
