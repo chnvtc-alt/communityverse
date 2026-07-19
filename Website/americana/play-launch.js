@@ -2050,7 +2050,10 @@
     const issue = core.getActiveProfileSaveIssue?.();
     if (!issue) {
       try {
-        await core.syncActiveProfile?.();
+        await Promise.race([
+          Promise.resolve(core.syncActiveProfile?.()),
+          new Promise((resolve) => window.setTimeout(resolve, 2500)),
+        ]);
       } catch (error) {
         console.warn("Profile sync before play failed; continuing with local progress.", error);
       }

@@ -9,6 +9,7 @@
   const USE_REMOTE_SYNC = typeof window.fetch === "function";
   const LOAD_ALL_REMOTE_PROFILES_ON_STARTUP =
     new URLSearchParams(window.location.search).get("loadProfiles") === "1";
+  const STARTUP_REMOTE_TIMEOUT_MS = 4500;
   const FAVORITE_VISIT_GOAL = 10;
   const FAVORITE_PROGRESS_MIN_SCORE = 7;
   const FAVORITE_VALUE_MULTIPLIER = 2;
@@ -2862,11 +2863,22 @@
     }
   }
 
+  function withStartupTimeout(promise) {
+    return Promise.race([
+      promise,
+      new Promise((resolve) => {
+        window.setTimeout(resolve, STARTUP_REMOTE_TIMEOUT_MS);
+      }),
+    ]);
+  }
+
   void Promise.allSettled([
-    refreshRestaurantBankFromServer(),
-    LOAD_ALL_REMOTE_PROFILES_ON_STARTUP ? refreshProfilesFromServer() : Promise.resolve(),
-    refreshQuestionBankFromServer(),
-    refreshCustomerBankFromServer(),
+    withStartupTimeout(refreshRestaurantBankFromServer()),
+    LOAD_ALL_REMOTE_PROFILES_ON_STARTUP
+      ? withStartupTimeout(refreshProfilesFromServer())
+      : Promise.resolve(),
+    withStartupTimeout(refreshQuestionBankFromServer()),
+    withStartupTimeout(refreshCustomerBankFromServer()),
   ]).then(() => {
     readyResolve();
   });
@@ -4546,15 +4558,62 @@
     });
   }
 
+  function collectionEntryBelongsToRestaurant(entry, restaurant) {
+    if (!entry || !restaurant) {
+      return false;
+    }
+
+    const restaurantSlug = restaurant.slug;
+    const credits = normalizeRestaurantCredits(entry);
+    if (credits[restaurantSlug]) {
+      return true;
+    }
+
+    if (normalizeRestaurant(entry.restaurantSlug || "") === restaurantSlug) {
+      return true;
+    }
+
+    if (normalizeRestaurant(entry.restaurantName || "") === restaurantSlug) {
+      return true;
+    }
+
+    const customer = getCustomerById(entry.customerId);
+    if (!customer) {
+      return false;
+    }
+
+    return customer.restaurant === restaurantSlug;
+  }
+
+  function getReplayCustomersForRestaurant(profile, restaurant) {
+    if (!profile || !restaurant) {
+      return [];
+    }
+
+    return ensureProfileShape(profile).customerCollection
+      .filter((entry) =>
+        entry.customerId &&
+        ["regular", "occasional", "favorite"].includes(entry.status) &&
+        collectionEntryBelongsToRestaurant(entry, restaurant)
+      )
+      .map((entry) => buildReplayCustomerFromCollection(profile, entry.customerId, restaurant))
+      .filter(Boolean);
+  }
+
   function getOwnedCustomerIdsForRestaurant(profile, restaurantSlug) {
     if (!profile) {
       return new Set();
     }
 
+    const restaurant = getRestaurantBySlug(restaurantSlug);
     const safeProfile = ensureProfileShape(profile);
     return new Set(
       safeProfile.customerCollection
-        .filter((entry) => entry.customerId && normalizeRestaurantCredits(entry)[restaurantSlug])
+        .filter((entry) =>
+          entry.customerId &&
+          (normalizeRestaurantCredits(entry)[restaurantSlug] ||
+            (restaurant && collectionEntryBelongsToRestaurant(entry, restaurant)))
+        )
         .map((entry) => entry.customerId)
     );
   }
@@ -5686,7 +5745,21 @@
         ? preferred
         : allCustomers.filter((customer) => !ownedCustomerIds.has(customer.id));
 
-    return weightedCustomerPick(selectable);
+    if (selectable.length) {
+      return weightedCustomerPick(selectable);
+    }
+
+    const replayCustomers = getReplayCustomersForRestaurant(profile, restaurant);
+    const replayNotRecent = replayCustomers.filter((customer) => !recentCustomerIds.includes(customer.id));
+    const replayPhotoReady = (replayNotRecent.length ? replayNotRecent : replayCustomers).filter(isPhotoReady);
+
+    return weightedCustomerPick(
+      replayPhotoReady.length
+        ? replayPhotoReady
+        : replayNotRecent.length
+          ? replayNotRecent
+          : replayCustomers
+    );
   }
 
   function buildSession(restaurantSlug, options = {}) {
