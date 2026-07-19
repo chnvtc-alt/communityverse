@@ -60,7 +60,7 @@ const RESTAURANT_SLUG_ALIASES = {
   "cinema tavern": "cinema-tavern",
 };
 
-function normalizeRestaurantSlug(value) {
+export function normalizeRestaurantSlug(value) {
   const raw = String(value || "")
     .trim()
     .toLowerCase();
@@ -250,9 +250,11 @@ export function normalizeProfile(profile) {
     normalizedRestaurantStats[normalizedSlug] = {
       ...emptyStats(),
       ...existingStats,
-      gamesPlayed: (Number(existingStats.gamesPlayed) || 0) + (Number(stats?.gamesPlayed) || 0),
-      totalCorrectAnswers:
-        (Number(existingStats.totalCorrectAnswers) || 0) + (Number(stats?.totalCorrectAnswers) || 0),
+      gamesPlayed: Math.max(Number(existingStats.gamesPlayed) || 0, Number(stats?.gamesPlayed) || 0),
+      totalCorrectAnswers: Math.max(
+        Number(existingStats.totalCorrectAnswers) || 0,
+        Number(stats?.totalCorrectAnswers) || 0
+      ),
       regularCustomers: Math.max(Number(existingStats.regularCustomers) || 0, Number(stats?.regularCustomers) || 0),
       favoriteCustomers: Math.max(Number(existingStats.favoriteCustomers) || 0, Number(stats?.favoriteCustomers) || 0),
       occasionalCustomers: Math.max(Number(existingStats.occasionalCustomers) || 0, Number(stats?.occasionalCustomers) || 0),
@@ -520,17 +522,54 @@ export function buildLeaderboard(profiles, metric = "estimatedSales", restaurant
   const publicRestaurantSlugs = options.publicRestaurantSlugs
     ? new Set(options.publicRestaurantSlugs.map(normalizeRestaurantSlug).filter(Boolean))
     : null;
+  const sessionStatsByProfile = options.sessionStatsByProfile || {};
+
+  function getSessionStatsForProfile(profileId, targetRestaurantSlug = "") {
+    const profileSessionStats = sessionStatsByProfile[profileId] || {};
+    if (targetRestaurantSlug) {
+      return profileSessionStats[targetRestaurantSlug] || null;
+    }
+
+    return Object.entries(profileSessionStats).reduce((combinedStats, [sessionRestaurantSlug, stats]) => {
+      if (!publicRestaurantSlugs || publicRestaurantSlugs.has(sessionRestaurantSlug)) {
+        combinedStats.gamesPlayed += Number(stats?.gamesPlayed) || 0;
+        combinedStats.totalCorrectAnswers += Number(stats?.totalCorrectAnswers) || 0;
+      }
+      return combinedStats;
+    }, emptyStats());
+  }
+
+  function applyTrustedSessionCounts(stats, profileId, targetRestaurantSlug = "") {
+    const sessionStats = getSessionStatsForProfile(profileId, targetRestaurantSlug);
+    const sessionGames = Number(sessionStats?.gamesPlayed) || 0;
+    if (!sessionGames) {
+      return stats;
+    }
+
+    const savedGames = Number(stats.gamesPlayed) || 0;
+    const savedLooksInflated = savedGames > sessionGames * 2;
+    if (!savedLooksInflated) {
+      return stats;
+    }
+
+    return {
+      ...stats,
+      gamesPlayed: sessionGames,
+      totalCorrectAnswers: Number(sessionStats.totalCorrectAnswers) || 0,
+    };
+  }
 
   return (Array.isArray(profiles) ? profiles : [])
     .map(normalizeProfile)
     .map((profile) => {
-      const stats = normalizedRestaurantSlug
+      const rawStats = normalizedRestaurantSlug
         ? publicRestaurantSlugs && !publicRestaurantSlugs.has(normalizedRestaurantSlug)
           ? emptyStats()
           : restaurantStatsFor(profile, normalizedRestaurantSlug)
         : publicRestaurantSlugs
           ? publicOverallStatsFor(profile, publicRestaurantSlugs)
           : restaurantStatsFor(profile, "");
+      const stats = applyTrustedSessionCounts(rawStats, profile.id, normalizedRestaurantSlug);
       const accuracy = stats.gamesPlayed ? (stats.totalCorrectAnswers / (stats.gamesPlayed * 10)) * 100 : 0;
       const restaurantValueStats =
         metric === "restaurantValue" || metric === "netWorth"

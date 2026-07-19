@@ -3583,9 +3583,11 @@
         buildEmptyRestaurantStats(),
         existingStats,
         {
-          gamesPlayed: (Number(existingStats.gamesPlayed) || 0) + (Number(stats?.gamesPlayed) || 0),
-          totalCorrectAnswers:
-            (Number(existingStats.totalCorrectAnswers) || 0) + (Number(stats?.totalCorrectAnswers) || 0),
+          gamesPlayed: Math.max(Number(existingStats.gamesPlayed) || 0, Number(stats?.gamesPlayed) || 0),
+          totalCorrectAnswers: Math.max(
+            Number(existingStats.totalCorrectAnswers) || 0,
+            Number(stats?.totalCorrectAnswers) || 0
+          ),
           regularCustomers: Math.max(Number(existingStats.regularCustomers) || 0, Number(stats?.regularCustomers) || 0),
           favoriteCustomers: Math.max(Number(existingStats.favoriteCustomers) || 0, Number(stats?.favoriteCustomers) || 0),
           occasionalCustomers: Math.max(Number(existingStats.occasionalCustomers) || 0, Number(stats?.occasionalCustomers) || 0),
