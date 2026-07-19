@@ -16,6 +16,11 @@
     regular: 2,
     favorite: 3,
   };
+  const RESTAURANT_SLUG_ALIASES = {
+    cinematavern: "cinema-tavern",
+    "cinema-tavern": "cinema-tavern",
+    "cinema tavern": "cinema-tavern",
+  };
   const profilesCacheState = {
     loaded: false,
     source: "local",
@@ -1488,6 +1493,10 @@
       return "shared";
     }
 
+    if (RESTAURANT_SLUG_ALIASES[raw]) {
+      return RESTAURANT_SLUG_ALIASES[raw];
+    }
+
     if (raw === "americana" || raw === "americana-diner" || raw === "americana diner") {
       return "americana";
     }
@@ -1496,7 +1505,8 @@
       return "shared";
     }
 
-    return raw.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "shared";
+    const slug = raw.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "shared";
+    return RESTAURANT_SLUG_ALIASES[slug] || slug;
   }
 
   function normalizeCharacterType(value) {
@@ -3553,13 +3563,33 @@
   function ensureProfileShape(profile) {
     const safeProfile = clone(profile);
     safeProfile.stats = Object.assign(buildEmptyStats(), safeProfile.stats || {});
-    safeProfile.restaurantStats = safeProfile.restaurantStats || {};
-    Object.keys(safeProfile.restaurantStats).forEach((restaurantSlug) => {
-      safeProfile.restaurantStats[restaurantSlug] = Object.assign(
+    const normalizedRestaurantStats = {};
+    Object.entries(safeProfile.restaurantStats || {}).forEach(([restaurantSlug, stats]) => {
+      const normalizedSlug = normalizeRestaurant(restaurantSlug);
+      const existingStats = normalizedRestaurantStats[normalizedSlug] || buildEmptyRestaurantStats();
+      normalizedRestaurantStats[normalizedSlug] = Object.assign(
         buildEmptyRestaurantStats(),
-        safeProfile.restaurantStats[restaurantSlug] || {}
+        existingStats,
+        {
+          gamesPlayed: (Number(existingStats.gamesPlayed) || 0) + (Number(stats?.gamesPlayed) || 0),
+          totalCorrectAnswers:
+            (Number(existingStats.totalCorrectAnswers) || 0) + (Number(stats?.totalCorrectAnswers) || 0),
+          regularCustomers: Math.max(Number(existingStats.regularCustomers) || 0, Number(stats?.regularCustomers) || 0),
+          favoriteCustomers: Math.max(Number(existingStats.favoriteCustomers) || 0, Number(stats?.favoriteCustomers) || 0),
+          occasionalCustomers: Math.max(Number(existingStats.occasionalCustomers) || 0, Number(stats?.occasionalCustomers) || 0),
+          lostCustomers: Math.max(Number(existingStats.lostCustomers) || 0, Number(stats?.lostCustomers) || 0),
+          totalCustomerValue: Math.max(Number(existingStats.totalCustomerValue) || 0, Number(stats?.totalCustomerValue) || 0),
+          estimatedSales: Math.max(Number(existingStats.estimatedSales) || 0, Number(stats?.estimatedSales) || 0),
+          restaurantValue: Math.max(Number(existingStats.restaurantValue) || 0, Number(stats?.restaurantValue) || 0),
+          lastImageQuestionId: String(stats?.lastImageQuestionId || existingStats.lastImageQuestionId || ""),
+          featuredGuestStartIndex: Math.max(
+            Number(existingStats.featuredGuestStartIndex) || 0,
+            Number(stats?.featuredGuestStartIndex) || 0
+          ),
+        }
       );
     });
+    safeProfile.restaurantStats = normalizedRestaurantStats;
     safeProfile.customerCollection = Array.isArray(safeProfile.customerCollection)
       ? safeProfile.customerCollection
       : [];
@@ -3614,7 +3644,7 @@
         : "";
 
     return {
-      restaurantSlug: String(safeCredit.restaurantSlug || fallback.restaurantSlug || "").trim(),
+      restaurantSlug: normalizeRestaurant(safeCredit.restaurantSlug || fallback.restaurantSlug || ""),
       restaurantName: String(safeCredit.restaurantName || fallback.restaurantName || "").trim(),
       status,
       regularValue: Math.max(0, Number(safeCredit.regularValue ?? fallback.regularValue) || 0),
