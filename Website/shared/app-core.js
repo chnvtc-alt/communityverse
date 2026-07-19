@@ -10,6 +10,7 @@
   const LOAD_ALL_REMOTE_PROFILES_ON_STARTUP =
     new URLSearchParams(window.location.search).get("loadProfiles") === "1";
   const FAVORITE_VISIT_GOAL = 10;
+  const FAVORITE_PROGRESS_MIN_SCORE = 7;
   const FAVORITE_VALUE_MULTIPLIER = 2;
   const TRIVIA_LEADERBOARD_MIN_GAMES = 4;
   const CUSTOMER_STATUS_RANK = {
@@ -5991,7 +5992,7 @@
       const isRegularReplay =
         ["regular", "occasional", "favorite"].includes(session.previousCustomerStatus);
       const favoriteWasAlreadyComplete = session.previousCustomerStatus === "favorite";
-      const successfulFavoriteVisit = isRegularReplay && session.score >= thresholds.regular;
+      const successfulFavoriteVisit = isRegularReplay && session.score >= FAVORITE_PROGRESS_MIN_SCORE;
       const previousFavoriteVisits = Math.max(0, Math.min(FAVORITE_VISIT_GOAL, Number(session.previousFavoriteVisits) || 0));
       const nextFavoriteVisits = favoriteWasAlreadyComplete
         ? FAVORITE_VISIT_GOAL
@@ -6013,7 +6014,7 @@
             becameFavorite,
             regularValue: Number(session.customer.regularValue) || 0,
             favoriteValue: getFavoriteCustomerValue(session.customer),
-            threshold: thresholds.regular,
+            threshold: FAVORITE_PROGRESS_MIN_SCORE,
           }
         : null;
       session.result = becameFavorite || favoriteWasAlreadyComplete ? "favorite" : scoreResult;
