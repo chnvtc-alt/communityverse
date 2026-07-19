@@ -4613,6 +4613,10 @@
     return FAVORITE_VISIT_GOAL;
   }
 
+  function getFavoriteProgressMinScore() {
+    return FAVORITE_PROGRESS_MIN_SCORE;
+  }
+
   function getCustomerWinThresholds(customer) {
     const rarity = String(customer?.rarity || "").toLowerCase();
 
@@ -5661,6 +5665,9 @@
     const preferredCustomer = preferredCustomerId
       ? allCustomers.find((customer) => customer.id === preferredCustomerId) || null
       : null;
+    if (preferredCustomerId && !preferredCustomer) {
+      return null;
+    }
     const featuredGuests = candidateCustomerIds.length
       ? getFeaturedGuestLineup(workingProfile, restaurant.slug, 4)
       : [];
@@ -6296,6 +6303,7 @@
     getCharacterValuePerExtraCorrect,
     getFavoriteCustomerValue,
     getFavoriteVisitGoal,
+    getFavoriteProgressMinScore,
     getCollectionEntryValue,
     getCustomerStatusLabel,
     getRestaurantValue,

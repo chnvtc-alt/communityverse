@@ -1365,7 +1365,7 @@
       fallbackSlug ||
       "americana";
 
-    return `/${encodeURIComponent(restaurantSlug)}/?customerId=${encodeURIComponent(entry?.customerId || "")}`;
+    return `/${encodeURIComponent(restaurantSlug)}/?fresh=1&customerId=${encodeURIComponent(entry?.customerId || "")}`;
   }
 
   function isFeedbackRewardCustomerEntry(entry) {

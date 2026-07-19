@@ -1388,14 +1388,13 @@
       clearResultVisibleSessionId();
       existingSession = null;
     }
-    const freshInviteCustomerChanged = Boolean(
-      freshMode &&
-        replayCustomerId &&
+    const requestedReplayCustomerChanged = Boolean(
+      replayCustomerId &&
         existingSession &&
         !existingSession.completed &&
         existingSession.customer?.id !== replayCustomerId
     );
-    if ((freshMode && !shouldResumeQuestions(existingSession)) || freshInviteCustomerChanged) {
+    if ((freshMode && !shouldResumeQuestions(existingSession)) || requestedReplayCustomerChanged) {
       core.clearActiveSession();
       clearResultVisibleSessionId();
     } else {
@@ -1986,7 +1985,7 @@
     const openingCustomers = getDisplayedOpeningCustomers();
     const safeOpeningCustomers = Array.isArray(openingCustomers) ? openingCustomers : [];
     const startHref = replayCustomer
-      ? `${restaurantBasePath()}?play=1&customerId=${encodeURIComponent(replayCustomer.id)}`
+      ? `${restaurantBasePath()}?play=1&fresh=1&customerId=${encodeURIComponent(replayCustomer.id)}`
       : `${restaurantBasePath()}?play=1`;
     const introCopy = replayCustomer
       ? `This is a replay for ${replayCustomer.name}. If you score higher, you can increase this character's reward. A lower score will not replace your best reward.`
@@ -2110,7 +2109,7 @@
   function renderSetupFallback() {
     const profile = getProfile();
     const startHref = replayCustomer
-      ? `${restaurantBasePath()}?play=1&customerId=${encodeURIComponent(replayCustomer.id)}`
+      ? `${restaurantBasePath()}?play=1&fresh=1&customerId=${encodeURIComponent(replayCustomer.id)}`
       : `${restaurantBasePath()}?play=1`;
     const openingQuestion = isSalesDemoMode()
       ? ""
@@ -2236,6 +2235,9 @@
     const howToPlayText = salesDemoMode ? "See the Benefits" : "How to Play";
     const collectionEntry = getCollectionEntryForSession(session);
     const favoriteGoal = core.getFavoriteVisitGoal();
+    const favoriteProgressMinScore = core.getFavoriteProgressMinScore
+      ? core.getFavoriteProgressMinScore()
+      : 7;
     const favoriteVisits = Math.max(0, Math.min(favoriteGoal, Number(collectionEntry?.favoriteVisits) || 0));
     const bestScore = collectionEntry ? getBestScoreForCustomer(customer.id, collectionEntry) : 0;
     const bestValue = Math.max(0, Number(collectionEntry?.customerValue) || 0);
@@ -2300,7 +2302,7 @@
         ? `
           <div class="favorite-progress-note">
             <p class="kicker">Favorite Progress</p>
-            <p class="copy">Score <strong>${thresholds.regular}/10 or better</strong> with this character to build Favorite progress. After <strong>${favoriteGoal} successful visits</strong>, they become a Favorite Character and their score increases.</p>
+            <p class="copy">Score <strong>${favoriteProgressMinScore}/10 or better</strong> with this character to build Favorite progress. After <strong>${favoriteGoal} successful visits</strong>, they become a Favorite Character and their score increases.</p>
             <p class="helper">Current Favorite progress: ${favoriteVisits}/${favoriteGoal}</p>
           </div>
         `
