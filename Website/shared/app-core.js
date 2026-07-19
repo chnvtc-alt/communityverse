@@ -2589,6 +2589,11 @@
     return Boolean(profile && DEMO_PROFILE_SET.has(profile.id));
   }
 
+  function shouldUseDemoProfiles() {
+    const hostname = String(window.location.hostname || "").toLowerCase();
+    return !hostname || hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
+  }
+
   function normalizeProfiles(profiles) {
     return (Array.isArray(profiles) ? profiles : []).map((profile) => ensureProfileShape(profile));
   }
@@ -2596,10 +2601,15 @@
   function getLocalProfileSeed() {
     const stored = readJson(STORAGE_KEYS.profiles, []);
     if (Array.isArray(stored) && stored.length) {
-      return normalizeProfiles(stored);
+      const storedProfiles = normalizeProfiles(stored).filter(
+        (profile) => shouldUseDemoProfiles() || !isDemoProfile(profile)
+      );
+      if (storedProfiles.length) {
+        return storedProfiles;
+      }
     }
 
-    return normalizeProfiles(clone(demoProfiles));
+    return shouldUseDemoProfiles() ? normalizeProfiles(clone(demoProfiles)) : [];
   }
 
   function setProfilesCache(profiles, source = "local") {
