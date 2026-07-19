@@ -7,6 +7,8 @@
   };
   const API_BASE = "/api";
   const USE_REMOTE_SYNC = typeof window.fetch === "function";
+  const LOAD_ALL_REMOTE_PROFILES_ON_STARTUP =
+    new URLSearchParams(window.location.search).get("loadProfiles") === "1";
   const FAVORITE_VISIT_GOAL = 10;
   const FAVORITE_VALUE_MULTIPLIER = 2;
   const TRIVIA_LEADERBOARD_MIN_GAMES = 4;
@@ -2861,7 +2863,7 @@
 
   void Promise.allSettled([
     refreshRestaurantBankFromServer(),
-    refreshProfilesFromServer(),
+    LOAD_ALL_REMOTE_PROFILES_ON_STARTUP ? refreshProfilesFromServer() : Promise.resolve(),
     refreshQuestionBankFromServer(),
     refreshCustomerBankFromServer(),
   ]).then(() => {

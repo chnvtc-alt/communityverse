@@ -98,6 +98,9 @@
     expansionError: "",
     upgradeMessage: "",
     upgradeError: "",
+    leaderboardRowsByKey: {},
+    leaderboardLoadingKey: "",
+    leaderboardErrorByKey: {},
   };
 
   const mobileHubQuery = "(max-width: 960px)";
@@ -2152,10 +2155,20 @@
   function renderLeaderboard() {
     const profile = core.getActiveProfile();
     const restaurant = getSelectedLeaderboardRestaurant(profile);
+    const leaderboardRestaurantSlug = state.leaderboardScope === "overall" ? "" : restaurant?.slug || "americana";
+    const leaderboardKey = `${state.metric}|${leaderboardRestaurantSlug || "overall"}`;
+    const cachedRows = state.leaderboardRowsByKey[leaderboardKey];
+    const isLeaderboardLoading = state.leaderboardLoadingKey === leaderboardKey;
+    if (!cachedRows && !isLeaderboardLoading) {
+      loadLiveLeaderboardRows(state.metric, leaderboardRestaurantSlug, leaderboardKey);
+    }
     const rows =
-      state.leaderboardScope === "overall"
-        ? core.getLeaderboard(state.metric)
-        : core.getLeaderboard(state.metric, restaurant?.slug || "americana");
+      cachedRows ||
+      (isLeaderboardLoading
+        ? []
+        : state.leaderboardScope === "overall"
+          ? core.getLeaderboard(state.metric)
+          : core.getLeaderboard(state.metric, leaderboardRestaurantSlug || "americana"));
     const scopeLabel = state.leaderboardScope === "overall" ? "Overall" : restaurant?.name || "Restaurant";
     const selectedMetric = metricOptions.find((option) => option.value === state.metric) || metricOptions[0];
     const playTarget =
@@ -2256,14 +2269,20 @@
       </div>
       ${currentRankMarkup}
       <div class="leaderboard-scroll">
-        ${renderRows(
-          rows,
-          state.metric === "rating"
-            ? "No Trivia % entries yet. Play 4 games to qualify."
-            : state.leaderboardScope === "overall"
-              ? "No leaderboard entries yet."
-              : `No ${scopeLabel} scores yet.`
-        )}
+        ${
+          isLeaderboardLoading && !cachedRows
+            ? `<p class="empty-state">Loading live leaderboard...</p>`
+            : renderRows(
+                rows,
+                state.leaderboardErrorByKey[leaderboardKey]
+                  ? "Unable to load the live leaderboard right now."
+                  : state.metric === "rating"
+                    ? "No Trivia % entries yet. Play 4 games to qualify."
+                    : state.leaderboardScope === "overall"
+                      ? "No leaderboard entries yet."
+                      : `No ${scopeLabel} scores yet.`
+              )
+        }
       </div>
     `;
 
@@ -2313,6 +2332,30 @@
     elements.leaderboard.querySelectorAll("[data-how-to-play-button]").forEach((button) => {
       button.addEventListener("click", openHowToPlay);
     });
+  }
+
+  async function loadLiveLeaderboardRows(metric, restaurantSlug, leaderboardKey) {
+    state.leaderboardLoadingKey = leaderboardKey;
+    delete state.leaderboardErrorByKey[leaderboardKey];
+    try {
+      const params = new URLSearchParams({ metric });
+      if (restaurantSlug) {
+        params.set("restaurantSlug", restaurantSlug);
+      }
+      const response = await fetch(`/api/leaderboard?${params.toString()}`);
+      const rows = await response.json().catch(() => null);
+      if (!response.ok || !Array.isArray(rows)) {
+        throw new Error("Unable to load leaderboard.");
+      }
+      state.leaderboardRowsByKey[leaderboardKey] = rows;
+    } catch (error) {
+      state.leaderboardErrorByKey[leaderboardKey] = error instanceof Error ? error.message : "Unable to load leaderboard.";
+    } finally {
+      if (state.leaderboardLoadingKey === leaderboardKey) {
+        state.leaderboardLoadingKey = "";
+      }
+      renderAll();
+    }
   }
 
   function syncDesktopPanelHeights() {
