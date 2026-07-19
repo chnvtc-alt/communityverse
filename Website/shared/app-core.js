@@ -2690,6 +2690,64 @@
     };
   }
 
+  function mergeProfileLists(existingProfiles = [], incomingProfiles = []) {
+    const mergedById = new Map();
+    [...normalizeProfiles(existingProfiles), ...normalizeProfiles(incomingProfiles)].forEach((profile) => {
+      if (!profile?.id) {
+        return;
+      }
+      mergedById.set(profile.id, mergeProfileProgress(mergedById.get(profile.id), profile));
+    });
+    return [...mergedById.values()];
+  }
+
+  function sessionPayloadFromRecentSession(profile, recentSession) {
+    const sessionId = String(recentSession?.id || "").trim();
+    const restaurantSlug = String(recentSession?.restaurantSlug || "").trim();
+    if (!profile?.id || !sessionId || !restaurantSlug) {
+      return null;
+    }
+
+    const completedAt = String(recentSession.playedAt || recentSession.completedAt || nowIso());
+    return {
+      ...recentSession,
+      id: sessionId,
+      profileId: profile.id,
+      restaurantSlug,
+      restaurantName: String(recentSession.restaurantName || ""),
+      customerId: String(recentSession.customerId || ""),
+      customerName: String(recentSession.customerName || ""),
+      score: Math.max(0, Number(recentSession.score) || 0),
+      totalQuestions: Math.max(0, Number(recentSession.totalQuestions) || 0),
+      result: String(recentSession.result || ""),
+      completed: true,
+      completedAt,
+      playedAt: completedAt,
+    };
+  }
+
+  async function syncRecentSessionsToServer(profile, token) {
+    if (!USE_REMOTE_SYNC || !profile || !token || isDemoProfile(profile)) {
+      return;
+    }
+
+    const recentSessions = Array.isArray(profile.recentSessions) ? profile.recentSessions : [];
+    await Promise.allSettled(
+      recentSessions
+        .map((session) => sessionPayloadFromRecentSession(profile, session))
+        .filter(Boolean)
+        .map((session) =>
+          requestJson("/sessions", {
+            method: "POST",
+            headers: {
+              "X-Profile-Token": token,
+            },
+            body: JSON.stringify(session),
+          })
+        )
+    );
+  }
+
   async function syncProfilesToServer(profiles) {
     if (!USE_REMOTE_SYNC) {
       return;
@@ -2714,11 +2772,10 @@
       },
       body: JSON.stringify(activeProfile),
     });
+    await syncRecentSessionsToServer(activeProfile, token);
     if (syncedProfile?.id) {
-      const safeSyncedProfile = ensureProfileShape(syncedProfile);
-      const mergedProfiles = normalizeProfiles(profilesCacheState.profiles).map((profile) =>
-        profile.id === safeSyncedProfile.id ? safeSyncedProfile : profile
-      );
+      const safeSyncedProfile = mergeProfileProgress(activeProfile, syncedProfile);
+      const mergedProfiles = mergeProfileLists(profilesCacheState.profiles, [safeSyncedProfile]);
       setProfilesCache(mergedProfiles, profilesCacheState.source);
       activeProfileState.profile = safeSyncedProfile;
       try {
@@ -2753,10 +2810,12 @@
       return;
     }
 
+    const localProfiles = mergeProfileLists(getLocalProfileSeed(), profilesCacheState.profiles);
     try {
       const remoteProfiles = await requestJson("/profiles", { method: "GET" });
       if (Array.isArray(remoteProfiles) && remoteProfiles.length) {
-        setProfilesCache(remoteProfiles, "remote");
+        const mergedProfiles = mergeProfileLists(localProfiles, remoteProfiles);
+        setProfilesCache(mergedProfiles, "remote");
         try {
           writeJson(STORAGE_KEYS.profiles, profilesCacheState.profiles);
         } catch (error) {
@@ -2764,7 +2823,7 @@
         }
         void syncProfilesToServer(profilesCacheState.profiles).catch(() => null);
       } else {
-        setProfilesCache(getLocalProfileSeed(), "local");
+        setProfilesCache(localProfiles, "local");
         if (!readJson(STORAGE_KEYS.profiles, []).length && profilesCacheState.profiles.length) {
           try {
             writeJson(STORAGE_KEYS.profiles, profilesCacheState.profiles);
@@ -2776,7 +2835,7 @@
         await syncProfilesToServer(profilesCacheState.profiles);
       }
     } catch {
-      setProfilesCache(getLocalProfileSeed(), "local");
+      setProfilesCache(localProfiles, "local");
     }
   }
 
