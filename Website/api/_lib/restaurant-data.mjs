@@ -516,6 +516,7 @@ export function leaderboardValue(stats, metric) {
 }
 
 export function buildLeaderboard(profiles, metric = "estimatedSales", restaurantSlug = "", options = {}) {
+  const normalizedRestaurantSlug = normalizeRestaurantSlug(restaurantSlug);
   const publicRestaurantSlugs = options.publicRestaurantSlugs
     ? new Set(options.publicRestaurantSlugs)
     : null;
@@ -523,10 +524,10 @@ export function buildLeaderboard(profiles, metric = "estimatedSales", restaurant
   return (Array.isArray(profiles) ? profiles : [])
     .map(normalizeProfile)
     .map((profile) => {
-      const stats = restaurantSlug
-        ? publicRestaurantSlugs && !publicRestaurantSlugs.has(restaurantSlug)
+      const stats = normalizedRestaurantSlug
+        ? publicRestaurantSlugs && !publicRestaurantSlugs.has(normalizedRestaurantSlug)
           ? emptyStats()
-          : restaurantStatsFor(profile, restaurantSlug)
+          : restaurantStatsFor(profile, normalizedRestaurantSlug)
         : publicRestaurantSlugs
           ? publicOverallStatsFor(profile, publicRestaurantSlugs)
           : restaurantStatsFor(profile, "");
