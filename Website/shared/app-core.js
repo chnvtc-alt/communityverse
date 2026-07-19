@@ -4499,6 +4499,45 @@
     ) || null;
   }
 
+  function buildReplayCustomerFromCollection(profile, customerId, restaurant) {
+    if (!profile || !customerId || !restaurant) {
+      return null;
+    }
+
+    const entry = getCustomerCollectionEntry(profile, customerId, restaurant.slug);
+    if (!entry) {
+      return null;
+    }
+
+    const credits = normalizeRestaurantCredits(entry);
+    const credit = credits[restaurant.slug] || null;
+    if (!credit) {
+      return null;
+    }
+
+    const baseCustomer = getCustomerById(customerId) || {};
+    return normalizeCustomer({
+      ...baseCustomer,
+      id: customerId,
+      name: entry.customerName || baseCustomer.name || customerId,
+      characterType: baseCustomer.characterType || entry.characterType || entry.group || "communityverse",
+      rarity: entry.rarity || baseCustomer.rarity || "Rare",
+      regularValue: Number(credit.regularValue) || Number(entry.regularValue) || Number(baseCustomer.regularValue) || 0,
+      occasionalValue: Number(credit.occasionalValue) || Number(entry.occasionalValue) || Number(baseCustomer.occasionalValue) || 0,
+      restaurant: restaurant.slug,
+      image: entry.image || entry.customerImage || baseCustomer.image || "",
+      bio: entry.bio || entry.customerBio || baseCustomer.bio || "",
+      areaSlug: baseCustomer.areaSlug || restaurant.areaSlug || "",
+      areaSlugs: baseCustomer.areaSlugs || "",
+      tags: Array.isArray(baseCustomer.tags) ? baseCustomer.tags : [],
+      questionPlace: baseCustomer.questionPlace || restaurant.name || "",
+      questionFact: baseCustomer.questionFact || "",
+      active: true,
+      feedbackRewardOnly: false,
+      customQuestions: Array.isArray(baseCustomer.customQuestions) ? baseCustomer.customQuestions : [],
+    });
+  }
+
   function getOwnedCustomerIdsForRestaurant(profile, restaurantSlug) {
     if (!profile) {
       return new Set();
@@ -5663,7 +5702,9 @@
         .filter(Boolean)
       : [];
     const preferredCustomer = preferredCustomerId
-      ? allCustomers.find((customer) => customer.id === preferredCustomerId) || null
+      ? allCustomers.find((customer) => customer.id === preferredCustomerId) ||
+        buildReplayCustomerFromCollection(workingProfile, preferredCustomerId, restaurant) ||
+        null
       : null;
     if (preferredCustomerId && !preferredCustomer) {
       return null;

@@ -2067,27 +2067,30 @@
     const multiplayerFocusMode = isMultiplayerSetupMode();
     const openingCustomers = getDisplayedOpeningCustomers();
     const safeOpeningCustomers = Array.isArray(openingCustomers) ? openingCustomers : [];
-    const startHref = replayCustomer
-      ? `${restaurantBasePath()}?play=1&fresh=1&customerId=${encodeURIComponent(replayCustomer.id)}`
+    const requestedReplayCustomerId = replayCustomer?.id || replayCustomerId;
+    const startHref = requestedReplayCustomerId
+      ? `${restaurantBasePath()}?play=1&fresh=1&customerId=${encodeURIComponent(requestedReplayCustomerId)}`
       : `${restaurantBasePath()}?play=1`;
     const introCopy = replayCustomer
       ? `This is a replay for ${replayCustomer.name}. If you score higher, you can increase this character's points. A lower score will not replace your best points.`
+      : requestedReplayCustomerId
+        ? "This is a replay for the character you selected. If you score higher, you can increase this character's points. A lower score will not replace your best points."
       : getOpenerCopy();
     const introCopyMarkup = introCopy
       ? `<p class="copy opening-title-copy">${escapeHtml(introCopy)}</p>`
       : "";
     const openingQuestion = isSalesDemoMode()
       ? ""
-      : replayCustomer
+      : requestedReplayCustomerId
         ? "Can You Improve This Character?"
         : "Can You Unlock A New Character For Your Collection?";
     const demoExpectationLine = "In this demo you'll see: menu photo questions, restaurant trivia, collectible characters, and feedback surveys.";
-    const startButtonText = replayCustomer
+    const startButtonText = requestedReplayCustomerId
       ? "PLAY AGAIN"
       : isSalesDemoMode()
         ? "PLAY THE THREE MINUTE DEMO"
         : "START THE GAME";
-    if (multiplayerFocusMode && !replayCustomer) {
+    if (multiplayerFocusMode && !requestedReplayCustomerId) {
       elements.start.innerHTML = `
         <div class="opening-start-shell">
           <div class="opening-start-heading">
@@ -2109,10 +2112,10 @@
           <h2 class="opening-title">${escapeHtml(getGameTitle())}</h2>
           ${introCopyMarkup}
           ${
-            replayCustomer
+            requestedReplayCustomerId
               ? `
                 <p class="helper opening-start-helper opening-title-helper">
-                  You are playing again for <strong>${escapeHtml(replayCustomer.name)}</strong>. Your best points are protected.
+                  You are playing again for <strong>${escapeHtml(replayCustomer?.name || "the selected character")}</strong>. Your best points are protected.
                 </p>
               `
               : ""
@@ -2159,7 +2162,7 @@
         <div class="button-row opening-start-actions opening-start-actions-bottom">
           <a class="button button-hot" id="start-game-button" href="${startHref}">${escapeHtml(startButtonText)}</a>
           ${
-            replayCustomer
+            requestedReplayCustomerId
               ? `
                 <a class="button button-muted" href="${restaurantBasePath()}?home=1">Cancel Replay</a>
                 <a class="button button-muted" href="/restaurant/?hub=1#leaderboard-panel">View Leaderboard</a>
@@ -2170,7 +2173,7 @@
                 `
               : ""
           }
-          ${!replayCustomer ? `<a class="button button-muted" href="${restaurantPlayPath()}?multiplayer=1">Play With Friends</a>` : ""}
+          ${!requestedReplayCustomerId ? `<a class="button button-muted" href="${restaurantPlayPath()}?multiplayer=1">Play With Friends</a>` : ""}
           ${
             session && !session.completed && !state.showGame
               ? `
@@ -2193,16 +2196,17 @@
 
   function renderSetupFallback() {
     const profile = getProfile();
-    const startHref = replayCustomer
-      ? `${restaurantBasePath()}?play=1&fresh=1&customerId=${encodeURIComponent(replayCustomer.id)}`
+    const requestedReplayCustomerId = replayCustomer?.id || replayCustomerId;
+    const startHref = requestedReplayCustomerId
+      ? `${restaurantBasePath()}?play=1&fresh=1&customerId=${encodeURIComponent(requestedReplayCustomerId)}`
       : `${restaurantBasePath()}?play=1`;
     const openingQuestion = isSalesDemoMode()
       ? ""
-      : replayCustomer
+      : requestedReplayCustomerId
         ? "Can You Improve This Character?"
         : "Can You Unlock A New Character For Your Collection?";
     const demoExpectationLine = "In this demo you'll see: menu photo questions, restaurant trivia, collectible characters, and feedback surveys.";
-    const startButtonText = replayCustomer
+    const startButtonText = requestedReplayCustomerId
       ? "PLAY AGAIN"
       : isSalesDemoMode()
         ? "PLAY THE THREE MINUTE DEMO"
@@ -2490,7 +2494,8 @@
       return;
     }
 
-    const options = replayCustomer ? { customerId: replayCustomer.id } : {};
+    const requestedReplayCustomerId = replayCustomer?.id || replayCustomerId;
+    const options = requestedReplayCustomerId ? { customerId: requestedReplayCustomerId } : {};
     const session = core.startNewSession(restaurantSlug, options);
     if (!session) {
       window.alert(`No available guests are ready for ${restaurant?.name || "this restaurant"} right now. Please try again.`);
