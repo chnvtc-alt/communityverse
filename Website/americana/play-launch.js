@@ -2052,17 +2052,14 @@
     if (!issue) {
       try {
         await core.syncActiveProfile?.();
-        return true;
       } catch (error) {
-        window.alert("This saved restaurant needs email sign-in before new games can count. Please sign in, then start the game again.");
-        window.location.href = "/restaurant/?hub=1&signin=1";
-        return false;
+        console.warn("Profile sync before play failed; continuing with local progress.", error);
       }
+      return true;
     }
 
-    window.alert(issue.message);
-    window.location.href = "/restaurant/?hub=1&signin=1";
-    return false;
+    console.warn("Profile needs sign-in for server sync; continuing with local progress.", issue);
+    return true;
   }
 
   function renderSetup() {
