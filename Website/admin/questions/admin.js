@@ -1703,7 +1703,12 @@ function getSessionPlayedAt(session) {
 }
 
 function getProfileGameCount(profile) {
-  return Math.max(Number(profile?.stats?.gamesPlayed) || 0, profileSessions(profile).length);
+  const sessionCount = profileSessions(profile).length;
+  const savedCount = Number(profile?.stats?.gamesPlayed) || 0;
+  if (sessionCount > 0 && savedCount > sessionCount * 2) {
+    return sessionCount;
+  }
+  return Math.max(savedCount, sessionCount);
 }
 
 function getTrackedRestaurantPlayCount(profile, sessions = profileSessions(profile)) {
@@ -2202,7 +2207,11 @@ function getStatsProfileGameCount(profile) {
 
   const sessionCount = getStatsProfileSessions(profile).length;
   const restaurantStats = profile?.restaurantStats?.[statsRestaurantScope] || {};
-  return Math.max(sessionCount, Number(restaurantStats.gamesPlayed) || 0);
+  const savedCount = Number(restaurantStats.gamesPlayed) || 0;
+  if (sessionCount > 0 && savedCount > sessionCount * 2) {
+    return sessionCount;
+  }
+  return Math.max(sessionCount, savedCount);
 }
 
 function getStatsProfileActivity(profile) {
