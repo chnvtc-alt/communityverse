@@ -290,6 +290,21 @@
     });
   }
 
+  function customerSortPriority(customer) {
+    const sortOrder = Number(customer?.sortOrder) || 0;
+    return sortOrder > 0 ? sortOrder : Number.POSITIVE_INFINITY;
+  }
+
+  function sortFeaturedCustomers(customers = []) {
+    return [...customers].sort((left, right) => {
+      const priorityDelta = customerSortPriority(left) - customerSortPriority(right);
+      if (priorityDelta) {
+        return priorityDelta;
+      }
+      return String(left?.name || "").localeCompare(String(right?.name || ""));
+    });
+  }
+
   function howToPlayModalHtml(salesDemoMode = false) {
     if (salesDemoMode) {
       return `
@@ -536,14 +551,12 @@
     }
 
     if (selectedCustomers.length < count) {
-      addCustomers(rotateCustomers(
+      addCustomers(sortFeaturedCustomers(
         allCustomers.filter(
           (customer) =>
             customer.restaurant === "shared" &&
             customerMatchesArea(customer, areaSlugs)
-        ),
-        restaurant.slug,
-        allCustomers.length
+        )
       ));
     }
 

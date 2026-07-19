@@ -4585,6 +4585,16 @@
     return customers.filter((customer) => customerSortPriority(customer) === lowestPriority);
   }
 
+  function sortFeaturedCustomers(customers = []) {
+    return [...customers].sort((left, right) => {
+      const priorityDelta = customerSortPriority(left) - customerSortPriority(right);
+      if (priorityDelta) {
+        return priorityDelta;
+      }
+      return String(left?.name || "").localeCompare(String(right?.name || ""));
+    });
+  }
+
   function getPhotoReadyCustomersForRestaurant(slug, profile = null) {
     const ownedCustomerIds = getOwnedCustomerIdsForRestaurant(profile, slug);
     return getCustomersForRestaurant(slug)
@@ -5438,12 +5448,12 @@
       return pickFrom(themeSpecific);
     }
 
-    const areaSpecific = allCustomers.filter(
+    const areaSpecific = sortFeaturedCustomers(allCustomers.filter(
       (customer) =>
         customer.restaurant === "shared" &&
         unownedRecentSafe(customer) &&
         customerMatchesRestaurantArea(customer, areaSlugs)
-    );
+    ));
 
     if (areaSpecific.length) {
       return pickFrom(areaSpecific);
