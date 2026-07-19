@@ -4161,10 +4161,38 @@
   function rebuildCollectionDerivedStats(profile) {
     const safeProfile = profile;
     const baseRestaurantStats = safeProfile.restaurantStats || {};
-    const combinedRestaurantTriviaStats = Object.values(baseRestaurantStats).reduce(
-      (combinedStats, restaurantStats) => {
-        combinedStats.gamesPlayed += Number(restaurantStats?.gamesPlayed) || 0;
-        combinedStats.totalCorrectAnswers += Number(restaurantStats?.totalCorrectAnswers) || 0;
+    const recentSessionStats = {};
+    (Array.isArray(safeProfile.recentSessions) ? safeProfile.recentSessions : []).forEach((session) => {
+      if (!session?.completed) {
+        return;
+      }
+
+      const restaurantSlug = normalizeRestaurant(session.restaurantSlug || "");
+      if (!restaurantSlug || restaurantSlug === "shared") {
+        return;
+      }
+
+      const stats = recentSessionStats[restaurantSlug] || buildEmptyRestaurantStats();
+      stats.gamesPlayed += 1;
+      stats.totalCorrectAnswers += Number(session.score) || 0;
+      recentSessionStats[restaurantSlug] = stats;
+    });
+    const restaurantSlugs = new Set([
+      ...Object.keys(baseRestaurantStats),
+      ...Object.keys(recentSessionStats),
+    ]);
+    const combinedRestaurantTriviaStats = [...restaurantSlugs].reduce(
+      (combinedStats, restaurantSlug) => {
+        const restaurantStats = baseRestaurantStats[restaurantSlug] || {};
+        const sessionStats = recentSessionStats[restaurantSlug] || {};
+        combinedStats.gamesPlayed += Math.max(
+          Number(restaurantStats?.gamesPlayed) || 0,
+          Number(sessionStats?.gamesPlayed) || 0
+        );
+        combinedStats.totalCorrectAnswers += Math.max(
+          Number(restaurantStats?.totalCorrectAnswers) || 0,
+          Number(sessionStats?.totalCorrectAnswers) || 0
+        );
         return combinedStats;
       },
       { gamesPlayed: 0, totalCorrectAnswers: 0 }
@@ -4177,8 +4205,6 @@
       combinedRestaurantTriviaStats.gamesPlayed > (Number(safeProfile.stats.gamesPlayed) || 0)
         ? combinedRestaurantTriviaStats.totalCorrectAnswers
         : Number(safeProfile.stats.totalCorrectAnswers) || 0;
-    const restaurantSlugs = new Set(Object.keys(baseRestaurantStats));
-
     safeProfile.stats = Object.assign(buildEmptyStats(), {
       gamesPlayed: overallGamesPlayed,
       totalCorrectAnswers: overallCorrectAnswers,
@@ -4193,9 +4219,13 @@
 
     restaurantSlugs.forEach((restaurantSlug) => {
       const existingStats = baseRestaurantStats[restaurantSlug] || buildEmptyRestaurantStats();
+      const sessionStats = recentSessionStats[restaurantSlug] || buildEmptyRestaurantStats();
       safeProfile.restaurantStats[restaurantSlug] = Object.assign(buildEmptyRestaurantStats(), {
-        gamesPlayed: Number(existingStats.gamesPlayed) || 0,
-        totalCorrectAnswers: Number(existingStats.totalCorrectAnswers) || 0,
+        gamesPlayed: Math.max(Number(existingStats.gamesPlayed) || 0, Number(sessionStats.gamesPlayed) || 0),
+        totalCorrectAnswers: Math.max(
+          Number(existingStats.totalCorrectAnswers) || 0,
+          Number(sessionStats.totalCorrectAnswers) || 0
+        ),
         lastImageQuestionId: String(existingStats.lastImageQuestionId || ""),
         featuredGuestStartIndex: Number(existingStats.featuredGuestStartIndex) || 0,
       });

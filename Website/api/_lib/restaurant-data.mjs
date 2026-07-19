@@ -54,13 +54,25 @@ const EXPANSION_LEVELS = [
 const DEFAULT_EXPANSION_LEVEL = EXPANSION_LEVELS[0].id;
 const RECENT_PERFORMANCE_DAYS = 30;
 const RECENT_PERFORMANCE_VALUE_RATE = 0;
+const RESTAURANT_SLUG_ALIASES = {
+  cinematavern: "cinema-tavern",
+  "cinema-tavern": "cinema-tavern",
+  "cinema tavern": "cinema-tavern",
+};
 
 function normalizeRestaurantSlug(value) {
-  return String(value || "")
+  const raw = String(value || "")
     .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .toLowerCase();
+  if (!raw) {
+    return "";
+  }
+  if (RESTAURANT_SLUG_ALIASES[raw]) {
+    return RESTAURANT_SLUG_ALIASES[raw];
+  }
+
+  const slug = raw.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return RESTAURANT_SLUG_ALIASES[slug] || slug;
 }
 
 function normalizeRestaurantEconomy(economy) {
@@ -223,10 +235,65 @@ export function normalizeProfile(profile) {
   safeProfile.emailConnected = Boolean(safeProfile.emailConnected);
   safeProfile.restaurantEconomy = normalizeRestaurantEconomy(safeProfile.restaurantEconomy);
   safeProfile.stats = { ...emptyStats(), ...(safeProfile.stats || {}) };
-  safeProfile.restaurantStats =
+  const normalizedRestaurantStats = {};
+  Object.entries(
     safeProfile.restaurantStats && typeof safeProfile.restaurantStats === "object"
       ? safeProfile.restaurantStats
-      : {};
+      : {}
+  ).forEach(([restaurantSlug, stats]) => {
+    const normalizedSlug = normalizeRestaurantSlug(restaurantSlug);
+    if (!normalizedSlug) {
+      return;
+    }
+
+    const existingStats = normalizedRestaurantStats[normalizedSlug] || emptyStats();
+    normalizedRestaurantStats[normalizedSlug] = {
+      ...emptyStats(),
+      ...existingStats,
+      gamesPlayed: (Number(existingStats.gamesPlayed) || 0) + (Number(stats?.gamesPlayed) || 0),
+      totalCorrectAnswers:
+        (Number(existingStats.totalCorrectAnswers) || 0) + (Number(stats?.totalCorrectAnswers) || 0),
+      regularCustomers: Math.max(Number(existingStats.regularCustomers) || 0, Number(stats?.regularCustomers) || 0),
+      favoriteCustomers: Math.max(Number(existingStats.favoriteCustomers) || 0, Number(stats?.favoriteCustomers) || 0),
+      occasionalCustomers: Math.max(Number(existingStats.occasionalCustomers) || 0, Number(stats?.occasionalCustomers) || 0),
+      lostCustomers: Math.max(Number(existingStats.lostCustomers) || 0, Number(stats?.lostCustomers) || 0),
+      totalCustomerValue: Math.max(Number(existingStats.totalCustomerValue) || 0, Number(stats?.totalCustomerValue) || 0),
+      estimatedSales: Math.max(Number(existingStats.estimatedSales) || 0, Number(stats?.estimatedSales) || 0),
+      restaurantValue: Math.max(Number(existingStats.restaurantValue) || 0, Number(stats?.restaurantValue) || 0),
+    };
+  });
+  safeProfile.restaurantStats = normalizedRestaurantStats;
+  safeProfile.customerCollection = Array.isArray(safeProfile.customerCollection)
+    ? safeProfile.customerCollection
+    : [];
+  safeProfile.recentSessions = Array.isArray(safeProfile.recentSessions)
+    ? safeProfile.recentSessions
+    : [];
+  const recentSessionStats = {};
+  safeProfile.recentSessions.forEach((session) => {
+    if (!session?.completed) {
+      return;
+    }
+
+    const restaurantSlug = normalizeRestaurantSlug(session.restaurantSlug || "");
+    if (!restaurantSlug) {
+      return;
+    }
+
+    const stats = recentSessionStats[restaurantSlug] || emptyStats();
+    stats.gamesPlayed += 1;
+    stats.totalCorrectAnswers += Number(session.score) || 0;
+    recentSessionStats[restaurantSlug] = stats;
+  });
+  Object.entries(recentSessionStats).forEach(([restaurantSlug, sessionStats]) => {
+    const stats = safeProfile.restaurantStats[restaurantSlug] || emptyStats();
+    stats.gamesPlayed = Math.max(Number(stats.gamesPlayed) || 0, Number(sessionStats.gamesPlayed) || 0);
+    stats.totalCorrectAnswers = Math.max(
+      Number(stats.totalCorrectAnswers) || 0,
+      Number(sessionStats.totalCorrectAnswers) || 0
+    );
+    safeProfile.restaurantStats[restaurantSlug] = stats;
+  });
   const combinedRestaurantTriviaStats = Object.values(safeProfile.restaurantStats).reduce(
     (combinedStats, restaurantStats) => {
       combinedStats.gamesPlayed += Number(restaurantStats?.gamesPlayed) || 0;
@@ -239,12 +306,6 @@ export function normalizeProfile(profile) {
     safeProfile.stats.gamesPlayed = combinedRestaurantTriviaStats.gamesPlayed;
     safeProfile.stats.totalCorrectAnswers = combinedRestaurantTriviaStats.totalCorrectAnswers;
   }
-  safeProfile.customerCollection = Array.isArray(safeProfile.customerCollection)
-    ? safeProfile.customerCollection
-    : [];
-  safeProfile.recentSessions = Array.isArray(safeProfile.recentSessions)
-    ? safeProfile.recentSessions
-    : [];
   return safeProfile;
 }
 
