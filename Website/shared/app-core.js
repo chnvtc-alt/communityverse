@@ -4510,10 +4510,18 @@
     }
 
     const credits = normalizeRestaurantCredits(entry);
-    const credit = credits[restaurant.slug] || null;
-    if (!credit) {
-      return null;
-    }
+    const credit = credits[restaurant.slug] || normalizeRestaurantCredit(null, {
+      restaurantSlug: restaurant.slug,
+      restaurantName: restaurant.name,
+      status: entry.status,
+      regularValue: entry.regularValue,
+      occasionalValue: entry.occasionalValue,
+      customerValue: entry.customerValue,
+      bestScore: entry.bestScore,
+      scoringVersion: entry.scoringVersion,
+      salesBoostPercent: entry.salesBoostPercent,
+      dateWon: entry.dateWon,
+    });
 
     const baseCustomer = getCustomerById(customerId) || {};
     return normalizeCustomer({
