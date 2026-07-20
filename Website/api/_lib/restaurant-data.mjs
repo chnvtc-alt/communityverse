@@ -370,7 +370,7 @@ export function normalizeQuestion(question) {
   const safeQuestion = typeof question === "object" && question ? structuredClone(question) : {};
   safeQuestion.id = String(safeQuestion.id || "").trim();
   safeQuestion.scope = String(safeQuestion.scope || "").trim();
-  safeQuestion.restaurantSlug = String(safeQuestion.restaurantSlug || "").trim();
+  safeQuestion.restaurantSlug = normalizeRestaurantSlug(safeQuestion.restaurantSlug || "");
   safeQuestion.areaSlug = String(safeQuestion.areaSlug || "").trim();
   safeQuestion.prompt = String(safeQuestion.prompt || "").trim();
   safeQuestion.correctAnswer = String(safeQuestion.correctAnswer || "").trim();

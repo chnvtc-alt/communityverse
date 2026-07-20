@@ -1,4 +1,5 @@
 import {
+  normalizeRestaurantSlug,
   normalizeQuestion,
   questionFromRecord,
   questionToRecord,
@@ -88,7 +89,7 @@ export async function deleteQuestion(id) {
 export function filterAdminQuestions(questions, searchParams) {
   const query = String(searchParams.get("q") || "").trim().toLowerCase();
   const scope = String(searchParams.get("scope") || "").trim();
-  const restaurantSlug = String(searchParams.get("restaurantSlug") || "").trim();
+  const restaurantSlug = normalizeRestaurantSlug(searchParams.get("restaurantSlug") || "");
   const areaSlug = String(searchParams.get("areaSlug") || "").trim();
   const customerId = String(searchParams.get("customerId") || "").trim();
   const tag = String(searchParams.get("tag") || "").trim();
