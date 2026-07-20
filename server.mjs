@@ -1116,6 +1116,18 @@ const server = createServer(async (request, response) => {
       return;
     }
 
+    if (requestUrl.pathname === "/cinematavern" || requestUrl.pathname === "/cinematavern/") {
+      response.writeHead(301, { Location: requestUrl.pathname.endsWith("/") ? "/cinema-tavern/" : "/cinema-tavern" });
+      response.end();
+      return;
+    }
+
+    if (requestUrl.pathname === "/cinematavern/play" || requestUrl.pathname === "/cinematavern/play/") {
+      response.writeHead(301, { Location: requestUrl.pathname.endsWith("/") ? "/cinema-tavern/play/" : "/cinema-tavern/play" });
+      response.end();
+      return;
+    }
+
     const routeParts = requestUrl.pathname.split("/").filter(Boolean);
     const reservedTopLevelRoutes = new Set([
       "admin",

@@ -1,4 +1,26 @@
 {
+  "redirects": [
+    {
+      "source": "/cinematavern",
+      "destination": "/cinema-tavern",
+      "permanent": true
+    },
+    {
+      "source": "/cinematavern/",
+      "destination": "/cinema-tavern/",
+      "permanent": true
+    },
+    {
+      "source": "/cinematavern/play",
+      "destination": "/cinema-tavern/play",
+      "permanent": true
+    },
+    {
+      "source": "/cinematavern/play/",
+      "destination": "/cinema-tavern/play/",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/admin/questions",
