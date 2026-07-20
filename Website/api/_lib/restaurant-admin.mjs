@@ -1,5 +1,15 @@
 import { supabaseRequest } from "./supabase.mjs";
 
+const RESTAURANT_SLUG_ALIASES = {
+  cinematavern: "cinema-tavern",
+  "cinema-tavern": "cinema-tavern",
+  "cinema tavern": "cinema-tavern",
+};
+
+const RESTAURANT_SLUG_QUERY_ALIASES = {
+  "cinema-tavern": ["cinema-tavern", "cinematavern"],
+};
+
 function toJsonObject(value, fallback = {}) {
   if (!value) {
     return fallback;
@@ -21,12 +31,18 @@ function toJsonObject(value, fallback = {}) {
 }
 
 export function slugifyRestaurant(value) {
-  return String(value || "")
+  const raw = String(value || "")
     .trim()
-    .toLowerCase()
+    .toLowerCase();
+  if (RESTAURANT_SLUG_ALIASES[raw]) {
+    return RESTAURANT_SLUG_ALIASES[raw];
+  }
+
+  const slug = raw
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 64);
+  return RESTAURANT_SLUG_ALIASES[slug] || slug;
 }
 
 function normalizeSurveyQuestion(question, index = 0) {
@@ -214,10 +230,17 @@ export async function fetchRestaurantBySlugFromSupabase(slug, { includeHidden = 
   }
 
   const filters = includeHidden ? "" : "&active=eq.true&playable=eq.true";
-  const rows = await supabaseRequest(
-    `restaurants?select=id,active,playable,visible_in_list,sort_order,slug,name,public_game_name,location,area_slug,description,hero_image,logo_square,logo_horizontal,primary_color,secondary_color,accent_color,opening_copy,created_at,updated_at,payload_json&slug=eq.${encodeURIComponent(normalizedSlug)}${filters}&limit=1`
-  );
-  return Array.isArray(rows) && rows.length ? restaurantFromRecord(rows[0]) : null;
+  const lookupSlugs = RESTAURANT_SLUG_QUERY_ALIASES[normalizedSlug] || [normalizedSlug];
+  for (const lookupSlug of lookupSlugs) {
+    const rows = await supabaseRequest(
+      `restaurants?select=id,active,playable,visible_in_list,sort_order,slug,name,public_game_name,location,area_slug,description,hero_image,logo_square,logo_horizontal,primary_color,secondary_color,accent_color,opening_copy,created_at,updated_at,payload_json&slug=eq.${encodeURIComponent(lookupSlug)}${filters}&limit=1`
+    );
+    if (Array.isArray(rows) && rows.length) {
+      return restaurantFromRecord(rows[0]);
+    }
+  }
+
+  return null;
 }
 
 export async function fetchAdminRestaurantsFromSupabase() {

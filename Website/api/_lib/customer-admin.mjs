@@ -1,5 +1,11 @@
 import { supabaseRequest } from "./supabase.mjs";
 
+const RESTAURANT_SLUG_ALIASES = {
+  cinematavern: "cinema-tavern",
+  "cinema-tavern": "cinema-tavern",
+  "cinema tavern": "cinema-tavern",
+};
+
 function toJsonObject(value, fallback = {}) {
   if (!value) {
     return fallback;
@@ -40,6 +46,10 @@ function normalizeRestaurant(value) {
     return "shared";
   }
 
+  if (RESTAURANT_SLUG_ALIASES[raw]) {
+    return RESTAURANT_SLUG_ALIASES[raw];
+  }
+
   if (raw === "americana" || raw === "americana-diner" || raw === "americana diner") {
     return "americana";
   }
@@ -48,7 +58,8 @@ function normalizeRestaurant(value) {
     return "shared";
   }
 
-  return raw.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "shared";
+  const slug = raw.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "shared";
+  return RESTAURANT_SLUG_ALIASES[slug] || slug;
 }
 
 function slugText(value) {

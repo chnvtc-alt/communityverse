@@ -29,6 +29,12 @@ const defaultRestaurants = [
     description: "Play the Hudson's Hickory House Restaurant Challenge trivia game.",
   },
   {
+    slug: "cinema-tavern",
+    name: "Cinema Tavern",
+    publicGameName: "The Cinema Tavern Game",
+    description: "Play the Cinema Tavern Restaurant Challenge trivia game.",
+  },
+  {
     slug: "marcossp",
     name: "Marco's Pizza - South Paulding",
     publicGameName: "Marco's Pizza - South Paulding Game",
