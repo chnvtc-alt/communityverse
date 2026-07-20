@@ -12,6 +12,8 @@ export function emptyStats() {
   };
 }
 
+const TRIVIA_LEADERBOARD_MIN_GAMES = 4;
+
 const EXPANSION_LEVELS = [
   {
     id: "food-truck",
@@ -479,7 +481,7 @@ export function leaderboardValue(stats, metric) {
   const accuracy = stats.gamesPlayed ? (stats.totalCorrectAnswers / (stats.gamesPlayed * 10)) * 100 : 0;
 
   if (metric === "rating") {
-    return accuracy / 20;
+    return accuracy;
   }
 
   if (metric === "accuracy") {
@@ -605,7 +607,11 @@ export function buildLeaderboard(profiles, metric = "estimatedSales", restaurant
             : value,
       };
     })
-    .filter((entry) => entry.stats.gamesPlayed > 0)
+    .filter((entry) =>
+      metric === "rating"
+        ? entry.stats.gamesPlayed >= TRIVIA_LEADERBOARD_MIN_GAMES
+        : entry.stats.gamesPlayed > 0
+    )
     .sort((left, right) => {
       if (right.value !== left.value) {
         return right.value - left.value;
