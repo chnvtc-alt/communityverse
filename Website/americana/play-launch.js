@@ -3088,7 +3088,7 @@
     const leaderboardHref = restaurantLeaderboardHref("characterPoints");
     const moveUpText = nextRow
       ? `You need ${core.formatCurrency(pointsNeeded)} more to pass ${nextRow.restaurantName || "the restaurant above you"}.`
-      : "You are holding the top spot. Play again to make it harder to catch you.";
+      : "You are in first place. Play again to make it harder for anyone to catch you.";
 
     return `
       <div class="hero-card result-followup-card result-leaderboard-rank-card" id="result-leaderboard-rank-slot" style="margin-top: 0; padding: 16px;">
@@ -3100,6 +3100,52 @@
         </div>
       </div>
     `;
+  }
+
+  function getCurrentCharacterPoints(profile) {
+    if (!profile || !core.getProfileSummary) {
+      return 0;
+    }
+    const summary = core.getProfileSummary(profile, restaurantSlug);
+    return Math.max(0, Math.round(Number(summary?.stats?.estimatedSales) || 0));
+  }
+
+  function rankCurrentProfileWithLeaderboard(rows, profile) {
+    const leaderboardRows = Array.isArray(rows) ? rows : [];
+    const profileId = String(profile?.id || "").trim();
+    if (!profileId) {
+      return null;
+    }
+
+    const currentValue = getCurrentCharacterPoints(profile);
+    const existingRows = leaderboardRows.filter((entry) => entry && entry.profileId !== profileId);
+    const existingRow = leaderboardRows.find((entry) => entry?.profileId === profileId) || null;
+    const currentRow = {
+      ...(existingRow || {}),
+      profileId,
+      playerName: profile.playerName || existingRow?.playerName || "Guest Player",
+      restaurantName: profile.restaurantName || existingRow?.restaurantName || "Guest Restaurant",
+      value: Math.max(currentValue, Math.round(Number(existingRow?.value) || 0)),
+    };
+
+    const rankedRows = [...existingRows, currentRow]
+      .sort((left, right) => {
+        const valueDifference = (Number(right.value) || 0) - (Number(left.value) || 0);
+        if (valueDifference) {
+          return valueDifference;
+        }
+        return String(left.restaurantName || "").localeCompare(String(right.restaurantName || ""));
+      })
+      .map((entry, index) => ({ ...entry, rank: index + 1 }));
+    const rowIndex = rankedRows.findIndex((entry) => entry.profileId === profileId);
+    if (rowIndex < 0) {
+      return null;
+    }
+
+    return {
+      row: rankedRows[rowIndex],
+      nextRow: rowIndex > 0 ? rankedRows[rowIndex - 1] : null,
+    };
   }
 
   async function loadResultLeaderboardPrompt(session, attempt = 1) {
@@ -3128,9 +3174,8 @@
         throw new Error("Leaderboard unavailable.");
       }
       const rows = await response.json();
-      const leaderboardRows = Array.isArray(rows) ? rows : [];
-      const rowIndex = leaderboardRows.findIndex((entry) => entry.profileId === profile.id);
-      if (rowIndex < 0) {
+      const rankedProfile = rankCurrentProfileWithLeaderboard(rows, profile);
+      if (!rankedProfile) {
         if (attempt < 3) {
           state.resultLeaderboardLoading = false;
           window.setTimeout(() => loadResultLeaderboardPrompt(session, attempt + 1), 1400);
@@ -3138,10 +3183,8 @@
         return;
       }
 
-      const row = leaderboardRows[rowIndex];
-      const nextRow = rowIndex > 0 ? leaderboardRows[rowIndex - 1] : null;
       state.resultLeaderboardSessionId = session.id;
-      state.resultLeaderboardMarkup = resultLeaderboardPromptMarkup(row, nextRow);
+      state.resultLeaderboardMarkup = resultLeaderboardPromptMarkup(rankedProfile.row, rankedProfile.nextRow);
       const slot = document.getElementById("result-leaderboard-rank-slot");
       if (slot) {
         slot.outerHTML = state.resultLeaderboardMarkup;
@@ -3292,7 +3335,7 @@
         ${multiplayerWinnerMarkup}
         <div class="divider"></div>
         ${multiplayerMarkup}
-        ${!state.showProfileForm && !showGuestSavePrompt ? leaderboardPromptMarkup : ""}
+        ${!state.showProfileForm ? leaderboardPromptMarkup : ""}
         ${triviaLeaderboardMilestoneMarkup}
         ${
           showGuestSavePrompt
