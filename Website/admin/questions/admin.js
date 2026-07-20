@@ -20,9 +20,15 @@ const EXPANSION_LEVELS = [
 ];
 const RESTAURANT_NAME_FALLBACKS = {
   americana: "Americana Diner",
+  "cinema-tavern": "Cinema Tavern",
   hudsons: "Hudson's Hickory House",
   marcossp: "Marco's Pizza - South Paulding",
   wafflemaster: "Waffle Master",
+};
+const RESTAURANT_SLUG_ALIASES = {
+  cinematavern: "cinema-tavern",
+  "cinema-tavern": "cinema-tavern",
+  "cinema tavern": "cinema-tavern",
 };
 const QUESTION_MIX_SLOT_COUNT = 10;
 const QUESTION_MIX_SLOT_TYPES = [
@@ -657,6 +663,10 @@ function normalizeRestaurant(value) {
     return "shared";
   }
 
+  if (RESTAURANT_SLUG_ALIASES[raw]) {
+    return RESTAURANT_SLUG_ALIASES[raw];
+  }
+
   if (raw === "americana" || raw === "americana-diner" || raw === "americana diner") {
     return "americana";
   }
@@ -665,7 +675,8 @@ function normalizeRestaurant(value) {
     return "shared";
   }
 
-  return raw.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "shared";
+  const slug = raw.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "shared";
+  return RESTAURANT_SLUG_ALIASES[slug] || slug;
 }
 
 function normalizeCharacterType(value) {
@@ -673,7 +684,13 @@ function normalizeCharacterType(value) {
 }
 
 function slugify(value) {
-  return String(value || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  const raw = String(value || "").trim().toLowerCase();
+  if (RESTAURANT_SLUG_ALIASES[raw]) {
+    return RESTAURANT_SLUG_ALIASES[raw];
+  }
+
+  const slug = raw.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return RESTAURANT_SLUG_ALIASES[slug] || slug;
 }
 
 function feedbackResultsUrl(restaurantSlug, accessCode) {

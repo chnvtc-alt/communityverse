@@ -361,7 +361,7 @@ export function sessionFromRecord(record) {
     ...payload,
     id: record.id ?? payload.id,
     profileId: record.profile_id ?? payload.profileId,
-    restaurantSlug: record.restaurant_slug ?? payload.restaurantSlug,
+    restaurantSlug: normalizeRestaurantSlug(record.restaurant_slug ?? payload.restaurantSlug),
     completedAt: record.completed_at ?? payload.completedAt,
   };
 }
