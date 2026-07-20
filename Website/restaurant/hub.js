@@ -356,14 +356,17 @@
       return;
     }
 
-    howToPlayReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : elements.splashHowToPlayButton;
+    howToPlayReturnFocus =
+      document.activeElement && typeof document.activeElement.focus === "function"
+        ? document.activeElement
+        : elements.splashHowToPlayButton;
     elements.howToPlayModal.classList.remove("hidden");
     elements.howToPlayModal.setAttribute("aria-hidden", "false");
     document.body.classList.add("how-to-play-open");
 
     requestAnimationFrame(() => {
       const closeButton = elements.howToPlayModal.querySelector("[data-how-to-play-close]");
-      if (closeButton instanceof HTMLElement) {
+      if (closeButton && typeof closeButton.focus === "function") {
         closeButton.focus();
       }
     });
@@ -378,22 +381,25 @@
     elements.howToPlayModal.setAttribute("aria-hidden", "true");
     document.body.classList.remove("how-to-play-open");
 
-    if (howToPlayReturnFocus instanceof HTMLElement) {
+    if (howToPlayReturnFocus && typeof howToPlayReturnFocus.focus === "function") {
       howToPlayReturnFocus.focus();
     }
     howToPlayReturnFocus = null;
   }
 
   function bindHowToPlay() {
-    document.querySelectorAll("[data-how-to-play-button]").forEach((button) => {
-      button.addEventListener("click", openHowToPlay);
+    document.addEventListener("click", (event) => {
+      const target = event.target && typeof event.target.closest === "function" ? event.target : null;
+      if (target?.closest("[data-how-to-play-button]")) {
+        event.preventDefault();
+        openHowToPlay();
+        return;
+      }
+      if (target?.closest("[data-how-to-play-close]")) {
+        event.preventDefault();
+        closeHowToPlay();
+      }
     });
-
-    if (elements.howToPlayModal) {
-      elements.howToPlayModal.querySelectorAll("[data-how-to-play-close]").forEach((button) => {
-        button.addEventListener("click", closeHowToPlay);
-      });
-    }
 
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && elements.howToPlayModal && !elements.howToPlayModal.classList.contains("hidden")) {
@@ -2329,9 +2335,6 @@
       });
     });
 
-    elements.leaderboard.querySelectorAll("[data-how-to-play-button]").forEach((button) => {
-      button.addEventListener("click", openHowToPlay);
-    });
   }
 
   async function loadLiveLeaderboardRows(metric, restaurantSlug, leaderboardKey) {
