@@ -4552,20 +4552,17 @@
       return null;
     }
 
-    const orderedQuestions = imageQuestions.slice();
-    if (!lastImageQuestionId) {
-      return orderedQuestions.find((question) => !seenIds.has(question.id)) || orderedQuestions[0];
+    const availableQuestions = imageQuestions.filter((question) => question && question.id !== lastImageQuestionId);
+    const unseenQuestions = availableQuestions.filter((question) => !seenIds.has(question.id));
+    if (unseenQuestions.length) {
+      return pickOne(unseenQuestions);
     }
 
-    const lastIndex = imageQuestions.findIndex((question) => question.id === lastImageQuestionId);
-    if (lastIndex < 0) {
-      return orderedQuestions.find((question) => !seenIds.has(question.id)) || orderedQuestions[0];
+    if (availableQuestions.length) {
+      return pickOne(availableQuestions);
     }
 
-    const nextQuestions = imageQuestions
-      .slice(lastIndex + 1)
-      .concat(imageQuestions.slice(0, lastIndex + 1));
-    return nextQuestions.find((question) => !seenIds.has(question.id)) || nextQuestions[0];
+    return pickOne(imageQuestions);
   }
 
   function getRestaurantBySlug(slug) {
@@ -5701,7 +5698,9 @@
     applyCustomQuestionMix(chosen, restaurant, pools, usedIds, seenIds, isAmericanaDemo);
     fillAutomaticSessionQuestions(chosen, restaurant, customer, profile, pools, usedIds, seenIds, isAmericanaDemo);
 
-    return chosen.filter(Boolean).map(prepareQuestion);
+    const selectedQuestions = chosen.filter(Boolean);
+    const questionMix = normalizeQuestionMix(restaurant.questionMix);
+    return (questionMix.enabled ? selectedQuestions : shuffle(selectedQuestions)).map(prepareQuestion);
   }
 
   function buildFixedSessionQuestions(questionIds = []) {
