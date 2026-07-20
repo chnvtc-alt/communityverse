@@ -304,6 +304,15 @@
     return rotated.slice(0, count);
   }
 
+  function randomCustomers(customers, count) {
+    const shuffled = customers.slice();
+    for (let index = shuffled.length - 1; index > 0; index -= 1) {
+      const swapIndex = Math.floor(Math.random() * (index + 1));
+      [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+    }
+    return shuffled.slice(0, count);
+  }
+
   function getRestaurantAreaSlugs(targetRestaurant) {
     const areaAliases = {
       ...US_STATE_AREA_ALIASES,
@@ -674,13 +683,13 @@
     }
 
     if (selectedCustomers.length < count) {
-      addCustomers(sortFeaturedCustomers(
+      addCustomers(randomCustomers(sortFeaturedCustomers(
         allCustomers.filter(
           (customer) =>
             customer.restaurant === "shared" &&
             customerMatchesArea(customer, areaSlugs)
         )
-      ));
+      ), allCustomers.length));
     }
 
     if (selectedCustomers.length < count && profile) {
@@ -697,7 +706,7 @@
     }
 
     if (selectedCustomers.length < count) {
-      addCustomers(rotateCustomers(
+      addCustomers(randomCustomers(
         allCustomers.filter(
           (customer) =>
             customer.restaurant === "shared" &&
@@ -705,15 +714,13 @@
               !customer.areaSlugs.length ||
               customerMatchesArea(customer, areaSlugs))
         ),
-        restaurantSlug,
         allCustomers.length
       ));
     }
 
     if (selectedCustomers.length < count) {
-      addCustomers(rotateCustomers(
+      addCustomers(randomCustomers(
         allCustomers.filter((customer) => customer.restaurant === "shared"),
-        restaurantSlug,
         allCustomers.length
       ));
     }
@@ -727,7 +734,7 @@
     }
 
     if (selectedCustomers.length < count) {
-      addCustomers(rotateCustomers(
+      addCustomers(randomCustomers(
         allCustomers.filter(
           (customer) =>
             customer.restaurant === "shared" &&
@@ -735,7 +742,6 @@
               !Array.isArray(customer.areaSlugs) ||
               !customer.areaSlugs.length)
         ),
-        restaurantSlug,
         allCustomers.length
       ), { skipOwned: false });
     }

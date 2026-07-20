@@ -114,6 +114,15 @@
     return rotated.slice(0, count);
   }
 
+  function randomCustomers(customers, count) {
+    const shuffled = customers.slice();
+    for (let index = shuffled.length - 1; index > 0; index -= 1) {
+      const swapIndex = Math.floor(Math.random() * (index + 1));
+      [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+    }
+    return shuffled.slice(0, count);
+  }
+
   function getOwnedCustomerIds(profile, restaurantSlug) {
     const collection = Array.isArray(profile?.customerCollection) ? profile.customerCollection : [];
     return new Set(
@@ -551,13 +560,13 @@
     }
 
     if (selectedCustomers.length < count) {
-      addCustomers(sortFeaturedCustomers(
+      addCustomers(randomCustomers(sortFeaturedCustomers(
         allCustomers.filter(
           (customer) =>
             customer.restaurant === "shared" &&
             customerMatchesArea(customer, areaSlugs)
         )
-      ));
+      ), allCustomers.length));
     }
 
     if (selectedCustomers.length < count && activeProfile) {
@@ -565,7 +574,7 @@
     }
 
     if (selectedCustomers.length < count) {
-      addCustomers(rotateCustomers(
+      addCustomers(randomCustomers(
         allCustomers.filter(
           (customer) =>
             customer.restaurant === "shared" &&
@@ -573,7 +582,6 @@
               !customer.areaSlugs.length ||
               customerMatchesArea(customer, areaSlugs))
         ),
-        restaurant.slug,
         allCustomers.length
       ));
     }
