@@ -3091,11 +3091,13 @@
       : "You are in first place. Play again to make it harder for anyone to catch you.";
 
     return `
-      <div class="hero-card result-followup-card result-leaderboard-rank-card" id="result-leaderboard-rank-slot" style="margin-top: 0; padding: 16px;">
-        <p class="kicker" style="margin: 0 0 6px;">${escapeHtml(restaurant.name)} Leaderboard</p>
-        <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">You are now ranked ${formatRankNumber(rank)} in character points.</h3>
-        <p class="copy" style="margin: 0 0 12px;">You have ${core.formatCurrency(value)} on the ${escapeHtml(restaurant.name)} leaderboard. ${escapeHtml(moveUpText)}</p>
-        <div class="button-row">
+      <div class="hero-card result-followup-card result-leaderboard-rank-card" id="result-leaderboard-rank-slot">
+        <div class="result-leaderboard-rank-copy">
+          <p class="kicker">${escapeHtml(restaurant.name)} Leaderboard</p>
+          <h3 class="section-title">You are now ranked ${formatRankNumber(rank)} in character points.</h3>
+          <p class="copy">You have ${core.formatCurrency(value)} on the ${escapeHtml(restaurant.name)} leaderboard. ${escapeHtml(moveUpText)}</p>
+        </div>
+        <div class="button-row result-leaderboard-rank-actions">
           <a class="button button-hot" href="${leaderboardHref}">See the ${escapeHtml(restaurant.name)} Leaderboard</a>
         </div>
       </div>
