@@ -2778,6 +2778,9 @@
   bindContact();
   bindJoinRoomForm();
   updateSalesDemoCta();
+  window.addEventListener("restaurantChallenge:restaurantsUpdated", () => {
+    renderAll();
+  });
   renderAll();
   if (core.whenReady) {
     core.whenReady().then(async () => {

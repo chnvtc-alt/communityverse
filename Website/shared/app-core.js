@@ -1661,6 +1661,7 @@
     });
 
     restaurants.splice(0, restaurants.length, ...mergedRestaurants);
+    window.dispatchEvent(new CustomEvent("restaurantChallenge:restaurantsUpdated"));
   }
 
   async function refreshRestaurantBankFromServer() {
