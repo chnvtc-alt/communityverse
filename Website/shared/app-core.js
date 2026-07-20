@@ -4,6 +4,8 @@
     activeProfileId: "restaurant_challenge_active_profile_v1",
     activeSession: "restaurant_challenge_active_session_v1",
     profileAccessTokens: "restaurant_challenge_profile_access_tokens_v1",
+    syncedSessionIds: "restaurant_challenge_synced_session_ids_v1",
+    sessionSyncAttempts: "restaurant_challenge_session_sync_attempts_v1",
   };
   const API_BASE = "/api";
   const USE_REMOTE_SYNC = typeof window.fetch === "function";
@@ -13,6 +15,8 @@
   const FAVORITE_VISIT_GOAL = 10;
   const FAVORITE_PROGRESS_MIN_SCORE = 7;
   const FAVORITE_VALUE_MULTIPLIER = 2;
+  const SESSION_SYNC_RETRY_DELAY_MS = 10 * 60 * 1000;
+  const RECENT_SESSION_SYNC_LIMIT = 25;
   const TRIVIA_LEADERBOARD_MIN_GAMES = 4;
   const CUSTOMER_STATUS_RANK = {
     lost: 0,
@@ -37,6 +41,7 @@
   const activeSessionState = {
     session: null,
   };
+  const sessionSyncInFlight = new Set();
   let readyResolve = () => {};
   const ready = new Promise((resolve) => {
     readyResolve = resolve;
@@ -2750,6 +2755,76 @@
     };
   }
 
+  function getSyncedSessionIds() {
+    return new Set(
+      readJson(STORAGE_KEYS.syncedSessionIds, [])
+        .map((id) => String(id || "").trim())
+        .filter(Boolean)
+    );
+  }
+
+  function rememberSyncedSession(sessionId) {
+    const safeSessionId = String(sessionId || "").trim();
+    if (!safeSessionId) {
+      return;
+    }
+
+    const syncedIds = getSyncedSessionIds();
+    syncedIds.add(safeSessionId);
+    writeJson(STORAGE_KEYS.syncedSessionIds, [...syncedIds].slice(-500));
+  }
+
+  function getSessionSyncAttempts() {
+    const attempts = readJson(STORAGE_KEYS.sessionSyncAttempts, {});
+    return attempts && typeof attempts === "object" && !Array.isArray(attempts)
+      ? attempts
+      : {};
+  }
+
+  function rememberSessionSyncAttempt(sessionId) {
+    const safeSessionId = String(sessionId || "").trim();
+    if (!safeSessionId) {
+      return;
+    }
+
+    const attempts = getSessionSyncAttempts();
+    attempts[safeSessionId] = Date.now();
+    writeJson(STORAGE_KEYS.sessionSyncAttempts, attempts);
+  }
+
+  function shouldSyncSession(sessionId) {
+    const safeSessionId = String(sessionId || "").trim();
+    if (!safeSessionId || sessionSyncInFlight.has(safeSessionId) || getSyncedSessionIds().has(safeSessionId)) {
+      return false;
+    }
+
+    const attempts = getSessionSyncAttempts();
+    const lastAttempt = Number(attempts[safeSessionId]) || 0;
+    return !lastAttempt || Date.now() - lastAttempt >= SESSION_SYNC_RETRY_DELAY_MS;
+  }
+
+  async function postSessionToServer(session, token) {
+    const sessionId = String(session?.id || "").trim();
+    if (!USE_REMOTE_SYNC || !sessionId || !token || !shouldSyncSession(sessionId)) {
+      return;
+    }
+
+    sessionSyncInFlight.add(sessionId);
+    rememberSessionSyncAttempt(sessionId);
+    try {
+      await requestJson("/sessions", {
+        method: "POST",
+        headers: {
+          "X-Profile-Token": token,
+        },
+        body: JSON.stringify(session),
+      });
+      rememberSyncedSession(sessionId);
+    } finally {
+      sessionSyncInFlight.delete(sessionId);
+    }
+  }
+
   async function syncRecentSessionsToServer(profile, token) {
     if (!USE_REMOTE_SYNC || !profile || !token || isDemoProfile(profile)) {
       return;
@@ -2758,21 +2833,14 @@
     const recentSessions = Array.isArray(profile.recentSessions) ? profile.recentSessions : [];
     await Promise.allSettled(
       recentSessions
+        .slice(0, RECENT_SESSION_SYNC_LIMIT)
         .map((session) => sessionPayloadFromRecentSession(profile, session))
         .filter(Boolean)
-        .map((session) =>
-          requestJson("/sessions", {
-            method: "POST",
-            headers: {
-              "X-Profile-Token": token,
-            },
-            body: JSON.stringify(session),
-          })
-        )
+        .map((session) => postSessionToServer(session, token))
     );
   }
 
-  async function syncProfilesToServer(profiles) {
+  async function syncProfilesToServer(profiles, options = {}) {
     if (!USE_REMOTE_SYNC) {
       return;
     }
@@ -2796,7 +2864,9 @@
       },
       body: JSON.stringify(activeProfile),
     });
-    await syncRecentSessionsToServer(activeProfile, token);
+    if (options.syncRecentSessions !== false) {
+      await syncRecentSessionsToServer(activeProfile, token);
+    }
     if (syncedProfile?.id) {
       const safeSyncedProfile = mergeProfileProgress(activeProfile, syncedProfile);
       const mergedProfiles = mergeProfileLists(profilesCacheState.profiles, [safeSyncedProfile]);
@@ -2815,18 +2885,12 @@
       return;
     }
 
-    await syncActiveProfile();
+    await syncActiveProfile({ syncRecentSessions: false });
     const token = getProfileAccessToken(session.profileId);
     if (!token) {
       throw new Error("This saved restaurant needs email sign-in before new games can count. Please sign in, then start the game again.");
     }
-    await requestJson("/sessions", {
-      method: "POST",
-      headers: {
-        "X-Profile-Token": token,
-      },
-      body: JSON.stringify(session),
-    }).catch(() => null);
+    await postSessionToServer(session, token).catch(() => null);
   }
 
   async function refreshProfilesFromServer() {
@@ -3406,8 +3470,8 @@
     void syncProfilesToServer(normalized).catch(() => null);
   }
 
-  async function syncActiveProfile() {
-    await syncProfilesToServer(getProfiles());
+  async function syncActiveProfile(options = {}) {
+    await syncProfilesToServer(getProfiles(), options);
     return getActiveProfile();
   }
 
