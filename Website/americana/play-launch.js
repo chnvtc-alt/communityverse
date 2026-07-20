@@ -52,6 +52,9 @@
     multiplayerJoinCode: "",
     multiplayerLoading: false,
     liveAdvanceInFlight: false,
+    resultLeaderboardSessionId: "",
+    resultLeaderboardMarkup: "",
+    resultLeaderboardLoading: false,
   };
 
   const mobileGuestQuery = "(max-width: 960px)";
@@ -3054,6 +3057,102 @@
     `;
   }
 
+  function restaurantLeaderboardHref(metric = "characterPoints") {
+    const params = new URLSearchParams({
+      hub: "1",
+      scope: "restaurant",
+      restaurant: restaurantSlug,
+      metric,
+    });
+    return `/restaurant/?${params.toString()}#leaderboard-panel`;
+  }
+
+  function resultLeaderboardPromptSlot(session) {
+    if (state.resultLeaderboardSessionId === session.id && state.resultLeaderboardMarkup) {
+      return state.resultLeaderboardMarkup;
+    }
+    return `<div id="result-leaderboard-rank-slot"></div>`;
+  }
+
+  function formatRankNumber(rank) {
+    const safeRank = Math.max(1, Math.round(Number(rank) || 0));
+    return `#${safeRank}`;
+  }
+
+  function resultLeaderboardPromptMarkup(row, nextRow) {
+    const rank = Math.max(1, Math.round(Number(row?.rank) || 0));
+    const value = Math.max(0, Math.round(Number(row?.value) || 0));
+    const pointsNeeded = nextRow
+      ? Math.max(1, Math.round(Number(nextRow.value) || 0) - value + 1)
+      : 0;
+    const leaderboardHref = restaurantLeaderboardHref("characterPoints");
+    const moveUpText = nextRow
+      ? `You need ${core.formatCurrency(pointsNeeded)} more to pass ${nextRow.restaurantName || "the restaurant above you"}.`
+      : "You are holding the top spot. Play again to make it harder to catch you.";
+
+    return `
+      <div class="hero-card result-followup-card result-leaderboard-rank-card" id="result-leaderboard-rank-slot" style="margin-top: 0; padding: 16px;">
+        <p class="kicker" style="margin: 0 0 6px;">${escapeHtml(restaurant.name)} Leaderboard</p>
+        <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">You are now ranked ${formatRankNumber(rank)} in character points.</h3>
+        <p class="copy" style="margin: 0 0 12px;">You have ${core.formatCurrency(value)} on the ${escapeHtml(restaurant.name)} leaderboard. ${escapeHtml(moveUpText)}</p>
+        <div class="button-row">
+          <a class="button button-hot" href="${leaderboardHref}">See the ${escapeHtml(restaurant.name)} Leaderboard</a>
+        </div>
+      </div>
+    `;
+  }
+
+  async function loadResultLeaderboardPrompt(session, attempt = 1) {
+    const profile = getProfile();
+    if (
+      isSalesDemoMode() ||
+      !session?.id ||
+      !profile?.id ||
+      state.resultLeaderboardLoading ||
+      (state.resultLeaderboardSessionId === session.id && state.resultLeaderboardMarkup)
+    ) {
+      return;
+    }
+
+    state.resultLeaderboardLoading = true;
+    try {
+      if (attempt === 1) {
+        await new Promise((resolve) => window.setTimeout(resolve, 900));
+      }
+      const params = new URLSearchParams({
+        metric: "characterPoints",
+        restaurantSlug,
+      });
+      const response = await fetch(`/api/leaderboard?${params.toString()}`, { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error("Leaderboard unavailable.");
+      }
+      const rows = await response.json();
+      const leaderboardRows = Array.isArray(rows) ? rows : [];
+      const rowIndex = leaderboardRows.findIndex((entry) => entry.profileId === profile.id);
+      if (rowIndex < 0) {
+        if (attempt < 3) {
+          state.resultLeaderboardLoading = false;
+          window.setTimeout(() => loadResultLeaderboardPrompt(session, attempt + 1), 1400);
+        }
+        return;
+      }
+
+      const row = leaderboardRows[rowIndex];
+      const nextRow = rowIndex > 0 ? leaderboardRows[rowIndex - 1] : null;
+      state.resultLeaderboardSessionId = session.id;
+      state.resultLeaderboardMarkup = resultLeaderboardPromptMarkup(row, nextRow);
+      const slot = document.getElementById("result-leaderboard-rank-slot");
+      if (slot) {
+        slot.outerHTML = state.resultLeaderboardMarkup;
+      }
+    } catch {
+      // This is a bonus prompt; the result screen should never depend on the leaderboard API.
+    } finally {
+      state.resultLeaderboardLoading = false;
+    }
+  }
+
   function getBioPreview(bio, maxLength = 170) {
     const text = String(bio || "").trim();
     if (text.length <= maxLength) {
@@ -3171,6 +3270,7 @@
         `
         : "";
     const netWorthPromptMarkup = renderResultNetWorthPrompt(profile, overallSummary?.stats || profile?.stats);
+    const leaderboardPromptMarkup = resultLeaderboardPromptSlot(session);
     const feedbackRewardMarkup = renderFeedbackRewardCard();
     const multiplayerWinnerMarkup = state.multiplayerRoom ? `<div id="multiplayer-winner-slot">${roomWinnerMarkup(true)}</div>` : "";
     const multiplayerMarkup = state.multiplayerRoom ? `<div id="multiplayer-card-slot">${renderMultiplayerCard()}</div>` : "";
@@ -3192,6 +3292,7 @@
         ${multiplayerWinnerMarkup}
         <div class="divider"></div>
         ${multiplayerMarkup}
+        ${!state.showProfileForm && !showGuestSavePrompt ? leaderboardPromptMarkup : ""}
         ${triviaLeaderboardMilestoneMarkup}
         ${
           showGuestSavePrompt
@@ -3270,6 +3371,7 @@
     bindHowToPlay();
     bindFeedbackRewardCard();
     bindMultiplayerCard();
+    void loadResultLeaderboardPrompt(session);
 
     if (isGuest && !state.showProfileForm) {
       document.getElementById("register-now-button").addEventListener("click", () => {
