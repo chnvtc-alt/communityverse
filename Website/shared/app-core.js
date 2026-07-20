@@ -2872,13 +2872,20 @@
     ]);
   }
 
+  const startupRestaurantBankPromise = refreshRestaurantBankFromServer();
+  const startupProfileRefreshPromise = LOAD_ALL_REMOTE_PROFILES_ON_STARTUP
+    ? refreshProfilesFromServer()
+    : Promise.resolve();
+  const startupQuestionBankPromise = refreshQuestionBankFromServer();
+  const startupCustomerBankPromise = refreshCustomerBankFromServer();
+
   void Promise.allSettled([
-    withStartupTimeout(refreshRestaurantBankFromServer()),
+    withStartupTimeout(startupRestaurantBankPromise),
     LOAD_ALL_REMOTE_PROFILES_ON_STARTUP
-      ? withStartupTimeout(refreshProfilesFromServer())
+      ? withStartupTimeout(startupProfileRefreshPromise)
       : Promise.resolve(),
-    withStartupTimeout(refreshQuestionBankFromServer()),
-    withStartupTimeout(refreshCustomerBankFromServer()),
+    withStartupTimeout(startupQuestionBankPromise),
+    withStartupTimeout(startupCustomerBankPromise),
   ]).then(() => {
     readyResolve();
   });
@@ -4984,6 +4991,33 @@
     );
   }
 
+  function hasRestaurantSpecificCustomers(restaurantSlug) {
+    const normalizedSlug = normalizeRestaurant(restaurantSlug);
+    return customers.some(
+      (customer) =>
+        !customer.feedbackRewardOnly &&
+        customer.restaurant === normalizedSlug
+    );
+  }
+
+  async function waitForRestaurantSpecificCustomers(restaurantSlug, timeoutMs = 6500) {
+    const normalizedSlug = normalizeRestaurant(restaurantSlug);
+    if (!normalizedSlug || normalizedSlug === "americana" || hasRestaurantSpecificCustomers(normalizedSlug)) {
+      return hasRestaurantSpecificCustomers(normalizedSlug);
+    }
+
+    if (!USE_REMOTE_SYNC) {
+      return false;
+    }
+
+    await Promise.race([
+      startupCustomerBankPromise,
+      new Promise((resolve) => window.setTimeout(resolve, timeoutMs)),
+    ]).catch(() => null);
+
+    return hasRestaurantSpecificCustomers(normalizedSlug);
+  }
+
   function isRestaurantNameBlocked(name) {
     const normalized = normalizeText(name);
     const compact = compactRestaurantText(name);
@@ -5674,11 +5708,17 @@
     const restaurantSpecific = allCustomers.filter(
       (customer) =>
         customer.restaurant === restaurant.slug &&
-        unownedRecentSafe(customer)
+        !ownedCustomerIds.has(customer.id)
     );
 
     if (restaurantSpecific.length) {
-      return pickFrom(restaurantSpecific, true);
+      const recentSafeRestaurantSpecific = restaurantSpecific.filter(
+        (customer) => !recentCustomerIds.includes(customer.id)
+      );
+      return pickFrom(
+        recentSafeRestaurantSpecific.length ? recentSafeRestaurantSpecific : restaurantSpecific,
+        true
+      );
     }
 
     const themeSpecific = allCustomers.filter(
@@ -6437,6 +6477,7 @@
     buyRestaurantUpgrade,
     buyNextRestaurantExpansion,
     getCustomersForRestaurant,
+    waitForRestaurantSpecificCustomers,
     getFeedbackRewardConfig,
     submitFeedbackSurveyResponse,
     awardFeedbackReward,

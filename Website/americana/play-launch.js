@@ -2497,6 +2497,7 @@
       return;
     }
 
+    await core.waitForRestaurantSpecificCustomers?.(restaurantSlug);
     const requestedReplayCustomerId = replayCustomer?.id || replayCustomerId;
     const options = requestedReplayCustomerId ? { customerId: requestedReplayCustomerId } : {};
     const session = core.startNewSession(restaurantSlug, options);
