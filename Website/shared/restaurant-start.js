@@ -301,7 +301,28 @@
 
   function customerSortPriority(customer) {
     const sortOrder = Number(customer?.sortOrder) || 0;
-    return sortOrder > 0 ? sortOrder : Number.POSITIVE_INFINITY;
+    if (sortOrder > 0) {
+      return sortOrder;
+    }
+    if (sortOrder < 0) {
+      return 200000 + Math.abs(sortOrder);
+    }
+    return 100000;
+  }
+
+  function shuffleWithinCustomerSortTiers(customers = []) {
+    const groups = new Map();
+    customers.forEach((customer) => {
+      const priority = customerSortPriority(customer);
+      if (!groups.has(priority)) {
+        groups.set(priority, []);
+      }
+      groups.get(priority).push(customer);
+    });
+
+    return [...groups.keys()]
+      .sort((left, right) => left - right)
+      .flatMap((priority) => randomCustomers(groups.get(priority) || [], Number.MAX_SAFE_INTEGER));
   }
 
   function sortFeaturedCustomers(customers = []) {
@@ -560,13 +581,13 @@
     }
 
     if (selectedCustomers.length < count) {
-      addCustomers(randomCustomers(sortFeaturedCustomers(
+      addCustomers(shuffleWithinCustomerSortTiers(sortFeaturedCustomers(
         allCustomers.filter(
           (customer) =>
             customer.restaurant === "shared" &&
             customerMatchesArea(customer, areaSlugs)
         )
-      ), allCustomers.length));
+      )));
     }
 
     if (selectedCustomers.length < count && activeProfile) {
@@ -574,15 +595,14 @@
     }
 
     if (selectedCustomers.length < count) {
-      addCustomers(randomCustomers(
+      addCustomers(shuffleWithinCustomerSortTiers(
         allCustomers.filter(
           (customer) =>
             customer.restaurant === "shared" &&
             (!Array.isArray(customer.areaSlugs) ||
               !customer.areaSlugs.length ||
               customerMatchesArea(customer, areaSlugs))
-        ),
-        allCustomers.length
+        )
       ));
     }
 

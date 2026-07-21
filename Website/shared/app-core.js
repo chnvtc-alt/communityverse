@@ -4889,7 +4889,13 @@
 
   function customerSortPriority(customer) {
     const sortOrder = Number(customer?.sortOrder) || 0;
-    return sortOrder > 0 ? sortOrder : Number.POSITIVE_INFINITY;
+    if (sortOrder > 0) {
+      return sortOrder;
+    }
+    if (sortOrder < 0) {
+      return 200000 + Math.abs(sortOrder);
+    }
+    return 100000;
   }
 
   function filterLowestCustomerSortTier(customers = []) {
@@ -5796,7 +5802,7 @@
     );
 
     if (themeSpecific.length) {
-      return pickFrom(themeSpecific);
+      return pickFrom(themeSpecific, true);
     }
 
     const areaSpecific = sortFeaturedCustomers(allCustomers.filter(
@@ -5807,7 +5813,7 @@
     ));
 
     if (areaSpecific.length) {
-      return pickFrom(areaSpecific);
+      return pickFrom(areaSpecific, true);
     }
 
     const sharedSpecific = allCustomers.filter(
@@ -5817,7 +5823,7 @@
     );
 
     if (sharedSpecific.length) {
-      return pickFrom(sharedSpecific);
+      return pickFrom(sharedSpecific, true);
     }
 
     const favoriteReplayIds = new Set(
