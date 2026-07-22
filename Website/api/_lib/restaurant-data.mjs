@@ -136,10 +136,11 @@ function getRestaurantCashOnHand(profile, stats = null) {
 }
 
 function getCustomerLoyaltyValue(stats) {
-  const collectedCharacters =
-    Math.max(0, Number(stats.regularCustomers) || 0) +
-    Math.max(0, Number(stats.occasionalCustomers) || 0);
-  return collectedCharacters * 100;
+  return Math.max(
+    0,
+    Number(stats?.totalCustomerValue) || 0,
+    Number(stats?.estimatedSales) || 0
+  );
 }
 
 function getRatingMultiplier(stats) {

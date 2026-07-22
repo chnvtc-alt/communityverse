@@ -1219,9 +1219,7 @@
     const unlockedCharacters =
       (Number(summary.stats.regularCustomers) || 0) + (Number(summary.stats.occasionalCustomers) || 0);
     const characterDetail =
-      Number(breakdown.loyaltyValue) === unlockedCharacters * 100
-        ? `${unlockedCharacters} x 100 pts`
-        : `${unlockedCharacters} characters`;
+      `${unlockedCharacters} character${unlockedCharacters === 1 ? "" : "s"}`;
     const rows = [
       { label: "Restaurant Type", detail: breakdown.expansionLabel || "Food Truck", value: breakdown.expansionValue },
       { label: "Upgrades", value: breakdown.upgradeValue },
