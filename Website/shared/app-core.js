@@ -2889,12 +2889,12 @@
       return;
     }
 
-    await syncActiveProfile({ syncRecentSessions: false });
     const token = getProfileAccessToken(session.profileId);
     if (!token) {
       throw new Error("This saved restaurant needs email sign-in before new games can count. Please sign in, then start the game again.");
     }
     await postSessionToServer(session, token).catch(() => null);
+    await syncActiveProfile({ syncRecentSessions: false }).catch(() => null);
   }
 
   async function refreshProfilesFromServer() {
