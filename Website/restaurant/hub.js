@@ -1223,9 +1223,9 @@
     const rows = [
       { label: "Restaurant Type", detail: breakdown.expansionLabel || "Food Truck", value: breakdown.expansionValue },
       { label: "Upgrades", value: breakdown.upgradeValue },
-      { label: "Characters", detail: characterDetail, value: breakdown.loyaltyValue },
-      { label: "Spendable Points *", value: cashOnHand },
-      { label: "Trivia Accuracy **", value: breakdown.ratingValue },
+      { label: "Character Points", detail: characterDetail, value: breakdown.loyaltyValue },
+      { label: "Trivia Accuracy *", value: breakdown.ratingValue },
+      { label: "Spendable Points **", value: cashOnHand, className: "restaurant-value-breakdown-row-spendable" },
     ];
 
     return `
@@ -1237,8 +1237,8 @@
         <div class="restaurant-value-breakdown-grid">
           ${rows
             .map(
-              ({ label, detail = "", value }) => `
-                <div class="restaurant-value-breakdown-row">
+              ({ label, detail = "", value, className = "" }) => `
+                <div class="restaurant-value-breakdown-row ${className}">
                   <span>
                     ${escapeHtml(label)}
                     ${detail ? `<small>${escapeHtml(detail)}</small>` : ""}
@@ -1250,8 +1250,8 @@
             .join("")}
         </div>
         <p class="restaurant-value-breakdown-note">
-          * Spendable Points are available to buy expansions and upgrades. They are shown here, but are not added to Total Score.<br />
-          ** Trivia Accuracy = bonus based on your correct-answer rate. 100% accuracy adds 2.5% to Restaurant Type + Characters + Upgrades, not Spendable Points.
+          * Trivia Accuracy = bonus based on your correct-answer rate. 100% accuracy adds 2.5% to Restaurant Type + Upgrades + Character Points.<br />
+          ** Spendable Points are available to buy expansions and upgrades. They are shown here, but are not added to Total Score.
         </p>
       </div>
     `;

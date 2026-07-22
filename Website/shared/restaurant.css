@@ -1535,6 +1535,17 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   white-space: nowrap;
 }
 
+.restaurant-value-breakdown-row-spendable {
+  background: rgba(209, 125, 27, 0.1);
+  border: 1px solid rgba(209, 125, 27, 0.26);
+  color: #7a4a12;
+}
+
+.restaurant-value-breakdown-row-spendable small,
+.restaurant-value-breakdown-row-spendable strong {
+  color: #5c350b;
+}
+
 .restaurant-value-breakdown-note {
   margin: 2px 0 0;
   padding-top: 8px;
