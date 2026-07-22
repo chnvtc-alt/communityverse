@@ -456,7 +456,7 @@ function publicOverallStatsFor(profile, publicRestaurantSlugs) {
   if (!entries.length) {
     const stats = { ...emptyStats(), ...(safeProfile.stats || {}) };
     stats.restaurantValue = getRestaurantValue(safeProfile, stats, "", publicRestaurantSlugs);
-    stats.netWorth = stats.restaurantValue + getRestaurantCashOnHand(safeProfile, safeProfile.stats);
+    stats.netWorth = stats.restaurantValue;
     return stats;
   }
 
@@ -474,7 +474,7 @@ function publicOverallStatsFor(profile, publicRestaurantSlugs) {
   }
 
   stats.restaurantValue = getRestaurantValue(safeProfile, stats, "", publicRestaurantSlugs);
-  stats.netWorth = stats.restaurantValue + getRestaurantCashOnHand(safeProfile, safeProfile.stats);
+  stats.netWorth = stats.restaurantValue;
   return stats;
 }
 
@@ -506,7 +506,7 @@ export function leaderboardValue(stats, metric) {
   }
 
   if (metric === "netWorth") {
-    return stats.netWorth || stats.restaurantValue || 0;
+    return stats.restaurantValue || 0;
   }
 
   if (metric === "regularCustomers") {
@@ -590,8 +590,7 @@ export function buildLeaderboard(profiles, metric = "estimatedSales", restaurant
         );
       }
       if (metric === "netWorth" && !restaurantValueStats.netWorth) {
-        restaurantValueStats.netWorth =
-          restaurantValueStats.restaurantValue + getRestaurantCashOnHand(profile, profile.stats);
+        restaurantValueStats.netWorth = restaurantValueStats.restaurantValue;
       }
 
       return {

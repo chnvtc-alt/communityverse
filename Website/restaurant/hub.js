@@ -27,7 +27,7 @@
       value: "netWorth",
       label: "Total Score",
       rankLabel: "Total Score",
-      description: "Overall score from your virtual restaurant, characters, trivia, and spendable points.",
+      description: "Overall score from your virtual restaurant type, upgrades, characters, and trivia accuracy.",
     },
     {
       value: "triviaPoints",
@@ -675,7 +675,7 @@
     }
 
     if (metric === "netWorth") {
-      return stats.netWorth || stats.restaurantValue || 0;
+      return stats.restaurantValue || 0;
     }
 
     if (metric === "regularCustomers") {
@@ -1215,7 +1215,7 @@
     const cashOnHand = core.getRestaurantCashOnHand
       ? core.getRestaurantCashOnHand(profile, summary.stats)
       : Math.max(0, Number(summary.stats.estimatedSales) || 0);
-    const netWorth = Math.max(0, Number(breakdown.total) || 0) + cashOnHand;
+    const totalScore = Math.max(0, Number(breakdown.total) || 0);
     const unlockedCharacters =
       (Number(summary.stats.regularCustomers) || 0) + (Number(summary.stats.occasionalCustomers) || 0);
     const characterDetail =
@@ -1231,8 +1231,8 @@
     return `
       <div class="restaurant-value-breakdown" aria-label="Total Score breakdown">
         <div class="restaurant-value-breakdown-head">
-          <span>Total Score = Sum of the score cards below</span>
-          <strong>${core.formatCurrency(netWorth)}</strong>
+          <span>Total Score = Restaurant Type + Upgrades + Characters + Trivia Accuracy</span>
+          <strong>${core.formatCurrency(totalScore)}</strong>
         </div>
         <div class="restaurant-value-breakdown-grid">
           ${rows
@@ -1250,7 +1250,7 @@
             .join("")}
         </div>
         <p class="restaurant-value-breakdown-note">
-          * Spendable Points = Trivia Rewards from earning characters minus points spent on restaurant expansions and upgrades.<br />
+          * Spendable Points are available to buy expansions and upgrades. They are shown here, but are not added to Total Score.<br />
           ** Trivia Accuracy = bonus based on your correct-answer rate. 100% accuracy adds 2.5% to Restaurant Type + Characters + Upgrades, not Spendable Points.
         </p>
       </div>
@@ -1442,7 +1442,7 @@
     }, null);
     const nextUpgradeShortfall = nextUpgradeCost === null ? 0 : Math.max(0, nextUpgradeCost - cashOnHand);
     const valueAdded = Math.max(0, Number(preview.valueAdded) || 0);
-    const totalScoreIncrease = Math.max(0, valueAdded - nextCost);
+    const totalScoreIncrease = valueAdded;
     const expansionNote = (() => {
       if (!preview.next) {
         return `You have ${core.formatCurrency(cashOnHand)} in Spendable Points. Your restaurant is fully expanded.`;
@@ -1601,7 +1601,7 @@
     const cashOnHand = core.getRestaurantCashOnHand
       ? core.getRestaurantCashOnHand(profile, safeSummary.stats)
       : safeSummary.stats.estimatedSales || 0;
-    const totalScore = Math.max(0, Number(safeSummary.stats.restaurantValue) || 0) + cashOnHand;
+    const totalScore = Math.max(0, Number(safeSummary.stats.restaurantValue) || 0);
     const selectedDirectoryRestaurant = getSelectedDirectoryRestaurant(profile);
     const customerCompleteMarkup = renderCustomerCollectionCompleteMarkup(profile, selectedDirectoryRestaurant);
     const baseRestaurantSlug = String(profile?.baseRestaurantSlug || "").trim();

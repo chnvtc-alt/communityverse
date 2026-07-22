@@ -6409,7 +6409,7 @@
     }
 
     stats.restaurantValue = getRestaurantValue(safeProfile, stats);
-    stats.netWorth = stats.restaurantValue + getRestaurantCashOnHand(safeProfile, safeProfile.stats);
+    stats.netWorth = stats.restaurantValue;
     return stats;
   }
 
@@ -6447,8 +6447,7 @@
                 ? restaurantValueStats.restaurantValue || getRestaurantValue(safeProfile, restaurantValueStats)
               : metric === "netWorth"
                 ? restaurantValueStats.netWorth ||
-                  ((restaurantValueStats.restaurantValue || getRestaurantValue(safeProfile, restaurantValueStats)) +
-                    getRestaurantCashOnHand(safeProfile, safeProfile.stats))
+                  (restaurantValueStats.restaurantValue || getRestaurantValue(safeProfile, restaurantValueStats))
               : metric === "regularCustomers"
                 ? stats.regularCustomers
                 : metric === "favoriteCustomers"
