@@ -3349,6 +3349,7 @@
     return {
       current,
       next,
+      cost: next ? Math.max(0, (Number(next.cost) || 0) - (Number(current.cost) || 0)) : 0,
       valueAdded: next ? Math.max(0, (Number(next.value) || 0) - (Number(current.value) || 0)) : 0,
       isMaxLevel: !next,
     };
@@ -3454,7 +3455,7 @@
       return { ok: false, message: "This restaurant is already fully expanded.", profile: safeProfile };
     }
 
-    const cost = Math.max(0, Number(preview.next.cost) || 0);
+    const cost = Math.max(0, Number(preview.cost) || Number(preview.next.cost) || 0);
     const cashOnHand = Math.max(
       originalCashOnHand,
       getRestaurantCashOnHand(safeProfile, safeProfile.stats)

@@ -1423,7 +1423,7 @@
     const cashOnHand = core.getRestaurantCashOnHand
       ? core.getRestaurantCashOnHand(profile, stats || profile.stats)
       : Math.max(0, Number((stats || profile.stats)?.estimatedSales) || 0);
-    const nextCost = Math.max(0, Number(preview.next?.cost) || 0);
+    const nextCost = Math.max(0, Number(preview.cost) || Number(preview.next?.cost) || 0);
     const canBuyNext = Boolean(preview.next && core.buyNextRestaurantExpansion && cashOnHand >= nextCost);
     const shortfall = preview.next ? Math.max(0, nextCost - cashOnHand) : 0;
     const expansionPreview = core.getRestaurantExpansionPreview
@@ -1484,7 +1484,7 @@
               </div>
               <div class="restaurant-expansion-preview-card">
                 <span class="restaurant-expansion-label">Cost</span>
-                <strong>${core.formatCurrency(preview.next.cost)}</strong>
+                <strong>${core.formatCurrency(nextCost)}</strong>
               </div>
               <div class="restaurant-expansion-preview-card">
                 <span class="restaurant-expansion-label">Adds to type</span>
