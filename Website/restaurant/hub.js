@@ -726,14 +726,14 @@
   }
 
   function getDefaultLeaderboardRestaurantSlug(profile) {
+    const selectedDirectorySlug = String(state.selectedDirectorySlug || "").trim();
+    if (selectedDirectorySlug && getPlayableRestaurants().some((restaurant) => restaurant.slug === selectedDirectorySlug)) {
+      return selectedDirectorySlug;
+    }
+
     const recentRestaurantSlug = String(profile?.recentSessions?.[0]?.restaurantSlug || "").trim();
     if (recentRestaurantSlug && getPlayableRestaurants().some((restaurant) => restaurant.slug === recentRestaurantSlug)) {
       return recentRestaurantSlug;
-    }
-
-    const baseRestaurantSlug = String(profile?.baseRestaurantSlug || "").trim();
-    if (baseRestaurantSlug && getPlayableRestaurants().some((restaurant) => restaurant.slug === baseRestaurantSlug)) {
-      return baseRestaurantSlug;
     }
 
     return getFeaturedDirectorySlug(getPlayableDropdownRestaurants(profile));

@@ -2810,13 +2810,13 @@
   async function postSessionToServer(session, token) {
     const sessionId = String(session?.id || "").trim();
     if (!USE_REMOTE_SYNC || !sessionId || !token || !shouldSyncSession(sessionId)) {
-      return;
+      return null;
     }
 
     sessionSyncInFlight.add(sessionId);
     rememberSessionSyncAttempt(sessionId);
     try {
-      await requestJson("/sessions", {
+      const syncedSession = await requestJson("/sessions", {
         method: "POST",
         headers: {
           "X-Profile-Token": token,
@@ -2824,9 +2824,34 @@
         body: JSON.stringify(session),
       });
       rememberSyncedSession(sessionId);
+      return syncedSession;
     } finally {
       sessionSyncInFlight.delete(sessionId);
     }
+  }
+
+  async function refreshProfileFromServer(profileId) {
+    const safeProfileId = String(profileId || "").trim();
+    if (!USE_REMOTE_SYNC || !safeProfileId) {
+      return null;
+    }
+
+    const remoteProfile = await requestJson(`/profiles/${encodeURIComponent(safeProfileId)}`, { method: "GET" });
+    if (!remoteProfile?.id) {
+      return null;
+    }
+
+    const localProfile = getProfiles().find((profile) => profile.id === safeProfileId) || null;
+    const mergedProfile = mergeProfileProgress(localProfile, remoteProfile);
+    const mergedProfiles = mergeProfileLists(profilesCacheState.profiles, [mergedProfile]);
+    setProfilesCache(mergedProfiles, profilesCacheState.source);
+    activeProfileState.profile = mergedProfile;
+    try {
+      writeJson(STORAGE_KEYS.profiles, mergedProfiles);
+    } catch (error) {
+      // Keep the server-confirmed profile in memory even if browser storage is unavailable.
+    }
+    return mergedProfile;
   }
 
   async function syncRecentSessionsToServer(profile, token) {
@@ -2893,8 +2918,10 @@
     if (!token) {
       throw new Error("This saved restaurant needs email sign-in before new games can count. Please sign in, then start the game again.");
     }
-    await postSessionToServer(session, token).catch(() => null);
-    await syncActiveProfile({ syncRecentSessions: false }).catch(() => null);
+    const syncedSession = await postSessionToServer(session, token).catch(() => null);
+    if (syncedSession) {
+      await refreshProfileFromServer(session.profileId).catch(() => null);
+    }
   }
 
   async function refreshProfilesFromServer() {
