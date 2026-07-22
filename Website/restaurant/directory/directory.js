@@ -55,10 +55,7 @@
           restaurant.name
         );
       })
-      .sort((left, right) =>
-        (Number(left.sortOrder) || 0) - (Number(right.sortOrder) || 0) ||
-        String(left.name || "").localeCompare(String(right.name || ""))
-      );
+      .sort((left, right) => String(left.name || "").localeCompare(String(right.name || "")));
   }
 
   function fallbackRestaurants() {
