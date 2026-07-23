@@ -136,9 +136,11 @@
       availableChoiceSlugs.has(restaurant.slug)
     );
     if (hasAllPublicFallbackChoices) {
-      return choices;
+      return sortRestaurantEntriesByName(choices);
     }
-    return uniqueRestaurantEntries([...choices, ...getPublicRestaurantPickerFallbackEntries()]);
+    return sortRestaurantEntriesByName(
+      uniqueRestaurantEntries([...choices, ...getPublicRestaurantPickerFallbackEntries()])
+    );
   }
 
   const mobileHubQuery = "(max-width: 960px)";
@@ -879,6 +881,15 @@
     );
   }
 
+  function sortRestaurantEntriesByName(restaurants) {
+    return (Array.isArray(restaurants) ? restaurants : []).slice().sort((left, right) =>
+      String(left?.name || "").localeCompare(String(right?.name || ""), undefined, {
+        sensitivity: "base",
+        numeric: true,
+      })
+    );
+  }
+
   function getPrivateProfileRestaurants(profile = null) {
     const privateSlugs = [
       String(profile?.baseRestaurantSlug || "").trim(),
@@ -928,10 +939,10 @@
         href: `/${restaurant.slug}/`,
         available: true,
       }));
-    return uniqueRestaurantEntries(
+    return sortRestaurantEntriesByName(uniqueRestaurantEntries(
       [...publicRestaurants, ...fallbackRestaurants, ...directoryHiddenPlayableRestaurants, ...privateRestaurants]
         .map(directoryEntryFromRestaurant)
-    );
+    ));
   }
 
   function getFeaturedDirectorySlug(directoryRestaurants) {
