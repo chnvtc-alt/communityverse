@@ -115,6 +115,24 @@
     { slug: "americana", name: "Americana Diner" },
   ];
 
+  function getPublicRestaurantPickerFallbackEntries() {
+    return publicRestaurantPickerFallbacks.map((restaurant) =>
+      directoryEntryFromRestaurant({
+        ...restaurant,
+        href: `/${restaurant.slug}/`,
+        available: true,
+      })
+    );
+  }
+
+  function ensureRestaurantPickerHasPublicChoices(restaurants) {
+    const choices = Array.isArray(restaurants) ? restaurants : [];
+    if (choices.filter((restaurant) => restaurant?.available !== false).length > 1) {
+      return choices;
+    }
+    return uniqueRestaurantEntries([...choices, ...getPublicRestaurantPickerFallbackEntries()]);
+  }
+
   const mobileHubQuery = "(max-width: 960px)";
 
   function withHubMode(url) {
@@ -285,7 +303,7 @@
     }
 
     const profile = core.getActiveProfile();
-    const directoryRestaurants = getPlayableDropdownRestaurants(profile);
+    const directoryRestaurants = ensureRestaurantPickerHasPublicChoices(getPlayableDropdownRestaurants(profile));
     const selectedSlug = state.selectedDirectorySlug || getDefaultDirectorySlug(profile);
     const selectedRestaurant =
       directoryRestaurants.find((restaurant) => restaurant.slug === selectedSlug) ||
