@@ -1508,7 +1508,7 @@
         return `Spendable Points: ${core.formatCurrency(0)}. Unlock more characters to open expansions.`;
       }
       if (canBuyNext) {
-        return `You have ${core.formatCurrency(cashOnHand)} in Spendable Points. You can expand from ${preview.current.label} to ${preview.next.label} now. Expanding costs ${core.formatCurrency(nextCost)} but adds ${core.formatCurrency(valueAdded)} to your Restaurant Type, so your Total Score will increase by ${core.formatCurrency(totalScoreIncrease)}.`;
+        return `You have ${core.formatCurrency(cashOnHand)} in Spendable Points. You can expand from ${preview.current.label} to ${preview.next.label} now. Expanding costs ${core.formatCurrency(nextCost)} and adds ${core.formatCurrency(totalScoreIncrease)} to your Total Score.`;
       }
       if (affordableUpgrade) {
         return preview.next
@@ -1544,7 +1544,7 @@
                 <strong>${core.formatCurrency(nextCost)}</strong>
               </div>
               <div class="restaurant-expansion-preview-card">
-                <span class="restaurant-expansion-label">Adds to type</span>
+                <span class="restaurant-expansion-label">Adds to Total Score</span>
                 <strong>${core.formatCurrency(preview.valueAdded)}</strong>
               </div>
               <div class="restaurant-expansion-preview-card restaurant-expansion-action">
