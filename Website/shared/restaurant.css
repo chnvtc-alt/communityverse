@@ -4332,6 +4332,10 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .result-leaderboard-rank-card {
   align-items: center;
+  background:
+    linear-gradient(135deg, rgba(236, 247, 239, 0.96), rgba(255, 253, 248, 0.98));
+  border-color: rgba(47, 111, 82, 0.24);
+  box-shadow: 0 14px 30px rgba(47, 111, 82, 0.08);
   display: grid;
   gap: 14px;
   grid-template-columns: minmax(0, 1fr) auto;
