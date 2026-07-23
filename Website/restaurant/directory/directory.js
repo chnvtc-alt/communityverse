@@ -65,7 +65,9 @@
       { slug: "sam-and-roscos", name: "Sam & Rosco's", publicGameName: "The Sam & Rosco's Game" },
       { slug: "marcossp", name: "Marco's Pizza - South Paulding", publicGameName: "Marco's Pizza - South Paulding Game" },
       { slug: "fabianos", name: "Fabiano's", publicGameName: "The Fabiano's Game" },
-      { slug: "gabes-downtown", name: "Gabe's Downtown", publicGameName: "The Gabe's Downtown Game" },
+      { slug: "gabes", name: "Gabe's Downtown", publicGameName: "The Gabe's Downtown Game" },
+      { slug: "rustybike", name: "The Rusty Bike Cafe", publicGameName: "The Rusty Bike Cafe Game" },
+      { slug: "nkscafe", name: "N.K.'s Cafe", publicGameName: "The N.K.'s Cafe Game" },
     ];
   }
 

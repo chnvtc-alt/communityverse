@@ -19,6 +19,46 @@
       "source": "/cinematavern/play/",
       "destination": "/cinema-tavern/play/",
       "permanent": true
+    },
+    {
+      "source": "/gabes-downtown",
+      "destination": "/gabes",
+      "permanent": true
+    },
+    {
+      "source": "/gabes-downtown/",
+      "destination": "/gabes/",
+      "permanent": true
+    },
+    {
+      "source": "/gabes-downtown/play",
+      "destination": "/gabes/play",
+      "permanent": true
+    },
+    {
+      "source": "/gabes-downtown/play/",
+      "destination": "/gabes/play/",
+      "permanent": true
+    },
+    {
+      "source": "/the-rusty-bike-cafe",
+      "destination": "/rustybike",
+      "permanent": true
+    },
+    {
+      "source": "/the-rusty-bike-cafe/",
+      "destination": "/rustybike/",
+      "permanent": true
+    },
+    {
+      "source": "/the-rusty-bike-cafe/play",
+      "destination": "/rustybike/play",
+      "permanent": true
+    },
+    {
+      "source": "/the-rusty-bike-cafe/play/",
+      "destination": "/rustybike/play/",
+      "permanent": true
     }
   ],
   "rewrites": [

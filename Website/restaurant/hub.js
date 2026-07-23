@@ -109,8 +109,8 @@
     { slug: "sam-and-roscos", name: "Sam & Rosco's" },
     { slug: "marcossp", name: "Marco's Pizza - South Paulding" },
     { slug: "fabianos", name: "Fabiano's" },
-    { slug: "gabes-downtown", name: "Gabe's Downtown" },
-    { slug: "the-rusty-bike-cafe", name: "The Rusty Bike Cafe" },
+    { slug: "gabes", name: "Gabe's Downtown" },
+    { slug: "rustybike", name: "The Rusty Bike Cafe" },
     { slug: "nkscafe", name: "N.K.'s Cafe" },
     { slug: "americana", name: "Americana Diner" },
   ];
@@ -127,7 +127,15 @@
 
   function ensureRestaurantPickerHasPublicChoices(restaurants) {
     const choices = Array.isArray(restaurants) ? restaurants : [];
-    if (choices.filter((restaurant) => restaurant?.available !== false).length > 1) {
+    const availableChoiceSlugs = new Set(
+      choices
+        .filter((restaurant) => restaurant?.available !== false)
+        .map((restaurant) => restaurant.slug)
+    );
+    const hasAllPublicFallbackChoices = publicRestaurantPickerFallbacks.every((restaurant) =>
+      availableChoiceSlugs.has(restaurant.slug)
+    );
+    if (hasAllPublicFallbackChoices) {
       return choices;
     }
     return uniqueRestaurantEntries([...choices, ...getPublicRestaurantPickerFallbackEntries()]);
@@ -912,14 +920,14 @@
     const publicRestaurants = getPlayableRestaurants({ publicOnly: true });
     const directoryHiddenPlayableRestaurants = getPlayableRestaurants().filter(isHiddenFromRestaurantDirectory);
     const privateRestaurants = getPrivateProfileRestaurants(profile);
-    const fallbackRestaurants =
-      publicRestaurants.length <= 1
-        ? publicRestaurantPickerFallbacks.map((restaurant) => ({
-            ...restaurant,
-            href: `/${restaurant.slug}/`,
-            available: true,
-          }))
-        : [];
+    const publicRestaurantSlugs = new Set(publicRestaurants.map((restaurant) => restaurant.slug));
+    const fallbackRestaurants = publicRestaurantPickerFallbacks
+      .filter((restaurant) => !publicRestaurantSlugs.has(restaurant.slug))
+      .map((restaurant) => ({
+        ...restaurant,
+        href: `/${restaurant.slug}/`,
+        available: true,
+      }));
     return uniqueRestaurantEntries(
       [...publicRestaurants, ...fallbackRestaurants, ...directoryHiddenPlayableRestaurants, ...privateRestaurants]
         .map(directoryEntryFromRestaurant)
