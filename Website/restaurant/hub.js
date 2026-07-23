@@ -103,6 +103,18 @@
     leaderboardErrorByKey: {},
   };
 
+  const publicRestaurantPickerFallbacks = [
+    { slug: "cinema-tavern", name: "Cinema Tavern" },
+    { slug: "hudsons", name: "Hudson's Hickory House" },
+    { slug: "sam-and-roscos", name: "Sam & Rosco's" },
+    { slug: "marcossp", name: "Marco's Pizza - South Paulding" },
+    { slug: "fabianos", name: "Fabiano's" },
+    { slug: "gabes-downtown", name: "Gabe's Downtown" },
+    { slug: "the-rusty-bike-cafe", name: "The Rusty Bike Cafe" },
+    { slug: "nkscafe", name: "N.K.'s Cafe" },
+    { slug: "americana", name: "Americana Diner" },
+  ];
+
   const mobileHubQuery = "(max-width: 960px)";
 
   function withHubMode(url) {
@@ -882,8 +894,16 @@
     const publicRestaurants = getPlayableRestaurants({ publicOnly: true });
     const directoryHiddenPlayableRestaurants = getPlayableRestaurants().filter(isHiddenFromRestaurantDirectory);
     const privateRestaurants = getPrivateProfileRestaurants(profile);
+    const fallbackRestaurants =
+      publicRestaurants.length <= 1
+        ? publicRestaurantPickerFallbacks.map((restaurant) => ({
+            ...restaurant,
+            href: `/${restaurant.slug}/`,
+            available: true,
+          }))
+        : [];
     return uniqueRestaurantEntries(
-      [...publicRestaurants, ...directoryHiddenPlayableRestaurants, ...privateRestaurants]
+      [...publicRestaurants, ...fallbackRestaurants, ...directoryHiddenPlayableRestaurants, ...privateRestaurants]
         .map(directoryEntryFromRestaurant)
     );
   }
