@@ -2653,7 +2653,7 @@
       elements.collection.innerHTML = `
       <h2 class="section-title">Character Collection</h2>
       <p class="copy">Your unlocked characters are stored here. Tap a card to view it or play for that character again.</p>
-      <p class="copy collection-points-helper">Want to earn more points? Choose an existing character from your collection and replay to improve your current points with a better score. If you unlock that character as a Favorite, that character's points double.</p>
+      <p class="copy collection-points-helper">Want to earn more points? Choose an existing character from your collection and replay to improve that character's points with a better score. Score 7/10 or better on 10 successful replays to make that character a Favorite. Favorite Character points count double.</p>
       <div class="leaderboard-tabs collection-tabs" role="tablist" aria-label="Character collection filter">
         <button class="button ${state.collectionFilter === "all" ? "button-primary" : "button-muted"} metric-button" data-collection-filter="all" type="button">All Characters</button>
         <button class="button ${state.collectionFilter === "favorite" ? "button-primary" : "button-muted"} metric-button" data-collection-filter="favorite" type="button">Favorite Characters</button>
