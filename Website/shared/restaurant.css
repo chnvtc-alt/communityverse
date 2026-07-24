@@ -3080,6 +3080,16 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   overflow-wrap: anywhere;
 }
 
+.collection-summary-item small {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
 .collection-search-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

@@ -2674,6 +2674,18 @@
     const collection = [...collectionSource].sort((left, right) =>
       String(right.dateWon).localeCompare(String(left.dateWon))
     );
+    const collectionIds = new Set(collection.map((entry) => String(entry?.customerId || "").trim()).filter(Boolean));
+    const availableCharacterIds = new Set(
+      (Array.isArray(core.customers) ? core.customers : [])
+        .filter((customer) => customer && customer.active !== false && customer.feedbackRewardOnly !== true)
+        .map((customer) => String(customer.id || "").trim())
+        .filter(Boolean)
+    );
+    collectionIds.forEach((customerId) => availableCharacterIds.add(customerId));
+    const availableCharacterCount = Math.max(collection.length, availableCharacterIds.size);
+    const collectionTotalLabel = availableCharacterCount > collection.length
+      ? `${collection.length} / ${availableCharacterCount}`
+      : String(collection.length);
     const collectionSearch = String(state.collectionSearch || "").trim();
     const collectionSearchKey = core.normalizeText
       ? core.normalizeText(collectionSearch)
@@ -2745,7 +2757,8 @@
       <div class="collection-summary" aria-label="Character collection summary">
         <div class="collection-summary-item">
           <span>Total Characters</span>
-          <strong>${collection.length}</strong>
+          <strong>${escapeHtml(collectionTotalLabel)}</strong>
+          ${availableCharacterCount > collection.length ? `<small>Collected / available</small>` : ""}
         </div>
         <div class="collection-summary-item">
           <span>Favorites</span>
