@@ -2630,6 +2630,26 @@
     return ["regular", "occasional"].includes(entry?.status);
   }
 
+  function getFavoriteVisitCount(entry, favoriteGoal) {
+    return Math.max(0, Math.min(favoriteGoal, Number(entry?.favoriteVisits) || 0));
+  }
+
+  function getFavoriteProgressMeter(entry, favoriteGoal, label) {
+    if (!entry || isFeedbackRewardCustomerEntry(entry) || (!canBuildFavoriteProgress(entry) && entry.status !== "favorite")) {
+      return "";
+    }
+
+    const visits = entry.status === "favorite" ? favoriteGoal : getFavoriteVisitCount(entry, favoriteGoal);
+    const progressPercent = favoriteGoal > 0 ? Math.round((visits / favoriteGoal) * 100) : 0;
+    const progressLabel = label || `Favorite progress: ${visits} of ${favoriteGoal} successful visits`;
+
+    return `
+      <div class="favorite-progress-meter" role="img" aria-label="${escapeHtml(progressLabel)}">
+        <span class="favorite-progress-meter-fill" style="width: ${progressPercent}%;"></span>
+      </div>
+    `;
+  }
+
   function renderCollection() {
     const compactMobile = isMobileHub();
     const profile = core.getActiveProfile();
@@ -2652,6 +2672,17 @@
       state.collectionFilter === "favorite"
         ? collection.filter((entry) => entry.status === "favorite")
         : collection;
+    const favoriteGoal = core.getFavoriteVisitGoal ? core.getFavoriteVisitGoal() : 10;
+    const favoriteCount = collection.filter((entry) => entry.status === "favorite").length;
+    const nextFavoriteEntry = collection
+      .filter((entry) => canBuildFavoriteProgress(entry) && !isFeedbackRewardCustomerEntry(entry))
+      .sort((left, right) => getFavoriteVisitCount(right, favoriteGoal) - getFavoriteVisitCount(left, favoriteGoal))[0];
+    const nextFavoriteVisits = getFavoriteVisitCount(nextFavoriteEntry, favoriteGoal);
+    const nextFavoriteLabel = nextFavoriteEntry
+      ? `${getCustomerDisplayName(nextFavoriteEntry)}: ${nextFavoriteVisits}/${favoriteGoal}`
+      : favoriteCount > 0
+        ? "Keep replaying any non-Favorite character"
+        : "Play again to start Favorite progress";
     const selectedCustomer =
       filteredCollection.find((entry) => entry.customerId === state.selectedCustomerId) ||
       filteredCollection[0] ||
@@ -2667,7 +2698,6 @@
     const selectedCustomerBio = selectedCustomer ? getCustomerBio(selectedCustomer) : "";
     const selectedCustomerBioPreview = getBioPreview(selectedCustomerBio);
     const showFullBio = state.selectedCustomerBioExpanded || !selectedCustomerBioPreview.isTruncated;
-    const favoriteGoal = core.getFavoriteVisitGoal ? core.getFavoriteVisitGoal() : 10;
     const selectedStatusLabel = selectedCustomer ? getCharacterStatusLabel(selectedCustomer.status) : "";
     const selectedContextLabel = selectedCustomer ? getCharacterContextLabel(selectedCustomer) : "";
     const selectedValue = selectedCustomer
@@ -2678,7 +2708,7 @@
           : selectedCustomer.occasionalValue
       : 0;
     const selectedFavoriteVisits = selectedCustomer
-      ? Math.max(0, Math.min(favoriteGoal, Number(selectedCustomer.favoriteVisits) || 0))
+      ? getFavoriteVisitCount(selectedCustomer, favoriteGoal)
       : 0;
     const selectedIsFeedbackReward = isFeedbackRewardCustomerEntry(selectedCustomer);
     const selectedFavoriteProgress =
@@ -2689,6 +2719,7 @@
         : canBuildFavoriteProgress(selectedCustomer)
           ? `<p class="customer-favorite-progress">Favorite Progress: ${selectedFavoriteVisits} / ${favoriteGoal} successful visits</p>`
           : "";
+    const selectedFavoriteMeter = getFavoriteProgressMeter(selectedCustomer, favoriteGoal);
     const selectedDirectoryRestaurant = getSelectedDirectoryRestaurant(profile);
     const selectedInviteBackHref = selectedCustomer && !selectedIsFeedbackReward
       ? getCustomerInviteBackHref(selectedCustomer, selectedDirectoryRestaurant)
@@ -2698,6 +2729,20 @@
       <h2 class="section-title">Character Collection</h2>
       <p class="copy">Your unlocked characters are stored here. Tap a card to view it or play for that character again.</p>
       <p class="copy collection-points-helper">Want to earn more points? Choose an existing character from your collection and replay to improve that character's points with a better score. Score 7/10 or better on 10 successful replays to make that character a Favorite. Favorite Character points count double.</p>
+      <div class="collection-summary" aria-label="Character collection summary">
+        <div class="collection-summary-item">
+          <span>Total Characters</span>
+          <strong>${collection.length}</strong>
+        </div>
+        <div class="collection-summary-item">
+          <span>Favorites</span>
+          <strong>${favoriteCount}</strong>
+        </div>
+        <div class="collection-summary-item collection-summary-item-wide">
+          <span>Closest To Favorite</span>
+          <strong>${escapeHtml(nextFavoriteLabel)}</strong>
+        </div>
+      </div>
       <div class="leaderboard-tabs collection-tabs" role="tablist" aria-label="Character collection filter">
         <button class="button ${state.collectionFilter === "all" ? "button-primary" : "button-muted"} metric-button" data-collection-filter="all" type="button">All Characters</button>
         <button class="button ${state.collectionFilter === "favorite" ? "button-primary" : "button-muted"} metric-button" data-collection-filter="favorite" type="button">Favorite Characters</button>
@@ -2713,6 +2758,7 @@
                   <h3 class="section-title" style="margin: 0; font-size: 1.45rem;">${escapeHtml(selectedCustomerName)}</h3>
                   <p class="customer-meta" style="margin-top: 4px;">${escapeHtml(selectedContextLabel || selectedStatusLabel)}</p>
                   ${selectedFavoriteProgress}
+                  ${selectedFavoriteMeter}
                   <p class="collection-selected-bio">${escapeHtml(showFullBio ? selectedCustomerBio : selectedCustomerBioPreview.text)}</p>
                   ${
                     selectedCustomerBioPreview.isTruncated
@@ -2741,6 +2787,7 @@
                     <h3 class="section-title" style="margin: 0; font-size: 1.45rem;">${escapeHtml(selectedCustomerName)}</h3>
                     <p class="customer-meta" style="margin-top: 4px;">${escapeHtml(selectedContextLabel || selectedStatusLabel)}</p>
                     ${selectedFavoriteProgress}
+                    ${selectedFavoriteMeter}
                     <p class="collection-selected-bio">${escapeHtml(showFullBio ? selectedCustomerBio : selectedCustomerBioPreview.text)}</p>
                     ${
                       selectedCustomerBioPreview.isTruncated
@@ -2778,7 +2825,7 @@
                         : entry.occasionalValue;
                     const entryStatusLabel = getCharacterStatusLabel(entry.status);
                     const entryContextLabel = getCharacterContextLabel(entry);
-                    const entryFavoriteVisits = Math.max(0, Math.min(favoriteGoal, Number(entry.favoriteVisits) || 0));
+                    const entryFavoriteVisits = getFavoriteVisitCount(entry, favoriteGoal);
                     const entryIsFeedbackReward = isFeedbackRewardCustomerEntry(entry);
                     const entryProgress =
                       entryIsFeedbackReward
@@ -2806,6 +2853,7 @@
                         </div>
                         ${isSelected ? `<span class="customer-mini-selected-label">Selected</span>` : ""}
                         ${entryProgress ? `<p class="customer-favorite-progress customer-favorite-progress-mini">${escapeHtml(entryProgress)}</p>` : ""}
+                        ${getFavoriteProgressMeter(entry, favoriteGoal, entryProgress)}
                       </div>
                     </button>
                   `;
