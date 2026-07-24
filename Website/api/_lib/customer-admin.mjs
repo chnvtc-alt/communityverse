@@ -119,6 +119,9 @@ export function inferCustomerContextLabel(customer) {
     "bill arp": "Writer / Local History",
     "captain nemo": "Twenty Thousand Leagues Under the Sea",
     "dylan collins": "Trivia Host / Game Creator",
+    "huckleberry finn": "The Adventures of Huckleberry Finn",
+    "the invisible man": "The Invisible Man",
+    "the phantom of the opera": "The Phantom of the Opera",
     "jules verne": "Author",
     "long john silver": "Treasure Island",
     "mark twain": "Author",
@@ -135,6 +138,11 @@ export function inferCustomerContextLabel(customer) {
   if (/\bwriter\b/.test(bio)) return "Writer";
   if (bio.includes("treasure island")) return "Treasure Island";
   if (bio.includes("twenty thousand leagues")) return "Twenty Thousand Leagues Under the Sea";
+  if (bio.includes("adventures of huckleberry finn") || bio.includes("huckleberry finn")) {
+    return "The Adventures of Huckleberry Finn";
+  }
+  if (bio.includes("phantom of the opera")) return "The Phantom of the Opera";
+  if (bio.includes("invisible man")) return "The Invisible Man";
   if (restaurantName) return `${restaurantName} Character`;
 
   const group = normalizeCharacterType(safeCustomer.characterType || safeCustomer.group || safeCustomer.groupName || "");
@@ -146,6 +154,12 @@ export function inferCustomerContextLabel(customer) {
     storybook: "Storybook Character",
   };
   return groupLabels[group] || "Community Character";
+}
+
+function isGenericContextLabel(label) {
+  return ["collectible character", "storybook character"].includes(
+    String(label || "").trim().toLowerCase()
+  );
 }
 
 export function normalizeCustomer(customer) {
@@ -178,7 +192,7 @@ export function normalizeCustomer(customer) {
   safeCustomer.sortOrder = Number(safeCustomer.sortOrder) || 0;
   safeCustomer.createdAt = String(safeCustomer.createdAt || safeCustomer.created_at || "").trim();
   safeCustomer.updatedAt = String(safeCustomer.updatedAt || safeCustomer.updated_at || "").trim();
-  if (!safeCustomer.contextLabel) {
+  if (!safeCustomer.contextLabel || isGenericContextLabel(safeCustomer.contextLabel)) {
     safeCustomer.contextLabel = inferCustomerContextLabel(safeCustomer);
   }
   safeCustomer.customQuestions = Array.isArray(safeCustomer.customQuestions)

@@ -1100,17 +1100,23 @@
       "bill arp": "Writer / Local History",
       "captain nemo": "Twenty Thousand Leagues Under the Sea",
       "dylan collins": "Trivia Host / Game Creator",
+      "huckleberry finn": "The Adventures of Huckleberry Finn",
+      "the invisible man": "The Invisible Man",
+      "the phantom of the opera": "The Phantom of the Opera",
       "jules verne": "Author",
       "long john silver": "Treasure Island",
       "mark twain": "Author",
     };
+    const explicitLabel = explicitLabels[normalizedName] || "";
+    const savedContextLabelKey = savedContextLabel.toLowerCase();
+    const genericSavedLabels = new Set(["collectible character", "storybook character"]);
 
-    if (savedContextLabel) {
+    if (savedContextLabel && (!explicitLabel || !genericSavedLabels.has(savedContextLabelKey))) {
       return savedContextLabel;
     }
 
-    if (explicitLabels[normalizedName]) {
-      return explicitLabels[normalizedName];
+    if (explicitLabel) {
+      return explicitLabel;
     }
 
     if (lowerBio.includes("kitchen manager")) {
@@ -1143,6 +1149,18 @@
 
     if (lowerBio.includes("twenty thousand leagues")) {
       return "Twenty Thousand Leagues Under the Sea";
+    }
+
+    if (lowerBio.includes("adventures of huckleberry finn") || lowerBio.includes("huckleberry finn")) {
+      return "The Adventures of Huckleberry Finn";
+    }
+
+    if (lowerBio.includes("phantom of the opera")) {
+      return "The Phantom of the Opera";
+    }
+
+    if (lowerBio.includes("invisible man")) {
+      return "The Invisible Man";
     }
 
     if (restaurantName) {
