@@ -3098,6 +3098,12 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   margin-top: 14px;
 }
 
+.collection-category-row {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
 .collection-search-label {
   grid-column: 1 / -1;
   color: var(--muted);
@@ -3127,9 +3133,36 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
     background 160ms ease;
 }
 
+.collection-category-select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 38px 0 14px;
+  border: 1px solid rgba(93, 116, 105, 0.18);
+  border-radius: 16px;
+  background:
+    linear-gradient(45deg, transparent 50%, var(--muted) 50%) calc(100% - 18px) 50% / 6px 6px no-repeat,
+    linear-gradient(135deg, var(--muted) 50%, transparent 50%) calc(100% - 13px) 50% / 6px 6px no-repeat,
+    rgba(255, 255, 255, 0.84);
+  color: var(--ink);
+  font-family: Arial, sans-serif;
+  font-size: 0.96rem;
+  font-weight: 800;
+  outline: none;
+  appearance: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+}
+
 .collection-search-input:focus {
   border-color: rgba(213, 138, 43, 0.62);
   background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(213, 138, 43, 0.14);
+}
+
+.collection-category-select:focus {
+  border-color: rgba(213, 138, 43, 0.62);
   box-shadow: 0 0 0 3px rgba(213, 138, 43, 0.14);
 }
 

@@ -79,6 +79,7 @@
     selectedGameMode: query.get("mode") === "friends" ? "friends" : "solo",
     splashStatsScope: "overall",
     collectionFilter: "all",
+    collectionCategory: "all",
     collectionSearch: "",
     inviteBackCustomerId: "",
     selectedCustomerId: "",
@@ -1105,6 +1106,152 @@
     ];
     const match = occupationRules.find((rule) => rule.pattern.test(value));
     return match ? match.label : "";
+  }
+
+  const characterCategories = [
+    { value: "actors-actresses", label: "Actors / Actresses" },
+    { value: "animal-related", label: "Animal Related" },
+    { value: "artists", label: "Artists" },
+    { value: "authors", label: "Authors" },
+    { value: "criminals-outlaws", label: "Criminals / Outlaws" },
+    { value: "educators", label: "Educators" },
+    { value: "explorers-adventurers", label: "Explorers / Adventurers" },
+    { value: "fairytales-legends", label: "Fairytales / Legends" },
+    { value: "historic-figures", label: "Historic Figures" },
+    { value: "inventors", label: "Inventors" },
+    { value: "leaders-political-royalty", label: "Leaders / Political / Royalty" },
+    { value: "literary-characters", label: "Literary Characters" },
+    { value: "mascots", label: "Mascots" },
+    { value: "media", label: "Media" },
+    { value: "musicians", label: "Musicians" },
+    { value: "mythology-supernatural", label: "Mythology / Supernatural" },
+    { value: "pirates", label: "Pirates" },
+    { value: "religious", label: "Religious" },
+    { value: "restaurant", label: "Restaurant" },
+    { value: "scary-monsters", label: "Scary / Monsters" },
+    { value: "sports", label: "Sports" },
+    { value: "general", label: "General" },
+  ];
+
+  const characterCategoryByValue = new Map(characterCategories.map((category) => [category.value, category]));
+  const characterCategoryAliases = new Map(
+    characterCategories.flatMap((category) => [
+      [category.value, category.value],
+      [category.label.toLowerCase(), category.value],
+      [category.label.toLowerCase().replace(/\s*\/\s*/g, "/"), category.value],
+    ])
+  );
+
+  function normalizeCharacterCategory(value) {
+    const label = String(value || "").trim();
+    if (!label) {
+      return "";
+    }
+
+    const key = label.toLowerCase();
+    return characterCategoryAliases.get(key) || characterCategoryAliases.get(key.replace(/\s*\/\s*/g, "/")) || "";
+  }
+
+  function textMatches(value, pattern) {
+    return pattern.test(String(value || ""));
+  }
+
+  function getCharacterCategory(record) {
+    const customer = getCustomerRecord(record);
+    const savedCategory = normalizeCharacterCategory(
+      customer.category || customer.characterCategory || customer.character_category || customer.collectionCategory || ""
+    );
+    if (savedCategory) {
+      return savedCategory;
+    }
+
+    const name = getCustomerDisplayName(record);
+    const contextLabel = getCharacterContextLabel(record);
+    const restaurantSlug = String(customer.restaurant || customer.focusTag || "").trim();
+    const normalizedName = core.normalizeText ? core.normalizeText(name) : String(name || "").trim().toLowerCase();
+    const searchable = [
+      name,
+      getCustomerBio(record),
+      contextLabel,
+      customer.characterType,
+      customer.group,
+      customer.groupName,
+      customer.rarity,
+      customer.questionPlace,
+      customer.questionFact,
+      ...(Array.isArray(customer.tags) ? customer.tags : []),
+    ]
+      .map((value) => (core.normalizeText ? core.normalizeText(value) : String(value || "").toLowerCase()))
+      .join(" ");
+
+    const explicitCategories = {
+      "1905 douglasville baseball team": "historic-figures",
+      "abraham lincoln": "leaders-political-royalty",
+      "alice in wonderland": "literary-characters",
+      "amelia earhart": "explorers-adventurers",
+      "benjamin franklin": "inventors",
+      "big bad wolf": "fairytales-legends",
+      "billy the kid": "criminals-outlaws",
+      "blackbeard the pirate": "pirates",
+      "captain nemo": "explorers-adventurers",
+      "cheshire cat": "fairytales-legends",
+      "christopher columbus": "explorers-adventurers",
+      "cleopatra": "leaders-political-royalty",
+      "george washington": "leaders-political-royalty",
+      "huckleberry finn": "literary-characters",
+      "humpty dumpty": "fairytales-legends",
+      "jules verne": "authors",
+      "king tut": "leaders-political-royalty",
+      "little red riding hood": "fairytales-legends",
+      "long john silver": "pirates",
+      "mad hatter": "fairytales-legends",
+      "mark twain": "authors",
+      "napoleon bonaparte": "leaders-political-royalty",
+      "queen of hearts": "fairytales-legends",
+      "sasquatch": "mythology-supernatural",
+      "the invisible man": "literary-characters",
+      "the phantom of the opera": "literary-characters",
+      "the tooth fairy": "fairytales-legends",
+      "thomas edison": "inventors",
+    };
+    if (explicitCategories[normalizedName]) {
+      return explicitCategories[normalizedName];
+    }
+
+    if (restaurantSlug && !["shared", "communityverse", "your-restaurant-game"].includes(restaurantSlug)) {
+      return "restaurant";
+    }
+
+    const categoryRules = [
+      { pattern: /\b(actor|actress|film star|movie star)\b/, value: "actors-actresses" },
+      { pattern: /\b(mascot)\b/, value: "mascots" },
+      { pattern: /\b(pirate|privateer|buccaneer)\b/, value: "pirates" },
+      { pattern: /\b(outlaw|criminal|bandit|gangster|robber)\b/, value: "criminals-outlaws" },
+      { pattern: /\b(explorer|adventurer|voyage|navigator|pilot|aviator|captain)\b/, value: "explorers-adventurers" },
+      { pattern: /\b(author|writer|novelist|poet)\b/, value: "authors" },
+      { pattern: /\b(alice|wonderland|storybook|novel|literary|phantom of the opera|invisible man|huckleberry finn|treasure island)\b/, value: "literary-characters" },
+      { pattern: /\b(fairytale|fairy tale|legend|red riding hood|big bad wolf|humpty dumpty|tooth fairy|queen of hearts|mad hatter|cheshire cat)\b/, value: "fairytales-legends" },
+      { pattern: /\b(vampire|dracula|frankenstein|werewolf|zombie|monster|scary)\b/, value: "scary-monsters" },
+      { pattern: /\b(myth|mythology|supernatural|god|goddess|ghost|cryptid|sasquatch)\b/, value: "mythology-supernatural" },
+      { pattern: /\b(inventor|invention|scientist|electricity|laboratory)\b/, value: "inventors" },
+      { pattern: /\b(president|mayor|king|queen|emperor|empress|leader|political|royalty|general|pharaoh)\b/, value: "leaders-political-royalty" },
+      { pattern: /\b(historic|historical|history|local history|civil war|revolutionary)\b/, value: "historic-figures" },
+      { pattern: /\b(teacher|educator|professor|principal|coach)\b/, value: "educators" },
+      { pattern: /\b(pastor|minister|priest|rabbi|religious|church|saint)\b/, value: "religious" },
+      { pattern: /\b(artist|painter|sculptor|illustrator|designer)\b/, value: "artists" },
+      { pattern: /\b(musician|singer|performer|band|guitar|piano|song)\b/, value: "musicians" },
+      { pattern: /\b(athlete|sports|baseball|football|basketball|soccer|tennis|coach)\b/, value: "sports" },
+      { pattern: /\b(news|radio|television|tv|media|host|reporter|journalist|podcast)\b/, value: "media" },
+      { pattern: /\b(animal|dog|cat|horse|bear|bird|wolf)\b/, value: "animal-related" },
+      { pattern: /\b(server|chef|cook|kitchen|bartender|waitress|waiter|restaurant|diner|cafe|owner)\b/, value: "restaurant" },
+    ];
+    const match = categoryRules.find((rule) => textMatches(searchable, rule.pattern));
+    return match ? match.value : "general";
+  }
+
+  function getCharacterCategoryLabel(record) {
+    const category = characterCategoryByValue.get(getCharacterCategory(record));
+    return category ? category.label : "General";
   }
 
   function getCharacterContextLabel(record) {
@@ -2645,6 +2792,7 @@
     const searchableText = [
       getCustomerDisplayName(entry),
       contextLabel,
+      getCharacterCategoryLabel(entry),
       statusLabel,
       getCustomerBio(entry),
       entry?.rarity,
@@ -2675,12 +2823,14 @@
       String(right.dateWon).localeCompare(String(left.dateWon))
     );
     const collectionIds = new Set(collection.map((entry) => String(entry?.customerId || "").trim()).filter(Boolean));
-    const availableCharacterIds = new Set(
-      (Array.isArray(core.customers) ? core.customers : [])
-        .filter((customer) => customer && customer.active !== false && customer.feedbackRewardOnly !== true)
+    const activeAvailableCharacters = (Array.isArray(core.customers) ? core.customers : [])
+      .filter((customer) => customer && customer.active !== false && customer.feedbackRewardOnly !== true);
+    const activeAvailableCharacterIds = new Set(
+      activeAvailableCharacters
         .map((customer) => String(customer.id || "").trim())
         .filter(Boolean)
     );
+    const availableCharacterIds = new Set(activeAvailableCharacterIds);
     collectionIds.forEach((customerId) => availableCharacterIds.add(customerId));
     const availableCharacterCount = Math.max(collection.length, availableCharacterIds.size);
     const collectionTotalLabel = availableCharacterCount > collection.length
@@ -2690,18 +2840,59 @@
     const collectionSearchKey = core.normalizeText
       ? core.normalizeText(collectionSearch)
       : collectionSearch.toLowerCase();
+    const availableCategoryCounts = new Map();
+    activeAvailableCharacters.forEach((customer) => {
+      const category = getCharacterCategory(customer);
+      availableCategoryCounts.set(category, (availableCategoryCounts.get(category) || 0) + 1);
+    });
+    collection.forEach((entry) => {
+      const customerId = String(entry?.customerId || "").trim();
+      if (!customerId || activeAvailableCharacterIds.has(customerId)) {
+        return;
+      }
+      const category = getCharacterCategory(entry);
+      availableCategoryCounts.set(category, (availableCategoryCounts.get(category) || 0) + 1);
+    });
+    const collectedCategoryCounts = new Map();
+    collection.forEach((entry) => {
+      const category = getCharacterCategory(entry);
+      collectedCategoryCounts.set(category, (collectedCategoryCounts.get(category) || 0) + 1);
+    });
+    const categoryOptions = characterCategories
+      .map((category) => ({
+        ...category,
+        collected: collectedCategoryCounts.get(category.value) || 0,
+        available: availableCategoryCounts.get(category.value) || 0,
+      }))
+      .filter((category) => category.available > 0 || category.collected > 0);
+    if (state.collectionCategory !== "all" && !categoryOptions.some((category) => category.value === state.collectionCategory)) {
+      state.collectionCategory = "all";
+    }
     const filterBaseCollection =
       state.collectionFilter === "favorite"
         ? collection.filter((entry) => entry.status === "favorite")
         : collection;
+    const categoryFilteredCollection =
+      state.collectionCategory === "all"
+        ? filterBaseCollection
+        : filterBaseCollection.filter((entry) => getCharacterCategory(entry) === state.collectionCategory);
     const filteredCollection = collectionSearchKey
-      ? filterBaseCollection.filter((entry) => collectionEntryMatchesSearch(entry, collectionSearchKey))
-      : filterBaseCollection;
+      ? categoryFilteredCollection.filter((entry) => collectionEntryMatchesSearch(entry, collectionSearchKey))
+      : categoryFilteredCollection;
     const favoriteGoal = core.getFavoriteVisitGoal ? core.getFavoriteVisitGoal() : 10;
     const favoriteCount = collection.filter((entry) => entry.status === "favorite").length;
+    const selectedCategory = characterCategoryByValue.get(state.collectionCategory);
+    const selectedCategoryCounts = state.collectionCategory === "all"
+      ? null
+      : {
+          collected: collectedCategoryCounts.get(state.collectionCategory) || 0,
+          available: availableCategoryCounts.get(state.collectionCategory) || 0,
+        };
     const collectionResultLabel = collectionSearchKey
       ? `${filteredCollection.length} ${filteredCollection.length === 1 ? "match" : "matches"} in your ${collection.length} collected characters`
-      : `Showing ${filteredCollection.length} characters`;
+      : selectedCategory && selectedCategoryCounts
+        ? `Showing ${filteredCollection.length} ${selectedCategory.label} characters. You have ${selectedCategoryCounts.collected} of ${selectedCategoryCounts.available}.`
+        : `Showing ${filteredCollection.length} characters`;
     const selectedCustomer =
       filteredCollection.find((entry) => entry.customerId === state.selectedCustomerId) ||
       filteredCollection[0] ||
@@ -2716,8 +2907,15 @@
       : state.collectionFilter === "favorite"
         ? `
         <div class="empty-state">
-          <strong>No Favorite Characters yet.</strong>
+          <strong>No Favorite Characters${selectedCategory ? ` in ${escapeHtml(selectedCategory.label)}` : ""} yet.</strong>
           <span>Choose an existing character from your collection and play again. Score high enough on repeat visits to build Favorite progress. When a character becomes a Favorite, that character's points double.</span>
+        </div>
+      `
+      : selectedCategory && selectedCategoryCounts
+        ? `
+        <div class="empty-state">
+          <strong>No collected ${escapeHtml(selectedCategory.label)} characters yet.</strong>
+          <span>You have 0 of ${selectedCategoryCounts.available} available ${escapeHtml(selectedCategory.label)} characters.</span>
         </div>
       `
         : `<p class="empty-state">No characters yet. Play a few rounds to build your roster.</p>`;
@@ -2773,6 +2971,19 @@
             ? `<button class="text-button collection-search-clear" id="clear-collection-search" type="button">Clear Search</button>`
             : ""
         }
+      </div>
+      <div class="collection-category-row">
+        <label class="collection-search-label" for="collection-category-select">Category</label>
+        <select class="collection-category-select" id="collection-category-select">
+          <option value="all">All Categories</option>
+          ${categoryOptions
+            .map((category) => `
+              <option value="${escapeHtml(category.value)}" ${state.collectionCategory === category.value ? "selected" : ""}>
+                ${escapeHtml(`${category.label} ${category.collected}/${category.available}`)}
+              </option>
+            `)
+            .join("")}
+        </select>
       </div>
       <p class="collection-result-helper">${escapeHtml(collectionResultLabel)}</p>
       <div class="leaderboard-tabs collection-tabs" role="tablist" aria-label="Character collection filter">
@@ -2916,6 +3127,15 @@
     if (clearCollectionSearchButton) {
       clearCollectionSearchButton.addEventListener("click", () => {
         state.collectionSearch = "";
+        state.selectedCustomerBioExpanded = false;
+        renderAll();
+      });
+    }
+
+    const collectionCategorySelect = document.getElementById("collection-category-select");
+    if (collectionCategorySelect) {
+      collectionCategorySelect.addEventListener("change", () => {
+        state.collectionCategory = collectionCategorySelect.value;
         state.selectedCustomerBioExpanded = false;
         renderAll();
       });
