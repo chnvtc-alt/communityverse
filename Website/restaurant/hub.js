@@ -1068,6 +1068,94 @@
     return core.getCustomerById(record.customerId)?.name || record.customerName || record.name || "Character";
   }
 
+  function getCustomerRecord(record) {
+    return {
+      ...(record || {}),
+      ...(record?.customerId ? core.getCustomerById(record.customerId) || {} : {}),
+    };
+  }
+
+  function getRestaurantContextName(slug) {
+    const restaurantSlug = String(slug || "").trim();
+    if (!restaurantSlug || restaurantSlug === "shared") {
+      return "";
+    }
+
+    const restaurant = core.getRestaurantBySlug(restaurantSlug);
+    return String(restaurant?.name || "").trim();
+  }
+
+  function getCharacterContextLabel(record) {
+    const customer = getCustomerRecord(record);
+    const name = getCustomerDisplayName(record);
+    const normalizedName = core.normalizeText ? core.normalizeText(name) : String(name || "").trim().toLowerCase();
+    const bio = getCustomerBio(record);
+    const bioText = String(bio || "").trim();
+    const lowerBio = bioText.toLowerCase();
+    const restaurantSlug = String(customer.restaurant || customer.focusTag || "").trim();
+    const restaurantName = getRestaurantContextName(restaurantSlug);
+    const explicitLabels = {
+      "1905 douglasville baseball team": "Local History",
+      "bill arp": "Writer / Local History",
+      "captain nemo": "Twenty Thousand Leagues Under the Sea",
+      "dylan collins": "Trivia Host / Game Creator",
+      "jules verne": "Author",
+      "long john silver": "Treasure Island",
+      "mark twain": "Author",
+    };
+
+    if (explicitLabels[normalizedName]) {
+      return explicitLabels[normalizedName];
+    }
+
+    if (lowerBio.includes("kitchen manager")) {
+      return restaurantName ? `${restaurantName} Kitchen Manager` : "Kitchen Manager";
+    }
+
+    if (lowerBio.includes("bartender")) {
+      return restaurantName ? `${restaurantName} Bartender` : "Bartender";
+    }
+
+    if (lowerBio.includes("server") || lowerBio.includes("staff")) {
+      return restaurantName ? `${restaurantName} Staff` : "Restaurant Staff";
+    }
+
+    if (lowerBio.includes("owner")) {
+      return restaurantName ? `${restaurantName} Owner` : "Restaurant Owner";
+    }
+
+    if (/\bauthor\b|\bnovelist\b/.test(lowerBio)) {
+      return "Author";
+    }
+
+    if (/\bwriter\b/.test(lowerBio)) {
+      return "Writer";
+    }
+
+    if (lowerBio.includes("treasure island")) {
+      return "Treasure Island";
+    }
+
+    if (lowerBio.includes("twenty thousand leagues")) {
+      return "Twenty Thousand Leagues Under the Sea";
+    }
+
+    if (restaurantName) {
+      return `${restaurantName} Character`;
+    }
+
+    const group = String(customer.group || customer.groupName || "").trim().toLowerCase();
+    const groupLabels = {
+      communityverse: "Community Character",
+      cryptid: "Cryptid",
+      exclusive: "Restaurant Character",
+      historical: "Historical Figure",
+      storybook: "Storybook Character",
+    };
+
+    return groupLabels[group] || "Community Character";
+  }
+
   function getBioPreview(text, maxLength = 170) {
     const value = String(text || "").trim();
     if (value.length <= maxLength) {
@@ -2532,6 +2620,7 @@
     const showFullBio = state.selectedCustomerBioExpanded || !selectedCustomerBioPreview.isTruncated;
     const favoriteGoal = core.getFavoriteVisitGoal ? core.getFavoriteVisitGoal() : 10;
     const selectedStatusLabel = selectedCustomer ? getCharacterStatusLabel(selectedCustomer.status) : "";
+    const selectedContextLabel = selectedCustomer ? getCharacterContextLabel(selectedCustomer) : "";
     const selectedValue = selectedCustomer
       ? core.getCollectionEntryValue
         ? core.getCollectionEntryValue(selectedCustomer)
@@ -2573,7 +2662,7 @@
                 <div class="collection-selected-copy collection-selected-copy-mobile">
                   <p class="kicker" style="margin: 0 0 4px;">Selected Character</p>
                   <h3 class="section-title" style="margin: 0; font-size: 1.45rem;">${escapeHtml(selectedCustomerName)}</h3>
-                  <p class="customer-meta" style="margin-top: 4px;">${escapeHtml(selectedStatusLabel)}</p>
+                  <p class="customer-meta" style="margin-top: 4px;">${escapeHtml(selectedContextLabel || selectedStatusLabel)}</p>
                   ${selectedFavoriteProgress}
                   <p class="collection-selected-bio">${escapeHtml(showFullBio ? selectedCustomerBio : selectedCustomerBioPreview.text)}</p>
                   ${
@@ -2601,7 +2690,7 @@
                   <div class="collection-selected-copy">
                     <p class="kicker" style="margin: 0 0 4px;">Selected Character</p>
                     <h3 class="section-title" style="margin: 0; font-size: 1.45rem;">${escapeHtml(selectedCustomerName)}</h3>
-                    <p class="customer-meta" style="margin-top: 4px;">${escapeHtml(selectedStatusLabel)}</p>
+                    <p class="customer-meta" style="margin-top: 4px;">${escapeHtml(selectedContextLabel || selectedStatusLabel)}</p>
                     ${selectedFavoriteProgress}
                     <p class="collection-selected-bio">${escapeHtml(showFullBio ? selectedCustomerBio : selectedCustomerBioPreview.text)}</p>
                     ${
@@ -2639,6 +2728,7 @@
                         ? entry.regularValue
                         : entry.occasionalValue;
                     const entryStatusLabel = getCharacterStatusLabel(entry.status);
+                    const entryContextLabel = getCharacterContextLabel(entry);
                     const entryFavoriteVisits = Math.max(0, Math.min(favoriteGoal, Number(entry.favoriteVisits) || 0));
                     const entryIsFeedbackReward = isFeedbackRewardCustomerEntry(entry);
                     const entryProgress =
@@ -2662,7 +2752,7 @@
                         <img class="customer-avatar customer-avatar-compact" src="${image}" alt="${escapeHtml(entryName)}" onerror="this.onerror=null;this.src='../assets/restaurant-challenge/customers/customer-placeholder.svg';" />
                         <div class="customer-mini-copy">
                           <p class="customer-name">${escapeHtml(entryName)}</p>
-                          <p class="customer-meta">${escapeHtml(entryStatusLabel)}</p>
+                          <p class="customer-meta">${escapeHtml(entryContextLabel || entryStatusLabel)}</p>
                           <p class="customer-mini-points">Points ${core.formatCurrency(entryValue)}</p>
                         </div>
                         ${isSelected ? `<span class="customer-mini-selected-label">Selected</span>` : ""}

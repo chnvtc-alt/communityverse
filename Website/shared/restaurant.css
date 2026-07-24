@@ -3140,8 +3140,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   margin: 0;
   font-size: 0.76rem;
   color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.01em;
   font-family: Arial, sans-serif;
   font-weight: 700;
 }
