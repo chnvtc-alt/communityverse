@@ -2720,7 +2720,7 @@
     }
 
     const availableHeight = Math.max(
-      560,
+      820,
       Math.floor(window.innerHeight - elements.sections.offsetTop - 8)
     );
 
