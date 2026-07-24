@@ -92,6 +92,62 @@ function normalizeTags(value) {
   return uniqueStrings(rawValues.map(slugText).filter(Boolean));
 }
 
+function labelFromRestaurantSlug(slug) {
+  const labels = {
+    americana: "Americana Diner",
+    "cinema-tavern": "Cinema Tavern",
+    fabianos: "Fabiano's",
+    gabes: "Gabe's Downtown",
+    hudsons: "Hudson's Hickory House",
+    marcossp: "Marco's Pizza - South Paulding",
+    nkscafe: "N.K.'s Cafe",
+    rustybike: "The Rusty Bike Cafe",
+    "sam-and-roscos": "Sam & Rosco's",
+    wafflemaster: "Waffle Master",
+  };
+  return labels[String(slug || "").trim()] || "";
+}
+
+export function inferCustomerContextLabel(customer) {
+  const safeCustomer = typeof customer === "object" && customer ? customer : {};
+  const nameKey = String(safeCustomer.name || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const bio = String(safeCustomer.bio || "").trim().toLowerCase();
+  const restaurant = normalizeRestaurant(safeCustomer.restaurant || safeCustomer.focusTag || safeCustomer.focus_tag || "");
+  const restaurantName = labelFromRestaurantSlug(restaurant);
+  const explicitLabels = {
+    "1905 douglasville baseball team": "Local History",
+    "bill arp": "Writer / Local History",
+    "captain nemo": "Twenty Thousand Leagues Under the Sea",
+    "dylan collins": "Trivia Host / Game Creator",
+    "jules verne": "Author",
+    "long john silver": "Treasure Island",
+    "mark twain": "Author",
+  };
+
+  if (explicitLabels[nameKey]) return explicitLabels[nameKey];
+  if (bio.includes("kitchen manager")) return restaurantName ? `${restaurantName} Kitchen Manager` : "Kitchen Manager";
+  if (bio.includes("bartender")) return restaurantName ? `${restaurantName} Bartender` : "Bartender";
+  if (bio.includes("server") || bio.includes("staff")) return restaurantName ? `${restaurantName} Staff` : "Restaurant Staff";
+  if (bio.includes("owner") || /\bown\b|\bowns\b/.test(bio)) {
+    return restaurantName ? `${restaurantName} Owner` : "Restaurant Owner";
+  }
+  if (/\bauthor\b|\bnovelist\b/.test(bio)) return "Author";
+  if (/\bwriter\b/.test(bio)) return "Writer";
+  if (bio.includes("treasure island")) return "Treasure Island";
+  if (bio.includes("twenty thousand leagues")) return "Twenty Thousand Leagues Under the Sea";
+  if (restaurantName) return `${restaurantName} Character`;
+
+  const group = normalizeCharacterType(safeCustomer.characterType || safeCustomer.group || safeCustomer.groupName || "");
+  const groupLabels = {
+    communityverse: "Community Character",
+    cryptid: "Cryptid",
+    exclusive: "Restaurant Character",
+    historical: "Historical Figure",
+    storybook: "Storybook Character",
+  };
+  return groupLabels[group] || "Community Character";
+}
+
 export function normalizeCustomer(customer) {
   const safeCustomer = typeof customer === "object" && customer ? structuredClone(customer) : {};
   safeCustomer.id = String(safeCustomer.id || "").trim();
@@ -110,6 +166,9 @@ export function normalizeCustomer(customer) {
   safeCustomer.focusTag = safeCustomer.restaurant;
   safeCustomer.image = String(safeCustomer.image || "").trim();
   safeCustomer.bio = String(safeCustomer.bio || "").trim();
+  safeCustomer.contextLabel = String(
+    safeCustomer.contextLabel || safeCustomer.context_label || ""
+  ).trim();
   safeCustomer.areaSlugs = normalizeAreaSlugs(safeCustomer.areaSlugs || safeCustomer.area_slugs || "");
   safeCustomer.tags = normalizeTags(safeCustomer.tags || safeCustomer.theme_tags || "");
   safeCustomer.questionPlace = String(safeCustomer.questionPlace || "").trim();
@@ -119,6 +178,9 @@ export function normalizeCustomer(customer) {
   safeCustomer.sortOrder = Number(safeCustomer.sortOrder) || 0;
   safeCustomer.createdAt = String(safeCustomer.createdAt || safeCustomer.created_at || "").trim();
   safeCustomer.updatedAt = String(safeCustomer.updatedAt || safeCustomer.updated_at || "").trim();
+  if (!safeCustomer.contextLabel) {
+    safeCustomer.contextLabel = inferCustomerContextLabel(safeCustomer);
+  }
   safeCustomer.customQuestions = Array.isArray(safeCustomer.customQuestions)
     ? safeCustomer.customQuestions.map((question) => ({
         id: String(question?.id || "").trim(),
@@ -152,6 +214,7 @@ export function customerFromRecord(record) {
     restaurant: record.focus_tag ?? payload.restaurant ?? payload.focusTag,
     image: record.image ?? payload.image,
     bio: firstNonEmpty(record.bio, payload.bio),
+    contextLabel: payload.contextLabel ?? payload.context_label,
     questionPlace: record.question_place ?? payload.questionPlace,
     questionFact: record.question_fact ?? payload.questionFact,
     createdAt: record.created_at ?? payload.createdAt,

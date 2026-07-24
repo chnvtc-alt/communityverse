@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { customerFromRecord } from "../_lib/customer-admin.mjs";
+import { customerFromRecord, normalizeCustomer } from "../_lib/customer-admin.mjs";
 import { hasSupabaseConfig, jsonResponse, supabaseRequest } from "../_lib/supabase.mjs";
 import { seedCustomersToSupabase } from "../_lib/customer-admin.mjs";
 
@@ -24,7 +24,7 @@ export async function GET() {
     const seedCustomers = await readSeedCustomers();
 
     if (!hasSupabaseConfig()) {
-      return jsonResponse(seedCustomers);
+      return jsonResponse(seedCustomers.map(normalizeCustomer));
     }
 
     const customers = await fetchCustomersFromSupabase();
@@ -38,7 +38,7 @@ export async function GET() {
       await seedCustomersToSupabase(batch);
     }
 
-    return jsonResponse(seedCustomers);
+    return jsonResponse(seedCustomers.map(normalizeCustomer));
   } catch (error) {
     return jsonResponse(
       { ok: false, error: error instanceof Error ? error.message : String(error) },

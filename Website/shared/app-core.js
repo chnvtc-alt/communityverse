@@ -1723,6 +1723,9 @@
     safeCustomer.focusTag = safeCustomer.restaurant;
     safeCustomer.image = normalizeAssetPath(safeCustomer.image);
     safeCustomer.bio = String(safeCustomer.bio || "").trim();
+    safeCustomer.contextLabel = String(
+      safeCustomer.contextLabel || safeCustomer.context_label || ""
+    ).trim();
     safeCustomer.areaSlug = slugify(safeCustomer.areaSlug || safeCustomer.area_slug || "");
     safeCustomer.areaSlugs = Array.isArray(safeCustomer.areaSlugs)
       ? safeCustomer.areaSlugs.map((areaSlug) => slugify(areaSlug)).filter(Boolean)

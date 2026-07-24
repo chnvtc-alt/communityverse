@@ -106,6 +106,7 @@ const elements = {
   customerSortOrder: document.querySelector("#customer-sort-order"),
   customerActive: document.querySelector("#customer-active"),
   customerFeedbackRewardOnly: document.querySelector("#customer-feedback-reward-only"),
+  customerContextLabel: document.querySelector("#customer-context-label"),
   customerBio: document.querySelector("#customer-bio"),
   customerQuestionPlace: document.querySelector("#customer-question-place"),
   customerAreaSlugs: document.querySelector("#customer-area-slugs"),
@@ -916,6 +917,9 @@ function normalizeCustomer(customer) {
   safeCustomer.focusTag = safeCustomer.restaurant;
   safeCustomer.image = String(safeCustomer.image || "").trim();
   safeCustomer.bio = String(safeCustomer.bio || "").trim();
+  safeCustomer.contextLabel = String(
+    safeCustomer.contextLabel || safeCustomer.context_label || ""
+  ).trim();
   safeCustomer.areaSlugs = Array.isArray(safeCustomer.areaSlugs)
     ? safeCustomer.areaSlugs.map((slug) => slugify(slug)).filter(Boolean)
     : String(safeCustomer.areaSlugs || safeCustomer.area_slugs || "")
@@ -1272,7 +1276,7 @@ function renderCustomers() {
             <div>
               <p class="question-prompt">${escapeHtml(customer.name)}</p>
               <p class="question-answer">Regular ${escapeHtml(customer.regularValue)} | Occasional ${escapeHtml(customer.occasionalValue)}</p>
-              <p class="subtle" style="margin-top: 6px;">${escapeHtml(customer.bio || customer.questionFact || customer.questionPlace || "")}</p>
+              <p class="subtle" style="margin-top: 6px;">${escapeHtml(customer.contextLabel || customer.bio || customer.questionFact || customer.questionPlace || "")}</p>
               <div class="question-meta">
                 ${chips.map((chip) => `<span class="meta-chip">${escapeHtml(chip)}</span>`).join("")}
               </div>
@@ -3058,6 +3062,7 @@ function resetCustomerEditor(customer = null) {
   elements.customerSortOrder.value = customer?.sortOrder || 0;
   elements.customerActive.checked = customer?.active !== false;
   elements.customerFeedbackRewardOnly.checked = customer?.feedbackRewardOnly === true;
+  elements.customerContextLabel.value = customer?.contextLabel || "";
   elements.customerBio.value = customer?.bio || "";
   elements.customerQuestionPlace.value = customer?.questionPlace || "";
   elements.customerAreaSlugs.value = Array.isArray(customer?.areaSlugs)
@@ -3097,6 +3102,7 @@ function customerFromForm() {
     sortOrder: Number(elements.customerSortOrder.value) || 0,
     active: elements.customerActive.checked,
     feedbackRewardOnly: elements.customerFeedbackRewardOnly.checked,
+    contextLabel: elements.customerContextLabel.value.trim(),
     bio: elements.customerBio.value.trim(),
     questionPlace: elements.customerQuestionPlace.value.trim(),
     areaSlugs,

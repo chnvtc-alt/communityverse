@@ -1077,7 +1077,7 @@
 
   function getRestaurantContextName(slug) {
     const restaurantSlug = String(slug || "").trim();
-    if (!restaurantSlug || restaurantSlug === "shared") {
+    if (!restaurantSlug || restaurantSlug === "shared" || restaurantSlug === "your-restaurant-game") {
       return "";
     }
 
@@ -1094,6 +1094,7 @@
     const lowerBio = bioText.toLowerCase();
     const restaurantSlug = String(customer.restaurant || customer.focusTag || "").trim();
     const restaurantName = getRestaurantContextName(restaurantSlug);
+    const savedContextLabel = String(customer.contextLabel || customer.context_label || "").trim();
     const explicitLabels = {
       "1905 douglasville baseball team": "Local History",
       "bill arp": "Writer / Local History",
@@ -1103,6 +1104,10 @@
       "long john silver": "Treasure Island",
       "mark twain": "Author",
     };
+
+    if (savedContextLabel) {
+      return savedContextLabel;
+    }
 
     if (explicitLabels[normalizedName]) {
       return explicitLabels[normalizedName];
@@ -1120,7 +1125,7 @@
       return restaurantName ? `${restaurantName} Staff` : "Restaurant Staff";
     }
 
-    if (lowerBio.includes("owner")) {
+    if (lowerBio.includes("owner") || /\bown\b|\bowns\b/.test(lowerBio)) {
       return restaurantName ? `${restaurantName} Owner` : "Restaurant Owner";
     }
 
