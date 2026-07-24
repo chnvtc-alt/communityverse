@@ -79,6 +79,7 @@
     selectedGameMode: query.get("mode") === "friends" ? "friends" : "solo",
     splashStatsScope: "overall",
     collectionFilter: "all",
+    collectionSearch: "",
     inviteBackCustomerId: "",
     selectedCustomerId: "",
     selectedCustomerBioExpanded: false,
@@ -2650,6 +2651,27 @@
     `;
   }
 
+  function collectionEntryMatchesSearch(entry, searchKey) {
+    if (!searchKey) {
+      return true;
+    }
+
+    const statusLabel = getCharacterStatusLabel(entry?.status);
+    const contextLabel = getCharacterContextLabel(entry);
+    const searchableText = [
+      getCustomerDisplayName(entry),
+      contextLabel,
+      statusLabel,
+      getCustomerBio(entry),
+      entry?.rarity,
+    ].join(" ");
+    const normalizedText = core.normalizeText
+      ? core.normalizeText(searchableText)
+      : String(searchableText || "").trim().toLowerCase();
+
+    return normalizedText.includes(searchKey);
+  }
+
   function renderCollection() {
     const compactMobile = isMobileHub();
     const profile = core.getActiveProfile();
@@ -2668,10 +2690,17 @@
     const collection = [...collectionSource].sort((left, right) =>
       String(right.dateWon).localeCompare(String(left.dateWon))
     );
-    const filteredCollection =
+    const collectionSearch = String(state.collectionSearch || "").trim();
+    const collectionSearchKey = core.normalizeText
+      ? core.normalizeText(collectionSearch)
+      : collectionSearch.toLowerCase();
+    const filterBaseCollection =
       state.collectionFilter === "favorite"
         ? collection.filter((entry) => entry.status === "favorite")
         : collection;
+    const filteredCollection = collectionSearchKey
+      ? filterBaseCollection.filter((entry) => collectionEntryMatchesSearch(entry, collectionSearchKey))
+      : filterBaseCollection;
     const favoriteGoal = core.getFavoriteVisitGoal ? core.getFavoriteVisitGoal() : 10;
     const favoriteCount = collection.filter((entry) => entry.status === "favorite").length;
     const nextFavoriteEntry = collection
@@ -2687,14 +2716,21 @@
       filteredCollection.find((entry) => entry.customerId === state.selectedCustomerId) ||
       filteredCollection[0] ||
       null;
-    const emptyCollectionMessage = state.collectionFilter === "favorite"
+    const emptyCollectionMessage = collectionSearchKey
       ? `
+        <div class="empty-state">
+          <strong>No matching characters found.</strong>
+          <span>Try searching by name, book, role, rarity, or character type.</span>
+        </div>
+      `
+      : state.collectionFilter === "favorite"
+        ? `
         <div class="empty-state">
           <strong>No Favorite Characters yet.</strong>
           <span>Choose an existing character from your collection and play again. Score high enough on repeat visits to build Favorite progress. When a character becomes a Favorite, that character's points double.</span>
         </div>
       `
-      : `<p class="empty-state">No characters yet. Play a few rounds to build your roster.</p>`;
+        : `<p class="empty-state">No characters yet. Play a few rounds to build your roster.</p>`;
     const selectedCustomerBio = selectedCustomer ? getCustomerBio(selectedCustomer) : "";
     const selectedCustomerBioPreview = getBioPreview(selectedCustomerBio);
     const showFullBio = state.selectedCustomerBioExpanded || !selectedCustomerBioPreview.isTruncated;
@@ -2743,6 +2779,16 @@
           <strong>${escapeHtml(nextFavoriteLabel)}</strong>
         </div>
       </div>
+      <div class="collection-search-row">
+        <label class="collection-search-label" for="collection-search-input">Search Characters</label>
+        <input class="collection-search-input" id="collection-search-input" type="search" placeholder="Search by name, book, role, or rarity" value="${escapeHtml(collectionSearch)}" autocomplete="off" />
+        ${
+          collectionSearch
+            ? `<button class="text-button collection-search-clear" id="clear-collection-search" type="button">Clear Search</button>`
+            : ""
+        }
+      </div>
+      <p class="collection-result-helper">${filteredCollection.length === filterBaseCollection.length ? `Showing ${filteredCollection.length} characters` : `Showing ${filteredCollection.length} of ${filterBaseCollection.length} characters`}</p>
       <div class="leaderboard-tabs collection-tabs" role="tablist" aria-label="Character collection filter">
         <button class="button ${state.collectionFilter === "all" ? "button-primary" : "button-muted"} metric-button" data-collection-filter="all" type="button">All Characters</button>
         <button class="button ${state.collectionFilter === "favorite" ? "button-primary" : "button-muted"} metric-button" data-collection-filter="favorite" type="button">Favorite Characters</button>
@@ -2866,6 +2912,31 @@
 
       <div class="divider"></div>
     `;
+
+    const collectionSearchInput = document.getElementById("collection-search-input");
+    if (collectionSearchInput) {
+      collectionSearchInput.addEventListener("input", () => {
+        const cursorPosition = collectionSearchInput.selectionStart || 0;
+        state.collectionSearch = collectionSearchInput.value;
+        state.selectedCustomerBioExpanded = false;
+        renderCollection();
+        const nextSearchInput = document.getElementById("collection-search-input");
+        if (nextSearchInput) {
+          nextSearchInput.focus();
+          nextSearchInput.setSelectionRange(cursorPosition, cursorPosition);
+        }
+        requestAnimationFrame(syncDesktopPanelHeights);
+      });
+    }
+
+    const clearCollectionSearchButton = document.getElementById("clear-collection-search");
+    if (clearCollectionSearchButton) {
+      clearCollectionSearchButton.addEventListener("click", () => {
+        state.collectionSearch = "";
+        state.selectedCustomerBioExpanded = false;
+        renderAll();
+      });
+    }
 
     elements.collection.querySelectorAll("[data-collection-filter]").forEach((button) => {
       button.addEventListener("click", () => {
