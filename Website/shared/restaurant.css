@@ -3045,7 +3045,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .collection-summary {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin-top: 14px;
 }
@@ -3321,23 +3321,6 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   font-size: 0.72rem;
   text-transform: none;
   letter-spacing: 0;
-}
-
-.favorite-progress-meter {
-  grid-column: 1 / -1;
-  width: 100%;
-  height: 8px;
-  margin-top: 6px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: rgba(93, 116, 105, 0.14);
-}
-
-.favorite-progress-meter-fill {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, var(--gold), var(--gold-deep));
 }
 
 .collection-selected-top {
@@ -6610,10 +6593,6 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   .collection-summary-item {
     padding: 10px;
     border-radius: 14px;
-  }
-
-  .collection-summary-item-wide {
-    grid-column: 1 / -1;
   }
 
   .collection-summary-item span {

@@ -2635,22 +2635,6 @@
     return Math.max(0, Math.min(favoriteGoal, Number(entry?.favoriteVisits) || 0));
   }
 
-  function getFavoriteProgressMeter(entry, favoriteGoal, label) {
-    if (!entry || isFeedbackRewardCustomerEntry(entry) || (!canBuildFavoriteProgress(entry) && entry.status !== "favorite")) {
-      return "";
-    }
-
-    const visits = entry.status === "favorite" ? favoriteGoal : getFavoriteVisitCount(entry, favoriteGoal);
-    const progressPercent = favoriteGoal > 0 ? Math.round((visits / favoriteGoal) * 100) : 0;
-    const progressLabel = label || `Favorite progress: ${visits} of ${favoriteGoal} successful visits`;
-
-    return `
-      <div class="favorite-progress-meter" role="img" aria-label="${escapeHtml(progressLabel)}">
-        <span class="favorite-progress-meter-fill" style="width: ${progressPercent}%;"></span>
-      </div>
-    `;
-  }
-
   function collectionEntryMatchesSearch(entry, searchKey) {
     if (!searchKey) {
       return true;
@@ -2703,15 +2687,9 @@
       : filterBaseCollection;
     const favoriteGoal = core.getFavoriteVisitGoal ? core.getFavoriteVisitGoal() : 10;
     const favoriteCount = collection.filter((entry) => entry.status === "favorite").length;
-    const nextFavoriteEntry = collection
-      .filter((entry) => canBuildFavoriteProgress(entry) && !isFeedbackRewardCustomerEntry(entry))
-      .sort((left, right) => getFavoriteVisitCount(right, favoriteGoal) - getFavoriteVisitCount(left, favoriteGoal))[0];
-    const nextFavoriteVisits = getFavoriteVisitCount(nextFavoriteEntry, favoriteGoal);
-    const nextFavoriteLabel = nextFavoriteEntry
-      ? `${getCustomerDisplayName(nextFavoriteEntry)}: ${nextFavoriteVisits}/${favoriteGoal}`
-      : favoriteCount > 0
-        ? "Keep replaying any non-Favorite character"
-        : "Play again to start Favorite progress";
+    const collectionResultLabel = collectionSearchKey
+      ? `${filteredCollection.length} ${filteredCollection.length === 1 ? "match" : "matches"} in your ${collection.length} collected characters`
+      : `Showing ${filteredCollection.length} characters`;
     const selectedCustomer =
       filteredCollection.find((entry) => entry.customerId === state.selectedCustomerId) ||
       filteredCollection[0] ||
@@ -2755,7 +2733,6 @@
         : canBuildFavoriteProgress(selectedCustomer)
           ? `<p class="customer-favorite-progress">Favorite Progress: ${selectedFavoriteVisits} / ${favoriteGoal} successful visits</p>`
           : "";
-    const selectedFavoriteMeter = getFavoriteProgressMeter(selectedCustomer, favoriteGoal);
     const selectedDirectoryRestaurant = getSelectedDirectoryRestaurant(profile);
     const selectedInviteBackHref = selectedCustomer && !selectedIsFeedbackReward
       ? getCustomerInviteBackHref(selectedCustomer, selectedDirectoryRestaurant)
@@ -2774,10 +2751,6 @@
           <span>Favorites</span>
           <strong>${favoriteCount}</strong>
         </div>
-        <div class="collection-summary-item collection-summary-item-wide">
-          <span>Closest To Favorite</span>
-          <strong>${escapeHtml(nextFavoriteLabel)}</strong>
-        </div>
       </div>
       <div class="collection-search-row">
         <label class="collection-search-label" for="collection-search-input">Search Characters</label>
@@ -2788,7 +2761,7 @@
             : ""
         }
       </div>
-      <p class="collection-result-helper">${filteredCollection.length === filterBaseCollection.length ? `Showing ${filteredCollection.length} characters` : `Showing ${filteredCollection.length} of ${filterBaseCollection.length} characters`}</p>
+      <p class="collection-result-helper">${escapeHtml(collectionResultLabel)}</p>
       <div class="leaderboard-tabs collection-tabs" role="tablist" aria-label="Character collection filter">
         <button class="button ${state.collectionFilter === "all" ? "button-primary" : "button-muted"} metric-button" data-collection-filter="all" type="button">All Characters</button>
         <button class="button ${state.collectionFilter === "favorite" ? "button-primary" : "button-muted"} metric-button" data-collection-filter="favorite" type="button">Favorite Characters</button>
@@ -2804,7 +2777,6 @@
                   <h3 class="section-title" style="margin: 0; font-size: 1.45rem;">${escapeHtml(selectedCustomerName)}</h3>
                   <p class="customer-meta" style="margin-top: 4px;">${escapeHtml(selectedContextLabel || selectedStatusLabel)}</p>
                   ${selectedFavoriteProgress}
-                  ${selectedFavoriteMeter}
                   <p class="collection-selected-bio">${escapeHtml(showFullBio ? selectedCustomerBio : selectedCustomerBioPreview.text)}</p>
                   ${
                     selectedCustomerBioPreview.isTruncated
@@ -2833,7 +2805,6 @@
                     <h3 class="section-title" style="margin: 0; font-size: 1.45rem;">${escapeHtml(selectedCustomerName)}</h3>
                     <p class="customer-meta" style="margin-top: 4px;">${escapeHtml(selectedContextLabel || selectedStatusLabel)}</p>
                     ${selectedFavoriteProgress}
-                    ${selectedFavoriteMeter}
                     <p class="collection-selected-bio">${escapeHtml(showFullBio ? selectedCustomerBio : selectedCustomerBioPreview.text)}</p>
                     ${
                       selectedCustomerBioPreview.isTruncated
@@ -2899,7 +2870,6 @@
                         </div>
                         ${isSelected ? `<span class="customer-mini-selected-label">Selected</span>` : ""}
                         ${entryProgress ? `<p class="customer-favorite-progress customer-favorite-progress-mini">${escapeHtml(entryProgress)}</p>` : ""}
-                        ${getFavoriteProgressMeter(entry, favoriteGoal, entryProgress)}
                       </div>
                     </button>
                   `;
