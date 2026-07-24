@@ -1085,6 +1085,27 @@
     return String(restaurant?.name || "").trim();
   }
 
+  function getCommunityOccupationLabel(name, bio) {
+    const value = `${String(name || "")} ${String(bio || "")}`.toLowerCase();
+    const occupationRules = [
+      { pattern: /\bmayor\b/, label: "Mayor" },
+      { pattern: /\bfire chief\b/, label: "Fire Chief" },
+      { pattern: /\bpastor\b|\bminister\b/, label: "Pastor" },
+      { pattern: /\btrivia host\b.*\bgame creator\b|\bgame creator\b.*\btrivia host\b/, label: "Trivia Host / Game Creator" },
+      { pattern: /\bartist\b.*\bentrepreneur\b|\bentrepreneur\b.*\bartist\b/, label: "Artist / Entrepreneur" },
+      { pattern: /\bteacher\b|\beducator\b/, label: "Teacher" },
+      { pattern: /\bcoach\b/, label: "Coach" },
+      { pattern: /\bmusician\b|\bsinger\b|\bperformer\b/, label: "Musician" },
+      { pattern: /\bartist\b/, label: "Artist" },
+      { pattern: /\bentrepreneur\b|\bbusiness owner\b|\bowns\b|\bown\b/, label: "Business Owner" },
+      { pattern: /\bcreator\b/, label: "Creator" },
+      { pattern: /\bvolunteer\b/, label: "Volunteer" },
+      { pattern: /\bcommunity member\b/, label: "Community Member" },
+    ];
+    const match = occupationRules.find((rule) => rule.pattern.test(value));
+    return match ? match.label : "";
+  }
+
   function getCharacterContextLabel(record) {
     const customer = getCustomerRecord(record);
     const name = getCustomerDisplayName(record);
@@ -1109,7 +1130,7 @@
     };
     const explicitLabel = explicitLabels[normalizedName] || "";
     const savedContextLabelKey = savedContextLabel.toLowerCase();
-    const genericSavedLabels = new Set(["collectible character", "storybook character"]);
+    const genericSavedLabels = new Set(["collectible character", "community character", "storybook character"]);
 
     if (savedContextLabel && (!explicitLabel || !genericSavedLabels.has(savedContextLabelKey))) {
       return savedContextLabel;
@@ -1131,8 +1152,13 @@
       return restaurantName ? `${restaurantName} Staff` : "Restaurant Staff";
     }
 
+    const communityOccupationLabel = getCommunityOccupationLabel(name, bio);
+    if (communityOccupationLabel && (!restaurantName || restaurantSlug === "communityverse")) {
+      return communityOccupationLabel;
+    }
+
     if (lowerBio.includes("owner") || /\bown\b|\bowns\b/.test(lowerBio)) {
-      return restaurantName ? `${restaurantName} Owner` : "Restaurant Owner";
+      return restaurantName ? `${restaurantName} Owner` : "Business Owner";
     }
 
     if (/\bauthor\b|\bnovelist\b/.test(lowerBio)) {

@@ -131,8 +131,12 @@ export function inferCustomerContextLabel(customer) {
   if (bio.includes("kitchen manager")) return restaurantName ? `${restaurantName} Kitchen Manager` : "Kitchen Manager";
   if (bio.includes("bartender")) return restaurantName ? `${restaurantName} Bartender` : "Bartender";
   if (bio.includes("server") || bio.includes("staff")) return restaurantName ? `${restaurantName} Staff` : "Restaurant Staff";
+  const communityOccupationLabel = inferCommunityOccupationLabel(safeCustomer);
+  if (communityOccupationLabel && (!restaurantName || restaurant === "communityverse")) {
+    return communityOccupationLabel;
+  }
   if (bio.includes("owner") || /\bown\b|\bowns\b/.test(bio)) {
-    return restaurantName ? `${restaurantName} Owner` : "Restaurant Owner";
+    return restaurantName ? `${restaurantName} Owner` : "Business Owner";
   }
   if (/\bauthor\b|\bnovelist\b/.test(bio)) return "Author";
   if (/\bwriter\b/.test(bio)) return "Writer";
@@ -157,9 +161,30 @@ export function inferCustomerContextLabel(customer) {
 }
 
 function isGenericContextLabel(label) {
-  return ["collectible character", "storybook character"].includes(
+  return ["collectible character", "community character", "storybook character"].includes(
     String(label || "").trim().toLowerCase()
   );
+}
+
+function inferCommunityOccupationLabel(customer) {
+  const text = `${String(customer?.name || "")} ${String(customer?.bio || "")}`.toLowerCase();
+  const occupationRules = [
+    { pattern: /\bmayor\b/, label: "Mayor" },
+    { pattern: /\bfire chief\b/, label: "Fire Chief" },
+    { pattern: /\bpastor\b|\bminister\b/, label: "Pastor" },
+    { pattern: /\btrivia host\b.*\bgame creator\b|\bgame creator\b.*\btrivia host\b/, label: "Trivia Host / Game Creator" },
+    { pattern: /\bartist\b.*\bentrepreneur\b|\bentrepreneur\b.*\bartist\b/, label: "Artist / Entrepreneur" },
+    { pattern: /\bteacher\b|\beducator\b/, label: "Teacher" },
+    { pattern: /\bcoach\b/, label: "Coach" },
+    { pattern: /\bmusician\b|\bsinger\b|\bperformer\b/, label: "Musician" },
+    { pattern: /\bartist\b/, label: "Artist" },
+    { pattern: /\bentrepreneur\b|\bbusiness owner\b|\bowns\b|\bown\b/, label: "Business Owner" },
+    { pattern: /\bcreator\b/, label: "Creator" },
+    { pattern: /\bvolunteer\b/, label: "Volunteer" },
+    { pattern: /\bcommunity member\b/, label: "Community Member" },
+  ];
+  const match = occupationRules.find((rule) => rule.pattern.test(text));
+  return match ? match.label : "";
 }
 
 export function normalizeCustomer(customer) {
