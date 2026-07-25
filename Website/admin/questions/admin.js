@@ -53,6 +53,31 @@ const DEFAULT_QUESTION_MIX_SLOTS = [
   { type: "auto" },
   { type: "auto" },
 ];
+const CUSTOMER_CATEGORY_OPTIONS = [
+  { value: "actors-actresses", label: "Actors / Actresses" },
+  { value: "animal-related", label: "Animal Related" },
+  { value: "artists", label: "Artists" },
+  { value: "authors", label: "Authors" },
+  { value: "criminals-outlaws", label: "Criminals / Outlaws" },
+  { value: "educators", label: "Educators" },
+  { value: "explorers-adventurers", label: "Explorers / Adventurers" },
+  { value: "fairytales-legends", label: "Fairytales / Legends" },
+  { value: "historic-figures", label: "Historic Figures" },
+  { value: "inventors", label: "Inventors" },
+  { value: "leaders-political-royalty", label: "Leaders / Political / Royalty" },
+  { value: "literary-characters", label: "Literary Characters" },
+  { value: "mascots", label: "Mascots" },
+  { value: "media", label: "Media" },
+  { value: "musicians", label: "Musicians" },
+  { value: "mythology-supernatural", label: "Mythology / Supernatural" },
+  { value: "pirates", label: "Pirates" },
+  { value: "religious", label: "Religious" },
+  { value: "restaurant", label: "Restaurant" },
+  { value: "scary-monsters", label: "Scary / Monsters" },
+  { value: "sports", label: "Sports" },
+  { value: "general", label: "General" },
+];
+const CUSTOMER_CATEGORY_VALUES = new Set(CUSTOMER_CATEGORY_OPTIONS.map((category) => category.value));
 
 const elements = {
   tabs: [...document.querySelectorAll(".workshop-tab")],
@@ -107,6 +132,8 @@ const elements = {
   customerActive: document.querySelector("#customer-active"),
   customerFeedbackRewardOnly: document.querySelector("#customer-feedback-reward-only"),
   customerContextLabel: document.querySelector("#customer-context-label"),
+  customerCategory: document.querySelector("#customer-category"),
+  suggestCustomerCategoryButton: document.querySelector("#suggest-customer-category-button"),
   customerBio: document.querySelector("#customer-bio"),
   customerQuestionPlace: document.querySelector("#customer-question-place"),
   customerAreaSlugs: document.querySelector("#customer-area-slugs"),
@@ -694,6 +721,102 @@ function slugify(value) {
   return RESTAURANT_SLUG_ALIASES[slug] || slug;
 }
 
+function normalizeCustomerCategory(value) {
+  const slug = slugify(value);
+  if (CUSTOMER_CATEGORY_VALUES.has(slug)) {
+    return slug;
+  }
+
+  const normalizedLabel = String(value || "").trim().toLowerCase().replace(/\s*\/\s*/g, " / ");
+  const match = CUSTOMER_CATEGORY_OPTIONS.find((category) => category.label.toLowerCase() === normalizedLabel);
+  return match ? match.value : "";
+}
+
+function formatCustomerCategoryLabel(value) {
+  const category = CUSTOMER_CATEGORY_OPTIONS.find((option) => option.value === normalizeCustomerCategory(value));
+  return category ? category.label : "";
+}
+
+function suggestCustomerCategory(customer = customerFromForm()) {
+  const restaurant = normalizeRestaurant(customer.restaurant || customer.focusTag || "");
+  const nameKey = String(customer.name || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const searchable = [
+    customer.name,
+    customer.bio,
+    customer.contextLabel,
+    customer.characterType,
+    customer.group,
+    customer.groupName,
+    customer.rarity,
+    customer.questionPlace,
+    customer.questionFact,
+    ...(Array.isArray(customer.tags) ? customer.tags : []),
+  ].map((value) => String(value || "").toLowerCase()).join(" ");
+  const explicitCategories = {
+    "1905 douglasville baseball team": "historic-figures",
+    "abraham lincoln": "leaders-political-royalty",
+    "alice in wonderland": "literary-characters",
+    "amelia earhart": "explorers-adventurers",
+    "benjamin franklin": "inventors",
+    "big bad wolf": "fairytales-legends",
+    "billy the kid": "criminals-outlaws",
+    "blackbeard the pirate": "pirates",
+    "captain nemo": "explorers-adventurers",
+    "cheshire cat": "fairytales-legends",
+    "christopher columbus": "explorers-adventurers",
+    "cleopatra": "leaders-political-royalty",
+    "george washington": "leaders-political-royalty",
+    "huckleberry finn": "literary-characters",
+    "humpty dumpty": "fairytales-legends",
+    "jules verne": "authors",
+    "king tut": "leaders-political-royalty",
+    "little red riding hood": "fairytales-legends",
+    "long john silver": "pirates",
+    "mad hatter": "fairytales-legends",
+    "mark twain": "authors",
+    "napoleon bonaparte": "leaders-political-royalty",
+    "queen of hearts": "fairytales-legends",
+    "sasquatch": "mythology-supernatural",
+    "the invisible man": "literary-characters",
+    "the phantom of the opera": "literary-characters",
+    "the tooth fairy": "fairytales-legends",
+    "thomas edison": "inventors",
+  };
+
+  if (explicitCategories[nameKey]) {
+    return explicitCategories[nameKey];
+  }
+  if (restaurant && !["shared", "communityverse", "your-restaurant-game"].includes(restaurant)) {
+    return "restaurant";
+  }
+
+  const rules = [
+    { pattern: /\b(actor|actress|film star|movie star)\b/, value: "actors-actresses" },
+    { pattern: /\b(mascot)\b/, value: "mascots" },
+    { pattern: /\b(pirate|privateer|buccaneer)\b/, value: "pirates" },
+    { pattern: /\b(outlaw|criminal|bandit|gangster|robber)\b/, value: "criminals-outlaws" },
+    { pattern: /\b(explorer|adventurer|voyage|navigator|pilot|aviator|captain)\b/, value: "explorers-adventurers" },
+    { pattern: /\b(author|writer|novelist|poet)\b/, value: "authors" },
+    { pattern: /\b(alice|wonderland|storybook|novel|literary|phantom of the opera|invisible man|huckleberry finn|treasure island)\b/, value: "literary-characters" },
+    { pattern: /\b(fairytale|fairy tale|legend|red riding hood|big bad wolf|humpty dumpty|tooth fairy|queen of hearts|mad hatter|cheshire cat)\b/, value: "fairytales-legends" },
+    { pattern: /\b(vampire|dracula|frankenstein|werewolf|zombie|monster|scary)\b/, value: "scary-monsters" },
+    { pattern: /\b(myth|mythology|supernatural|god|goddess|ghost|cryptid|sasquatch)\b/, value: "mythology-supernatural" },
+    { pattern: /\b(inventor|invention|scientist|electricity|laboratory)\b/, value: "inventors" },
+    { pattern: /\b(president|mayor|king|queen|emperor|empress|leader|political|royalty|general|pharaoh)\b/, value: "leaders-political-royalty" },
+    { pattern: /\b(historic|historical|history|local history|civil war|revolutionary)\b/, value: "historic-figures" },
+    { pattern: /\b(teacher|educator|professor|principal|coach)\b/, value: "educators" },
+    { pattern: /\b(pastor|minister|priest|rabbi|religious|church|saint)\b/, value: "religious" },
+    { pattern: /\b(artist|painter|sculptor|illustrator|designer)\b/, value: "artists" },
+    { pattern: /\b(musician|singer|performer|band|guitar|piano|song)\b/, value: "musicians" },
+    { pattern: /\b(athlete|sports|baseball|football|basketball|soccer|tennis|coach)\b/, value: "sports" },
+    { pattern: /\b(news|radio|television|tv|media|host|reporter|journalist|podcast)\b/, value: "media" },
+    { pattern: /\b(animal|dog|cat|horse|bear|bird|wolf)\b/, value: "animal-related" },
+    { pattern: /\b(server|chef|cook|kitchen|bartender|waitress|waiter|restaurant|diner|cafe|owner)\b/, value: "restaurant" },
+  ];
+  const match = rules.find((rule) => rule.pattern.test(searchable));
+  return match ? match.value : "general";
+}
+
 function feedbackResultsUrl(restaurantSlug, accessCode) {
   const slug = slugify(restaurantSlug);
   const code = String(accessCode || "").trim();
@@ -920,6 +1043,10 @@ function normalizeCustomer(customer) {
   safeCustomer.contextLabel = String(
     safeCustomer.contextLabel || safeCustomer.context_label || ""
   ).trim();
+  safeCustomer.characterCategory = normalizeCustomerCategory(
+    safeCustomer.characterCategory || safeCustomer.character_category || safeCustomer.collectionCategory || safeCustomer.category || ""
+  );
+  safeCustomer.category = safeCustomer.characterCategory;
   safeCustomer.areaSlugs = Array.isArray(safeCustomer.areaSlugs)
     ? safeCustomer.areaSlugs.map((slug) => slugify(slug)).filter(Boolean)
     : String(safeCustomer.areaSlugs || safeCustomer.area_slugs || "")
@@ -990,7 +1117,12 @@ function normalizeRestaurantRecord(restaurant) {
 }
 
 function populateCustomerSuggestions() {
+  elements.customerCategory.innerHTML = [
+    '<option value="">Choose a category</option>',
+    ...CUSTOMER_CATEGORY_OPTIONS.map((category) => `<option value="${escapeHtml(category.value)}">${escapeHtml(category.label)}</option>`),
+  ].join("");
   populateDatalist("customer-group-options", customers.map((customer) => customer.characterType));
+  populateDatalist("customer-category-options", CUSTOMER_CATEGORY_OPTIONS.map((category) => category.label));
   populateDatalist("customer-focus-options", getCustomerRestaurantChoices().map((choice) => choice.value));
   populateDatalist("customer-rarity-options", customers.map((customer) => customer.rarity));
   renderCustomerRestaurantChoices();
@@ -1262,6 +1394,7 @@ function renderCustomers() {
         customer.id,
         formatRestaurantLabel(customer.restaurant),
         formatCharacterTypeLabel(customer.characterType),
+        formatCustomerCategoryLabel(customer.characterCategory) || "Needs category",
         customer.rarity,
         ...(Array.isArray(customer.areaSlugs) ? customer.areaSlugs : []),
         ...(Array.isArray(customer.tags) ? customer.tags.map((tag) => `#${tag}`) : []),
@@ -3063,6 +3196,7 @@ function resetCustomerEditor(customer = null) {
   elements.customerActive.checked = customer?.active !== false;
   elements.customerFeedbackRewardOnly.checked = customer?.feedbackRewardOnly === true;
   elements.customerContextLabel.value = customer?.contextLabel || "";
+  elements.customerCategory.value = normalizeCustomerCategory(customer?.characterCategory || customer?.category || "") || "";
   elements.customerBio.value = customer?.bio || "";
   elements.customerQuestionPlace.value = customer?.questionPlace || "";
   elements.customerAreaSlugs.value = Array.isArray(customer?.areaSlugs)
@@ -3103,12 +3237,20 @@ function customerFromForm() {
     active: elements.customerActive.checked,
     feedbackRewardOnly: elements.customerFeedbackRewardOnly.checked,
     contextLabel: elements.customerContextLabel.value.trim(),
+    characterCategory: normalizeCustomerCategory(elements.customerCategory.value),
     bio: elements.customerBio.value.trim(),
     questionPlace: elements.customerQuestionPlace.value.trim(),
     areaSlugs,
     questionFact: elements.customerQuestionFact.value.trim(),
     image: elements.customerImage.value.trim(),
   };
+}
+
+function fillSuggestedCustomerCategory() {
+  const customer = customerFromForm();
+  const category = suggestCustomerCategory(customer);
+  elements.customerCategory.value = category;
+  showCustomerFormErrors([]);
 }
 
 async function validatePhotoDimensions(file) {
@@ -3144,6 +3286,11 @@ async function saveCustomerEditor(event) {
 
   if (!customer.name) {
     showCustomerFormErrors("Character name is required.");
+    return;
+  }
+
+  if (!customer.characterCategory) {
+    showCustomerFormErrors("Collection category is required. Choose one or use Suggest Category.");
     return;
   }
 
@@ -3183,7 +3330,11 @@ async function toggleCustomer(customer) {
   try {
     await customerApiRequest(`/${encodeURIComponent(customer.id)}`, {
       method: "PUT",
-      body: JSON.stringify({ ...customer, active: !customer.active }),
+      body: JSON.stringify({
+        ...customer,
+        characterCategory: customer.characterCategory || suggestCustomerCategory(customer),
+        active: !customer.active,
+      }),
     });
     await loadCustomers({ quiet: true });
   } catch (error) {
@@ -3770,6 +3921,7 @@ elements.customerRegularValue.addEventListener("input", () => updateSuggestedOcc
 elements.customerOccasionalValue.addEventListener("input", () => {
   customerOccasionalValueManuallyEdited = true;
 });
+elements.suggestCustomerCategoryButton.addEventListener("click", fillSuggestedCustomerCategory);
 elements.customerAvailability.addEventListener("change", () => {
   updateCustomerAvailabilityFields();
 });

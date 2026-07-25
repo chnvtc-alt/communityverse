@@ -1726,6 +1726,10 @@
     safeCustomer.contextLabel = String(
       safeCustomer.contextLabel || safeCustomer.context_label || ""
     ).trim();
+    safeCustomer.characterCategory = slugify(
+      safeCustomer.characterCategory || safeCustomer.character_category || safeCustomer.collectionCategory || safeCustomer.category || ""
+    );
+    safeCustomer.category = safeCustomer.characterCategory;
     safeCustomer.areaSlug = slugify(safeCustomer.areaSlug || safeCustomer.area_slug || "");
     safeCustomer.areaSlugs = Array.isArray(safeCustomer.areaSlugs)
       ? safeCustomer.areaSlugs.map((areaSlug) => slugify(areaSlug)).filter(Boolean)

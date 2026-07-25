@@ -5,6 +5,30 @@ const RESTAURANT_SLUG_ALIASES = {
   "cinema-tavern": "cinema-tavern",
   "cinema tavern": "cinema-tavern",
 };
+const CUSTOMER_CATEGORY_VALUES = new Set([
+  "actors-actresses",
+  "animal-related",
+  "artists",
+  "authors",
+  "criminals-outlaws",
+  "educators",
+  "explorers-adventurers",
+  "fairytales-legends",
+  "historic-figures",
+  "inventors",
+  "leaders-political-royalty",
+  "literary-characters",
+  "mascots",
+  "media",
+  "musicians",
+  "mythology-supernatural",
+  "pirates",
+  "religious",
+  "restaurant",
+  "scary-monsters",
+  "sports",
+  "general",
+]);
 
 function toJsonObject(value, fallback = {}) {
   if (!value) {
@@ -68,6 +92,11 @@ function slugText(value) {
 
 function normalizeCharacterType(value) {
   return slugText(value);
+}
+
+function normalizeCustomerCategory(value) {
+  const slug = slugText(value);
+  return CUSTOMER_CATEGORY_VALUES.has(slug) ? slug : "";
 }
 
 function normalizeAreaSlugs(value) {
@@ -208,6 +237,10 @@ export function normalizeCustomer(customer) {
   safeCustomer.contextLabel = String(
     safeCustomer.contextLabel || safeCustomer.context_label || ""
   ).trim();
+  safeCustomer.characterCategory = normalizeCustomerCategory(
+    safeCustomer.characterCategory || safeCustomer.character_category || safeCustomer.collectionCategory || safeCustomer.category || ""
+  );
+  safeCustomer.category = safeCustomer.characterCategory;
   safeCustomer.areaSlugs = normalizeAreaSlugs(safeCustomer.areaSlugs || safeCustomer.area_slugs || "");
   safeCustomer.tags = normalizeTags(safeCustomer.tags || safeCustomer.theme_tags || "");
   safeCustomer.questionPlace = String(safeCustomer.questionPlace || "").trim();
@@ -300,15 +333,19 @@ export async function fetchAdminCustomersFromSupabase() {
 }
 
 export async function saveCustomer(customer) {
+  const normalized = normalizeCustomer(customer);
+  if (!normalized.characterCategory) {
+    throw new Error("Collection category is required.");
+  }
   const rows = await supabaseRequest("customers?on_conflict=id", {
     method: "POST",
     headers: {
       Prefer: "resolution=merge-duplicates,return=representation",
     },
-    body: JSON.stringify([customerToRecord(customer, customer.sortOrder)]),
+    body: JSON.stringify([customerToRecord(normalized, normalized.sortOrder)]),
   });
 
-  return Array.isArray(rows) && rows.length ? customerFromRecord(rows[0]) : normalizeCustomer(customer);
+  return Array.isArray(rows) && rows.length ? customerFromRecord(rows[0]) : normalized;
 }
 
 export async function deleteCustomer(id) {

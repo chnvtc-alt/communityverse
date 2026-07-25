@@ -222,6 +222,18 @@ label {
   grid-column: 1 / -1;
 }
 
+.field-with-action {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+}
+
+.field-with-action .button {
+  min-height: 42px;
+  white-space: nowrap;
+}
+
 input,
 select,
 textarea {
@@ -1166,6 +1178,14 @@ dialog::backdrop {
   .filter-grid,
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .field-with-action {
+    grid-template-columns: 1fr;
+  }
+
+  .field-with-action .button {
+    width: 100%;
   }
 
   .stats-grid,

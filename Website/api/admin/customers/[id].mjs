@@ -29,6 +29,10 @@ export async function PUT(request) {
       return jsonResponse({ ok: false, error: "Customer name is required." }, 400);
     }
 
+    if (!customer.characterCategory) {
+      return jsonResponse({ ok: false, error: "Collection category is required." }, 400);
+    }
+
     return jsonResponse({ ok: true, customer: await saveCustomer(customer) });
   } catch (error) {
     return jsonResponse({ ok: false, error: error instanceof Error ? error.message : String(error) }, 500);
