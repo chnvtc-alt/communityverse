@@ -6,6 +6,14 @@
   };
 
   let restaurants = [];
+  const pageConfig = {
+    slugs: String(document.body?.dataset.directorySlugs || "")
+      .split(",")
+      .map((slug) => slug.trim().toLowerCase())
+      .filter(Boolean),
+    countSingular: String(document.body?.dataset.countSingular || "active game"),
+    countPlural: String(document.body?.dataset.countPlural || "active games"),
+  };
 
   function escapeHtml(value) {
     return String(value ?? "")
@@ -40,7 +48,7 @@
 
   function visibleRestaurants(list) {
     const hiddenDirectorySlugs = new Set(["americana", "americana-grill", "wafflemaster", "waffle-master"]);
-    return (Array.isArray(list) ? list : [])
+    const visible = (Array.isArray(list) ? list : [])
       .filter((restaurant) => {
         const slug = String(restaurant?.slug || "").toLowerCase();
         const name = String(restaurant?.name || "").toLowerCase();
@@ -55,7 +63,20 @@
           restaurant.name
         );
       })
-      .sort((left, right) => String(left.name || "").localeCompare(String(right.name || "")));
+      .filter((restaurant) => {
+        if (!pageConfig.slugs.length) return true;
+        return pageConfig.slugs.includes(String(restaurant.slug || "").toLowerCase());
+      });
+
+    if (pageConfig.slugs.length) {
+      return visible.sort((left, right) => {
+        const leftIndex = pageConfig.slugs.indexOf(String(left.slug || "").toLowerCase());
+        const rightIndex = pageConfig.slugs.indexOf(String(right.slug || "").toLowerCase());
+        return leftIndex - rightIndex || String(left.name || "").localeCompare(String(right.name || ""));
+      });
+    }
+
+    return visible.sort((left, right) => String(left.name || "").localeCompare(String(right.name || "")));
   }
 
   function fallbackRestaurants() {
@@ -147,7 +168,7 @@
   function renderDirectory() {
     const query = String(elements.search?.value || "").trim().toLowerCase();
     const filtered = restaurants.filter((restaurant) => matchesSearch(restaurant, query));
-    elements.count.textContent = `${filtered.length} active game${filtered.length === 1 ? "" : "s"}`;
+    elements.count.textContent = `${filtered.length} ${filtered.length === 1 ? pageConfig.countSingular : pageConfig.countPlural}`;
 
     if (!filtered.length) {
       elements.grid.innerHTML = `<p class="empty-state">${query ? "No restaurant games match that search." : "No public restaurant games are listed yet."}</p>`;

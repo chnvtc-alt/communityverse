@@ -1142,6 +1142,7 @@ const server = createServer(async (request, response) => {
       "privacy",
       "restaurant",
       "shared",
+      "south-of-the-smokies",
       "terms",
       "world-tour",
       "world-tour-game.html",

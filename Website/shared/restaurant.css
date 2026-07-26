@@ -963,6 +963,59 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   margin-top: 2px;
 }
 
+.south-smokies-shell {
+  max-width: 1080px;
+}
+
+.south-smokies-hero {
+  display: grid;
+  grid-template-columns: minmax(190px, 300px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 14px;
+  padding: clamp(16px, 2.5vw, 24px);
+  border: 1px solid rgba(93, 116, 105, 0.14);
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(255, 253, 248, 0.98), rgba(239, 246, 237, 0.9));
+  box-shadow: var(--shadow);
+}
+
+.south-smokies-logo-panel {
+  display: grid;
+  place-items: center;
+  padding: clamp(14px, 3vw, 24px);
+  border: 1px solid rgba(93, 116, 105, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.south-smokies-logo {
+  width: min(100%, 240px);
+  height: auto;
+}
+
+.south-smokies-hero-copy {
+  display: grid;
+  gap: 12px;
+}
+
+.south-smokies-hero h1 {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(1.9rem, 4vw, 3.2rem);
+  line-height: 1;
+}
+
+.south-smokies-hero p {
+  max-width: 620px;
+  margin: 0;
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+  font-size: clamp(1rem, 2vw, 1.15rem);
+  line-height: 1.48;
+}
+
 .challenge-faq-item summary,
 .challenge-faq-item p {
   margin: 0;
@@ -4951,6 +5004,21 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   .directory-hero {
     margin-bottom: 10px;
     border-radius: 16px;
+  }
+
+  .south-smokies-hero {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .south-smokies-logo-panel {
+    padding: 14px;
+  }
+
+  .south-smokies-hero h1 {
+    font-size: clamp(1.8rem, 10vw, 2.7rem);
   }
 
   .directory-card-main {

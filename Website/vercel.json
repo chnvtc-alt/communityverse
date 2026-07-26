@@ -119,6 +119,14 @@
       "destination": "/terms/index.html"
     },
     {
+      "source": "/south-of-the-smokies",
+      "destination": "/south-of-the-smokies/index.html"
+    },
+    {
+      "source": "/south-of-the-smokies/",
+      "destination": "/south-of-the-smokies/index.html"
+    },
+    {
       "source": "/:restaurantSlug/play",
       "destination": "/api/restaurant-page?restaurantSlug=:restaurantSlug&page=play"
     },
