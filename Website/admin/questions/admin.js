@@ -2001,7 +2001,15 @@ function getProfileEmailText(profile) {
   if (ownerEmail) {
     return ownerEmail;
   }
+  const pendingOwnerEmail = String(profile?.pendingOwnerEmail || "").trim();
+  if (pendingOwnerEmail) {
+    return `claim pending: ${pendingOwnerEmail}`;
+  }
   return profile?.emailConnected ? "email saved" : "";
+}
+
+function canSendProfileClaimLink(profile) {
+  return Boolean(profile?.id && !profile.ownerEmail && !profile.emailConnected);
 }
 
 function profileMatchesActivity(profile, activityFilter) {
@@ -2089,6 +2097,23 @@ function renderProfiles() {
       const playHistory = getProfilePlayHistory(profile);
       const activityLabel = getProfileActivityLabel(activity);
       const emailText = getProfileEmailText(profile);
+      const pendingOwnerEmail = String(profile.pendingOwnerEmail || "").trim();
+      const claimMarkup = canSendProfileClaimLink(profile)
+        ? `
+          <div class="profile-claim-row">
+            <label>
+              Recovery email
+              <input class="profile-claim-email-input" data-profile-claim-email type="email" value="${escapeHtml(pendingOwnerEmail)}" placeholder="player@example.com" />
+            </label>
+            <button class="button button-secondary send-profile-claim-button" type="button">Send Claim Link</button>
+          </div>
+          <p class="optional profile-claim-note">${
+            pendingOwnerEmail
+              ? `A claim link is pending for ${escapeHtml(pendingOwnerEmail)}. Sending again replaces the pending email.`
+              : "The player must open the email link before this restaurant becomes theirs."
+          }</p>
+        `
+        : "";
       const chips = [
         getProfileEntryLabel(profile),
         getExpansionLevelLabel(profile),
@@ -2132,6 +2157,7 @@ function renderProfiles() {
             </label>
             <button class="button button-secondary save-profile-name-button" type="button">Save</button>
           </div>
+          ${claimMarkup}
         </article>
       `;
     })
@@ -2198,6 +2224,38 @@ async function saveProfileName(profile, card) {
     await loadStats({ quiet: true });
   } catch (error) {
     showProfileMessage(error.message, true);
+  }
+}
+
+async function sendProfileClaimLink(profile, card) {
+  const input = card.querySelector("[data-profile-claim-email]");
+  const button = card.querySelector(".send-profile-claim-button");
+  const email = String(input?.value || "").trim();
+
+  if (!email || !email.includes("@")) {
+    showProfileMessage("Enter a valid email address before sending the claim link.", true);
+    return;
+  }
+
+  const originalText = button?.textContent || "Send Claim Link";
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Sending...";
+  }
+
+  try {
+    const data = await profileApiRequest(`/${encodeURIComponent(profile.id)}`, {
+      method: "POST",
+      body: JSON.stringify({ action: "send-claim-link", email }),
+    });
+    showProfileMessage(data.message || `Claim link sent to ${email}.`);
+    await loadProfiles({ quiet: true });
+  } catch (error) {
+    showProfileMessage(error.message, true);
+    if (button) {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
   }
 }
 
@@ -3898,6 +3956,9 @@ elements.profileList.addEventListener("click", (event) => {
 
   if (event.target.closest(".save-profile-name-button")) {
     saveProfileName(profile, card);
+  }
+  if (event.target.closest(".send-profile-claim-button")) {
+    sendProfileClaimLink(profile, card);
   }
 });
 

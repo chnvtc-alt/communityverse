@@ -1,7 +1,19 @@
 import { requireQuestionsAdmin } from "../../_lib/admin-auth.mjs";
+import { profileFromRecord } from "../../_lib/restaurant-data.mjs";
 import { validateRestaurantProfileName } from "../../_lib/restaurant-name-rules.mjs";
-import { fetchProfile, storeProfile, validateRestaurantSlugAvailable } from "../../_lib/profile-security.mjs";
-import { hasSupabaseConfig, jsonResponse, readJsonBody } from "../../_lib/supabase.mjs";
+import {
+  createClaimState,
+  fetchProfile,
+  storeProfile,
+  validateRestaurantSlugAvailable,
+} from "../../_lib/profile-security.mjs";
+import {
+  hasSupabaseConfig,
+  jsonResponse,
+  readJsonBody,
+  supabaseAuthRequest,
+  supabaseRequest,
+} from "../../_lib/supabase.mjs";
 
 function getProfileIdFromRequest(request) {
   const pathname = new URL(request.url).pathname;
@@ -24,6 +36,48 @@ function normalizePlayerType(value) {
   return ["admin", "tester"].includes(playerType) ? playerType : "normal";
 }
 
+function normalizedEmail(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function redirectOrigin(request) {
+  const requestUrl = new URL(request.url);
+  const forwardedHost = String(request.headers.get("x-forwarded-host") || "").trim();
+  const forwardedProtocol = String(request.headers.get("x-forwarded-proto") || "").trim();
+  if (forwardedHost) {
+    return `${forwardedProtocol || "https"}://${forwardedHost}`;
+  }
+  return requestUrl.origin;
+}
+
+async function findProfilesForEmail(email) {
+  const normalized = normalizedEmail(email);
+  if (!normalized) {
+    return [];
+  }
+
+  const rows = await supabaseRequest(
+    "profiles?select=id,player_name,restaurant_name,restaurant_slug,is_guest,created_at,updated_at,payload_json&order=updated_at.desc"
+  );
+  const profiles = Array.isArray(rows) ? rows.map(profileFromRecord).filter(Boolean) : [];
+  return profiles.filter((profile) => {
+    return normalizedEmail(profile.ownerEmail) === normalized ||
+      normalizedEmail(profile.pendingOwnerEmail) === normalized;
+  });
+}
+
+async function validateClaimEmailAvailable(email, profileId) {
+  const matches = await findProfilesForEmail(email);
+  const otherProfile = matches.find((profile) => profile.id !== profileId);
+  if (!otherProfile) {
+    return;
+  }
+
+  const error = new Error("That email is already connected to another restaurant. Use Email Sign-In to restore that restaurant instead.");
+  error.status = 409;
+  throw error;
+}
+
 function preflight(request) {
   const denied = requireQuestionsAdmin(request);
   if (denied) return denied;
@@ -31,6 +85,74 @@ function preflight(request) {
     return jsonResponse({ ok: false, error: "Supabase is not configured." }, 503);
   }
   return null;
+}
+
+export async function POST(request) {
+  const blocked = preflight(request);
+  if (blocked) return blocked;
+
+  try {
+    const id = getProfileIdFromRequest(request);
+    if (!id) return jsonResponse({ ok: false, error: "Profile id is required." }, 400);
+
+    const body = await readJsonBody(request);
+    if (body?.action !== "send-claim-link") {
+      return jsonResponse({ ok: false, error: "Unknown profile action." }, 400);
+    }
+
+    const email = normalizedEmail(body.email);
+    if (!email || !email.includes("@")) {
+      return jsonResponse({ ok: false, error: "Enter a valid email address." }, 400);
+    }
+
+    const existing = await fetchProfile(id);
+    if (!existing) {
+      return jsonResponse({ ok: false, error: "Profile not found." }, 404);
+    }
+
+    if (existing.ownerUserId || existing.ownerEmail) {
+      return jsonResponse({ ok: false, error: "This restaurant is already connected to an email." }, 409);
+    }
+
+    await validateClaimEmailAvailable(email, id);
+
+    const claimState = createClaimState(id);
+    await storeProfile(existing, {
+      profileAccessTokenHash: existing.profileAccessTokenHash,
+      ownerUserId: existing.ownerUserId,
+      ownerEmail: existing.ownerEmail,
+      ownershipUpdatedAt: existing.ownershipUpdatedAt,
+      pendingOwnerEmail: email,
+      pendingOwnershipUpdatedAt: new Date().toISOString(),
+    });
+
+    const redirectUrl = new URL("/restaurant/", redirectOrigin(request));
+    redirectUrl.searchParams.set("hub", "1");
+    redirectUrl.searchParams.set("auth", "callback");
+    redirectUrl.searchParams.set("claim_state", claimState);
+
+    await supabaseAuthRequest(`otp?redirect_to=${encodeURIComponent(redirectUrl.toString())}`, {
+      method: "POST",
+      body: JSON.stringify({
+        email,
+        create_user: true,
+        options: {
+          email_redirect_to: redirectUrl.toString(),
+        },
+      }),
+    });
+
+    return jsonResponse({
+      ok: true,
+      message: `Claim link sent to ${email}.`,
+    });
+  } catch (error) {
+    const status = Number(error?.status) || 500;
+    return jsonResponse(
+      { ok: false, error: error instanceof Error ? error.message : String(error) },
+      status >= 400 && status < 600 ? status : 500
+    );
+  }
 }
 
 export async function PUT(request) {

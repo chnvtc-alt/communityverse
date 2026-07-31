@@ -37,6 +37,11 @@ function sanitizeAdminProfile(profile) {
     safeProfile.ownerEmail = ownerEmail;
     safeProfile.emailConnected = true;
   }
+  const pendingOwnerEmail = String(profile?.pendingOwnerEmail || "").trim().toLowerCase();
+  if (pendingOwnerEmail) {
+    safeProfile.pendingOwnerEmail = pendingOwnerEmail;
+    safeProfile.pendingOwnershipUpdatedAt = String(profile?.pendingOwnershipUpdatedAt || "").trim();
+  }
   return safeProfile;
 }
 

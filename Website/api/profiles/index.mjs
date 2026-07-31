@@ -234,6 +234,10 @@ async function completeMagicLink(body) {
     );
   }
 
+  if (claim && normalizedEmail(profile.pendingOwnerEmail) !== normalizedEmail(user.email)) {
+    return jsonResponse({ ok: false, error: "This claim link was sent to a different email address." }, 403);
+  }
+
   if (
     profile.ownerUserId &&
     profile.ownerUserId !== user.id &&

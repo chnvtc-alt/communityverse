@@ -721,6 +721,24 @@ textarea {
   padding: 4px 7px;
 }
 
+.profile-claim-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.profile-claim-row label {
+  display: grid;
+  gap: 6px;
+}
+
+.profile-claim-note {
+  margin: -6px 0 0;
+}
+
 .profile-history-details {
   margin-top: 8px;
   color: var(--muted);
@@ -1207,6 +1225,10 @@ dialog::backdrop {
   }
 
   .profile-edit-row {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-claim-row {
     grid-template-columns: 1fr;
   }
 
