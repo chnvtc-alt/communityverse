@@ -3546,6 +3546,14 @@
     return getActiveProfile();
   }
 
+  async function refreshActiveProfile() {
+    const profile = getActiveProfile();
+    if (!profile?.id) {
+      return null;
+    }
+    return refreshProfileFromServer(profile.id);
+  }
+
   async function sendEmailSignInLink(email, options = {}) {
     const profileId = String(options.profileId || "");
     const headers = {};
@@ -4243,12 +4251,15 @@
 
     const existing = ensureProfileShape(existingProfile);
     const incoming = ensureProfileShape(incomingProfile);
+    const existingNameTime = Date.parse(existing.restaurantNameUpdatedAt || "") || 0;
+    const incomingNameTime = Date.parse(incoming.restaurantNameUpdatedAt || "") || 0;
+    const restaurantNameSource = incomingNameTime >= existingNameTime ? incoming : existing;
     const merged = ensureProfileShape({
       ...existing,
       ...incoming,
       playerName: incoming.playerName || existing.playerName,
-      restaurantName: incoming.restaurantName || existing.restaurantName,
-      restaurantSlug: incoming.restaurantSlug || existing.restaurantSlug,
+      restaurantName: restaurantNameSource.restaurantName || incoming.restaurantName || existing.restaurantName,
+      restaurantSlug: restaurantNameSource.restaurantSlug || incoming.restaurantSlug || existing.restaurantSlug,
       restaurantNameUpdatedAt: newerIsoValue(existing.restaurantNameUpdatedAt, incoming.restaurantNameUpdatedAt),
       lastPlayedAt: newerIsoValue(existing.lastPlayedAt, incoming.lastPlayedAt),
       seenQuestionIds: [
@@ -6590,6 +6601,7 @@
     generateGuestRestaurantName,
     updateProfile,
     syncActiveProfile,
+    refreshActiveProfile,
     getActiveProfileSaveIssue,
     sendEmailSignInLink,
     checkEmailCanConnectProfile,

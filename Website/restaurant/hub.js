@@ -2220,10 +2220,11 @@
         return;
       }
 
-      form.addEventListener("submit", (event) => {
+      form.addEventListener("submit", async (event) => {
         event.preventDefault();
         const restaurantName = document.getElementById("hero-restaurant-name").value.trim();
         const validation = core.validateProfileInput(profile.playerName, restaurantName);
+        const submitButton = form.querySelector('button[type="submit"]');
 
         if (!validation.ok) {
           error.textContent = validation.message;
@@ -2231,15 +2232,30 @@
           return;
         }
 
-        core.updateProfile({
+        if (submitButton) {
+          submitButton.disabled = true;
+          submitButton.textContent = "Saving...";
+        }
+
+        const renamedProfile = {
           ...profile,
           restaurantName,
           restaurantSlug: core.slugify(restaurantName),
           restaurantNameUpdatedAt: new Date().toISOString(),
-        });
-        void core.syncActiveProfile?.();
+        };
+
+        core.updateProfile(renamedProfile);
+        state.leaderboardRowsByKey = {};
         state.profileEditMode = false;
-        renderHero();
+        renderAll();
+
+        try {
+          await core.syncActiveProfile?.({ syncRecentSessions: false });
+          state.leaderboardRowsByKey = {};
+          renderAll();
+        } catch (syncError) {
+          console.warn("Restaurant name sync failed:", syncError);
+        }
       });
     }
 
@@ -3316,6 +3332,8 @@
           state.authError = error instanceof Error ? error.message : "Unable to complete sign-in.";
           state.showSignIn = true;
         }
+      } else {
+        await core.refreshActiveProfile?.().catch(() => null);
       }
       renderAll();
     });
