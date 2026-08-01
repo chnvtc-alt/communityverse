@@ -48,10 +48,51 @@ async function fetchSessionStatsByProfile(restaurantSlug = "") {
     profileIds.add(profileId);
 
     statsByProfile[profileId] = statsByProfile[profileId] || {};
-    const stats = statsByProfile[profileId][restaurantSlug] || { gamesPlayed: 0, totalCorrectAnswers: 0 };
+    const stats = statsByProfile[profileId][restaurantSlug] || {
+      gamesPlayed: 0,
+      totalCorrectAnswers: 0,
+      regularCustomers: 0,
+      favoriteCustomers: 0,
+      occasionalCustomers: 0,
+      lostCustomers: 0,
+      totalCustomerValue: 0,
+      estimatedSales: 0,
+      customerCredits: {},
+    };
     stats.gamesPlayed += 1;
     stats.totalCorrectAnswers += Number(session.score) || 0;
+    const customerId = String(session.customer?.id || session.customerId || "").trim();
+    const creditKey = customerId || sessionId;
+    const result = ["favorite", "regular", "occasional", "lost"].includes(session.result)
+      ? session.result
+      : "";
+    const customerValue = Math.max(0, Number(session.customerValue) || 0);
+    if (creditKey && result && result !== "lost" && customerValue > 0) {
+      const existingCredit = stats.customerCredits[creditKey] || { status: "", customerValue: 0 };
+      const nextCustomerValue = Math.max(Number(existingCredit.customerValue) || 0, customerValue);
+      stats.customerCredits[creditKey] = {
+        status: result === "favorite" || existingCredit.status === "favorite"
+          ? "favorite"
+          : result === "regular" || existingCredit.status === "regular"
+            ? "regular"
+            : "occasional",
+        customerValue: nextCustomerValue,
+      };
+      const credits = Object.values(stats.customerCredits);
+      stats.regularCustomers = credits.filter((credit) => credit.status === "regular" || credit.status === "favorite").length;
+      stats.favoriteCustomers = credits.filter((credit) => credit.status === "favorite").length;
+      stats.occasionalCustomers = credits.filter((credit) => credit.status === "occasional").length;
+      stats.lostCustomers = 0;
+      stats.totalCustomerValue = credits.reduce((total, credit) => total + Math.max(0, Number(credit.customerValue) || 0), 0);
+      stats.estimatedSales = stats.totalCustomerValue;
+    }
     statsByProfile[profileId][restaurantSlug] = stats;
+  });
+
+  Object.values(statsByProfile).forEach((profileStats) => {
+    Object.values(profileStats).forEach((stats) => {
+      delete stats.customerCredits;
+    });
   });
 
   return {

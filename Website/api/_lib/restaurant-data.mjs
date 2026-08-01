@@ -542,7 +542,7 @@ export function buildLeaderboard(profiles, metric = "estimatedSales", restaurant
     }, emptyStats());
   }
 
-  function applyTrustedSessionCounts(stats, profileId, targetRestaurantSlug = "") {
+  function applyTrustedSessionStats(stats, profileId, targetRestaurantSlug = "") {
     const sessionStats = getSessionStatsForProfile(profileId, targetRestaurantSlug);
     const sessionGames = Number(sessionStats?.gamesPlayed) || 0;
     if (!sessionGames) {
@@ -551,15 +551,28 @@ export function buildLeaderboard(profiles, metric = "estimatedSales", restaurant
 
     const savedGames = Number(stats.gamesPlayed) || 0;
     const savedLooksInflated = savedGames > sessionGames * 2;
-    if (!savedLooksInflated) {
-      return stats;
+    const trustedStats = {
+      ...stats,
+      regularCustomers: Math.max(Number(stats.regularCustomers) || 0, Number(sessionStats.regularCustomers) || 0),
+      favoriteCustomers: Math.max(Number(stats.favoriteCustomers) || 0, Number(sessionStats.favoriteCustomers) || 0),
+      occasionalCustomers: Math.max(Number(stats.occasionalCustomers) || 0, Number(sessionStats.occasionalCustomers) || 0),
+      lostCustomers: Math.max(Number(stats.lostCustomers) || 0, Number(sessionStats.lostCustomers) || 0),
+      totalCustomerValue: Math.max(Number(stats.totalCustomerValue) || 0, Number(sessionStats.totalCustomerValue) || 0),
+      estimatedSales: Math.max(Number(stats.estimatedSales) || 0, Number(sessionStats.estimatedSales) || 0),
+    };
+
+    if (savedLooksInflated) {
+      trustedStats.gamesPlayed = sessionGames;
+      trustedStats.totalCorrectAnswers = Number(sessionStats.totalCorrectAnswers) || 0;
+    } else {
+      trustedStats.gamesPlayed = Math.max(savedGames, sessionGames);
+      trustedStats.totalCorrectAnswers = Math.max(
+        Number(stats.totalCorrectAnswers) || 0,
+        Number(sessionStats.totalCorrectAnswers) || 0
+      );
     }
 
-    return {
-      ...stats,
-      gamesPlayed: sessionGames,
-      totalCorrectAnswers: Number(sessionStats.totalCorrectAnswers) || 0,
-    };
+    return trustedStats;
   }
 
   return (Array.isArray(profiles) ? profiles : [])
@@ -572,7 +585,7 @@ export function buildLeaderboard(profiles, metric = "estimatedSales", restaurant
         : publicRestaurantSlugs
           ? publicOverallStatsFor(profile, publicRestaurantSlugs)
           : restaurantStatsFor(profile, "");
-      const stats = applyTrustedSessionCounts(rawStats, profile.id, normalizedRestaurantSlug);
+      const stats = applyTrustedSessionStats(rawStats, profile.id, normalizedRestaurantSlug);
       const accuracy = stats.gamesPlayed ? (stats.totalCorrectAnswers / (stats.gamesPlayed * 10)) * 100 : 0;
       const restaurantValueStats =
         metric === "restaurantValue" || metric === "netWorth"
