@@ -535,8 +535,7 @@ export function buildLeaderboard(profiles, metric = "estimatedSales", restaurant
 
     return Object.entries(profileSessionStats).reduce((combinedStats, [sessionRestaurantSlug, stats]) => {
       if (!publicRestaurantSlugs || publicRestaurantSlugs.has(sessionRestaurantSlug)) {
-        combinedStats.gamesPlayed += Number(stats?.gamesPlayed) || 0;
-        combinedStats.totalCorrectAnswers += Number(stats?.totalCorrectAnswers) || 0;
+        addStats(combinedStats, stats);
       }
       return combinedStats;
     }, emptyStats());
@@ -589,28 +588,31 @@ export function buildLeaderboard(profiles, metric = "estimatedSales", restaurant
       const accuracy = stats.gamesPlayed ? (stats.totalCorrectAnswers / (stats.gamesPlayed * 10)) * 100 : 0;
       const restaurantValueStats =
         metric === "restaurantValue" || metric === "netWorth"
-          ? publicRestaurantSlugs
-            ? publicOverallStatsFor(profile, publicRestaurantSlugs)
-            : restaurantStatsFor(profile, "")
+          ? applyTrustedSessionStats(
+              publicRestaurantSlugs
+                ? publicOverallStatsFor(profile, publicRestaurantSlugs)
+                : restaurantStatsFor(profile, ""),
+              profile.id,
+              ""
+            )
           : stats;
-      const value = leaderboardValue(metric === "restaurantValue" || metric === "netWorth" ? restaurantValueStats : stats, metric);
-      if ((metric === "restaurantValue" || metric === "netWorth") && !restaurantValueStats.restaurantValue) {
+      if (metric === "restaurantValue" || metric === "netWorth") {
         restaurantValueStats.restaurantValue = getRestaurantValue(
           profile,
           restaurantValueStats,
           "",
           publicRestaurantSlugs
         );
-      }
-      if (metric === "netWorth" && !restaurantValueStats.netWorth) {
         restaurantValueStats.netWorth = restaurantValueStats.restaurantValue;
       }
+      const value = leaderboardValue(metric === "restaurantValue" || metric === "netWorth" ? restaurantValueStats : stats, metric);
+      const responseStats = metric === "restaurantValue" || metric === "netWorth" ? restaurantValueStats : stats;
 
       return {
         profileId: profile.id,
         playerName: profile.playerName,
         restaurantName: profile.restaurantName,
-        stats,
+        stats: responseStats,
         accuracy,
         rating: accuracy / 20,
         value: metric === "restaurantValue"
