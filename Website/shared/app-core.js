@@ -5007,22 +5007,27 @@
           !ownedCustomerIds.has(customer.id)
       )
       .sort((left, right) => {
+        const leftAreaRank = customerAreaMatchRank(left, areaSlugs);
+        const rightAreaRank = customerAreaMatchRank(right, areaSlugs);
         const leftTier = left.restaurant === slug
           ? 0
-          : customerMatchesRestaurantArea(left, areaSlugs)
+          : leftAreaRank < 3
             ? 1
             : restaurant && customerMatchesRestaurantTheme(left, restaurant)
               ? 2
               : 3;
         const rightTier = right.restaurant === slug
           ? 0
-          : customerMatchesRestaurantArea(right, areaSlugs)
+          : rightAreaRank < 3
             ? 1
             : restaurant && customerMatchesRestaurantTheme(right, restaurant)
               ? 2
               : 3;
         if (leftTier !== rightTier) {
           return leftTier - rightTier;
+        }
+        if (leftAreaRank !== rightAreaRank) {
+          return leftAreaRank - rightAreaRank;
         }
         const priorityDelta = customerSortPriority(left) - customerSortPriority(right);
         if (priorityDelta) {
@@ -5432,6 +5437,36 @@
       .split("-")
       .map(slugify)
       .filter(isSpecificAreaPiece);
+  }
+
+  function customerAreaMatchRank(customer, restaurantAreaSlugs) {
+    const customerAreaSlugs = Array.isArray(customer?.areaSlugs)
+      ? customer.areaSlugs.map((areaSlug) => slugify(areaSlug)).filter(Boolean)
+      : [];
+    if (!customerAreaSlugs.length || !restaurantAreaSlugs.size) {
+      return 3;
+    }
+
+    let broadMatch = false;
+    const restaurantPieces = new Set(
+      [...restaurantAreaSlugs].flatMap((areaSlug) => getSpecificAreaPieces(areaSlug))
+    );
+
+    for (const customerAreaSlug of customerAreaSlugs) {
+      if (restaurantAreaSlugs.has(customerAreaSlug)) {
+        if (getSpecificAreaPieces(customerAreaSlug).length) {
+          return 0;
+        }
+        broadMatch = true;
+      }
+
+      const customerPieces = getSpecificAreaPieces(customerAreaSlug);
+      if (customerPieces.some((piece) => restaurantPieces.has(piece))) {
+        return 0;
+      }
+    }
+
+    return broadMatch ? 1 : 3;
   }
 
   function customerMatchesRestaurantArea(customer, restaurantAreaSlugs) {
@@ -5890,7 +5925,7 @@
       (customer) =>
         customer.restaurant === "shared" &&
         unownedRecentSafe(customer) &&
-        customerMatchesRestaurantArea(customer, areaSlugs)
+        customerAreaMatchRank(customer, areaSlugs) < 3
     ));
 
     if (areaSpecific.length) {

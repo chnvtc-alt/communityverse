@@ -203,6 +203,36 @@
       .filter(isSpecificAreaPiece);
   }
 
+  function customerAreaMatchRank(customer, areaSlugs) {
+    const customerAreaSlugs = Array.isArray(customer?.areaSlugs)
+      ? customer.areaSlugs.map((areaSlug) => core.slugify(areaSlug)).filter(Boolean)
+      : [];
+    if (!customerAreaSlugs.length || !areaSlugs.size) {
+      return 3;
+    }
+
+    let broadMatch = false;
+    const restaurantPieces = new Set(
+      [...areaSlugs].flatMap((areaSlug) => getSpecificAreaPieces(areaSlug))
+    );
+
+    for (const customerAreaSlug of customerAreaSlugs) {
+      if (areaSlugs.has(customerAreaSlug)) {
+        if (getSpecificAreaPieces(customerAreaSlug).length) {
+          return 0;
+        }
+        broadMatch = true;
+      }
+
+      const customerPieces = getSpecificAreaPieces(customerAreaSlug);
+      if (customerPieces.some((piece) => restaurantPieces.has(piece))) {
+        return 0;
+      }
+    }
+
+    return broadMatch ? 1 : 3;
+  }
+
   function getRestaurantAreaSlugs(restaurant) {
     const areaAliases = {
       ...US_STATE_AREA_ALIASES,
@@ -327,6 +357,20 @@
 
   function sortFeaturedCustomers(customers = []) {
     return [...customers].sort((left, right) => {
+      const priorityDelta = customerSortPriority(left) - customerSortPriority(right);
+      if (priorityDelta) {
+        return priorityDelta;
+      }
+      return String(left?.name || "").localeCompare(String(right?.name || ""));
+    });
+  }
+
+  function sortAreaMatchedCustomers(customers = [], areaSlugs = new Set()) {
+    return [...customers].sort((left, right) => {
+      const areaDelta = customerAreaMatchRank(left, areaSlugs) - customerAreaMatchRank(right, areaSlugs);
+      if (areaDelta) {
+        return areaDelta;
+      }
       const priorityDelta = customerSortPriority(left) - customerSortPriority(right);
       if (priorityDelta) {
         return priorityDelta;
@@ -581,13 +625,14 @@
     }
 
     if (selectedCustomers.length < count) {
-      addCustomers(shuffleWithinCustomerSortTiers(sortFeaturedCustomers(
+      addCustomers(sortAreaMatchedCustomers(
         allCustomers.filter(
           (customer) =>
             customer.restaurant === "shared" &&
-            customerMatchesArea(customer, areaSlugs)
-        )
-      )));
+            customerAreaMatchRank(customer, areaSlugs) < 3
+        ),
+        areaSlugs
+      ));
     }
 
     if (selectedCustomers.length < count && activeProfile) {
