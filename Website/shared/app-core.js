@@ -4996,6 +4996,8 @@
   }
 
   function getPhotoReadyCustomersForRestaurant(slug, profile = null) {
+    const restaurant = getRestaurantBySlug(slug);
+    const areaSlugs = restaurant ? getCustomerAreaMatchSlugs(restaurant) : new Set();
     const ownedCustomerIds = getOwnedCustomerIdsForRestaurant(profile, slug);
     return getCustomersForRestaurant(slug)
       .filter(
@@ -5005,10 +5007,22 @@
           !ownedCustomerIds.has(customer.id)
       )
       .sort((left, right) => {
-        const leftExclusive = left.restaurant === slug ? 0 : 1;
-        const rightExclusive = right.restaurant === slug ? 0 : 1;
-        if (leftExclusive !== rightExclusive) {
-          return leftExclusive - rightExclusive;
+        const leftTier = left.restaurant === slug
+          ? 0
+          : customerMatchesRestaurantArea(left, areaSlugs)
+            ? 1
+            : restaurant && customerMatchesRestaurantTheme(left, restaurant)
+              ? 2
+              : 3;
+        const rightTier = right.restaurant === slug
+          ? 0
+          : customerMatchesRestaurantArea(right, areaSlugs)
+            ? 1
+            : restaurant && customerMatchesRestaurantTheme(right, restaurant)
+              ? 2
+              : 3;
+        if (leftTier !== rightTier) {
+          return leftTier - rightTier;
         }
         const priorityDelta = customerSortPriority(left) - customerSortPriority(right);
         if (priorityDelta) {
@@ -5872,17 +5886,6 @@
       );
     }
 
-    const themeSpecific = allCustomers.filter(
-      (customer) =>
-        customer.restaurant === "shared" &&
-        unownedRecentSafe(customer) &&
-        customerMatchesRestaurantTheme(customer, restaurant)
-    );
-
-    if (themeSpecific.length) {
-      return pickFrom(themeSpecific, true);
-    }
-
     const areaSpecific = sortFeaturedCustomers(allCustomers.filter(
       (customer) =>
         customer.restaurant === "shared" &&
@@ -5892,6 +5895,17 @@
 
     if (areaSpecific.length) {
       return pickFrom(areaSpecific, true);
+    }
+
+    const themeSpecific = allCustomers.filter(
+      (customer) =>
+        customer.restaurant === "shared" &&
+        unownedRecentSafe(customer) &&
+        customerMatchesRestaurantTheme(customer, restaurant)
+    );
+
+    if (themeSpecific.length) {
+      return pickFrom(themeSpecific, true);
     }
 
     const sharedSpecific = allCustomers.filter(
