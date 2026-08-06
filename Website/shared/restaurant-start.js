@@ -123,11 +123,11 @@
     return shuffled.slice(0, count);
   }
 
-  function getOwnedCustomerIds(profile, restaurantSlug) {
+  function getOwnedCustomerIds(profile) {
     const collection = Array.isArray(profile?.customerCollection) ? profile.customerCollection : [];
     return new Set(
       collection
-        .filter((entry) => !restaurantSlug || !entry.restaurantSlug || entry.restaurantSlug === restaurantSlug)
+        .filter((entry) => ["regular", "occasional", "favorite"].includes(entry.status))
         .map((entry) => String(entry.customerId || ""))
         .filter(Boolean)
     );
@@ -587,7 +587,7 @@
     const count = 4;
     const selectedCustomers = [];
     const selectedIds = new Set();
-    const ownedCustomerIds = getOwnedCustomerIds(activeProfile, restaurant.slug);
+    const ownedCustomerIds = getOwnedCustomerIds(activeProfile);
     const allCustomers = Array.isArray(core.customers) ? core.customers : [];
     const areaSlugs = getRestaurantAreaSlugs(restaurant);
     const featuredIds = Array.isArray(restaurant.openingCustomerIds) ? restaurant.openingCustomerIds : [];

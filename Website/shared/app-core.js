@@ -4768,6 +4768,21 @@
     );
   }
 
+  function getCollectedCustomerIds(profile) {
+    if (!profile) {
+      return new Set();
+    }
+
+    return new Set(
+      ensureProfileShape(profile).customerCollection
+        .filter((entry) =>
+          entry.customerId &&
+          ["regular", "occasional", "favorite"].includes(entry.status)
+        )
+        .map((entry) => entry.customerId)
+    );
+  }
+
   function getCollectionValueForStatus(customer, status) {
     if (!customer) {
       return 0;
@@ -5894,12 +5909,17 @@
     const allCustomers = getCustomersForRestaurant(restaurant.slug)
       .filter((customer) => !candidateSet.size || candidateSet.has(customer.id));
     const ownedCustomerIds = getOwnedCustomerIdsForRestaurant(profile, restaurant.slug);
+    const collectedCustomerIds = getCollectedCustomerIds(profile);
     const areaSlugs = getCustomerAreaMatchSlugs(restaurant);
     const collection = ensureProfileShape(profile).customerCollection;
     const isPhotoReady = (customer) =>
       customer.image && !customer.image.includes("customer-placeholder");
-    const unownedRecentSafe = (customer) =>
-      !recentCustomerIds.includes(customer.id) && !ownedCustomerIds.has(customer.id);
+    const isUncollected = (customer) => !collectedCustomerIds.has(customer.id);
+    const isNotRecent = (customer) => !recentCustomerIds.includes(customer.id);
+    const preferNotRecent = (list) => {
+      const notRecent = list.filter(isNotRecent);
+      return notRecent.length ? notRecent : list;
+    };
     const pickFrom = (customers, respectSortTier = false) => {
       const candidates = respectSortTier ? filterLowestCustomerSortTier(customers) : customers;
       const photoReady = candidates.filter(isPhotoReady);
@@ -5908,49 +5928,43 @@
     const restaurantSpecific = allCustomers.filter(
       (customer) =>
         customer.restaurant === restaurant.slug &&
-        !ownedCustomerIds.has(customer.id)
+        isUncollected(customer)
     );
 
     if (restaurantSpecific.length) {
-      const recentSafeRestaurantSpecific = restaurantSpecific.filter(
-        (customer) => !recentCustomerIds.includes(customer.id)
-      );
-      return pickFrom(
-        recentSafeRestaurantSpecific.length ? recentSafeRestaurantSpecific : restaurantSpecific,
-        true
-      );
+      return pickFrom(preferNotRecent(restaurantSpecific), true);
     }
 
     const areaSpecific = sortFeaturedCustomers(allCustomers.filter(
       (customer) =>
         customer.restaurant === "shared" &&
-        unownedRecentSafe(customer) &&
+        isUncollected(customer) &&
         customerAreaMatchRank(customer, areaSlugs) < 3
     ));
 
     if (areaSpecific.length) {
-      return pickFrom(areaSpecific, true);
+      return pickFrom(preferNotRecent(areaSpecific), true);
     }
 
     const themeSpecific = allCustomers.filter(
       (customer) =>
         customer.restaurant === "shared" &&
-        unownedRecentSafe(customer) &&
+        isUncollected(customer) &&
         customerMatchesRestaurantTheme(customer, restaurant)
     );
 
     if (themeSpecific.length) {
-      return pickFrom(themeSpecific, true);
+      return pickFrom(preferNotRecent(themeSpecific), true);
     }
 
     const sharedSpecific = allCustomers.filter(
       (customer) =>
         customer.restaurant === "shared" &&
-        unownedRecentSafe(customer)
+        isUncollected(customer)
     );
 
     if (sharedSpecific.length) {
-      return pickFrom(sharedSpecific, true);
+      return pickFrom(preferNotRecent(sharedSpecific), true);
     }
 
     const favoriteReplayIds = new Set(
@@ -5975,15 +5989,23 @@
 
     const preferred = allCustomers.filter(
       (customer) =>
-        !recentCustomerIds.includes(customer.id) && !ownedCustomerIds.has(customer.id)
+        isNotRecent(customer) && isUncollected(customer)
     );
-    const photoReady = (preferred.length ? preferred : allCustomers).filter(isPhotoReady);
+    const uncollected = allCustomers.filter(isUncollected);
+    const fallbackPool = preferred.length
+      ? preferred
+      : uncollected.length
+        ? uncollected
+        : allCustomers;
+    const photoReady = fallbackPool.filter(isPhotoReady);
 
     const selectable = photoReady.length
       ? photoReady
       : preferred.length
         ? preferred
-        : allCustomers.filter((customer) => !ownedCustomerIds.has(customer.id));
+        : uncollected.length
+          ? uncollected
+          : allCustomers.filter((customer) => !ownedCustomerIds.has(customer.id));
 
     if (selectable.length) {
       return weightedCustomerPick(selectable);
