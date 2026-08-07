@@ -3218,6 +3218,32 @@
     }, 0);
   }
 
+  function getExpansionCostSpent(economy) {
+    const safeEconomy = normalizeRestaurantEconomy(economy);
+    const currentIndex = Math.max(
+      0,
+      EXPANSION_LEVELS.findIndex((level) => level.id === safeEconomy.expansionLevel)
+    );
+    return EXPANSION_LEVELS.slice(0, currentIndex + 1).reduce(
+      (total, level) => total + Math.max(0, Number(level.cost) || 0),
+      0
+    );
+  }
+
+  function getUpgradeCostSpent(economy) {
+    const safeEconomy = normalizeRestaurantEconomy(economy);
+    return Object.values(safeEconomy.upgrades || {}).reduce((total, upgrade) => {
+      if (!upgrade || typeof upgrade !== "object") {
+        return total;
+      }
+      return total + Math.max(0, Number(upgrade.cost) || 0);
+    }, 0);
+  }
+
+  function getRestaurantSpentPointTotal(economy) {
+    return getExpansionCostSpent(economy) + getUpgradeCostSpent(economy);
+  }
+
   function getRestaurantStatsEarnedTotal(profile) {
     return Object.values(profile?.restaurantStats || {}).reduce(
       (total, restaurantStats) => total + Math.max(0, Number(restaurantStats?.estimatedSales) || 0),
@@ -3280,9 +3306,11 @@
   function getRestaurantCashOnHand(profile, stats = null) {
     const safeStats = stats || profile?.stats || {};
     const economy = normalizeRestaurantEconomy(profile?.restaurantEconomy);
+    const earnedPoints = Math.max(0, Number(safeStats.estimatedSales) || 0, getProfileEarnedPointTotal(profile));
+    const expectedCashOnHand = Math.max(0, earnedPoints - getRestaurantSpentPointTotal(economy));
     return hasTrackedRestaurantEconomy(economy)
-      ? economy.cashOnHand
-      : Math.max(0, Number(safeStats.estimatedSales) || 0, getProfileEarnedPointTotal(profile));
+      ? Math.max(economy.cashOnHand, expectedCashOnHand)
+      : earnedPoints;
   }
 
   function getCustomerLoyaltyValue(stats) {
@@ -4104,9 +4132,13 @@
     );
     const economy = normalizeRestaurantEconomy(rebuiltProfile.restaurantEconomy);
     if (cashEarned > 0 && hasTrackedRestaurantEconomy(economy)) {
+      const previousCashOnHand = Math.max(
+        economy.cashOnHand,
+        previousEarnedPoints - getRestaurantSpentPointTotal(economy)
+      );
       rebuiltProfile.restaurantEconomy = {
         ...economy,
-        cashOnHand: economy.cashOnHand + cashEarned,
+        cashOnHand: previousCashOnHand + cashEarned,
         lifetimeCashEarned: Math.max(economy.lifetimeCashEarned, previousEarnedPoints) + cashEarned,
       };
     }
@@ -6321,9 +6353,13 @@
       );
       const economy = normalizeRestaurantEconomy(rebuiltProfile.restaurantEconomy);
       if (cashEarned > 0 && hasTrackedRestaurantEconomy(economy)) {
+        const previousCashOnHand = Math.max(
+          economy.cashOnHand,
+          previousEarnedPoints - getRestaurantSpentPointTotal(economy)
+        );
         rebuiltProfile.restaurantEconomy = {
           ...economy,
-          cashOnHand: economy.cashOnHand + cashEarned,
+          cashOnHand: previousCashOnHand + cashEarned,
           lifetimeCashEarned: Math.max(economy.lifetimeCashEarned, previousEarnedPoints) + cashEarned,
         };
       }

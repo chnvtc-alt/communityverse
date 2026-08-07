@@ -73,6 +73,39 @@ function earnedPointTotal(profile) {
   return Math.max(0, Number(profile?.stats?.estimatedSales) || 0, restaurantTotal);
 }
 
+function expansionCostSpent(economy = {}) {
+  const expansionCosts = {
+    "food-truck": 0,
+    "counter-service": 500,
+    "small-diner": 2000,
+    "family-restaurant": 5000,
+    "regional-favorite": 12500,
+    "local-landmark": 27500,
+  };
+  return Math.max(0, Number(expansionCosts[economy?.expansionLevel]) || 0);
+}
+
+function upgradeCostSpent(economy = {}) {
+  return Object.values(economy?.upgrades || {}).reduce((total, upgrade) => {
+    if (!upgrade || typeof upgrade !== "object") {
+      return total;
+    }
+    return total + Math.max(0, Number(upgrade.cost) || 0);
+  }, 0);
+}
+
+function spentPointTotal(economy = {}) {
+  return expansionCostSpent(economy) + upgradeCostSpent(economy);
+}
+
+function cashOnHandFloor(previousEarnedPoints, economy = {}) {
+  return Math.max(
+    0,
+    Number(economy?.cashOnHand) || 0,
+    Math.max(0, Number(previousEarnedPoints) || 0) - spentPointTotal(economy)
+  );
+}
+
 function addCollectionStats(stats, entry, status = entry?.status) {
   const safeStatus = ["favorite", "regular", "occasional", "lost"].includes(status) ? status : "occasional";
   if (safeStatus === "favorite") {
@@ -265,7 +298,7 @@ function applySessionToProfile(profile, session) {
   if (cashEarned > 0 && (economy.cashOnHand || economy.lifetimeCashEarned || economy.expansionLevel || economy.upgrades)) {
     rebuiltProfile.restaurantEconomy = {
       ...economy,
-      cashOnHand: Math.max(0, Number(economy.cashOnHand) || 0) + cashEarned,
+      cashOnHand: cashOnHandFloor(previousEarnedPoints, economy) + cashEarned,
       lifetimeCashEarned: Math.max(Number(economy.lifetimeCashEarned) || 0, previousEarnedPoints) + cashEarned,
     };
   }
