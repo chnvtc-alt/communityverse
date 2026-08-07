@@ -125,6 +125,27 @@
     return window.matchMedia(mobileGuestQuery).matches;
   }
 
+  function isLikelyInAppBrowser() {
+    const agent = String(window.navigator?.userAgent || "").toLowerCase();
+    return /fban|fbav|instagram|line\/|twitter|linkedinapp|snapchat|pinterest/.test(agent);
+  }
+
+  function inAppGuestWarningMarkup(profile) {
+    if (!profile?.isGuest || !isLikelyInAppBrowser() || isSalesDemoMode()) {
+      return "";
+    }
+
+    return `
+      <div class="hero-card opening-browser-warning" style="margin: 0; padding: 14px;">
+        <p class="kicker" style="margin: 0 0 6px;">Saved Restaurant Warning</p>
+        <p class="copy" style="margin: 0 0 10px;">This looks like an in-app browser, such as Facebook. It may not know your saved restaurant, so games can count under a temporary guest name instead.</p>
+        <div class="button-row">
+          <a class="button button-muted button-sm" href="/restaurant/?hub=1">Sign In To Saved Restaurant</a>
+        </div>
+      </div>
+    `;
+  }
+
   function escapeHtml(value) {
     return String(value || "")
       .replace(/&/g, "&amp;")
@@ -2187,6 +2208,8 @@
           </div>
         </div>
 
+        ${inAppGuestWarningMarkup(profile)}
+
         ${openingQuestion ? `<p class="opening-title-small opening-title-small-bottom">${escapeHtml(openingQuestion)}</p>` : ""}
 
         <div class="button-row opening-start-actions opening-start-actions-bottom">
@@ -3113,16 +3136,24 @@
       ? Math.max(1, Math.round(Number(nextRow.value) || 0) - value + 1)
       : 0;
     const leaderboardHref = restaurantLeaderboardHref("characterPoints");
+    const profile = getProfile();
+    const isGuest = Boolean(profile?.isGuest);
     const moveUpText = nextRow
       ? `You need ${core.formatCurrency(pointsNeeded)} more to pass ${nextRow.restaurantName || "the restaurant above you"}.`
       : "You are in first place. Play again to make it harder for anyone to catch you.";
+    const heading = isGuest
+      ? `Your guest restaurant is ranked ${formatRankNumber(rank)} in character points.`
+      : `You are now ranked ${formatRankNumber(rank)} in character points.`;
+    const copy = isGuest
+      ? `This score is saved under the guest name ${row.restaurantName || "Guest Restaurant"}. Sign in if you want future games to count toward your saved restaurant.`
+      : `You have ${core.formatCurrency(value)} on the ${restaurant.name} leaderboard. ${moveUpText}`;
 
     return `
       <div class="hero-card result-followup-card result-leaderboard-rank-card" id="result-leaderboard-rank-slot">
         <div class="result-leaderboard-rank-copy">
           <p class="kicker">${escapeHtml(restaurant.name)} Leaderboard</p>
-          <h3 class="section-title">You are now ranked ${formatRankNumber(rank)} in character points.</h3>
-          <p class="copy">You have ${core.formatCurrency(value)} on the ${escapeHtml(restaurant.name)} leaderboard. ${escapeHtml(moveUpText)}</p>
+          <h3 class="section-title">${escapeHtml(heading)}</h3>
+          <p class="copy">${escapeHtml(copy)}</p>
         </div>
         <div class="button-row result-leaderboard-rank-actions">
           <a class="button button-hot" href="${leaderboardHref}">See the ${escapeHtml(restaurant.name)} Leaderboard</a>

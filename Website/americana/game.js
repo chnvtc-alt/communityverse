@@ -122,6 +122,27 @@
     return window.matchMedia(mobileGuestQuery).matches;
   }
 
+  function isLikelyInAppBrowser() {
+    const agent = String(window.navigator?.userAgent || "").toLowerCase();
+    return /fban|fbav|instagram|line\/|twitter|linkedinapp|snapchat|pinterest/.test(agent);
+  }
+
+  function inAppGuestWarningMarkup(profile) {
+    if (!profile?.isGuest || !isLikelyInAppBrowser() || isSalesDemoMode()) {
+      return "";
+    }
+
+    return `
+      <div class="hero-card opening-browser-warning" style="margin: 0; padding: 14px;">
+        <p class="kicker" style="margin: 0 0 6px;">Saved Restaurant Warning</p>
+        <p class="copy" style="margin: 0 0 10px;">This looks like an in-app browser, such as Facebook. It may not know your saved restaurant, so games can count under a temporary guest name instead.</p>
+        <div class="button-row">
+          <a class="button button-muted button-sm" href="/restaurant/?hub=1">Sign In To Saved Restaurant</a>
+        </div>
+      </div>
+    `;
+  }
+
   function escapeHtml(value) {
     return String(value || "")
       .replace(/&/g, "&amp;")
@@ -2073,6 +2094,8 @@
             </div>
           </div>
         </div>
+
+        ${inAppGuestWarningMarkup(profile)}
 
         ${openingQuestion ? `<p class="opening-title-small opening-title-small-bottom">${escapeHtml(openingQuestion)}</p>` : ""}
 
