@@ -3120,70 +3120,70 @@
       label: "Better Chairs",
       cost: 250,
       value: 250,
-      salesBoostPercent: 5,
+      salesBoostPercent: 1,
     },
     {
       id: "sound-system",
       label: "Sound System",
       cost: 400,
       value: 400,
-      salesBoostPercent: 5,
+      salesBoostPercent: 1,
     },
     {
       id: "new-sign",
       label: "New Sign",
       cost: 600,
       value: 600,
-      salesBoostPercent: 5,
+      salesBoostPercent: 1,
     },
     {
       id: "kitchen-equipment",
       label: "Kitchen Equipment",
       cost: 750,
       value: 750,
-      salesBoostPercent: 5,
+      salesBoostPercent: 1,
     },
     {
       id: "online-ordering-system",
       label: "Online Ordering System",
       cost: 1000,
       value: 1000,
-      salesBoostPercent: 5,
+      salesBoostPercent: 1,
     },
     {
       id: "patio-seating",
       label: "Patio Seating",
       cost: 1200,
       value: 1200,
-      salesBoostPercent: 5,
+      salesBoostPercent: 1,
     },
     {
       id: "loyalty-rewards-program",
       label: "Loyalty Rewards Program",
       cost: 2000,
       value: 2000,
-      salesBoostPercent: 5,
+      salesBoostPercent: 1,
     },
     {
       id: "catering-service",
       label: "Catering Service",
       cost: 3000,
       value: 3000,
-      salesBoostPercent: 5,
+      salesBoostPercent: 1,
     },
     {
       id: "stage",
       label: "Stage",
       cost: 4000,
       value: 4000,
-      salesBoostPercent: 5,
+      salesBoostPercent: 1,
     },
     {
       id: "mobile-app",
       label: "Mobile App",
       cost: 5000,
       value: 5000,
-      salesBoostPercent: 5,
+      salesBoostPercent: 1,
     },
   ];
 
@@ -3277,6 +3277,11 @@
     const baseValue = Math.max(0, Number(value) || 0);
     const safeBoostPercent = Math.max(0, Number(boostPercent) || 0);
     return Math.round(baseValue * (1 + safeBoostPercent / 100));
+  }
+
+  function getBoostedCharacterScoreValue(customer, score, boostPercent = 0) {
+    const baseValue = getCharacterScoreValue(customer, score);
+    return applyRestaurantSalesBoost(baseValue, boostPercent);
   }
 
   function getBoostedCustomerValues(customer, profile) {
@@ -6451,19 +6456,17 @@
       session.result = becameFavorite || favoriteWasAlreadyComplete ? "favorite" : scoreResult;
       const activeProfile = getProfiles().find((profile) => profile.id === session.profileId) || null;
       const boostedValues = getBoostedCustomerValues(session.customer, activeProfile);
+      const baseScoringCustomer = {
+        ...session.customer,
+        regularValue: boostedValues.baseRegularValue,
+        occasionalValue: boostedValues.baseOccasionalValue,
+      };
       session.salesBoostPercent = boostedValues.boostPercent;
       session.customerBaseValues = {
         regularValue: boostedValues.baseRegularValue,
         occasionalValue: boostedValues.baseOccasionalValue,
         favoriteValue: boostedValues.baseFavoriteValue,
-        characterValue: getCharacterScoreValue(
-          {
-            ...session.customer,
-            regularValue: boostedValues.baseRegularValue,
-            occasionalValue: boostedValues.baseOccasionalValue,
-          },
-          session.score
-        ),
+        characterValue: getCharacterScoreValue(baseScoringCustomer, session.score),
       };
       session.customer = {
         ...session.customer,
@@ -6471,11 +6474,13 @@
         occasionalValue: boostedValues.occasionalValue,
       };
       const currentCharacterValue =
-        scoreResult === "regular" ? getCharacterScoreValue(session.customer, session.score) : 0;
+        scoreResult === "regular"
+          ? getBoostedCharacterScoreValue(baseScoringCustomer, session.score, boostedValues.boostPercent)
+          : 0;
       const previousBestScore = Math.max(0, Number(session.previousBestScore) || 0);
       const previousBestValue =
         previousBestScore > 0
-          ? getCharacterScoreValue(session.customer, previousBestScore)
+          ? getBoostedCharacterScoreValue(baseScoringCustomer, previousBestScore, boostedValues.boostPercent)
           : Math.max(0, Number(session.previousCustomerValue) || 0);
       const bestCharacterValue = Math.max(previousBestValue, currentCharacterValue);
       const favoriteCharacterValue = getFavoriteCustomerValue(bestCharacterValue);
