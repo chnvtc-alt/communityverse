@@ -2475,6 +2475,9 @@
         state.expansionError = result?.ok ? "" : result?.message || "Unable to add this expansion yet.";
         state.upgradeMessage = "";
         state.upgradeError = "";
+        if (result?.ok) {
+          state.leaderboardRowsByKey = {};
+        }
         renderAll();
       });
     });
@@ -2492,6 +2495,9 @@
         state.upgradeError = result?.ok ? "" : result?.message || "Unable to add this upgrade yet.";
         state.expansionMessage = "";
         state.expansionError = "";
+        if (result?.ok) {
+          state.leaderboardRowsByKey = {};
+        }
         renderAll();
       });
     });
