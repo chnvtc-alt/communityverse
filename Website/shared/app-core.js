@@ -6,6 +6,7 @@
     profileAccessTokens: "restaurant_challenge_profile_access_tokens_v1",
     syncedSessionIds: "restaurant_challenge_synced_session_ids_v1",
     sessionSyncAttempts: "restaurant_challenge_session_sync_attempts_v1",
+    unsyncedSessions: "restaurant_challenge_unsynced_sessions_v1",
   };
   const API_BASE = "/api";
   const USE_REMOTE_SYNC = typeof window.fetch === "function";
@@ -17,6 +18,7 @@
   const FAVORITE_VALUE_MULTIPLIER = 2;
   const SESSION_SYNC_RETRY_DELAY_MS = 10 * 60 * 1000;
   const RECENT_SESSION_SYNC_LIMIT = 25;
+  const UNSYNCED_SESSION_LIMIT = 100;
   const TRIVIA_LEADERBOARD_MIN_GAMES = 4;
   const CUSTOMER_STATUS_RANK = {
     lost: 0,
@@ -2809,6 +2811,42 @@
     const syncedIds = getSyncedSessionIds();
     syncedIds.add(safeSessionId);
     writeJson(STORAGE_KEYS.syncedSessionIds, [...syncedIds].slice(-500));
+    forgetUnsyncedSession(safeSessionId);
+  }
+
+  function getUnsyncedSessions() {
+    const storedSessions = readJson(STORAGE_KEYS.unsyncedSessions, []);
+    return (Array.isArray(storedSessions) ? storedSessions : [])
+      .filter((session) => session && typeof session === "object")
+      .filter((session) => String(session.id || "").trim() && String(session.profileId || "").trim());
+  }
+
+  function writeUnsyncedSessions(sessions) {
+    writeJson(STORAGE_KEYS.unsyncedSessions, sessions.slice(0, UNSYNCED_SESSION_LIMIT));
+  }
+
+  function rememberUnsyncedSession(session) {
+    const sessionId = String(session?.id || "").trim();
+    const profileId = String(session?.profileId || "").trim();
+    if (!sessionId || !profileId) {
+      return;
+    }
+
+    const withoutCurrent = getUnsyncedSessions().filter(
+      (entry) => String(entry.id || "").trim() !== sessionId
+    );
+    writeUnsyncedSessions([clone(session), ...withoutCurrent]);
+  }
+
+  function forgetUnsyncedSession(sessionId) {
+    const safeSessionId = String(sessionId || "").trim();
+    if (!safeSessionId) {
+      return;
+    }
+
+    writeUnsyncedSessions(
+      getUnsyncedSessions().filter((session) => String(session.id || "").trim() !== safeSessionId)
+    );
   }
 
   function getSessionSyncAttempts() {
@@ -2829,10 +2867,18 @@
     writeJson(STORAGE_KEYS.sessionSyncAttempts, attempts);
   }
 
-  function shouldSyncSession(sessionId) {
+  function shouldSyncSession(sessionId, options = {}) {
     const safeSessionId = String(sessionId || "").trim();
-    if (!safeSessionId || sessionSyncInFlight.has(safeSessionId) || getSyncedSessionIds().has(safeSessionId)) {
+    if (
+      !safeSessionId ||
+      (!options.force && sessionSyncInFlight.has(safeSessionId)) ||
+      getSyncedSessionIds().has(safeSessionId)
+    ) {
       return false;
+    }
+
+    if (options.force) {
+      return true;
     }
 
     const attempts = getSessionSyncAttempts();
@@ -2840,9 +2886,9 @@
     return !lastAttempt || Date.now() - lastAttempt >= SESSION_SYNC_RETRY_DELAY_MS;
   }
 
-  async function postSessionToServer(session, token) {
+  async function postSessionToServer(session, token, options = {}) {
     const sessionId = String(session?.id || "").trim();
-    if (!USE_REMOTE_SYNC || !sessionId || !token || !shouldSyncSession(sessionId)) {
+    if (!USE_REMOTE_SYNC || !sessionId || !token || !shouldSyncSession(sessionId, options)) {
       return null;
     }
 
@@ -2893,11 +2939,24 @@
     }
 
     const recentSessions = Array.isArray(profile.recentSessions) ? profile.recentSessions : [];
+    const queuedSessions = getUnsyncedSessions()
+      .filter((session) => String(session.profileId || "") === String(profile.id || ""))
+      .map((session) => ({
+        ...session,
+        completed: true,
+        completedAt: String(session.completedAt || session.playedAt || nowIso()),
+      }));
+    const sessionsById = new Map();
+    [...queuedSessions, ...recentSessions.map((session) => sessionPayloadFromRecentSession(profile, session)).filter(Boolean)]
+      .forEach((session) => {
+        const sessionId = String(session?.id || "").trim();
+        if (sessionId && !sessionsById.has(sessionId)) {
+          sessionsById.set(sessionId, session);
+        }
+      });
     await Promise.allSettled(
-      recentSessions
-        .slice(0, RECENT_SESSION_SYNC_LIMIT)
-        .map((session) => sessionPayloadFromRecentSession(profile, session))
-        .filter(Boolean)
+      [...sessionsById.values()]
+        .slice(0, Math.max(RECENT_SESSION_SYNC_LIMIT, UNSYNCED_SESSION_LIMIT))
         .map((session) => postSessionToServer(session, token))
     );
   }
@@ -2942,19 +3001,26 @@
     }
   }
 
-  async function syncSessionToServer(session) {
+  async function syncSessionToServer(session, options = {}) {
     if (!USE_REMOTE_SYNC || !session || !session.completed) {
       return;
     }
 
+    rememberUnsyncedSession(session);
     const token = getProfileAccessToken(session.profileId);
     if (!token) {
       throw new Error("This saved restaurant needs email sign-in before new games can count. Please sign in, then start the game again.");
     }
-    const syncedSession = await postSessionToServer(session, token).catch(() => null);
+    const syncedSession = await postSessionToServer(session, token, options);
     if (syncedSession) {
-      await refreshProfileFromServer(session.profileId).catch(() => null);
+      forgetUnsyncedSession(session.id);
+      await refreshProfileFromServer(session.profileId);
     }
+  }
+
+  async function syncCompletedSession(session) {
+    await syncSessionToServer(session, { force: true });
+    return getActiveProfile();
   }
 
   async function refreshProfilesFromServer() {
@@ -6764,6 +6830,7 @@
     clearActiveSession,
     startNewSession,
     answerActiveSession,
+    syncCompletedSession,
     getLeaderboard,
     getPlayerRank,
     getPublicLeaderboardStats,

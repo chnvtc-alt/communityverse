@@ -2858,7 +2858,10 @@
 
     if (outcome.completed && outcome.session && outcome.session.id) {
       setResultVisibleSessionId(outcome.session.id);
-      void syncMultiplayerFinish(outcome.session).then(() => {
+      void Promise.allSettled([
+        syncMultiplayerFinish(outcome.session),
+        Promise.resolve(core.syncCompletedSession?.(outcome.session)),
+      ]).then(() => {
         const session = getSession();
         if (session && session.completed) {
           renderResultPanel(session);
