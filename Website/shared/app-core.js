@@ -2849,6 +2849,22 @@
     );
   }
 
+  function transferUnsyncedSessions(fromProfileId, toProfileId) {
+    const fromId = String(fromProfileId || "").trim();
+    const toId = String(toProfileId || "").trim();
+    if (!fromId || !toId || fromId === toId) {
+      return;
+    }
+
+    writeUnsyncedSessions(
+      getUnsyncedSessions().map((session) =>
+        String(session.profileId || "").trim() === fromId
+          ? { ...session, profileId: toId }
+          : session
+      )
+    );
+  }
+
   function getSessionSyncAttempts() {
     const attempts = readJson(STORAGE_KEYS.sessionSyncAttempts, {});
     return attempts && typeof attempts === "object" && !Array.isArray(attempts)
@@ -3700,17 +3716,48 @@
       return null;
     }
     const profiles = getProfiles();
+    const activeProfileId = getActiveProfileId();
+    const activeProfile =
+      activeProfileId && activeProfileId !== profile.id
+        ? profiles.find((entry) => entry.id === activeProfileId) || null
+        : null;
     const index = profiles.findIndex((entry) => entry.id === profile.id);
-    const safeProfile = mergeProfileProgress(profile, index >= 0 ? profiles[index] : null);
+    const existingRecoveredProfile = index >= 0 ? profiles[index] : null;
+    const recoveredProfile = mergeProfileProgress(profile, existingRecoveredProfile);
+    const shouldMergeActiveGuest =
+      activeProfile?.isGuest &&
+      (
+        (Array.isArray(activeProfile.recentSessions) && activeProfile.recentSessions.length) ||
+        (Array.isArray(activeProfile.customerCollection) && activeProfile.customerCollection.length) ||
+        Object.values(activeProfile.restaurantStats || {}).some(
+          (stats) => Number(stats?.gamesPlayed) || Number(stats?.estimatedSales)
+        )
+      );
+    const safeProfile = shouldMergeActiveGuest
+      ? ensureProfileShape({
+          ...mergeProfileProgress(recoveredProfile, activeProfile),
+          id: recoveredProfile.id,
+          playerName: recoveredProfile.playerName || activeProfile.playerName,
+          restaurantName: recoveredProfile.restaurantName,
+          restaurantSlug: recoveredProfile.restaurantSlug,
+          restaurantNameUpdatedAt: recoveredProfile.restaurantNameUpdatedAt,
+          isGuest: false,
+          emailConnected: true,
+        })
+      : recoveredProfile;
     if (index >= 0) {
       profiles[index] = safeProfile;
     } else {
       profiles.push(safeProfile);
     }
+    if (shouldMergeActiveGuest) {
+      transferUnsyncedSessions(activeProfile.id, safeProfile.id);
+    }
     setProfileAccessToken(safeProfile.id, profileAccessToken);
     setActiveProfileId(safeProfile.id);
     activeProfileState.profile = safeProfile;
     saveProfiles(profiles);
+    void syncActiveProfile().catch(() => null);
     return safeProfile;
   }
 
