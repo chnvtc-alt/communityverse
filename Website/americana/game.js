@@ -3008,11 +3008,14 @@
               : "Character Not Unlocked";
     const customerValue = Math.max(0, Number(session.customerValue) || 0);
     const rewardBoostPercent = Math.max(0, Number(session.salesBoostPercent) || 0);
-    const rewardBoostText = rewardBoostPercent > 0 ? ` • Upgrade boost +${Math.round(rewardBoostPercent)}%` : "";
+    const rewardBoostLabel = rewardBoostPercent > 0 ? `Includes Upgrade Boost of +${Math.round(rewardBoostPercent)}%` : "";
     const resultCollectionButtonText = "View Leaderboard";
     const resultAwardSummary = customerValue > 0
-      ? `Score ${session.score}/${session.questions.length} • Reward ${core.formatCurrency(customerValue)}${rewardBoostText}`
+      ? `Score ${session.score}/${session.questions.length} • Reward ${core.formatCurrency(customerValue)}`
       : `Score ${session.score}/${session.questions.length}`;
+    const rewardBoostMarkup = rewardBoostLabel
+      ? `<p class="result-award-boost">${escapeHtml(rewardBoostLabel)}</p>`
+      : "";
     const resultAwardMarkup = salesDemoMode
       ? `
           <div class="result-banner result-award-card result-banner-demo">
@@ -3041,6 +3044,7 @@
               </div>
             </div>
             <p class="result-award-summary">${escapeHtml(resultAwardSummary)}</p>
+            ${rewardBoostMarkup}
           </a>
         `;
     const triviaLeaderboardMilestoneMarkup =

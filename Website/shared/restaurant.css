@@ -4443,6 +4443,15 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   text-align: center;
 }
 
+.result-award-boost {
+  margin: -8px 0 0;
+  color: rgba(255, 253, 248, 0.82);
+  font-size: clamp(0.85rem, 1.4vw, 1rem);
+  font-weight: 750;
+  line-height: 1.25;
+  text-align: center;
+}
+
 .result-banner .customer-bio-expanded {
   display: block;
   -webkit-line-clamp: unset;
