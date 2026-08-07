@@ -5348,7 +5348,15 @@
 
   function isQuestionAllowedForRestaurant(question, restaurant) {
     const questionRestaurantSlug = getRestaurantQuestionSlug(question);
-    return !questionRestaurantSlug || questionRestaurantSlug === restaurant.slug;
+    if (questionRestaurantSlug && questionRestaurantSlug !== restaurant.slug) {
+      return false;
+    }
+
+    if (question.scope === "area") {
+      return isAreaQuestionForRestaurant(question, restaurant, getRestaurantAreaSlugs(restaurant));
+    }
+
+    return true;
   }
 
   function isSharedQuestion(question) {
