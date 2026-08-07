@@ -3120,70 +3120,70 @@
       label: "Better Chairs",
       cost: 250,
       value: 250,
-      salesBoostPercent: 1,
+      salesBoostPercent: 5,
     },
     {
       id: "sound-system",
       label: "Sound System",
       cost: 400,
       value: 400,
-      salesBoostPercent: 1,
+      salesBoostPercent: 5,
     },
     {
       id: "new-sign",
       label: "New Sign",
       cost: 600,
       value: 600,
-      salesBoostPercent: 1,
+      salesBoostPercent: 5,
     },
     {
       id: "kitchen-equipment",
       label: "Kitchen Equipment",
       cost: 750,
       value: 750,
-      salesBoostPercent: 1,
+      salesBoostPercent: 5,
     },
     {
       id: "online-ordering-system",
       label: "Online Ordering System",
       cost: 1000,
       value: 1000,
-      salesBoostPercent: 1,
+      salesBoostPercent: 5,
     },
     {
       id: "patio-seating",
       label: "Patio Seating",
       cost: 1200,
       value: 1200,
-      salesBoostPercent: 1,
+      salesBoostPercent: 5,
     },
     {
       id: "loyalty-rewards-program",
       label: "Loyalty Rewards Program",
       cost: 2000,
       value: 2000,
-      salesBoostPercent: 1,
+      salesBoostPercent: 5,
     },
     {
       id: "catering-service",
       label: "Catering Service",
       cost: 3000,
       value: 3000,
-      salesBoostPercent: 1,
+      salesBoostPercent: 5,
     },
     {
       id: "stage",
       label: "Stage",
       cost: 4000,
       value: 4000,
-      salesBoostPercent: 1,
+      salesBoostPercent: 5,
     },
     {
       id: "mobile-app",
       label: "Mobile App",
       cost: 5000,
       value: 5000,
-      salesBoostPercent: 1,
+      salesBoostPercent: 5,
     },
   ];
 
@@ -3265,7 +3265,11 @@
       if (!upgrade || typeof upgrade !== "object") {
         return total;
       }
-      return total + Math.max(0, Number(upgrade.salesBoostPercent) || 0);
+      const currentUpgrade = RESTAURANT_UPGRADES.find((entry) => entry.id === upgrade.id) || null;
+      return total + Math.max(
+        0,
+        Number(currentUpgrade?.salesBoostPercent) || Number(upgrade.salesBoostPercent) || 0
+      );
     }, 0);
   }
 

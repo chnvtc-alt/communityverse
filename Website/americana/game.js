@@ -3007,9 +3007,11 @@
               ? "Character Unlocked"
               : "Character Not Unlocked";
     const customerValue = Math.max(0, Number(session.customerValue) || 0);
+    const rewardBoostPercent = Math.max(0, Number(session.salesBoostPercent) || 0);
+    const rewardBoostText = rewardBoostPercent > 0 ? ` • Upgrade boost +${Math.round(rewardBoostPercent)}%` : "";
     const resultCollectionButtonText = "View Leaderboard";
     const resultAwardSummary = customerValue > 0
-      ? `Score ${session.score}/${session.questions.length} • Reward ${core.formatCurrency(customerValue)}`
+      ? `Score ${session.score}/${session.questions.length} • Reward ${core.formatCurrency(customerValue)}${rewardBoostText}`
       : `Score ${session.score}/${session.questions.length}`;
     const resultAwardMarkup = salesDemoMode
       ? `

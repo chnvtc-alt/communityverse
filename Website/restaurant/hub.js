@@ -1883,8 +1883,8 @@
             upgradesLocked
               ? `<span>Available after expansion to Counter Service.</span>`
               : ownedBoostPercent > 0
-                ? `<span>Owned upgrades make future Trivia Rewards ${Number(ownedBoostPercent).toFixed(0)}% higher.</span>`
-                : `<span>Upgrades add Score and make future Trivia Rewards higher.</span>`
+                ? `<span>Owned upgrades make future Character Points ${Number(ownedBoostPercent).toFixed(0)}% higher.</span>`
+                : `<span>Upgrades add Score and make future Character Points higher.</span>`
           }
         </div>
         <div class="restaurant-upgrade-preview-grid">
@@ -1898,7 +1898,7 @@
                   <strong>${escapeHtml(upgrade.label)}</strong>
                   <span>Cost ${core.formatCurrency(upgrade.cost)}</span>
                   <span>Adds ${core.formatCurrency(upgrade.value)} to Score</span>
-                  <span>Future Trivia Rewards +${Number(upgrade.salesBoostPercent) || 0}%</span>
+                  <span>Future Character Points +${Number(upgrade.salesBoostPercent) || 0}%</span>
                   ${
                     upgradesLocked
                       ? ""
