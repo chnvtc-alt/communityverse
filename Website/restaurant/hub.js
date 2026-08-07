@@ -1563,11 +1563,11 @@
     const characterDetail =
       `${unlockedCharacters} character${unlockedCharacters === 1 ? "" : "s"}`;
     const rows = [
-      { label: "Restaurant Type", detail: breakdown.expansionLabel || "Food Truck", value: breakdown.expansionValue },
-      { label: "Upgrades", value: breakdown.upgradeValue },
+      { label: "Restaurant Type Score", detail: `${breakdown.expansionLabel || "Food Truck"} value`, value: breakdown.expansionValue },
+      { label: "Upgrade Score", detail: "purchased upgrades", value: breakdown.upgradeValue },
       { label: "Character Points", detail: characterDetail, value: breakdown.loyaltyValue },
-      { label: "Trivia Accuracy *", value: breakdown.ratingValue },
-      { label: "Spendable Points **", value: cashOnHand, className: "restaurant-value-breakdown-row-spendable" },
+      { label: "Trivia Accuracy Bonus *", value: breakdown.ratingValue },
+      { label: "Spendable Points **", detail: "left to spend", value: cashOnHand, className: "restaurant-value-breakdown-row-spendable" },
     ];
 
     return `
@@ -1593,7 +1593,7 @@
         </div>
         <p class="restaurant-value-breakdown-note">
           * Trivia Accuracy = bonus based on your correct-answer rate. 100% accuracy adds 2.5% to Restaurant Type + Upgrades + Character Points.<br />
-          ** Spendable Points are available to buy expansions and upgrades. They are shown here, but are not added to Total Score.
+          ** Spendable Points are the points you have left to buy expansions and upgrades. Spending them lowers this number, but purchased expansions and upgrades add to Total Score.
         </p>
       </div>
     `;
@@ -1814,7 +1814,7 @@
         </div>
         <div class="restaurant-expansion-preview-grid">
           <div class="restaurant-expansion-preview-card">
-            <span class="restaurant-expansion-label">Current size</span>
+            <span class="restaurant-expansion-label">Current restaurant type</span>
             <strong>${escapeHtml(preview.current.label || "Food Truck")}</strong>
           </div>
         ${
@@ -1825,11 +1825,11 @@
                 <strong>${escapeHtml(preview.next.label)}</strong>
               </div>
               <div class="restaurant-expansion-preview-card">
-                <span class="restaurant-expansion-label">Cost</span>
+                <span class="restaurant-expansion-label">Cost to buy</span>
                 <strong>${core.formatCurrency(nextCost)}</strong>
               </div>
               <div class="restaurant-expansion-preview-card">
-                <span class="restaurant-expansion-label">Adds to Total Score</span>
+                <span class="restaurant-expansion-label">Total Score increase</span>
                 <strong>${core.formatCurrency(preview.valueAdded)}</strong>
               </div>
               <div class="restaurant-expansion-preview-card restaurant-expansion-action">
