@@ -2560,6 +2560,25 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
   font-weight: 850;
 }
 
+.leaderboard-save-progress-card {
+  display: grid;
+  gap: 8px;
+  margin: -4px 0 16px;
+  padding: 12px;
+  border: 1px solid rgba(32, 98, 68, 0.2);
+  border-radius: 14px;
+  background: rgba(247, 252, 247, 0.92);
+}
+
+.leaderboard-save-progress-card .kicker,
+.leaderboard-save-progress-card .helper {
+  margin: 0;
+}
+
+.leaderboard-save-progress-card .button {
+  justify-self: start;
+}
+
 .leaderboard-row {
   display: grid;
   grid-template-columns: 30px minmax(0, 1fr) auto;

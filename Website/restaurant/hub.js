@@ -1402,6 +1402,26 @@
     `;
   }
 
+  function renderSaveProgressNotice(profile) {
+    if (!profile || profile.emailConnected) {
+      return "";
+    }
+
+    const buttonText = profile.isGuest ? "Name & Save Progress" : "Save Profile With Email";
+    return `
+      <div class="leaderboard-save-progress-card">
+        <p class="kicker">Save Your Progress</p>
+        <p class="helper">
+          This game can save your renamed restaurant, trivia scores, leaderboard progress, and character collection on this browser. The safest option is to save your profile with email, so you can play on any device and restore your progress if needed. We will not use your email for any other purpose.
+        </p>
+        <p class="helper">
+          After you request the email link, open your email and tap the secure link to finish. No password required.
+        </p>
+        <button class="button button-primary button-sm" type="button" data-leaderboard-save-progress>${escapeHtml(buttonText)}</button>
+      </div>
+    `;
+  }
+
   function renderGuestSaveMarkup(profile) {
     if (!profile) {
       return "";
@@ -1410,9 +1430,9 @@
     if (!state.showGuestSaveForm) {
       return `
         <div class="hub-email-info">
-          <p class="helper" style="margin: 0 0 10px;">Save your restaurant to keep your characters, trivia record, and leaderboard progress. No email required.</p>
+          <p class="helper" style="margin: 0 0 10px;">Name your restaurant to save progress on this browser. Save with email if you want the safest option and the ability to restore progress on another phone or browser.</p>
           <button class="button button-primary button-sm" type="button" data-show-guest-save>
-            Name &amp; Save My Restaurant
+            Name &amp; Save Progress
           </button>
         </div>
       `;
@@ -1432,7 +1452,7 @@
           <label class="field-label" for="hub-guest-email">Email address <span style="font-weight: 500;">(optional)</span></label>
           <input class="input hero-profile-input" id="hub-guest-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" />
         </div>
-        <p class="helper" style="margin: 0;">Other players only see your restaurant name. Email is optional and only helps you recover progress later.</p>
+        <p class="helper" style="margin: 0;">Other players only see your restaurant name. If you enter email, we send a secure link. Open that email and tap the link to finish saving with email. No password required.</p>
         <label class="checkbox-row profile-age-confirm" for="hub-guest-age-confirm">
           <input id="hub-guest-age-confirm" name="ageConfirm" type="checkbox" />
           <span>I am 13 or older.</span>
@@ -1459,11 +1479,11 @@
           <label class="field-label" for="hub-connect-email">Email address</label>
           <div class="hero-profile-edit-row">
             <input class="input hero-profile-input" id="hub-connect-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
-            <button class="button button-primary button-sm" id="hub-connect-email-submit" type="submit">Email Save Link</button>
+            <button class="button button-primary button-sm" id="hub-connect-email-submit" type="submit">Send Email Save Link</button>
             <button class="button button-muted button-sm" id="hub-connect-email-cancel" type="button">Cancel</button>
           </div>
         </div>
-        <p class="helper" style="margin: 0;">This sends a secure link that connects ${escapeHtml(profile.restaurantName)} to your email.</p>
+        <p class="helper" style="margin: 0;">This sends a secure link that connects ${escapeHtml(profile.restaurantName)} to your email. Open the email and tap the link to finish. No password required.</p>
         <p class="helper ${state.connectMessage ? "" : "hidden"}" id="hub-connect-message" aria-live="polite">${escapeHtml(state.connectMessage)}</p>
         <p class="error ${state.connectError ? "" : "hidden"}" id="hub-connect-error" aria-live="polite">${escapeHtml(state.connectError)}</p>
       </form>
@@ -1481,7 +1501,7 @@
           ${state.connectInfoExpanded ? "Hide email note" : "Why save with email?"}
         </button>
         <p class="helper ${state.connectInfoExpanded ? "" : "hidden"}" style="margin: 4px 0 0;">
-          Email lets you restore ${escapeHtml(profile.restaurantName)} after clearing cache or switching devices. You can keep playing without it.
+          Email is the safest option. It helps you restore trivia scores, leaderboard progress, characters, and ${escapeHtml(profile.restaurantName)} after clearing cache, switching browsers, or changing devices.
         </p>
       </div>
     `;
@@ -2421,7 +2441,7 @@
         } catch (error) {
           state.connectError = error instanceof Error ? error.message : "Unable to send the email link.";
           submitButton.disabled = false;
-          submitButton.textContent = "Email Save Link";
+          submitButton.textContent = "Send Email Save Link";
           renderHero();
         }
       });
@@ -2636,6 +2656,7 @@
         )}</p>
       </div>
       ${currentRankMarkup}
+      ${renderSaveProgressNotice(profile)}
       <div class="leaderboard-scroll">
         ${
           isLeaderboardLoading && !cachedRows
@@ -2692,6 +2713,31 @@
           if (input instanceof HTMLInputElement) {
             input.focus();
             input.select();
+          }
+        });
+      });
+    });
+
+    elements.leaderboard.querySelectorAll("[data-leaderboard-save-progress]").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.activeMobileTab = "overview";
+        if (profile?.isGuest) {
+          state.showGuestSaveForm = true;
+          state.guestSaveMessage = "";
+          state.guestSaveError = "";
+        } else {
+          state.showConnectEmail = true;
+          state.connectMessage = "";
+          state.connectError = "";
+        }
+        renderAll();
+        requestAnimationFrame(() => {
+          if (elements.hero) {
+            scrollMobileSection(elements.hero, 18);
+          }
+          const emailInput = document.getElementById(profile?.isGuest ? "hub-guest-email" : "hub-connect-email");
+          if (emailInput instanceof HTMLInputElement) {
+            emailInput.focus();
           }
         });
       });
