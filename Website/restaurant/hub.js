@@ -2891,8 +2891,23 @@
       String(right.dateWon).localeCompare(String(left.dateWon))
     );
     const collectionIds = new Set(collection.map((entry) => String(entry?.customerId || "").trim()).filter(Boolean));
+    const playableAvailableCharacterIds = new Set();
+    if (core.getCustomersForRestaurant) {
+      getPlayableRestaurants().forEach((restaurant) => {
+        core.getCustomersForRestaurant(restaurant.slug).forEach((customer) => {
+          if (customer?.id && customer.active !== false && customer.feedbackRewardOnly !== true) {
+            playableAvailableCharacterIds.add(String(customer.id).trim());
+          }
+        });
+      });
+    }
     const activeAvailableCharacters = (Array.isArray(core.customers) ? core.customers : [])
-      .filter((customer) => customer && customer.active !== false && customer.feedbackRewardOnly !== true);
+      .filter((customer) =>
+        customer &&
+        customer.active !== false &&
+        customer.feedbackRewardOnly !== true &&
+        (!core.getCustomersForRestaurant || playableAvailableCharacterIds.has(String(customer.id || "").trim()))
+      );
     const activeAvailableCharacterIds = new Set(
       activeAvailableCharacters
         .map((customer) => String(customer.id || "").trim())
