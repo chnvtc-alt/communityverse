@@ -3125,6 +3125,16 @@
                 <div class="hero-card result-followup-card result-followup-card-form" style="margin-top: 0; padding: 16px;">
                   <p class="kicker" style="margin: 0 0 6px;">Save Collection</p>
                   <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${salesDemoMode ? "Save your demo progress." : `${escapeHtml(session.customer.name)} Is In Your Collection!`}</h3>
+                  ${
+                    state.registrationMessage
+                      ? `
+                        <div class="profile-email-confirmation" role="status" aria-live="polite">
+                          <h4>Check your email</h4>
+                          <p>${escapeHtml(state.registrationMessage)}</p>
+                        </div>
+                      `
+                      : ""
+                  }
                   <p class="copy result-save-mobile-note" style="margin: 0 0 14px;">${salesDemoMode ? "Save now to keep your demo score and leaderboard progress." : "Save now to keep your characters, trivia record, and leaderboard progress."}</p>
                   <p class="copy" style="margin: 0 0 8px;">${salesDemoMode ? "Save your progress to:" : "Save your collection to:"}</p>
                   <ul class="copy" style="margin: 0 0 16px; padding-left: 20px; line-height: 1.45;">
@@ -3153,9 +3163,8 @@
                     <p class="helper" style="margin: 0;">To save progress, you must be 13 or older. If you are under 13, please keep playing as a guest and do not enter personal information.</p>
                     <p class="helper legal-form-note" style="margin: 0;">By saving, you agree to the <a href="/terms/" target="_blank" rel="noopener">Terms of Use</a> and acknowledge the <a href="/privacy/" target="_blank" rel="noopener">Privacy Policy</a>.</p>
                     <p class="error hidden" id="profile-error" aria-live="polite"></p>
-                    <p class="helper ${state.registrationMessage ? "" : "hidden"}" id="profile-success" aria-live="polite">${escapeHtml(state.registrationMessage)}</p>
                     <div class="form-actions">
-                      <button class="button button-hot" id="profile-submit-button" type="submit">Save My Collection</button>
+                      <button class="button button-hot" id="profile-submit-button" type="submit">${state.registrationMessage ? "Send Link Again" : "Save My Collection"}</button>
                       <button class="button button-muted" id="cancel-register-button" type="button">Maybe Later</button>
                     </div>
                   </form>
@@ -3303,7 +3312,7 @@
 
         try {
           await core.sendEmailSignInLink(email, { profileId: activeProfile.id });
-          state.registrationMessage = "Check your email and tap the secure link to finish saving your virtual restaurant.";
+          state.registrationMessage = "We sent a secure save/sign-in link. Open your email and tap that link to finish saving your collection. No password is needed.";
           renderAll();
         } catch (sendError) {
           error.textContent = sendError instanceof Error ? sendError.message : "Unable to send the email link.";
