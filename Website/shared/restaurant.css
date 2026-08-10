@@ -4353,8 +4353,8 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .result-banner {
   display: grid;
-  gap: 14px;
-  padding: 26px;
+  gap: 12px;
+  padding: 22px 26px;
   border-radius: 28px;
   color: #fffdf8;
   background: linear-gradient(135deg, var(--teal), var(--panel-strong));
@@ -4390,7 +4390,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .result-celebration-title {
   margin: 0;
-  font-size: clamp(2rem, 4.2vw, 3.4rem);
+  font-size: clamp(1.85rem, 3.3vw, 2.8rem);
   line-height: 1.02;
   letter-spacing: -0.04em;
   color: #fffdf8;
@@ -4398,11 +4398,11 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .result-customer-spotlight {
   display: grid;
-  grid-template-columns: minmax(160px, 220px) minmax(0, 1fr);
-  gap: 20px;
+  grid-template-columns: minmax(150px, 190px) minmax(0, 1fr);
+  gap: 18px;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  width: min(100%, 430px);
 }
 
 .result-customer-image {
@@ -4417,7 +4417,7 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 
 .result-customer-copy {
   display: grid;
-  gap: 12px;
+  gap: 10px;
   align-content: center;
   justify-items: start;
   min-width: 0;
@@ -4454,10 +4454,10 @@ html:not(.restaurant-hub-mode) body[data-page="hub"] .grid-two {
 }
 
 .result-award-summary {
-  margin: 0;
+  margin: 4px 0 0;
   color: #fffdf8;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1.25rem, 2.6vw, 2rem);
+  font-size: clamp(1.35rem, 2.35vw, 1.9rem);
   font-weight: 850;
   text-align: center;
 }
