@@ -3139,17 +3139,13 @@
                       <p class="helper save-restaurant-helper">${salesDemoMode ? `This is the restaurant name other players will see on the leaderboards. You can keep the generated name or create your own.` : `This is how you will appear on the leaderboards. Make it yours by replacing "${escapeHtml(profile ? profile.restaurantName : "our suggestion")}", or keep that as your restaurant name.`}</p>
                       <input class="input save-restaurant-input" id="restaurant-name" name="restaurantName" type="text" maxlength="32" placeholder="Tim's Roadhouse" value="${escapeHtml(profile ? profile.restaurantName : "")}" data-suggested-name="${escapeHtml(profile ? profile.restaurantName : "")}" />
                     </div>
-                    <p class="helper" style="margin: 0;">Your player name and email are private. Other players only see your virtual restaurant name on leaderboards.</p>
                     <div class="field">
-                      <label class="field-label" for="player-name">Player name</label>
-                      <input class="input" id="player-name" name="playerName" type="text" placeholder="Tim" value="${escapeHtml(profile ? profile.playerName : "")}" />
-                    </div>
-                    <div class="field">
-                      <label class="field-label" for="profile-email">${salesDemoMode ? `Email <span style="font-weight: 500;">(optional - helps recover your collection)</span>` : `Email address <span style="font-weight: 500;">(optional)</span>`}</label>
+                      <label class="field-label" for="profile-email">Email address</label>
                       <input class="input" id="profile-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" />
                     </div>
+                    <p class="helper" style="margin: 0;">Other players only see your virtual restaurant name on leaderboards. We only use your email to send a secure save/sign-in link. Open your email and tap the link to finish saving with email. No password required.</p>
                     <button class="text-button" id="email-info-toggle" type="button">${state.emailInfoExpanded ? "Hide email note" : salesDemoMode ? "How email helps" : "Why save with email?"}</button>
-                    <p class="helper ${state.emailInfoExpanded ? "" : "hidden"}" style="margin: 0;">${salesDemoMode ? "Email lets you recover your collection if you get a new phone, play on multiple devices, and avoid losing unlocked characters." : "Email is only used to send a secure recovery link. Without it, your virtual restaurant is saved in this browser, but it cannot be restored after clearing cache or changing devices."}</p>
+                    <p class="helper ${state.emailInfoExpanded ? "" : "hidden"}" style="margin: 0;">${salesDemoMode ? "Email lets you recover your collection if you get a new phone, play on multiple devices, and avoid losing unlocked characters. We will not use your email for any other purpose." : "Email is the safest option. It lets you recover your scores and characters on another phone or browser. We will not use your email for any other purpose."}</p>
                     <label class="checkbox-row profile-age-confirm" for="profile-age-confirm">
                       <input id="profile-age-confirm" name="ageConfirm" type="checkbox" />
                       <span>I am 13 or older.</span>
@@ -3228,11 +3224,12 @@
 
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
-        const playerName = document.getElementById("player-name").value.trim();
         const restaurantName = document.getElementById("restaurant-name").value.trim();
         const email = document.getElementById("profile-email").value.trim();
         const ageConfirmed = document.getElementById("profile-age-confirm").checked;
         const submitButton = document.getElementById("profile-submit-button");
+        const activeProfile = getProfile();
+        const playerName = String(activeProfile?.playerName || "Guest Player").trim();
         const validation = core.validateProfileInput(playerName, restaurantName);
 
         if (!validation.ok) {
@@ -3256,7 +3253,6 @@
         error.classList.add("hidden");
         submitButton.disabled = true;
         submitButton.textContent = email ? "Sending..." : "Saving...";
-        const activeProfile = getProfile();
         if (activeProfile) {
           const previousProfile = activeProfile;
           if (email) {
