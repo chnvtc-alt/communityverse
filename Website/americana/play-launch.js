@@ -3409,11 +3409,10 @@
               <div class="hero-card result-followup-card result-followup-card-guest" style="margin-top: 0; padding: 16px;">
                 <p class="kicker" style="margin: 0 0 6px;">${isFourthGame ? "Trivia % Leaderboard" : salesDemoMode ? "Save Demo Progress" : "Save Your Character Collection"}</p>
                 <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 8px;">${isFourthGame ? "Congratulations! You completed your 4th game." : salesDemoMode ? "Keep your demo score." : unlockedThisRound && !hadUnlockedBefore ? `You just unlocked ${escapeHtml(session.customer.name)}.` : `You did not unlock ${escapeHtml(session.customer.name)} this time.`}</h3>
-                <p class="copy" style="margin: 0 0 12px;">${isFourthGame ? "Save your restaurant to view and keep your Trivia % leaderboard progress so far. No email required." : salesDemoMode ? "Save your demo progress if you want to see how profiles and leaderboards can work." : "Save your collection to keep and view your existing characters, track your trivia progress, and compete on the leaderboards. No email address is required."}</p>
+                <p class="copy" style="margin: 0 0 12px;">${isFourthGame ? "Save your restaurant to view and keep your Trivia % leaderboard progress so far." : salesDemoMode ? "Save your demo progress if you want to see how profiles and leaderboards can work." : "Save your collection to keep and view your existing characters, track your trivia progress, and compete on the leaderboards."}</p>
                 <div class="button-row">
                   <button class="button button-hot result-save-progress-button" id="register-now-button" type="button">
                     <span>${isFourthGame ? "Save My Restaurant" : salesDemoMode ? "Save Demo Progress" : "Save My Character Collection"}</span>
-                    <small>No email required</small>
                   </button>
                   <button class="button button-muted" id="guest-continue-button" type="button">Keep Playing as Guest</button>
                 </div>
