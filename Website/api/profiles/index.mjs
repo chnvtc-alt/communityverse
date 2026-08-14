@@ -1,8 +1,9 @@
-import { profileFromRecord } from "../_lib/restaurant-data.mjs";
+import { normalizeRestaurantSlug, profileFromRecord } from "../_lib/restaurant-data.mjs";
 import { validateRestaurantProfileName } from "../_lib/restaurant-name-rules.mjs";
 import {
   createClaimState,
   fetchProfile,
+  findProfileByRestaurantSlug,
   generateProfileAccessToken,
   getProfileAccessToken,
   hashProfileAccessToken,
@@ -26,6 +27,41 @@ async function fetchProfiles() {
   return Array.isArray(rows)
     ? rows.map(profileFromRecord).filter(Boolean).map(sanitizeProfile)
     : [];
+}
+
+async function ensureGuestRestaurantSlugAvailable(profile) {
+  const baseSlug = normalizeRestaurantSlug(profile.restaurantSlug || profile.restaurantName || "guest-restaurant");
+  const baseName = String(profile.restaurantName || "Guest Restaurant").trim() || "Guest Restaurant";
+  if (!baseSlug) {
+    return profile;
+  }
+
+  const existing = await findProfileByRestaurantSlug(baseSlug);
+  if (!existing || existing.id === profile.id) {
+    return {
+      ...profile,
+      restaurantSlug: baseSlug,
+    };
+  }
+
+  for (let attempt = 2; attempt <= 50; attempt += 1) {
+    const nextSlug = `${baseSlug}-${attempt}`;
+    const nextExisting = await findProfileByRestaurantSlug(nextSlug);
+    if (!nextExisting || nextExisting.id === profile.id) {
+      return {
+        ...profile,
+        restaurantName: `${baseName} ${attempt}`,
+        restaurantSlug: nextSlug,
+      };
+    }
+  }
+
+  const fallback = `${baseSlug}-${Date.now().toString(36)}`;
+  return {
+    ...profile,
+    restaurantName: `${baseName} ${fallback.slice(-4).toUpperCase()}`,
+    restaurantSlug: fallback,
+  };
 }
 
 function normalizedEmail(value) {
@@ -332,8 +368,11 @@ export async function POST(request) {
       return jsonResponse({ ok: false, error: "This restaurant belongs to another player." }, 403);
     }
 
-    const profileToStore = preserveNewerRestaurantName(existing, body);
-    if (!existing || existing.restaurantSlug !== profileToStore.restaurantSlug) {
+    let profileToStore = preserveNewerRestaurantName(existing, body);
+    if (!existing && profileToStore.isGuest) {
+      profileToStore = await ensureGuestRestaurantSlugAvailable(profileToStore);
+    }
+    if (!profileToStore.isGuest && (!existing || existing.restaurantSlug !== profileToStore.restaurantSlug)) {
       await validateRestaurantSlugAvailable(profileToStore.restaurantSlug, profileToStore.id);
     }
 

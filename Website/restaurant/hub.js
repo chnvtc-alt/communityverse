@@ -2550,13 +2550,19 @@
     if (!cachedRows && !isLeaderboardLoading) {
       loadLiveLeaderboardRows(state.metric, leaderboardRestaurantSlug, leaderboardKey);
     }
-    const rows =
+    const serverOrLocalRows =
       cachedRows ||
       (isLeaderboardLoading
         ? []
         : state.leaderboardScope === "overall"
           ? core.getLeaderboard(state.metric)
           : core.getLeaderboard(state.metric, leaderboardRestaurantSlug || "americana"));
+    const rows = includeActiveLocalProfileLeaderboardRow(
+      serverOrLocalRows,
+      profile,
+      state.metric,
+      leaderboardRestaurantSlug
+    );
     const scopeLabel = state.leaderboardScope === "overall" ? "Overall" : restaurant?.name || "Restaurant";
     const selectedMetric = metricOptions.find((option) => option.value === state.metric) || metricOptions[0];
     const playTarget =
@@ -2743,6 +2749,36 @@
       });
     });
 
+  }
+
+  function includeActiveLocalProfileLeaderboardRow(rows, profile, metric, restaurantSlug) {
+    if (!profile?.id || !core.getLeaderboard) {
+      return rows;
+    }
+
+    const localRows = restaurantSlug
+      ? core.getLeaderboard(metric, restaurantSlug)
+      : core.getLeaderboard(metric);
+    const localCurrentRow = localRows.find((row) => row.profileId === profile.id);
+    if (!localCurrentRow || !(Number(localCurrentRow.stats?.gamesPlayed) > 0)) {
+      return rows;
+    }
+
+    const mergedRows = (Array.isArray(rows) ? rows : [])
+      .filter((row) => row.profileId !== profile.id)
+      .concat(localCurrentRow)
+      .sort((left, right) => {
+        if (right.value !== left.value) {
+          return right.value - left.value;
+        }
+
+        return String(left.restaurantName || "").localeCompare(String(right.restaurantName || ""));
+      });
+
+    return mergedRows.map((row, index) => ({
+      ...row,
+      rank: index + 1,
+    }));
   }
 
   async function loadLiveLeaderboardRows(metric, restaurantSlug, leaderboardKey) {

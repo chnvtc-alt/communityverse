@@ -3023,9 +3023,15 @@
     }
 
     rememberUnsyncedSession(session);
-    const token = getProfileAccessToken(session.profileId);
+    const localProfile = getProfiles().find((profile) => String(profile.id || "") === String(session.profileId || "")) || null;
+    const token = localProfile?.isGuest
+      ? ensureProfileAccessToken(session.profileId)
+      : getProfileAccessToken(session.profileId);
     if (!token) {
       throw new Error("This saved restaurant needs email sign-in before new games can count. Please sign in, then start the game again.");
+    }
+    if (localProfile?.isGuest) {
+      await syncProfilesToServer(getProfiles(), { syncRecentSessions: false });
     }
     const syncedSession = await postSessionToServer(session, token, options);
     if (syncedSession) {
