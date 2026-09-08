@@ -63,6 +63,10 @@
   ],
   "rewrites": [
     {
+      "source": "/.well-known/pki-validation/24DF85DDD6D5A1D7C68AC278EC396AFB.txt",
+      "destination": "/pki-validation/24DF85DDD6D5A1D7C68AC278EC396AFB.txt"
+    },
+    {
       "source": "/admin/questions",
       "destination": "/admin/questions/index.html"
     },
