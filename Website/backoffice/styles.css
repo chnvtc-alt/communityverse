@@ -939,7 +939,7 @@ th {
 }
 
 .invoice-preview-dialog {
-  width: min(760px, calc(100vw - 28px));
+  width: min(920px, calc(100vw - 28px));
 }
 
 .editor-dialog.prospect-import-dialog {
@@ -1113,10 +1113,16 @@ th {
   padding: 30px;
 }
 
-.invoice-header,
+.invoice-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 32px;
+}
+
 .invoice-parties {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.55fr);
   gap: 24px;
 }
 
@@ -1139,7 +1145,17 @@ th {
 }
 
 .invoice-meta {
+  grid-template-columns: auto minmax(96px, auto);
+  align-items: baseline;
+  column-gap: 12px;
+  min-width: 190px;
+  text-align: left;
+}
+
+.invoice-meta strong,
+.invoice-status {
   text-align: right;
+  white-space: nowrap;
 }
 
 .invoice-label,
@@ -1397,6 +1413,18 @@ th {
 }
 
 @media print {
+  @page {
+    size: letter;
+    margin: 0.45in;
+  }
+
+  html,
+  body {
+    width: 100%;
+    margin: 0;
+    background: #fff;
+  }
+
   body * {
     visibility: hidden;
   }
@@ -1407,15 +1435,24 @@ th {
   }
 
   .invoice-preview-dialog[open] {
-    position: static;
+    position: fixed;
+    inset: 0;
     width: 100%;
+    height: auto;
     max-width: none;
+    margin: 0;
+    padding: 0;
     border: 0;
     box-shadow: none;
+    background: #fff;
+    color: #202724;
+    overflow: visible;
   }
 
   .invoice-preview-shell {
+    display: block;
     padding: 0;
+    background: #fff;
   }
 
   .invoice-preview-actions {
@@ -1423,7 +1460,48 @@ th {
   }
 
   .invoice-document {
+    width: 100%;
+    box-sizing: border-box;
+    gap: 0.2in;
     border: 0;
+    border-radius: 0;
     padding: 0;
+    font-size: 12pt;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .invoice-header {
+    grid-template-columns: 1fr 2.1in;
+    gap: 0.35in;
+  }
+
+  .invoice-header h2 {
+    font-size: 30pt;
+  }
+
+  .invoice-logo {
+    width: 2.75in;
+  }
+
+  .invoice-meta {
+    min-width: 0;
+    grid-template-columns: 0.85in 1fr;
+    column-gap: 0.12in;
+    font-size: 11pt;
+  }
+
+  .invoice-parties {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.45in;
+  }
+
+  .invoice-lines th,
+  .invoice-lines td {
+    padding: 0.12in 0.1in;
+  }
+
+  .invoice-payment {
+    padding: 0.16in;
   }
 }
