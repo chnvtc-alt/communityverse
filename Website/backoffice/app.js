@@ -3900,6 +3900,41 @@
     `;
   }
 
+  function invoicePrintPageHtml(record) {
+    return `<!doctype html>
+      <html>
+        <head>
+          <meta charset="utf-8" />
+          <title>${escapeHtml(invoicePrintTitle(record, invoiceDetails(record).customerName))}</title>
+          <style>
+            @page { size: letter; margin: 0.45in; }
+            * { box-sizing: border-box; }
+            html, body { margin: 0; padding: 0; background: #fff; color: #202724; font: 13pt/1.35 Arial, Helvetica, sans-serif; }
+            body { width: 7.6in; margin: 0 auto; }
+            .invoice-document { display: grid; gap: 0.24in; width: 100%; }
+            .invoice-header { display: grid; grid-template-columns: 1fr 2.05in; gap: 0.4in; align-items: start; }
+            .invoice-logo { display: block; width: 2.85in; height: auto; margin: 0 0 0.16in; }
+            h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 34pt; line-height: 1; }
+            .invoice-meta { display: grid; grid-template-columns: 0.85in 1fr; gap: 0.04in 0.12in; align-items: baseline; font-size: 11.5pt; }
+            .invoice-label { margin: 0; color: #637069; font-weight: 800; }
+            .invoice-meta strong, .invoice-status { text-align: right; white-space: nowrap; }
+            .invoice-status { color: #637069; font-weight: 800; }
+            .invoice-parties { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55in; }
+            .invoice-parties div { display: grid; gap: 0.03in; }
+            .invoice-parties strong { font-size: 13.5pt; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { padding: 0.12in 0.1in; border-bottom: 1px solid #d9d1c0; text-align: left; vertical-align: top; }
+            th { color: #637069; font-size: 10.5pt; text-transform: uppercase; }
+            tfoot th { font-size: 13pt; }
+            .invoice-payment { display: grid; gap: 0.06in; padding: 0.18in; border: 1px solid #d9d1c0; border-radius: 6px; background: #fffdf7; }
+            .invoice-payment strong { font-size: 13.5pt; }
+            a { color: #236748; font-weight: 800; }
+          </style>
+        </head>
+        <body>${invoiceDocumentHtml(record)}</body>
+      </html>`;
+  }
+
   function pdfText(value) {
     return String(value || "")
       .replace(/[^\x09\x0A\x0D\x20-\x7E]/g, "")
@@ -4110,10 +4145,22 @@
   }
 
   function printInvoice() {
-    if (!state.invoicePreviewId) {
+    const record = state.collections.find((collection) => collection.id === state.invoicePreviewId);
+    if (!record) {
       return;
     }
-    window.print();
+    const printWindow = window.open("", "_blank", "width=900,height=1100");
+    if (!printWindow) {
+      window.alert("Safari blocked the print window. Please allow pop-ups for this site, or use Download PDF.");
+      return;
+    }
+    printWindow.document.open();
+    printWindow.document.write(invoicePrintPageHtml(record));
+    printWindow.document.close();
+    printWindow.focus();
+    window.setTimeout(() => {
+      printWindow.print();
+    }, 300);
   }
 
   async function sendPreviewedInvoiceEmail() {
