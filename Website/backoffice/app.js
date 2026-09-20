@@ -252,6 +252,7 @@
     closeInvoicePreviewButton: document.querySelector("#close-invoice-preview-button"),
     sendPreviewedInvoiceButton: document.querySelector("#send-previewed-invoice-button"),
     printInvoiceButton: document.querySelector("#print-invoice-button"),
+    downloadInvoicePdfButton: document.querySelector("#download-invoice-pdf-button"),
     expenseForm: document.querySelector("#expense-form"),
     expenseDate: document.querySelector("#expense-date"),
     expenseVendor: document.querySelector("#expense-vendor"),
@@ -3821,6 +3822,84 @@
     return "Thank you for allowing us to promote your restaurant through your trivia game. Here is the payment link to set up your monthly payment. You may cancel at any time. We use PayPal for processing, but you do not need a PayPal account. You may pay with a credit card. If PayPal asks you to create or save a PayPal account, you can turn that option off and continue with a card payment.";
   }
 
+  function invoiceDocumentHtml(record) {
+    const details = invoiceDetails(record);
+    const subscriptionLink = recurringPaymentLink(record, details.restaurant);
+    const primaryLink = details.isRecurring ? subscriptionLink : PAYMENT_LINK;
+    const gameName = invoiceGameName(record, details.restaurant, details.customerName);
+    const description = details.description || `${gameName} monthly service.`;
+    return `
+      <article class="invoice-document" aria-label="Invoice ${escapeHtml(record.invoiceNumber || "")}">
+        <header class="invoice-header">
+          <div>
+            <img class="invoice-logo" src="${LOGO_PATH}" alt="CommunityVerse Games" />
+            <h2>Invoice</h2>
+          </div>
+          <div class="invoice-meta">
+            <p class="invoice-label">Invoice #</p>
+            <strong>${escapeHtml(record.invoiceNumber || "Invoice")}</strong>
+            <p class="invoice-label">Due date</p>
+            <strong>${escapeHtml(details.dueDate)}</strong>
+            <p class="invoice-label">Status</p>
+            <span class="invoice-status">${escapeHtml(details.status)}</span>
+          </div>
+        </header>
+
+        <section class="invoice-parties">
+          <div>
+            <p class="invoice-label">Bill To</p>
+            <strong>${escapeHtml(details.customerName)}</strong>
+            ${details.contact ? `<span>${escapeHtml(details.contact)}</span>` : ""}
+            ${details.addressLines.map((line) => `<span>${escapeHtml(line)}</span>`).join("")}
+          </div>
+          <div>
+            <p class="invoice-label">From</p>
+            <strong>${escapeHtml(INVOICE_SENDER.business)}</strong>
+            <span>${escapeHtml(INVOICE_SENDER.street)}</span>
+            <span>${escapeHtml(INVOICE_SENDER.cityStateZip)}</span>
+            <span>${escapeHtml(INVOICE_SENDER.phone)}</span>
+          </div>
+        </section>
+
+        <table class="invoice-lines">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Type</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>${escapeHtml(description)}</td>
+              <td>${escapeHtml(details.paymentTypeLabel)}</td>
+              <td>${escapeHtml(details.amount)}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <th colspan="2">Total Due</th>
+              <th>${escapeHtml(details.amount)}</th>
+            </tr>
+          </tfoot>
+        </table>
+
+        <section class="invoice-payment">
+          <strong>${details.isRecurring ? "Set up recurring monthly payment" : "Payment instructions"}</strong>
+          ${details.isRecurring
+            ? `
+              <span>Use the subscription page below to start monthly billing.</span>
+              <a href="${escapeHtml(primaryLink)}" target="_blank" rel="noopener">${escapeHtml(recurringPaymentDisplayLink())}</a>
+            `
+            : `
+              <span>Please make payment to CommunityVerse Games. Checks can be made payable to CommunityVerse Games.</span>
+              <span class="invoice-payment-options">Optional online card payment: <a href="${escapeHtml(primaryLink)}" target="_blank" rel="noopener">Pay online</a></span>
+            `}
+        </section>
+      </article>
+    `;
+  }
+
   function pdfText(value) {
     return String(value || "")
       .replace(/[^\x09\x0A\x0D\x20-\x7E]/g, "")
@@ -3856,7 +3935,7 @@
     }
   }
 
-  function buildPdfBytes({ stream, payY, linkUrl = PAYMENT_LINK, logoBytes = null } = {}) {
+  function buildPdfBytes({ stream, payY, linkY = payY, linkUrl = PAYMENT_LINK, logoBytes = null } = {}) {
     const streamBytes = textBytes(stream);
     const resources = logoBytes
       ? "/Resources << /Font << /F1 4 0 R /F2 5 0 R >> /XObject << /Logo 8 0 R >> >>"
@@ -3872,7 +3951,7 @@
         streamBytes,
         textBytes("\nendstream"),
       ]),
-      textBytes(`<< /Type /Annot /Subtype /Link /Rect [48 ${payY - 21} 390 ${payY - 9}] /Border [0 0 0] /A << /S /URI /URI (${pdfText(linkUrl)}) >> >>`),
+      textBytes(`<< /Type /Annot /Subtype /Link /Rect [48 ${linkY - 21} 390 ${linkY - 9}] /Border [0 0 0] /A << /S /URI /URI (${pdfText(linkUrl)}) >> >>`),
     ];
     if (logoBytes) {
       objects.push(concatBytes([
@@ -3975,18 +4054,21 @@
     addText(details.amount, 500, descriptionY - 28, 12, true);
 
     const payY = descriptionY - 82;
+    const linkY = details.isRecurring ? payY : payY - 28;
     addPanel(48, payY - 46, 516, 66, details.isRecurring ? "0.86 0.92 0.92" : "0.94 0.97 0.94", "0.73 0.70 0.64");
-    addText(details.isRecurring ? "Set up recurring monthly payment" : "Pay online", 48, payY, 11, true);
+    addText(details.isRecurring ? "Set up recurring monthly payment" : "Payment instructions", 48, payY, 11, true);
     if (details.isRecurring) {
       addText(`Go to ${recurringPaymentDisplayLink()}`, 48, payY - 16, 10);
       addText(`Invoice: ${record.invoiceNumber || "shown above"}`, 48, payY - 30, 10);
     } else {
-      addText(PAYMENT_LINK, 48, payY - 16, 10);
+      addText("Please make payment to CommunityVerse Games.", 48, payY - 16, 10);
+      addText("Checks can be made payable to CommunityVerse Games.", 48, payY - 30, 10);
+      addText(`Optional online payment: ${PAYMENT_LINK}`, 48, payY - 44, 10);
     }
 
     const stream = lines.join("\n");
     return {
-      blob: new Blob([buildPdfBytes({ stream, payY, linkUrl: primaryLink, logoBytes })], { type: "application/pdf" }),
+      blob: new Blob([buildPdfBytes({ stream, payY, linkY, linkUrl: primaryLink, logoBytes })], { type: "application/pdf" }),
       filename: `${invoicePrintTitle(record, details.customerName)}.pdf`,
     };
   }
@@ -3999,29 +4081,11 @@
     const details = invoiceDetails(record);
     const subscriptionLink = recurringPaymentLink(record, details.restaurant);
     const primaryLink = details.isRecurring ? subscriptionLink : PAYMENT_LINK;
-    const primaryText = details.isRecurring ? "Set Up Monthly Subscription" : "Pay Now";
-    const gameName = invoiceGameName(record, details.restaurant, details.customerName);
-    const month = invoiceMonthFromDate(record.dueDate) || "this month";
     state.invoicePreviewId = id;
-    elements.invoicePreviewContent.innerHTML = `
-      <article class="invoice-email-preview">
-        <p class="invoice-email-eyebrow">Invoice ${escapeHtml(record.invoiceNumber || "")} Details</p>
-        <img class="invoice-email-logo" src="${LOGO_PATH}" alt="CommunityVerse Games" />
-        <section class="invoice-email-total">
-          <p>${escapeHtml(details.dueLabel)}</p>
-          <strong>${escapeHtml(details.amount)}</strong>
-          <a class="button button-primary" href="${escapeHtml(primaryLink)}" target="_blank" rel="noopener">${escapeHtml(primaryText)}</a>
-        </section>
-        <section class="invoice-email-copy">
-          <p>Hi ${escapeHtml(details.restaurant?.contactFirstName || contactName(details.restaurant) || details.customerName)},</p>
-          <p>${details.isRecurring
-            ? escapeHtml(recurringPaymentEmailText())
-            : `Here is your invoice for ${escapeHtml(month)} for ${escapeHtml(gameName)}. Thank you for allowing us to promote your restaurant through your trivia game.`}</p>
-          ${details.isRecurring ? "" : "<p>You can pay this invoice one time with the Pay Now button.</p>"}
-          <p>A PDF of this invoice is attached for your records.</p>
-        </section>
-      </article>
-    `;
+    elements.invoicePreviewContent.innerHTML = invoiceDocumentHtml(record);
+    elements.invoicePreviewContent.querySelectorAll("a").forEach((link) => {
+      link.href = primaryLink;
+    });
     elements.invoicePreviewDialog.showModal();
   }
 
@@ -4043,6 +4107,13 @@
     link.click();
     link.remove();
     window.setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+  }
+
+  function printInvoice() {
+    if (!state.invoicePreviewId) {
+      return;
+    }
+    window.print();
   }
 
   async function sendPreviewedInvoiceEmail() {
@@ -5049,7 +5120,8 @@
   elements.clearPaypalPasteButton.addEventListener("click", clearPaypalPaymentPaste);
   elements.closeInvoicePreviewButton.addEventListener("click", closeInvoicePreview);
   elements.sendPreviewedInvoiceButton.addEventListener("click", sendPreviewedInvoiceEmail);
-  elements.printInvoiceButton.addEventListener("click", saveInvoicePdf);
+  elements.printInvoiceButton.addEventListener("click", printInvoice);
+  elements.downloadInvoicePdfButton.addEventListener("click", saveInvoicePdf);
   elements.expenseForm.addEventListener("submit", addExpense);
   elements.search.addEventListener("input", renderRestaurantTable);
   elements.statusFilter.addEventListener("change", renderRestaurantTable);

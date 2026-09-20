@@ -107,7 +107,7 @@ function pdfLogoBytes() {
   }
 }
 
-function buildPdfDocument({ stream, payY, linkUrl = PAYMENT_LINK, logoBytes = null } = {}) {
+function buildPdfDocument({ stream, payY, linkY = payY, linkUrl = PAYMENT_LINK, logoBytes = null } = {}) {
   const streamBytes = Buffer.from(stream, "utf8");
   const resources = logoBytes
     ? "/Resources << /Font << /F1 4 0 R /F2 5 0 R >> /XObject << /Logo 8 0 R >> >>"
@@ -123,7 +123,7 @@ function buildPdfDocument({ stream, payY, linkUrl = PAYMENT_LINK, logoBytes = nu
       streamBytes,
       Buffer.from("\nendstream", "utf8"),
     ]),
-    Buffer.from(`<< /Type /Annot /Subtype /Link /Rect [48 ${payY - 21} 390 ${payY - 9}] /Border [0 0 0] /A << /S /URI /URI (${pdfText(linkUrl)}) >> >>`, "utf8"),
+    Buffer.from(`<< /Type /Annot /Subtype /Link /Rect [48 ${linkY - 21} 390 ${linkY - 9}] /Border [0 0 0] /A << /S /URI /URI (${pdfText(linkUrl)}) >> >>`, "utf8"),
   ];
   if (logoBytes) {
     objects.push(Buffer.concat([
@@ -271,17 +271,20 @@ function buildInvoicePdf(collection = {}, restaurant = {}) {
   addText(details.amount, 500, descriptionY - 28, 12, true);
 
   const payY = descriptionY - 82;
+  const linkY = details.isRecurring ? payY : payY - 28;
   addPanel(48, payY - 46, 516, 66, details.isRecurring ? "0.86 0.92 0.92" : "0.94 0.97 0.94", "0.73 0.70 0.64");
-  addText(details.isRecurring ? "Set up recurring monthly payment" : "Pay online", 48, payY, 11, true);
+  addText(details.isRecurring ? "Set up recurring monthly payment" : "Payment instructions", 48, payY, 11, true);
   if (details.isRecurring) {
     addText(`Go to ${recurringPaymentDisplayLink()}`, 48, payY - 16, 10);
     addText(`Invoice: ${collection.invoiceNumber || "shown above"}`, 48, payY - 30, 10);
   } else {
-    addText(PAYMENT_LINK, 48, payY - 16, 10);
+    addText("Please make payment to CommunityVerse Games.", 48, payY - 16, 10);
+    addText("Checks can be made payable to CommunityVerse Games.", 48, payY - 30, 10);
+    addText(`Optional online payment: ${PAYMENT_LINK}`, 48, payY - 44, 10);
   }
 
   const stream = lines.join("\n");
-  return buildPdfDocument({ stream, payY, linkUrl: primaryLink, logoBytes }).toString("base64");
+  return buildPdfDocument({ stream, payY, linkY, linkUrl: primaryLink, logoBytes }).toString("base64");
 }
 
 function getResendConfig() {
