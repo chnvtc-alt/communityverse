@@ -4106,7 +4106,7 @@
     document.body.appendChild(link);
     link.click();
     link.remove();
-    window.setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+    window.setTimeout(() => URL.revokeObjectURL(link.href), 60000);
   }
 
   function printInvoice() {
